@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-50">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Upload Direto - Servidor para CDN</title>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="p-4 bg-[#1e1f22] text-white">
+    <div class="flex gap-2 mb-4">
+        <button id="btnCreatePrefab"
+            class="px-4 py-1.5 text-xs bg-[#2d88ff] text-white font-bold rounded transition-colors">Criar
+            Prefab</button>
+    </div>
+
+    <div class="flex gap-2 mb-4 items-center">
+        <input type="text" id="input-search" placeholder="ID do Objeto"
+            class="px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none">
+
+        <div class="flex gap-1 bg-[#3a3b3c] rounded p-1 items-center">
+            <input type="text" id="search-select" placeholder="Filtrar lista..."
+                class="px-2 py-1 text-[10px] bg-[#2b2d31] text-gray-300 rounded focus:outline-none w-24 border border-gray-600">
+            <select class="px-2 py-1 text-xs bg-transparent text-white rounded focus:outline-none min-w-[120px]"
+                id="select-obj"></select>
+        </div>
+
+        <button id="btnCreateMaterial"
+            class="px-4 py-1.5 text-xs bg-[#2d88ff] text-white font-bold rounded transition-colors">Criar
+            Texture</button>
+    </div>
+
+    <div id="modalCreatePrefb"
+        class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 modal-overlay">
+        <div class="bg-[#2b2d31] p-6 rounded-lg w-full max-w-md border border-[#3a3b3c] modal-content">
+            <h3 class="text-white font-bold mb-4 text-sm">Criar Prefab</h3>
+            <div class="space-y-3 mb-4">
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">Nome</label>
+                    <input type="text" id="name"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none">
+                </div>
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">Addressable</label>
+                    <input type="text" id="addressable"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none">
+                </div>
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">Path</label>
+                    <input type="text" id="path"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button class="px-4 py-1.5 text-xs bg-gray-600 text-white font-bold rounded btn-close">Cancelar</button>
+                <button id="btn_send_prefab"
+                    class="px-4 py-1.5 text-xs bg-[#2d88ff] text-white font-bold rounded transition-colors">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCreateMaterial"
+        class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 modal-overlay">
+        <div class="bg-[#2b2d31] p-6 rounded-lg w-full max-w-md border border-[#3a3b3c] modal-content">
+            <h3 class="text-white font-bold mb-4 text-sm">Criar Material</h3>
+            <div class="space-y-3 mb-4">
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <input type="hidden" id="obj_uid" />
+                    <label class="text-gray-300 font-semibold text-xs">Obj</label>
+                    <input type="text" id="ObjName" readonly
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded opacity-60 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">Name</label>
+                    <input type="text" id="name"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none">
+                </div>
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">ShaderChannel</label>
+                    <select id="channel"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none">
+                         <optgroup label="PBR">
+                            <option value="pbr">All PBR</option>
+                         </optgroup>
+                        <optgroup label="Skin">
+                            <option value="skin">Skin</option>
+                            <option value="makup">Makup</option>
+                            <option value="tatto">Tatto</option>
+                            <option value="under">Under Cloth</option>
+                            <option value="cloth">Cloth</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">Preview</label>
+                    <input type="file" multiple id="previewInput"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none"
+                        accept="image/*">
+                </div>
+                <div class="grid grid-cols-3 items-center gap-2">
+                    <label class="text-gray-300 font-semibold text-xs">Textura</label>
+                    <input type="file" multiple id="texturasInput"
+                        class="col-span-2 px-3 py-1.5 text-xs bg-[#3a3b3c] text-white rounded focus:outline-none"
+                        accept="image/*">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button class="px-4 py-1.5 text-xs bg-gray-600 text-white font-bold rounded btn-close">Cancelar</button>
+                <button id="btn_send_material"
+                    class="px-4 py-1.5 text-xs bg-[#2d88ff] text-white font-bold rounded transition-colors">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 overflow-x-auto">
+        <table class="table-auto w-full text-left text-xs border-collapse">
+            <thead>
+                <tr class="bg-[#2b2d31]">
+                    <th class="px-4 py-2 border border-[#3a3b3c]">ID</th>
+                    <th class="px-4 py-2 border border-[#3a3b3c]">Nome</th>
+                    <th class="px-4 py-2 border border-[#3a3b3c]">Obj</th>
+                    <th class="px-4 py-2 border border-[#3a3b3c]">Textura</th>
+                    <th class="px-4 py-2 border border-[#3a3b3c]">Preview</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+            <tfoot id="tfoot"></tfoot>
+        </table>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('token');
+        const url_base = 'http://localhost:5000';
+        const url_login = url_base + '/api/auth/signin';
+        const url_material = url_base + '/game/materials';
+        const url_prefab = url_base + '/game/prefabs';
+
+        let offset = 10;
+        let page = 1;
+        let optionsData = [];
+
+        $(document).ready(async function () {
+            if (!token) await Login();
+            PopuleSelect();
+            Search();
+
+            $(document).on('change', '#input-search', function () {
+                offset = 10;
+                page = 1;
+                Search();
+            });
+
+            $(document).on('click', '#btnCreatePrefab', function () {
+                $('#modalCreatePrefb').removeClass('hidden').addClass('flex');
+            });
+
+            $(document).on('click', '#btnCreateMaterial', function () {
+                $('#modalCreateMaterial').removeClass('hidden').addClass('flex');
+                $('#modalCreateMaterial').find('#obj_uid').val($('#select-obj option:selected').val());
+                $('#modalCreateMaterial').find('#ObjName').val($('#select-obj option:selected').text());
+            });
+
+            // Fecha apenas ao clicar no fundo escuro (overlay) ou no botão fechar/cancelar
+            $(document).on('click', '.modal-overlay, .btn-close', function (e) {
+                if ($(e.target).hasClass('modal-overlay') || $(e.target).hasClass('btn-close')) {
+                    $('#modalCreatePrefb, #modalCreateMaterial').addClass('hidden').removeClass('flex');
+                    ResetModal();
+                }
+            });
+
+            $(document).on('click', '#btn_send_prefab', async function () {
+                await SendPrefab();
+                $('#modalCreatePrefb').addClass('hidden').removeClass('flex');
+            });
+
+            $(document).on('click', '#btn_send_material', async function () {
+                await SendMaterial();
+                $('#modalCreateMaterial').addClass('hidden').removeClass('flex');
+            });
+
+            $(document).on('input', '#search-select', function () {
+                const value = $(this).val().toLowerCase();
+                const select = $('#select-obj');
+                select.empty();
+
+                optionsData.forEach(element => {
+                    if (element.name.toLowerCase().indexOf(value) > -1) {
+                        const option = document.createElement('option');
+                        option.value = element.id;
+                        option.text = element.name;
+                        select.append(option);
+                    }
+                });
+            });
+        });
+
+        async function Login() {
+            const login = 'Adriano';
+            const password = '12345';
+            if (login && password) {
+                await new Promise((resolve) => {
+                    $.post(url_login, { login, password }, function (data) {
+                        token = data.token;
+                        localStorage.setItem('token', token);
+                        resolve();
+                    }).fail(function () { resolve(); });
+                });
+            }
+        }
+
+        function Search() {
+            const str = $('#input-search').val();
+            const q = '&q=["name", "' + str + '"]';
+            const token = localStorage.getItem('token');
+            $.ajax({
+                url: url_material + '?token=' + token + q + '&limit=' + (offset * page) + '&offset=' + page,
+                type: 'get',
+                headers: { 'Token': token },
+                dataType: 'json',
+                success: function (result) {
+                    var data = result.data;
+                    $('#tbody').empty();
+                    if (data) {
+                        data.forEach(element => {
+                            const tr = document.createElement('tr');
+                            const td_id = document.createElement('td');
+                            const td_name = document.createElement('td');
+                            const td_obj = document.createElement('td');
+                            const td_textura = document.createElement('td');
+                            const td_preview = document.createElement('td');
+                            const img = document.createElement('img');
+
+                            td_id.className = "px-4 py-2 border border-[#3a3b3c]";
+                            td_name.className = "px-4 py-2 border border-[#3a3b3c]";
+                            td_obj.className = "px-4 py-2 border border-[#3a3b3c]";
+                            td_textura.className = "px-4 py-2 border border-[#3a3b3c]";
+                            td_preview.className = "px-4 py-2 border border-[#3a3b3c]";
+
+                            img.src = `./preview/${element.uid}?p=1`;
+                            img.className = "h-8 w-8 object-cover rounded";
+
+                            td_id.textContent = element.id;
+                            td_name.textContent = element.name;
+                            td_obj.textContent = element.obj;
+                            const textures = element.textures;//.parse(element.textures) || element.textures;
+                            td_textura.textContent = textures;
+                            td_preview.appendChild(img);
+
+                            tr.appendChild(td_id);
+                            tr.appendChild(td_name);
+                            tr.appendChild(td_obj);
+                            tr.appendChild(td_textura);
+                            tr.appendChild(td_preview);
+                            $('#tbody').append(tr);
+                        });
+                    }
+
+                    $('#tfoot').empty();
+                    if (result && result.total) {
+                        const tr = document.createElement('tr');
+                        const td_total = document.createElement('td');
+                        td_total.colSpan = 5;
+                        td_total.className = "px-4 py-2 text-center text-gray-400";
+
+                        let paginationText = "Páginas: ";
+                        for (let index = 0; index < result.total; index++) {
+                            paginationText += (index + 1) + " ";
+                        }
+                        td_total.textContent = paginationText;
+                        tr.appendChild(td_total);
+                        $('#tfoot').append(tr);
+                    }
+                }
+            });
+        }
+
+        function PopuleSelect() {
+            const select = $('#select-obj');
+            const token = localStorage.getItem('token');
+            $.ajax({
+                url: url_prefab + '?limit=1000&token=' + token,
+                type: 'get',
+                headers: { 'Token': token },
+                dataType: 'json',
+                success: function (result) {
+                    optionsData = result.data || [];
+                    select.empty();
+                    optionsData.forEach(element => {
+                        const option = document.createElement('option');
+                        option.value = element.uid;
+                        option.text = element.name;
+                        select.append(option);
+                    });
+                }
+            });
+        }
+
+        async function SendPrefab() {
+            const modal = $('#modalCreatePrefb');
+            const name = modal.find('#name').val();
+            const path = modal.find('#path').val();
+            const addressable = modal.find('#addressable').val();
+            const token = localStorage.getItem('token');
+            await new Promise((resolve) => {
+                $.post(url_prefab + '?token=' + token, { name, path, addressable }, function (data) {
+                    Swal.fire('Sucesso', 'Prefab criado!', 'success');
+                    PopuleSelect();
+                    resolve();
+                }).fail(function () {
+                    Swal.fire('Erro', 'Falha ao criar o prefab.', 'error');
+                    resolve();
+                });
+            });
+        }
+        function ResetModal() {
+            const modal = $('#modalCreateMaterial');
+            modal.find('#name').val('');
+            modal.find('#obj_uid').val('');
+            modal.find('#channel').val('');
+            modal.find('#previewInput').val('');
+            modal.find('#texturasInput').val('');
+        }
+        async function SendMaterial() {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            const modal = $('#modalCreateMaterial');
+            formData.append('name', modal.find('#name').val()); // Era TextureName
+            formData.append('obj', modal.find('#obj_uid').val()); // Era obj
+            formData.append('channel', modal.find('#channel').val());
+
+            if ($('#previewInput')[0].files[0]) 
+            {
+                formData.append('preview[]', $('#previewInput')[0].files[0]);
+            }
+
+            const totalTexturas = $('#texturasInput')[0].files.length;
+            for (let i = 0; i < totalTexturas; i++) {
+                formData.append('texturas[]', $('#texturasInput')[0].files[i]);
+            }
+
+            await new Promise((resolve) => {
+                $.ajax({
+                    url: url_material + '/create' + '?token=' + token,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        if(data.success == false) {
+                            Swal.fire('Erro', data.error, 'error');
+                            resolve();
+                            return;
+                        }
+                        Swal.fire('Sucesso', 'Material enviado!', 'success');
+                       ResetModal();
+                        Search();
+                        resolve();
+                    },
+                    error: function () {
+                        Swal.fire('Erro', 'Falha ao enviar o material'  , 'error');
+                        resolve();
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: monospace;
+        }
+
+        #grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(20, 30px);
+            grid-template-rows: repeat(20, 30px);
+
+            gap: 1px;
+
+            margin: 20px;
+        }
+
+        .cell {
+
+            width: 30px;
+            height: 30px;
+
+            background: #222;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .entity::before {
+            content: '👤';
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="grid"></div>
+    <script>
+
+        const GRID_SIZE = 20;
+
+        const grid = document.getElementById('grid');
+
+        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+
+            const cell = document.createElement('div');
+
+            cell.className = 'cell';
+
+            cell.id = `cell-${i}`;
+
+            grid.appendChild(cell);
+        }
+
+        const entities = {};
+
+        const ws = new WebSocket('ws://localhost:3000');
+
+        document.addEventListener('keypress', (e) => {
+            if (e.keyCode == 37) {
+                console.log('left');
+                ws.send(JSON.stringify({ type: 'move', direction: 'left' }));
+            }
+            if (e.keyCode == 38) {
+                console.log('up');
+                ws.send(JSON.stringify({ type: 'move', direction: 'up' }));
+            }
+            if (e.keyCode == 39) {
+                console.log('right');
+                ws.send(JSON.stringify({ type: 'move', direction: 'right' }));
+            }
+            if (e.keyCode == 40) {
+                ws.send(JSON.stringify({ type: 'move', direction: 'down' }));
+            }
+            console.log(e.keyCode);
+        });
+
+
+        ws.onopen = () => {
+
+            console.log('Conectado');
+        };
+        let debgOk = false;
+        ws.onmessage = (event) => {
+
+            let msg;
+
+            try {
+
+                msg = JSON.parse(event.data);
+                // console.log(msg);
+            }
+            catch {
+                console.error('Mensagem inválida');
+                console.error(event);
+                return;
+            }
+
+            //  console.log(msg);
+
+            // SPAWN
+            if (msg.type === 'spawn') {
+                console.log(msg);
+                entities[msg.netId] = {
+
+                    id: msg.netId,
+                    name: msg.name,
+                    pos: {
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    }
+                };
+
+                render();
+
+                return;
+            }
+
+            // DESPAWN
+            if (msg.type === 'despawn') {
+
+                delete entities[msg.netId];
+
+                render();
+
+                return;
+            }
+
+            // SYNC
+            if (msg.type === 'sync') {
+const pl = msg.payload;
+                const entity = entities[pl.netId];
+
+                if (!entity) {
+                    if (!debgOk) { console.log(msg); debgOk = true; }
+                    return;
+                }
+                debgOk = false;
+
+                if (pl.type === 'tr') {
+
+                    const p = pl;
+
+                    if (p.px != null)
+                        entity.pos.x = p.px;
+
+                    if (p.py != null)
+                        entity.pos.y = p.py;
+                }
+                
+                render();
+
+                return;
+            }
+
+            console.error('Mensagem inválida');
+            console.error(msg);
+        };
+
+        function render() {
+
+            // limpa entidades antigas
+            document.querySelectorAll('.entity')
+                .forEach(e => e.remove());
+
+            Object.values(entities).forEach(entity => {
+
+                const x = Math.floor(entity.pos.x);
+
+                const y = Math.floor(entity.pos.y);
+
+                const gridX =
+                    ((x % GRID_SIZE) + GRID_SIZE) % GRID_SIZE;
+
+                const gridY =
+                    ((y % GRID_SIZE) + GRID_SIZE) % GRID_SIZE;
+
+                const index =
+                    gridY * GRID_SIZE + gridX;
+
+                const cell =
+                    document.getElementById(`cell-${index}`);
+
+                if (!cell)
+                    return;
+
+                const el = document.createElement('span');
+
+                el.className = 'entity';
+
+                el.id = entity.id;
+
+                cell.appendChild(el);
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>

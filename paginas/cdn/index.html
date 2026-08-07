@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-50">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Upload Direto - Servidor para CDN</title>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body class="h-full flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-6">
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900">Testar Upload Direto</h3>
+            <p class="text-sm text-gray-500">Envio para o servidor local que repassa para o Cloudinary.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label for="token" class="block text-sm font-medium text-gray-700 mb-1">Token de Autenticação (Header):</label>
+                <input type="text" id="token" value="7011d3e8305a5dcdfd6138feb4488c08"
+                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 text-sm font-mono text-xs">
+            </div>
+
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descrição da Foto (Opcional):</label>
+                <input type="text" id="description" value="foto uploadada via formulário direto"
+                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 text-sm">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Arquivo:</label>
+                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6 px-2 text-center">
+                        <svg class="w-8 h-8 mb-3 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                        </svg>
+                        <p id="fileNameDisplay" class="text-sm text-gray-500 font-medium">Selecione ou arraste o arquivo</p>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*,video/*,audio/*" class="hidden">
+                </label>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg text-sm shadow-sm transition" id="btnUpload">Fazer Upload Direto</button>
+            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 px-4 rounded-lg text-sm transition" id="resetResult">Reset total</button>
+        </div>
+
+        <div id="resultado" class="text-sm font-medium text-gray-700 space-y-2 break-all"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const fileInput = $('#fileInput')[0];
+            const $resultado = $('#resultado');
+            const token = $('#token');
+            const description = $('#description');
+
+            $('#resetResult').click(function () {
+                $resultado.html('');
+                $('#fileInput').val('');
+                $('#fileNameDisplay').text("Selecione ou arraste o arquivo");
+            });
+
+            $('#fileInput').on('change', function () {
+                const file = this.files[0];
+                if (!file) {
+                    $('#fileNameDisplay').text("Selecione ou arraste o arquivo");
+                    return;
+                }
+                $resultado.html('');
+                $('#fileNameDisplay').text(file.name).addClass('text-blue-600');
+            });
+
+            $('#btnUpload').on('click', function () {
+                if (!fileInput.files[0]) {
+                    $resultado.html('<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">Erro: Selecione um arquivo primeiro!</div>');
+                    return;
+                }
+
+                $resultado.html('<div class="text-blue-600 animate-pulse">Enviando arquivo para o servidor local...</div>');
+
+                // Prepara os dados multipart/form-data exigidos pelo multer no back-end
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]); // O nome do campo deve ser estritamente 'file'
+                formData.append('description', description.val());
+
+                $.ajax({
+                    url: '/api/cdn/upload', // Mude para a rota exata definida no seu router.js
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { 'userToken': token.val() }, // Mantém o header esperado pelo seu CheckLogin
+                    success: function (res) {
+                        if (res.success) {
+                            $resultado.html(`
+                                <div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800">
+                                    <span class="font-bold">✓ Upload concluído com sucesso!</span><br>
+                                    <span class="text-xs">Token do Arquivo:</span> <span class="font-mono bg-green-100 px-1 rounded">${res.token}</span><br>
+                                    <span class="text-xs">URL da CDN:</span> <a href="${res.url}" target="_blank" class="underline text-blue-600 font-mono">${res.url}</a>
+                                </div>
+                            `);
+                        } else {
+                            $resultado.html(`<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">Erro no processamento: ${res.error || 'Erro inesperado'}</div>`);
+                        }
+                    },
+                    error: function (xhr) {
+                        let msgErro = "Falha na comunicação com o servidor.";
+                        try {
+                            const resJson = JSON.parse(xhr.responseText);
+                            if (resJson.error) msgErro = resJson.error;
+                        } catch (e) { }
+                        $resultado.html(`<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">Erro HTTP ${xhr.status}: ${msgErro}</div>`);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
