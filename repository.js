@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs'); 
 const modelsInitializer = require('./Models/index.js');
 const gameModels = require('./Models/game/index.js');
-const pathData = path.join("/home/not/The Fantasy Life", "nodedata.sqlite");
+const pathData =path.join("./", "nodedata.sqlite");// path.join("/home/not/The Fantasy Life", "nodedata.sqlite");
 
 // Garante que a pasta existe
 const dataDir = path.dirname(pathData);
