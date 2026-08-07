@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const chatModule = require('./controllers/chat.js');
-const routes = require('./router');
+const routes = require('./router.js');
 const repo = require('./repository.js');
 const { settings } = require('cluster');
 const { Op } = require('sequelize');
@@ -150,7 +150,6 @@ const api = require('./game/Api.js');
 app.get('/game', api.API);
 server.listen(Settings.PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`));
 
-require('./online/index.js');
 app.get('/online', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
