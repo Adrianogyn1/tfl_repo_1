@@ -76,12 +76,21 @@ async function GetAll(req, res) {
                                 : resItem.textures_paths[key].replace(/\\/g, '/');
                         }
                     }
-                    resItem.values = resItem.values || {};
-                    resItem.colors = resItem.colors || {};
-                    resItem.ints = resItem.ints || {};
-                    resItem.bools = resItem.bools || {};
-                    resItem.strings = resItem.strings || {};
-                    resItem.vectors = resItem.vectors || {};
+
+                    const ensureDict = (obj) => {
+                        if (obj && typeof obj === 'object' && Object.keys(obj).length > 0) {
+                            return obj;
+                        }
+                        return { default: "" };
+                    };
+
+                    resItem.values = ensureDict(resItem.values);
+                    resItem.colors = ensureDict(resItem.colors);
+                    resItem.ints = ensureDict(resItem.ints);
+                    resItem.bools = ensureDict(resItem.bools);
+                    resItem.strings = ensureDict(resItem.strings);
+                    resItem.vectors = ensureDict(resItem.vectors);
+
                     return resItem;
                 });
             }
