@@ -1,10 +1,14 @@
-const { where } = require('../Models/ModelBase');
 const repo = require('../repository');
+
+let webServices;
+function setWss(ws) {
+    webServices = ws;
+}
 
 // --- HELPERS DE REDE ---
 function sendPacket(ws, eventName, data) {
     console.log(`📡 Enviando pacote: ${eventName}`);
-    if (ws.readyState === ws.OPEN) {
+    if (ws && ws.readyState === ws.OPEN) {
         const packet = {
             Event: eventName,
             Data: typeof data === 'string' ? data : JSON.stringify(data)
@@ -13,16 +17,97 @@ function sendPacket(ws, eventName, data) {
     }
 }
 
+function broadcast(eventName, data, excludeClients = []) {
+    if (!webServices || !webServices.clients) return;
+    webServices.clients.forEach(client => {
+        if (!excludeClients.includes(client)) {
+            sendPacket(client, eventName, data);
+        }
+    });
+}
+
+function broadcastRoom(roomId, eventName, data, excludeClients = []) {
+    if (!webServices || !webServices.clients) return;
+    let targetClients = Array.from(webServices.clients);
+
+    if (roomId) {
+        targetClients = targetClients.filter(client => client.roomId === roomId);
+    }
+    targetClients.forEach(client => {
+        if (!excludeClients.includes(client)) {
+            sendPacket(client, eventName, data);
+        }
+    });
+}
+
+// --- SALVAR E NOTIFICAR MENSAGEM DO CHAT ---
+async function SaveMessage(msg, wsSender) {
+    try {
+        // 1. Salva no banco via Sequelize
+        const createdMessage = await repo.ChatMessage.create(msg);
+
+        // 2. Busca a sala no banco
+        const room = await repo.ChatRoom.findOne({ where: { uid: msg.chatId } });
+        if(!room) {
+            await repo.ChatRoom.create({
+                uid: msg.chatId,
+                users: JSON.stringify([wsSender.userId])
+            });
+        }
+        
+        if (room) {
+            // Se houver lista de usuários cadastrada no JSON da sala
+            let roomUsers = Array.isArray(room.users) ? room.users : JSON.parse(room.users || '[]');
+            
+            // Transmite para os clientes conectados pertencentes a essa sala
+            webServices.clients.forEach(client => {
+                if (roomUsers.includes(client.userId) || client.roomId === msg.chatId) {
+                    sendPacket(client, 'OnChat', createdMessage);
+                }
+            });
+        } else {
+            // Se a sala não existir especificamente no ChatRoom, envia por ID de sala da conexão
+            broadcastRoom(msg.chatId, 'OnChat', createdMessage);
+        }
+    } catch (err) {
+        console.error("❌ Erro ao salvar/enviar mensagem:", err);
+    }
+}
+
 // --- HANDLERS DO WEBSOCKET ---
 const wsHandlers = {
     ping: (ws, data) => {
         sendPacket(ws, 'pong', data);
     },
+    chat: async (ws, data) => {
+        data.userId = ws.userId;
+        data.uid = new Date().getTime().toString();
+        const user = await repo.User.findByPk(ws.userId);
+        if (user) data.sender = user.login;
+
+        if (!data.chatId || data.chatId === 'global') {
+            // Chat Global
+            broadcast('OnChat', data);
+        } else if(data.chatId.indexOf('local') === 0) {
+            // Chat Local
+            broadcastRoom(ws.roomId, 'OnChat', data);
+        }
+        else {
+            // Chat Privado / Sala
+            await SaveMessage(data, ws);
+        }
+    },
     register_session: (ws, data) => {
         ws.userId = data.userId || data;
+        if (data.roomId) ws.roomId = data.roomId;
         console.log(`Canal real-time associado ao usuário: ${ws.userId}`);
     }
 };
+
+function getPrivateChatId(userId1, userId2) {
+    const ids = [String(userId1), String(userId2)].sort();
+    return `private_${ids[0]}_${ids[1]}`;
+}
 
 function route(ws, event, data) {
     const handler = wsHandlers[event];
@@ -35,99 +120,72 @@ function route(ws, event, data) {
 
 // --- HANDLERS DA API HTTP ---
 const apiHandlers = {
-    '/api/chat/message': (req, res, clients) => {
+    '/api/chat/message': async (req, res, clients) => {
         try {
-            const { text, roomid, receiverid } = req.body;
+            const { text, chatId, receiverid } = req.body;
 
-            console.log("Body recebido:", req.body);
+            if (!text) throw new Error("O texto da mensagem é obrigatório.");
 
-            if (!text) 
-                throw new Error("O texto da mensagem é obrigatório.");
+            const user = await repo.User.findOne({ where: { token: req.userToken } });
+            if (!user) throw new Error("Usuário desconhecido.");
 
-            // Busca o usuário que está enviando pelo token
-            const user = repo.User.where(u => u.token === req.userToken)[0];
-
-            if (!user) 
-                throw new Error("Usuário desconhecido.");
-            
-            console.log("Usuário remetente encontrado:", user);
-
-            // Busca o destinatário (se houver)
-            const target = receiverid ? repo.User.where(u => u.id === receiverid)[0] : null;
-            
-            // CORREÇÃO: Alterado de repo.Message para repo.ChatMessage
-            const newMessage = new repo.ChatMessage().fromJson({
+            const newMessage = await repo.ChatMessage.create({
                 text: text,
-                roomid: roomid || 'global',
-                senderid: user.id,
-                receiverid: target ? target.id : null,
-                timestamp: new Date().toISOString()
+                chatId: chatId || 'global',
+                userId: user.id,
+                hasFile: false
             });
-            
-            // Salva no banco/memória via Active Record
-            newMessage.save();
 
-            // Envia os pacotes via WebSocket
-            if (target) {
-                clients.forEach(client => {
-                    if (client.userId === target.id || client.userId === user.id) {
-                        sendPacket(client, 'message', newMessage);
-                    }
-                });
-            } else {
-                clients.forEach(client => sendPacket(client, 'message', newMessage));
-            }
+            // Notifica via WebSocket
+            clients.forEach(client => {
+                if (!receiverid || client.userId === receiverid || client.userId === user.id) {
+                    sendPacket(client, 'message', newMessage);
+                }
+            });
 
             res.json({ success: true, message: newMessage });
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.status(400).json({ error: e.message, message: "Ocorreu um erro ao enviar a mensagem" });
         }
     },
 
-    '/api/chat/history': (req, res) => {
-        console.log(req.query);
-        const { roomId, withUserId } = req.query;
-        const messages = repo.ChatMessage.where(m => m.roomid === roomId);
-        let history = [];
-        
-        // CORREÇÃO: Chaves alteradas para minúsculo para bater com o padrão atual do JSON
-        if (withUserId) {
-            history = messages.filter(m => 
-                (m.senderid === req.userId && m.receiverid === withUserId) ||
-                (m.senderid === withUserId && m.receiverid === req.userId)
-            );
-        } else {
-            const targetRoom = roomId || "global";
-            history = messages.filter(m => m.roomid === targetRoom);
+    '/api/chat/history': async (req, res) => {
+        try {
+            const { chatId } = req.query;
+            const targetChat = chatId || "global";
+
+            const history = await repo.ChatMessage.findAll({
+                where: { chatId: targetChat },
+                order: [['createdAt', 'ASC']]
+            });
+
+            res.json(history);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
         }
-        
-        res.json(history);
     },
 
-    '/api/chat/typing': (req, res, clients) => {
-        console.log(req.body);
-        const { isTyping, roomId } = req.body;
-        const user = repo.User.where(u => u.token === req.userToken)[0];
-        const userId = user ? user.id : req.userId;
+    '/api/chat/typing': async (req, res, clients) => {
+        try {
+            const { isTyping, chatId } = req.body;
+            const user = await repo.User.findOne({ where: { token: req.userToken } });
+            const userId = user ? user.id : req.userId;
 
-        clients.forEach(client => {
-            if (client.roomId && client.roomId == roomId) {
-                // CORREÇÃO: Corrigido o erro de digitação de "isTypingsTyping" para "isTyping"
-                sendPacket(client, 'change_typing_status', { 
-                    isTyping,
-                    roomId,
-                    userId
-                });
-            }
-        });
-        
-        res.json({ success: true });
+            clients.forEach(client => {
+                if (client.roomId && client.roomId == chatId) {
+                    sendPacket(client, 'change_typing_status', { isTyping, chatId, userId });
+                }
+            });
+
+            res.json({ success: true });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
     }
 };
 
 function routeApi(req, res, clients) {
-    // CORREÇÃO: Substituído o url.parse (obsoleto) pela API nativa URL do Node.js
     const baseUrl = `http://${req.headers.host}`;
     const parsedUrl = new URL(req.url, baseUrl);
     const handler = apiHandlers[parsedUrl.pathname];
@@ -137,7 +195,7 @@ function routeApi(req, res, clients) {
     } else {
         console.log(`Rota não encontrada para a URL: ${req.url}`);
         res.status(404).json({ error: `Rota não encontrada para a URL: ${req.url}` });
-    }    
+    }
 }
 
-module.exports = { route, routeApi };
+module.exports = { route, routeApi, setWss };

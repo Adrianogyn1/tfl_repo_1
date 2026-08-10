@@ -14,7 +14,8 @@ const TerrainFactory = require('./TerrainModel');
 const RoomModelFactory = require('./RoomModel');
 const PrefabModelFactory = require('./PrefabModel');
 const AvatarModelFactory = require('./AvatarModel');
-const { Material } = require('../../repository');
+const ShopItemFactory = require('./ShopItemModel');
+const ShopContainerFactory = require('./ShopContainer');
 
 module.exports = (sequelize) => {
     const Cloth = ClothFactory(sequelize);
@@ -33,6 +34,10 @@ module.exports = (sequelize) => {
     const PrefabModel = PrefabModelFactory(sequelize);
     const CurrencyRegister = CurrencyRegisterFactory(sequelize);
     const Avatar = AvatarModelFactory(sequelize);
+    const ShopItem = ShopItemFactory(sequelize);
+    
+    // Desestrutura o objeto retornado pela fábrica do ShopContainer
+    const { ShopContainer, ItemResource } = ShopContainerFactory(sequelize);
 
     return {
         Avatar,
@@ -51,5 +56,8 @@ module.exports = (sequelize) => {
         LayoutModel,
         PrefabModel,
         CurrencyRegister,
+        ShopItem,
+        ShopContainer,
+        ItemResource
     };
 };

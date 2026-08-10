@@ -12,6 +12,7 @@ module.exports = (sequelize) => {
             primaryKey: true, 
             autoIncrement: true 
         },
+        uid : { type: DataTypes.UUID, defaultValue: DataTypes.STRING },
         istyping: { type: DataTypes.BOOLEAN, defaultValue: false },
         name: { type: DataTypes.STRING, defaultValue: '' },
         users: { type: DataTypes.JSON, defaultValue: [] },

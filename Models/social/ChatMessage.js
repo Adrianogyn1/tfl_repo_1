@@ -9,16 +9,17 @@ module.exports = (sequelize) => {
             primaryKey: true, 
             autoIncrement: true 
         },
-        userid: { type: DataTypes.STRING, defaultValue: '' },
+        uid : { type: DataTypes.UUID, defaultValue: DataTypes.STRING },
+        userId: { type: DataTypes.STRING, defaultValue: '' },
         text: { type: DataTypes.TEXT, defaultValue: '' }, // TEXT para suportar mensagens longas
         fileurl: { type: DataTypes.STRING, defaultValue: '' },
-        roomid: { type: DataTypes.STRING, defaultValue: '' },
+        chatId: { type: DataTypes.STRING, defaultValue: '' },
         seen: { type: DataTypes.BOOLEAN, defaultValue: false },
-        hasfile: { type: DataTypes.BOOLEAN, defaultValue: false },
-        hasimage: { type: DataTypes.BOOLEAN, defaultValue: false },
-        hasvideo: { type: DataTypes.BOOLEAN, defaultValue: false },
-        hasaudio: { type: DataTypes.BOOLEAN, defaultValue: false },
-        haslink: { type: DataTypes.BOOLEAN, defaultValue: false },
+        hasFile: { type: DataTypes.BOOLEAN, defaultValue: false },
+        hasImage: { type: DataTypes.BOOLEAN, defaultValue: false },
+        hasVideo: { type: DataTypes.BOOLEAN, defaultValue: false },
+        hasAudio: { type: DataTypes.BOOLEAN, defaultValue: false },
+        hasLink: { type: DataTypes.BOOLEAN, defaultValue: false },
         createdAt: { 
             type: DataTypes.DATE, 
             defaultValue: DataTypes.NOW 

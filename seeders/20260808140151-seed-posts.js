@@ -1,0 +1,2052 @@
+'use strict';
+
+module.exports = {
+  async up (queryInterface, Sequelize) {
+    await queryInterface.bulkInsert('posts', [
+  {
+    "id": 1,
+    "userId": "121",
+    "text": "His mother had always taught him not to ever think of himself as better than others. He'd tried to live by this motto. He never looked down on those who were less fortunate or who had less money than him. But the stupidity of the group of people he was talking to made him change his mind.",
+    "title": "His mother had always taught him",
+    "createdAt": "2026-05-23 04:49:35.825 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.825 +00:00"
+  },
+  {
+    "id": 2,
+    "userId": "91",
+    "text": "He was an expert but not in a discipline that anyone could fully appreciate. He knew how to hold the cone just right so that the soft server ice-cream fell into it at the precise angle to form a perfect cone each and every time. It had taken years to perfect and he could now do it without even putting any thought behind it.",
+    "title": "He was an expert but not in a discipline",
+    "createdAt": "2026-05-23 04:49:35.833 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.833 +00:00"
+  },
+  {
+    "id": 3,
+    "userId": "16",
+    "text": "Dave watched as the forest burned up on the hill, only a few miles from her house. The car had been hastily packed and Marta was inside trying to round up the last of the pets. Dave went through his mental list of the most important papers and documents that they couldn't leave behind. He scolded himself for not having prepared these better in advance and hoped that he had remembered everything that was needed. He continued to wait for Marta to appear with the pets, but she still was nowhere to be seen.",
+    "title": "Dave watched as the forest burned up on the hill.",
+    "createdAt": "2026-05-23 04:49:35.840 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.840 +00:00"
+  },
+  {
+    "id": 4,
+    "userId": "47",
+    "text": "All he wanted was a candy bar. It didn't seem like a difficult request to comprehend, but the clerk remained frozen and didn't seem to want to honor the request. It might have had something to do with the gun pointed at his face.",
+    "title": "All he wanted was a candy bar.",
+    "createdAt": "2026-05-23 04:49:35.849 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.849 +00:00"
+  },
+  {
+    "id": 5,
+    "userId": "131",
+    "text": "Hopes and dreams were dashed that day. It should have been expected, but it still came as a shock. The warning signs had been ignored in favor of the possibility, however remote, that it could actually happen. That possibility had grown from hope to an undeniable belief it must be destiny. That was until it wasn't and the hopes and dreams came crashing down.",
+    "title": "Hopes and dreams were dashed that day.",
+    "createdAt": "2026-05-23 04:49:35.856 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.856 +00:00"
+  },
+  {
+    "id": 6,
+    "userId": "98",
+    "text": "Dave wasn't exactly sure how he had ended up in this predicament. He ran through all the events that had lead to this current situation and it still didn't make sense. He wanted to spend some time to try and make sense of it all, but he had higher priorities at the moment. The first was how to get out of his current situation of being naked in a tree with snow falling all around and no way for him to get down.",
+    "title": "Dave wasn't exactly sure how he had ended up",
+    "createdAt": "2026-05-23 04:49:35.863 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.863 +00:00"
+  },
+  {
+    "id": 7,
+    "userId": "70",
+    "text": "This is important to remember. Love isn't like pie. You don't need to divide it among all your friends and loved ones. No matter how much love you give, you can always give more. It doesn't run out, so don't try to hold back giving it as if it may one day run out. Give it freely and as much as you want.",
+    "title": "This is important to remember.",
+    "createdAt": "2026-05-23 04:49:35.869 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.869 +00:00"
+  },
+  {
+    "id": 8,
+    "userId": "67",
+    "text": "One can cook on and with an open fire. These are some of the ways to cook with fire outside. Cooking meat using a spit is a great way to evenly cook meat. In order to keep meat from burning, it's best to slowly rotate it.",
+    "title": "One can cook on and with an open fire.",
+    "createdAt": "2026-05-23 04:49:35.876 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.876 +00:00"
+  },
+  {
+    "id": 9,
+    "userId": "82",
+    "text": "There are different types of secrets. She had held onto plenty of them during her life, but this one was different. She found herself holding onto the worst type. It was the type of secret that could gnaw away at your insides if you didn't tell someone about it, but it could end up getting you killed if you did.",
+    "title": "There are different types of secrets.",
+    "createdAt": "2026-05-23 04:49:35.883 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.883 +00:00"
+  },
+  {
+    "id": 10,
+    "userId": "144",
+    "text": "They rushed out the door, grabbing anything and everything they could think of they might need. There was no time to double-check to make sure they weren't leaving something important behind. Everything was thrown into the car and they sped off. Thirty minutes later they were safe and that was when it dawned on them that they had forgotten the most important thing of all.",
+    "title": "They rushed out the door.",
+    "createdAt": "2026-05-23 04:49:35.890 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.890 +00:00"
+  },
+  {
+    "id": 11,
+    "userId": "43",
+    "text": "It wasn't quite yet time to panic. There was still time to salvage the situation. At least that is what she was telling himself. The reality was that it was time to panic and there wasn't time to salvage the situation, but he continued to delude himself into believing there was.",
+    "title": "It wasn't quite yet time to panic.",
+    "createdAt": "2026-05-23 04:49:35.898 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.898 +00:00"
+  },
+  {
+    "id": 12,
+    "userId": "82",
+    "text": "She was aware that things could go wrong. In fact, she had trained her entire life in anticipation that things would go wrong one day. She had quiet confidence as she started to see that this was the day that all her training would be worthwhile and useful. At this point, she had no idea just how wrong everything would go that day.",
+    "title": "She was aware that things could go wrong.",
+    "createdAt": "2026-05-23 04:49:35.908 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.908 +00:00"
+  },
+  {
+    "id": 13,
+    "userId": "199",
+    "text": "She wanted rainbow hair. That's what she told the hairdresser. It should be deep rainbow colors, too. She wasn't interested in pastel rainbow hair. She wanted it deep and vibrant so there was no doubt that she had done this on purpose.",
+    "title": "She wanted rainbow hair.",
+    "createdAt": "2026-05-23 04:49:35.920 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.920 +00:00"
+  },
+  {
+    "id": 14,
+    "userId": "140",
+    "text": "The paper was blank. It shouldn't have been. There should have been writing on the paper, at least a paragraph if not more. The fact that the writing wasn't there was frustrating. Actually, it was even more than frustrating. It was downright distressing.",
+    "title": "The paper was blank.",
+    "createdAt": "2026-05-23 04:49:35.931 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.931 +00:00"
+  },
+  {
+    "id": 15,
+    "userId": "1",
+    "text": "The trees, therefore, must be such old and primitive techniques that they thought nothing of them, deeming them so inconsequential that even savages like us would know of them and not be suspicious. At that, they probably didn't have too much time after they detected us orbiting and intending to land. And if that were true, there could be only one place where their civilization was hidden.",
+    "title": "The trees, therefore, must be such old",
+    "createdAt": "2026-05-23 04:49:35.943 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.943 +00:00"
+  },
+  {
+    "id": 16,
+    "userId": "99",
+    "text": "There was only one way to do things in the Statton house. That one way was to do exactly what the father, Charlie, demanded. He made the decisions and everyone else followed without question. That was until today.",
+    "title": "There was only one way to do things in the Statton house.",
+    "createdAt": "2026-05-23 04:49:35.955 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.955 +00:00"
+  },
+  {
+    "id": 17,
+    "userId": "30",
+    "text": "She was in a hurry. Not the standard hurry when you're in a rush to get someplace, but a frantic hurry. The type of hurry where a few seconds could mean life or death. She raced down the road ignoring speed limits and weaving between cars. She was only a few minutes away when traffic came to a dead standstill on the road ahead.",
+    "title": "She was in a hurry.",
+    "createdAt": "2026-05-23 04:49:35.967 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.967 +00:00"
+  },
+  {
+    "id": 18,
+    "userId": "97",
+    "text": "She had a terrible habit o comparing her life to others. She realized that their life experiences were completely different than her own and that she saw only what they wanted her to see, but that didn't matter. She still compared herself and yearned for what she thought they had and she didn't.",
+    "title": "She had a terrible habit o comparing her life to others",
+    "createdAt": "2026-05-23 04:49:35.978 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.978 +00:00"
+  },
+  {
+    "id": 19,
+    "userId": "143",
+    "text": "The rain and wind abruptly stopped, but the sky still had the gray swirls of storms in the distance. Dave knew this feeling all too well. The calm before the storm. He only had a limited amount of time before all Hell broke loose, but he stopped to admire the calmness. Maybe it would be different this time, he thought, with the knowledge deep within that it wouldn't.",
+    "title": "The rain and wind abruptly stopped.",
+    "createdAt": "2026-05-23 04:49:35.991 +00:00",
+    "updatedAt": "2026-05-23 04:49:35.991 +00:00"
+  },
+  {
+    "id": 20,
+    "userId": "12",
+    "text": "He couldn't remember exactly where he had read it, but he was sure that he had. The fact that she didn't believe him was quite frustrating as he began to search the Internet to find the article. It wasn't as if it was something that seemed impossible. Yet she insisted on always seeing the source whenever he stated a fact.",
+    "title": "He couldn't remember exactly where he had read it",
+    "createdAt": "2026-05-23 04:49:36.003 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.003 +00:00"
+  },
+  {
+    "id": 21,
+    "userId": "136",
+    "text": "He wandered down the stairs and into the basement. The damp, musty smell of un-use hung in the air. A single, small window let in a glimmer of light, but this simply made the shadows in the basement deeper. He inhaled deeply and looked around at a mess that had been accumulating for over 25 years. He was positive that this was the place he wanted to live.",
+    "title": "He wandered down the stairs and into the basement",
+    "createdAt": "2026-05-23 04:49:36.015 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.015 +00:00"
+  },
+  {
+    "id": 22,
+    "userId": "183",
+    "text": "She has seen this scene before. It had come to her in dreams many times before. She had to pinch herself to make sure it wasn't a dream again. As her fingers squeezed against her arm, she felt the pain. It was this pain that immediately woke her up.",
+    "title": "She has seen this scene before.",
+    "createdAt": "2026-05-23 04:49:36.027 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.027 +00:00"
+  },
+  {
+    "id": 23,
+    "userId": "206",
+    "text": "It's an unfortunate reality that we don't teach people how to make money (beyond getting a 9 to 5 job) as part of our education system. The truth is there are a lot of different, legitimate ways to make money. That doesn't mean they are easy and that you won't have to work hard to succeed, but it does mean that if you're willing to open your mind a bit you don't have to be stuck in an office from 9 to 5 for the next fifty years o your life.",
+    "title": "It's an unfortunate reality that we don't teach people how to make money",
+    "createdAt": "2026-05-23 04:49:36.037 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.037 +00:00"
+  },
+  {
+    "id": 24,
+    "userId": "124",
+    "text": "The robot clicked disapprovingly, gurgled briefly inside its cubical interior and extruded a pony glass of brownish liquid. \"Sir, you will undoubtedly end up in a drunkard's grave, dead of hepatic cirrhosis,\" it informed me virtuously as it returned my ID card. I glared as I pushed the glass across the table.",
+    "title": "The robot clicked disapprovingly.",
+    "createdAt": "2026-05-23 04:49:36.046 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.046 +00:00"
+  },
+  {
+    "id": 25,
+    "userId": "148",
+    "text": "It went through such rapid contortions that the little bear was forced to change his hold on it so many times he became confused in the darkness, and could not, for the life of him, tell whether he held the sheep right side up, or upside down. But that point was decided for him a moment later by the animal itself, who, with a sudden twist, jabbed its horns so hard into his lowest ribs that he gave a grunt of anger and disgust.",
+    "title": "It went through such rapid contortions",
+    "createdAt": "2026-05-23 04:49:36.053 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.053 +00:00"
+  },
+  {
+    "id": 26,
+    "userId": "156",
+    "text": "She patiently waited for his number to be called. She had no desire to be there, but her mom had insisted that she go. She's resisted at first, but over time she realized it was simply easier to appease her and go. Mom tended to be that way. She would keep insisting until you wore down and did what she wanted. So, here she sat, patiently waiting for her number to be called.",
+    "title": "She patiently waited for his number to be called.",
+    "createdAt": "2026-05-23 04:49:36.062 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.062 +00:00"
+  },
+  {
+    "id": 27,
+    "userId": "95",
+    "text": "If he could take ten more steps it would be over, but his legs wouldn't move. He tried to will them to work, but they wouldn't listen to his brain. Ten more steps and it would be over but it didn't appear he would be able to do it.",
+    "title": "Ten more steps.",
+    "createdAt": "2026-05-23 04:49:36.069 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.069 +00:00"
+  },
+  {
+    "id": 28,
+    "userId": "19",
+    "text": "He had three simple rules by which he lived. The first was to never eat blue food. There was nothing in nature that was edible that was blue. People often asked about blueberries, but everyone knows those are actually purple. He understood it was one of the stranger rules to live by, but it had served him well thus far in the 50+ years of his life.",
+    "title": "He had three simple rules by which he lived.",
+    "createdAt": "2026-05-23 04:49:36.078 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.078 +00:00"
+  },
+  {
+    "id": 29,
+    "userId": "74",
+    "text": "The chair sat in the corner where it had been for over 25 years. The only difference was there was someone actually sitting in it. How long had it been since someone had done that? Ten years or more he imagined. Yet there was no denying the presence in the chair now.",
+    "title": "The chair sat in the corner where it had been",
+    "createdAt": "2026-05-23 04:49:36.090 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.090 +00:00"
+  },
+  {
+    "id": 30,
+    "userId": "177",
+    "text": "Things aren't going well at all with mom today. She is just a limp noodle and wants to sleep all the time. I sure hope that things get better soon.",
+    "title": "Things aren't going well at all",
+    "createdAt": "2026-05-23 04:49:36.097 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.097 +00:00"
+  },
+  {
+    "id": 31,
+    "userId": "168",
+    "text": "It was just a burger. Why couldn't she understand that? She knew he'd completely changed his life around her eating habits, so why couldn't she give him a break this one time? She wasn't even supposed to have found out. Yes, he had promised her and yes, he had broken that promise, but still in his mind, all it had been was just a burger.",
+    "title": "It was just a burger.",
+    "createdAt": "2026-05-23 04:49:36.104 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.104 +00:00"
+  },
+  {
+    "id": 32,
+    "userId": "6",
+    "text": "He swung back the fishing pole and cast the line which ell 25 feet away into the river. The lure landed in the perfect spot and he was sure he would soon get a bite. He never expected that the bite would come from behind in the form of a bear.",
+    "title": "He swung back the fishing pole and cast the line",
+    "createdAt": "2026-05-23 04:49:36.110 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.110 +00:00"
+  },
+  {
+    "id": 33,
+    "userId": "58",
+    "text": "He lifted the bottle to his lips and took a sip of the drink. He had tasted this before, but he couldn't quite remember the time and place it had happened. He desperately searched his mind trying to locate and remember where he had tasted this when the bicycle ran over his foot.",
+    "title": "He lifted the bottle to his lips and took a sip",
+    "createdAt": "2026-05-23 04:49:36.117 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.117 +00:00"
+  },
+  {
+    "id": 34,
+    "userId": "98",
+    "text": "Debbie had taken George for granted for more than fifteen years now. He wasn't sure what exactly had made him choose this time and place to address the issue, but he decided that now was the time. He looked straight into her eyes and just as she was about to speak, turned away and walked out the door.",
+    "title": "Debbie had taken George for granted",
+    "createdAt": "2026-05-23 04:49:36.124 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.124 +00:00"
+  },
+  {
+    "id": 35,
+    "userId": "190",
+    "text": "She sat deep in thought. The next word that came out o her mouth would likely be the most important word of her life. It had to be exact with no possibility of being misinterpreted. She was ready. She looked deeply into his eyes and said, \"Octopus.\"",
+    "title": "She sat deep in thought.",
+    "createdAt": "2026-05-23 04:49:36.130 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.130 +00:00"
+  },
+  {
+    "id": 36,
+    "userId": "207",
+    "text": "The leather jacked showed the scars of being his favorite for years. It wore those scars with pride, feeling that they enhanced his presence rather than diminishing it. The scars gave it character and had not overwhelmed to the point that it had become ratty. The jacket was in its prime and it knew it.",
+    "title": "The leather jacked showed the scars",
+    "createdAt": "2026-05-23 04:49:36.137 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.137 +00:00"
+  },
+  {
+    "id": 37,
+    "userId": "150",
+    "text": "There was no time. He ran out of the door without half the stuff he needed for work, but it didn't matter. He was late and if he didn't make this meeting on time, someone's life may be in danger.",
+    "title": "There was no time.",
+    "createdAt": "2026-05-23 04:49:36.144 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.144 +00:00"
+  },
+  {
+    "id": 38,
+    "userId": "177",
+    "text": "He collected the plastic trash on a daily basis. It never seemed to end. Even if he cleaned the entire beach, more plastic would cover it the next day after the tide had come in. Although it was a futile effort that would never be done, he continued to pick up the trash each day.",
+    "title": "He collected the plastic trash on a daily basis.",
+    "createdAt": "2026-05-23 04:49:36.151 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.151 +00:00"
+  },
+  {
+    "id": 39,
+    "userId": "115",
+    "text": "\"It was so great to hear from you today and it was such weird timing,\" he said. \"This is going to sound funny and a little strange, but you were in a dream I had just a couple of days ago. I'd love to get together and tell you about it if you're up for a cup of coffee,\" he continued, laying the trap he'd been planning for years.",
+    "title": "It was so great to hear from you today",
+    "createdAt": "2026-05-23 04:49:36.158 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.158 +00:00"
+  },
+  {
+    "id": 40,
+    "userId": "181",
+    "text": "Why 10 toes and not 12. Why are some bigger than others? Some people can use their toes to pick up things while others can barely move them on command. Some toes are nice to look at while others are definitely not something you want to look at. Toes can be stubbed and make us scream. Toes help us balance and walk. 10 toes are just something to ponder.",
+    "title": "Have you ever wondered about toes?",
+    "createdAt": "2026-05-23 04:49:36.165 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.165 +00:00"
+  },
+  {
+    "id": 41,
+    "userId": "140",
+    "text": "He didn't know what to say to them since they refused to believe the truth. He explained again and again, and they dismissed his explanation as a figment of his imagination. There was no way that grandpa, who had been dead for five years, could have told him where the treasure had been hidden. Of course, it didn't help that grandpa was roaring with laughter in the chair next to him as he tried to explain once again how he'd found it.",
+    "title": "His parents continued to question him.",
+    "createdAt": "2026-05-23 04:49:36.173 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.173 +00:00"
+  },
+  {
+    "id": 42,
+    "userId": "188",
+    "text": "You know that tingly feeling you get on the back of your neck sometimes? I just got that feeling when talking with her. You know I don't believe in sixth senses, but there is something not right with her. I don't know how I know, but I just do.",
+    "title": "You know that tingly feeling you get on the back of your neck sometimes?",
+    "createdAt": "2026-05-23 04:49:36.179 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.179 +00:00"
+  },
+  {
+    "id": 43,
+    "userId": "6",
+    "text": "\"Explain to me again why I shouldn't cheat?\" he asked. \"All the others do and nobody ever gets punished for doing so. I should go about being happy losing to cheaters because I know that I don't? That's what you're telling me?\"",
+    "title": "Explain to me again why I shouldn't cheat?",
+    "createdAt": "2026-05-23 04:49:36.188 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.188 +00:00"
+  },
+  {
+    "id": 44,
+    "userId": "124",
+    "text": "A long black shadow slid across the pavement near their feet and the five Venusians, very much startled, looked overhead. They were barely in time to see the huge gray form of the carnivore before it vanished behind a sign atop a nearby building which bore the mystifying information \"Pepsi-Cola.\"",
+    "title": "A long black shadow slid across the pavement",
+    "createdAt": "2026-05-23 04:49:36.196 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.196 +00:00"
+  },
+  {
+    "id": 45,
+    "userId": "45",
+    "text": "The red line moved across the page. With each millimeter it advanced forward, something changed in the room. The actual change taking place was difficult to perceive, but the change was real. The red line continued relentlessly across the page and the room would never be the same.",
+    "title": "The red line moved across the page.",
+    "createdAt": "2026-05-23 04:49:36.203 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.203 +00:00"
+  },
+  {
+    "id": 46,
+    "userId": "132",
+    "text": "The clowns had taken over. And yes, they were literally clowns. Over 100 had appeared out of a small VW bug that had been driven up to the bank. Now they were all inside and had taken it over.",
+    "title": "The clowns had taken over. And yes, they were literally clowns.",
+    "createdAt": "2026-05-23 04:49:36.210 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.210 +00:00"
+  },
+  {
+    "id": 47,
+    "userId": "126",
+    "text": "The shoes had been there for as long as anyone could remember. In fact, it was difficult for anyone to come up with a date they had first appeared. It had seemed they'd always been there and yet they seemed so out of place. Why nobody had removed them was a question that had been asked time and again, but while they all thought it, nobody had ever found the energy to actually do it.",
+    "title": "The shoes had been there for as long as anyone could remember.",
+    "createdAt": "2026-05-23 04:49:36.217 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.217 +00:00"
+  },
+  {
+    "id": 48,
+    "userId": "175",
+    "text": "Trees. It was something about the trees. The way they swayed with the wind in unison. The way they shaded the area around them. The sounds of their leaves in the wind and the creaks from the branches as they sway, The trees were making a statement that I just couldn't understand.",
+    "title": "Trees. It was something about the trees.",
+    "createdAt": "2026-05-23 04:49:36.224 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.224 +00:00"
+  },
+  {
+    "id": 49,
+    "userId": "207",
+    "text": "Sometimes it's just better not to be seen. That's how Harry had always lived his life. He prided himself as being the fly on the wall and the fae that blended into the crowd. That's why he was so shocked that she noticed him.",
+    "title": "Sometimes it's just better not to be seen.",
+    "createdAt": "2026-05-23 04:49:36.232 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.232 +00:00"
+  },
+  {
+    "id": 50,
+    "userId": "15",
+    "text": "He'd had many friends throughout his early years and had fond memories of playing with them, but he couldn't understand how it had all stopped. There was some point as he grew up that he played with each of his friends for the very last time, and he had no idea that it would be the last.",
+    "title": "It was a concerning development that he couldn't get out of his mind.",
+    "createdAt": "2026-05-23 04:49:36.240 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.240 +00:00"
+  },
+  {
+    "id": 51,
+    "userId": "69",
+    "text": "The towels had been hanging from the rod for years. They were stained and worn, and quite frankly, just plain ugly. Debra didn't want to touch them but she really didn't have a choice. It was important for her to see what was living within them.",
+    "title": "The towels had been hanging from the rod for years.",
+    "createdAt": "2026-05-23 04:49:36.248 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.248 +00:00"
+  },
+  {
+    "id": 52,
+    "userId": "135",
+    "text": "The headache wouldn't go away. She's taken medicine but even that didn't help. The monstrous throbbing in her head continued. She had this happen to her only once before in her life and she realized that only one thing could be happening.",
+    "title": "The headache wouldn't go away.",
+    "createdAt": "2026-05-23 04:49:36.256 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.256 +00:00"
+  },
+  {
+    "id": 53,
+    "userId": "48",
+    "text": "The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.",
+    "title": "The young man wanted a role model.",
+    "createdAt": "2026-05-23 04:49:36.265 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.265 +00:00"
+  },
+  {
+    "id": 54,
+    "userId": "200",
+    "text": "Debbie knew she was being selfish and unreasonable. She understood why the others in the room were angry and frustrated with her and the way she was acting. In her eyes, it didn't really matter how they felt because she simply didn't care.",
+    "title": "Debbie knew she was being selfish",
+    "createdAt": "2026-05-23 04:49:36.273 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.273 +00:00"
+  },
+  {
+    "id": 55,
+    "userId": "105",
+    "text": "She tried to explain that love wasn't like pie. There wasn't a set number of slices to be given out. There wasn't less to be given to one person if you wanted to give more to another. That after a set amount was given out it would all disappear. She tried to explain this, but it fell on deaf ears.",
+    "title": "She tried to explain that love wasn't like pie.",
+    "createdAt": "2026-05-23 04:49:36.281 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.281 +00:00"
+  },
+  {
+    "id": 56,
+    "userId": "191",
+    "text": "The house was located at the top of the hill at the end of a winding road. It wasn't obvious that the house was there, but everyone in town knew that it existed. They were just all too afraid to ever go and see it in person.",
+    "title": "The house was located at the top of the hill",
+    "createdAt": "2026-05-23 04:49:36.288 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.288 +00:00"
+  },
+  {
+    "id": 57,
+    "userId": "72",
+    "text": "It seemed like it should have been so simple. There was nothing inherently difficult with getting the project done. It was simple and straightforward enough that even a child should have been able to complete it on time, but that wasn't the case. The deadline had arrived and the project remained unfinished.",
+    "title": "It seemed like it should have been so simple.",
+    "createdAt": "2026-05-23 04:49:36.295 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.295 +00:00"
+  },
+  {
+    "id": 58,
+    "userId": "93",
+    "text": "Balloons are pretty and come in different colors, different shapes, different sizes, and they can even adjust sizes as needed. But don't make them too big or they might just pop, and then bye-bye balloon. It'll be gone and lost for the rest of mankind. They can serve a variety of purposes, from decorating to water balloon wars. You just have to use your head to think a little bit about what to do with them.",
+    "title": "Balloons are pretty and come in different colors",
+    "createdAt": "2026-05-23 04:49:36.302 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.302 +00:00"
+  },
+  {
+    "id": 59,
+    "userId": "89",
+    "text": "She looked at her student wondering if she could ever get through. \"You need to learn to think for yourself,\" she wanted to tell him. \"Your friends are holding you back and bringing you down.\" But she didn't because she knew his friends were all that he had and even if that meant a life of misery, he would never give them up.",
+    "title": "She looked at her student wondering if she could ever get through.",
+    "createdAt": "2026-05-23 04:49:36.309 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.309 +00:00"
+  },
+  {
+    "id": 60,
+    "userId": "204",
+    "text": "He heard the crack echo in the late afternoon about a mile away. His heart started racing and he bolted into a full sprint. \"It wasn't a gunshot, it wasn't a gunshot,\" he repeated under his breathlessness as he continued to sprint.",
+    "title": "He heard the crack echo in the late afternoon about a mile away.",
+    "createdAt": "2026-05-23 04:49:36.316 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.316 +00:00"
+  },
+  {
+    "id": 61,
+    "userId": "5",
+    "text": "I'm going to hire professional help tomorrow. I can't handle this anymore. She fell over the coffee table and now there is blood in her catheter. This is much more than I ever signed up to do.",
+    "title": "I'm going to hire professional help tomorrow.",
+    "createdAt": "2026-05-23 04:49:36.323 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.323 +00:00"
+  },
+  {
+    "id": 62,
+    "userId": "55",
+    "text": "He watched as the young man tried to impress everyone in the room with his intelligence. There was no doubt that he was smart. The fact that he was more intelligent than anyone else in the room could have been easily deduced, but nobody was really paying any attention due to the fact that it was also obvious that the young man only cared about his intelligence.",
+    "title": "He watched as the young man tried",
+    "createdAt": "2026-05-23 04:49:36.331 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.331 +00:00"
+  },
+  {
+    "id": 63,
+    "userId": "132",
+    "text": "Many people say that life isn't like a bed of roses. I beg to differ. I think that life is quite like a bed of roses. Just like life, a bed of roses looks pretty on the outside, but when you're in it, you find that it is nothing but thorns and pain. I myself have been pricked quite badly.",
+    "title": "Many people say that life isn't like a bed of roses.",
+    "createdAt": "2026-05-23 04:49:36.338 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.338 +00:00"
+  },
+  {
+    "id": 64,
+    "userId": "170",
+    "text": "There are only three ways to make this work. The first is to let me take care of everything. The second is for you to take care of everything. The third is to split everything 50 / 50. I think the last option is the most preferable, but I'm certain it'll also mean the end of our marriage.",
+    "title": "There are only three ways to make this work.",
+    "createdAt": "2026-05-23 04:49:36.345 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.345 +00:00"
+  },
+  {
+    "id": 65,
+    "userId": "76",
+    "text": "As a middle-aged adult, time flies by as you watch your children grow up. And finally, as you get old and you have fewer responsibilities and fewer demands on you, time slows. You appreciate each day and are thankful you are alive. An hour is the same amount of time for everyone yet it can feel so different in how it goes by.",
+    "title": "Time is all relative based on age and experience.",
+    "createdAt": "2026-05-23 04:49:36.352 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.352 +00:00"
+  },
+  {
+    "id": 66,
+    "userId": "124",
+    "text": "When you are a child an hour is a long time to wait but a very short time when that's all the time you are allowed on your iPad. As a teenager time goes faster the more deadlines you have and the more you procrastinate. As a young adult, you think you have forever to live and don't appreciate the time you spend with others.",
+    "title": "Time is all relative based on age and experience.",
+    "createdAt": "2026-05-23 04:49:36.359 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.359 +00:00"
+  },
+  {
+    "id": 67,
+    "userId": "173",
+    "text": "You will be greeted by the unexpected here and your mind will be challenged and expanded in ways that you never thought possible. That is if you are able to survive...",
+    "title": "Welcome to my world.",
+    "createdAt": "2026-05-23 04:49:36.366 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.366 +00:00"
+  },
+  {
+    "id": 68,
+    "userId": "70",
+    "text": "She sat down with her notebook in her hand, her mind wandering to faraway places. She paused and considered all that had happened. It hadn't gone as expected. When the day began she thought it was going to be a bad one, but as she sat recalling the day's events to write them down, she had to admit, it had been a rather marvelous day.",
+    "title": "She sat down with her notebook in her hand",
+    "createdAt": "2026-05-23 04:49:36.373 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.373 +00:00"
+  },
+  {
+    "id": 69,
+    "userId": "196",
+    "text": "The wave roared towards them with speed and violence they had not anticipated. They both turned to run but by that time it was too late. The wave crashed into their legs sweeping both of them off of their feet. They now found themselves in a washing machine of saltwater, getting tumbled and not know what was up or down.",
+    "title": "The wave roared towards them with speed and violence they had not anticipated.",
+    "createdAt": "2026-05-23 04:49:36.380 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.380 +00:00"
+  },
+  {
+    "id": 70,
+    "userId": "101",
+    "text": "Sometimes there isn't a good answer. No matter how you try to rationalize the outcome, it doesn't make sense. And instead of an answer, you are simply left with a question. Why?",
+    "title": "Sometimes there isn't a good answer.",
+    "createdAt": "2026-05-23 04:49:36.386 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.386 +00:00"
+  },
+  {
+    "id": 71,
+    "userId": "203",
+    "text": "He knew what he was supposed to do. That had been apparent from the beginning. That was what made the choice so difficult. What he was supposed to do and what he would do were not the same. This would have been fine if he were willing to face the inevitable consequences, but he wasn't.",
+    "title": "He knew what he was supposed to do.",
+    "createdAt": "2026-05-23 04:49:36.393 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.393 +00:00"
+  },
+  {
+    "id": 72,
+    "userId": "112",
+    "text": "The words hadn't flowed from his fingers for the past few weeks. He never imagined he'd find himself with writer's block, but here he sat with a blank screen in front of him.",
+    "title": "The words hadn't flowed from his fingers",
+    "createdAt": "2026-05-23 04:49:36.400 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.400 +00:00"
+  },
+  {
+    "id": 73,
+    "userId": "155",
+    "text": "It was difficult to explain to them how the diagnosis of certain death had actually given him life. While everyone around him was in tears and upset, he actually felt more at ease. The doctor said it would be less than a year. That gave him a year to live, something he'd failed to do with his daily drudgery of a routine that had passed as life until then.",
+    "title": "It was difficult to explain to them",
+    "createdAt": "2026-05-23 04:49:36.408 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.408 +00:00"
+  },
+  {
+    "id": 74,
+    "userId": "152",
+    "text": "He couldn't move. His head throbbed and spun. He couldn't decide if it was the flu or the drinking last night. It was probably a combination of both.",
+    "title": "He couldn't move. His head throbbed and spun.",
+    "createdAt": "2026-05-23 04:49:36.415 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.415 +00:00"
+  },
+  {
+    "id": 75,
+    "userId": "54",
+    "text": "There was something beautiful in his hate. It wasn't the hate itself as it was a disgusting display of racism and intolerance. It was what propelled the hate and the fact that although he had this hate, he didn't understand where it came from. It was at that moment that she realized that there was hope in changing him.",
+    "title": "There was something beautiful in his hate.",
+    "createdAt": "2026-05-23 04:49:36.422 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.422 +00:00"
+  },
+  {
+    "id": 76,
+    "userId": "13",
+    "text": "Her mom had warned her. She had been warned time and again, but she had refused to believe her. She had done everything right and she knew she would be rewarded for doing so with the promotion.",
+    "title": "Her mom had warned her.",
+    "createdAt": "2026-05-23 04:49:36.429 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.429 +00:00"
+  },
+  {
+    "id": 77,
+    "userId": "114",
+    "text": "She nervously peered over the edge. She understood in her mind that the view was supposed to be beautiful, but all she felt was fear. There had always been something about heights that disturbed her, and now she could feel the full force of this unease.",
+    "title": "She nervously peered over the edge.",
+    "createdAt": "2026-05-23 04:49:36.437 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.437 +00:00"
+  },
+  {
+    "id": 78,
+    "userId": "51",
+    "text": "The thing that's great about this job is the time sourcing the items involves no traveling. I just look online to buy it. It's really as simple as that. While everyone else is searching for what they can sell, I sit in front of my computer and buy better stuff for less money and spend a fraction of the time doing it.",
+    "title": "The thing that's great about this job",
+    "createdAt": "2026-05-23 04:49:36.444 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.444 +00:00"
+  },
+  {
+    "id": 79,
+    "userId": "45",
+    "text": "Grace didn't think that anyone else besides her had even noticed it. It wasn't anything that the average person would notice, let alone remember at the end of the day.",
+    "title": "It was a simple tip of the hat",
+    "createdAt": "2026-05-23 04:49:36.450 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.450 +00:00"
+  },
+  {
+    "id": 80,
+    "userId": "80",
+    "text": "I can tell a lot about you by which one you pick. It may seem silly, but cake people and pie people are really different. I know which one I hope you are, but that's not for me to decide. So, what is it? Cake or pie?",
+    "title": "Cake or pie?",
+    "createdAt": "2026-05-23 04:49:36.458 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.458 +00:00"
+  },
+  {
+    "id": 81,
+    "userId": "126",
+    "text": "There was something in the tree. It was difficult to tell from the ground, but Rachael could see movement. She squinted her eyes and peered in the direction of the movement, trying to decipher exactly what she had spied.",
+    "title": "There was something in the tree.",
+    "createdAt": "2026-05-23 04:49:36.467 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.467 +00:00"
+  },
+  {
+    "id": 82,
+    "userId": "79",
+    "text": "Pink ponies and purple giraffes roamed the field. Cotton candy grew from the ground as a chocolate river meandered off to the side. What looked like stones in the pasture were actually rock candy. Everything in her dream seemed to be perfect except for the fact that she had no mouth.",
+    "title": "Pink ponies and purple giraffes roamed the field.",
+    "createdAt": "2026-05-23 04:49:36.475 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.475 +00:00"
+  },
+  {
+    "id": 83,
+    "userId": "84",
+    "text": "\"Are you getting my texts???\" she texted to him. He glanced at it and chuckled under his breath. Of course he was getting them, but if he wasn't getting them, how would he ever be able to answer? He put the phone down and continued on his project. He was ignoring her texts and he planned to continue to do so.",
+    "title": "Are you getting my texts???",
+    "createdAt": "2026-05-23 04:49:36.482 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.482 +00:00"
+  },
+  {
+    "id": 84,
+    "userId": "145",
+    "text": "He stepped away from the mic. This was the best take he had done so far, but something seemed missing. Then it struck him all at once. Visuals ran in front of his eyes and music rang in his ears. His eager fingers went to work in an attempt to capture his thoughts hoping the results would produce something that was at least half their glory.",
+    "title": "He stepped away from the mic. This was the best take he had done so far",
+    "createdAt": "2026-05-23 04:49:36.490 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.490 +00:00"
+  },
+  {
+    "id": 85,
+    "userId": "47",
+    "text": "It didn't seem like an important choice when he was making it, but it was a choice nonetheless. Had he known the consequences at that time, he would likely have considered the choice a bit longer. In the end, he didn't and ended up choosing blue.",
+    "title": "The choice was red, green, or blue.",
+    "createdAt": "2026-05-23 04:49:36.497 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.497 +00:00"
+  },
+  {
+    "id": 86,
+    "userId": "171",
+    "text": "Day 52 if the marks on the stone were accurate. He couldn't be sure. Day and nights had begun to blend together creating confusion, but he knew it was a long time. Much too long.",
+    "title": "He picked up the burnt end of the branch and made a mark on the stone.",
+    "createdAt": "2026-05-23 04:49:36.506 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.506 +00:00"
+  },
+  {
+    "id": 87,
+    "userId": "144",
+    "text": "He had dreamed of owning this car since he was ten, and that dream had become a reality less than a year ago. It was his baby and he spent hours caring for it, pampering it, and fondling over it. She knew this all too well, and that's exactly why she had taken a sludge hammer to it.",
+    "title": "The red glint of paint sparkled under the sun.",
+    "createdAt": "2026-05-23 04:49:36.514 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.514 +00:00"
+  },
+  {
+    "id": 88,
+    "userId": "51",
+    "text": "There were little things that she simply could not stand. The sound of someone tapping their nails on the table. A person chewing with their mouth open. Another human imposing themselves into her space. She couldn't stand any of these things, but none of them compared to the number one thing she couldn't stand which topped all of them combined.",
+    "title": "There were little things that she simply could not stand.",
+    "createdAt": "2026-05-23 04:49:36.522 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.522 +00:00"
+  },
+  {
+    "id": 89,
+    "userId": "104",
+    "text": "in the lobby, waiting for Naoko to call. Most of the others were out, so the lobby was usually deserted. I would stare at the grains of light suspended in that silent space, struggling to see into my own heart. What did I want? ",
+    "title": "On Saturday nights I would sit by the phone",
+    "createdAt": "2026-05-23 04:49:36.529 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.529 +00:00"
+  },
+  {
+    "id": 90,
+    "userId": "150",
+    "text": "plume themselves on being acquainted with a move or two, and being usually equal to the time-of-day, express the wide range of their capacity for adventure by observing that they are good for anything from pitch-and-toss to manslaughter;",
+    "title": "Gentlemen of the free-and-easy sort",
+    "createdAt": "2026-05-23 04:49:36.536 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.536 +00:00"
+  },
+  {
+    "id": 91,
+    "userId": "204",
+    "text": "general was woefully defective; but Mr. Gradgrind in raising her to her high matrimonial position, had been influenced by two reasons.  Firstly, she was most satisfactory as a question of figures; and, secondly,",
+    "title": "In truth, Mrs. Gradgrind's stock of facts in",
+    "createdAt": "2026-05-23 04:49:36.541 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.541 +00:00"
+  },
+  {
+    "id": 92,
+    "userId": "102",
+    "text": "'Now, you'll excuse me,' said Bounderby, 'but I don't want to be too dear.  That, to start with.  When I begin to be dear to a man, I generally find that his intention is to come over me.",
+    "title": "'My dear Bounderby,' Mr. Gradgrind began",
+    "createdAt": "2026-05-23 04:49:36.546 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.546 +00:00"
+  },
+  {
+    "id": 93,
+    "userId": "169",
+    "text": "answer to the most complex and insoluble questions. That answer is: live in the needs of the day, that is, find forgetfulness.",
+    "title": "He could find no answer, except life's usual",
+    "createdAt": "2026-05-23 04:49:36.551 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.551 +00:00"
+  },
+  {
+    "id": 94,
+    "userId": "28",
+    "text": "so much then a matter simply of accumulation, of taking things - new experiences, new emotions - and applying them like so many polished tiles to what would someday be the marvellously finished pavilion of the self.",
+    "title": "Happiness was different in childhood.",
+    "createdAt": "2026-05-23 04:49:36.556 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.556 +00:00"
+  },
+  {
+    "id": 95,
+    "userId": "113",
+    "text": "From the moment you go to prison you must put your cozy past firmly behind you. At the very threshold, you must say to yourself: “My life is over, a little early to be sure, but there's nothing to be done about it. I shall never return to freedom.",
+    "title": "So what is the answer? How can you stand",
+    "createdAt": "2026-05-23 04:49:36.561 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.561 +00:00"
+  },
+  {
+    "id": 96,
+    "userId": "198",
+    "text": "were evil people somewhere insidiously committing evil deeds, and it were necessary only to separate them from the rest of us and destroy them. But the line dividing good and evil cuts through the heart of every human being. And who is willing to destroy a piece of his own heart?",
+    "title": "If only it were all so simple! If only there",
+    "createdAt": "2026-05-23 04:49:36.566 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.566 +00:00"
+  },
+  {
+    "id": 97,
+    "userId": "72",
+    "text": "the ROA, the “Russian Liberation Army,” not only were they written in bad Russian, but they were imbued with an alien spirit that was clearly German and, moreover, seemed little concerned with their presumed subject; besides, and on the other hand,",
+    "title": "As for the leaflets reporting the creation of",
+    "createdAt": "2026-05-23 04:49:36.571 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.571 +00:00"
+  },
+  {
+    "id": 98,
+    "userId": "161",
+    "text": "an inspiration? By a vision? A dream? Brothers! People! Why has life been given you? In the deep, deaf stillness of midnight, the doors of the death cells are being swung open - and great-souled people are being dragged out to be shot.",
+    "title": "And how can you bring it home to them?",
+    "createdAt": "2026-05-23 04:49:36.577 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.577 +00:00"
+  },
+  {
+    "id": 99,
+    "userId": "154",
+    "text": "a stickler for externals and petty quotidian things; and in lieu of an intellect he had accumulated an armoury of capitalized key-words like Discipline and Tradition and Responsibility.",
+    "title": "Like all men not really up to their job,",
+    "createdAt": "2026-05-23 04:49:36.582 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.582 +00:00"
+  },
+  {
+    "id": 100,
+    "userId": "131",
+    "text": "birthright, & there is nothing in my early life that suggests artistic aptitude or even interest, my pastimes & fascinations nearly all being what may - & were - deemed the merely villainous.",
+    "title": "But Art is a punitive sentence, not a",
+    "createdAt": "2026-05-23 04:49:36.588 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.588 +00:00"
+  },
+  {
+    "id": 101,
+    "userId": "72",
+    "text": "t threatens to capsize him. He doesn't believe that the dead come back; but that doesn't stop him from feeling the brush of their fingertips, wingtips, against his shoulder.",
+    "title": "All Hallows Day: grief comes in waves.",
+    "createdAt": "2026-05-23 04:49:36.594 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.594 +00:00"
+  },
+  {
+    "id": 102,
+    "userId": "73",
+    "text": "were girls in the world who might be nice to some boy who'd suffered the misfortune of falling in love with them, even when they couldn't return the favor.",
+    "title": "Being in high school, Miles had no idea there",
+    "createdAt": "2026-05-23 04:49:36.599 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.599 +00:00"
+  },
+  {
+    "id": 103,
+    "userId": "66",
+    "text": "music. After a while they played at forfeits; for it is good to be children sometimes, and never better than at Christmas, when its mighty Founder was a child himself. Stop. There was first a game at blind-man's buff.",
+    "title": "But they didn't devote the whole evening to",
+    "createdAt": "2026-05-23 04:49:36.605 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.605 +00:00"
+  },
+  {
+    "id": 104,
+    "userId": "77",
+    "text": "overture less likely to succeed. Before long, what at first glance had seemed to Gary an absurd possibility - that the till of their marriage no longer contained sufficient funds of love and goodwill to cover the emotional costs that going to St.",
+    "title": "Each failed overture of peace made the next",
+    "createdAt": "2026-05-23 04:49:36.611 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.611 +00:00"
+  },
+  {
+    "id": 105,
+    "userId": "97",
+    "text": "dream by night in the dusty recesses of their minds wake in the day to find that it was vanity: but the dreamers of the day are dangerous men, for they may act their dreams with open eyes.",
+    "title": "All men dream, but not equally.",
+    "createdAt": "2026-05-23 04:49:36.617 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.617 +00:00"
+  },
+  {
+    "id": 106,
+    "userId": "18",
+    "text": "Bert? Can you recall four, five, more such occasions? Or would no human heart have survived two or three? Sometimes (I have nothing to say in reply to your question), while Lolita would be haphazardly preparing her homework,",
+    "title": "Sometimes… Come on, how often exactly,",
+    "createdAt": "2026-05-23 04:49:36.624 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.624 +00:00"
+  },
+  {
+    "id": 107,
+    "userId": "18",
+    "text": "never tell her. Somehow if she'd known the worst parts, she couldn't have gone on being a haven for him. He was groping for an idea that he couldn't quite grasp.",
+    "title": "She would never know, because he would",
+    "createdAt": "2026-05-23 04:49:36.630 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.630 +00:00"
+  },
+  {
+    "id": 108,
+    "userId": "174",
+    "text": "hope nor despair. He ran because the world was divided into opposites and his side had already been chosen for him, his only choice being whether or not to play his part with heart and courage.",
+    "title": "He ran as he'd never run before",
+    "createdAt": "2026-05-23 04:49:36.636 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.636 +00:00"
+  },
+  {
+    "id": 109,
+    "userId": "23",
+    "text": "mortality, how vain, how false. Composers are merely scribblers of cave paintings. One writes music because winter is eternal and because, if one didn't, the wolves and blizzards would be at one's throat all the sooner.",
+    "title": "How vulgar, this hankering after",
+    "createdAt": "2026-05-23 04:49:36.645 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.645 +00:00"
+  },
+  {
+    "id": 110,
+    "userId": "107",
+    "text": "lined with a veneer of English oak. You attained it by touching a button in a silent lift. The royal crest, in this air-conditioned stillness, suggested silicone and funeral parlours.",
+    "title": "The embassy's door was of bulletproof steel",
+    "createdAt": "2026-05-23 04:49:36.653 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.653 +00:00"
+  },
+  {
+    "id": 111,
+    "userId": "112",
+    "text": "Jacob hurries past the tomatoes and catches her up near the gate.'Miss Abigawa? Miss Aibagawa. I must ask you to forgive me.'She has turned around and has one hand on the gate. 'Why forgive?",
+    "title": "Act, implores the Ghost of Future Regret.",
+    "createdAt": "2026-05-23 04:49:36.660 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.660 +00:00"
+  },
+  {
+    "id": 112,
+    "userId": "32",
+    "text": "Men of commerce, sir…' Nash counts out laudanum drops into the pewter beaker '… for the most part, had their consciences cut out at birth. Better an honest drowning than slow death by hypocrisy,",
+    "title": "The ship rolls and her timbers creak like",
+    "createdAt": "2026-05-23 04:49:36.667 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.667 +00:00"
+  },
+  {
+    "id": 113,
+    "userId": "171",
+    "text": "crying for a while, silently, shaking the cheap bed. He didn't know what to do, he didn't know how to live. Each new thing he encountered in life impelled him in a direction that fully convinced him of its rightness,",
+    "title": "He let the phone slip from his hand and lay",
+    "createdAt": "2026-05-23 04:49:36.674 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.674 +00:00"
+  },
+  {
+    "id": 114,
+    "userId": "67",
+    "text": "vanishing into the sky, and a stray snowflake drifts along towards the south. They remount; it has been a long day; his clothes feel heavy on his back.",
+    "title": "When they leave the church, the last light is",
+    "createdAt": "2026-05-23 04:49:36.680 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.680 +00:00"
+  },
+  {
+    "id": 115,
+    "userId": "72",
+    "text": "come up to the corral where they'd shaped the manada and he and John Grady would walk among the mares and John Grady would argue their points and the hacendado would muse and walk away a fixed distance.",
+    "title": "In the days to follow the hacendado would",
+    "createdAt": "2026-05-23 04:49:36.687 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.687 +00:00"
+  },
+  {
+    "id": 116,
+    "userId": "26",
+    "text": "is no-place, that anteroom to God where each hour is ten thousand years long. Once you imagined the souls held in a great net, a web spun by God,",
+    "title": "Imagine the silence now, in that place which",
+    "createdAt": "2026-05-23 04:49:36.694 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.694 +00:00"
+  },
+  {
+    "id": 117,
+    "userId": "62",
+    "text": "happier times, he gave me a good kicking. Afterwards I assured him he had all the attributes necessary for a successful artistic career, through unfortunately my mouth was too swollen to list them for Pobjoy's benefit: mediocrity;",
+    "title": "Then, perhaps overcome with nostalgia for",
+    "createdAt": "2026-05-23 04:49:36.702 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.702 +00:00"
+  },
+  {
+    "id": 118,
+    "userId": "57",
+    "text": "back into the past. There was so much space, so much silence, so few meetings that one too easily saw out of the present, and then the past seemed ten times closer than it was.",
+    "title": "I knew that on the island one was driven",
+    "createdAt": "2026-05-23 04:49:36.708 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.708 +00:00"
+  },
+  {
+    "id": 119,
+    "userId": "13",
+    "text": "street, yet it was a sacred remembrance to these two common people.  Utilitarian economists, skeletons of schoolmasters, Commissioners of Fact,",
+    "title": "It was but a hurried parting in a common",
+    "createdAt": "2026-05-23 04:49:36.716 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.716 +00:00"
+  },
+  {
+    "id": 120,
+    "userId": "105",
+    "text": "sun may be shining but the shutters of her room are closed so she can make her own weather. She is kept in the dark so she can dream. Her dreams drift her far away,",
+    "title": "When a woman withdraws to give birth the",
+    "createdAt": "2026-05-23 04:49:36.724 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.724 +00:00"
+  },
+  {
+    "id": 121,
+    "userId": "7",
+    "text": "can a revolution promise to adults? To some it brings disgrace, to others favor. But even that favor is questionable,",
+    "title": "Revolution and youth are closely allied.",
+    "createdAt": "2026-05-23 04:49:36.732 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.732 +00:00"
+  },
+  {
+    "id": 122,
+    "userId": "31",
+    "text": "seriously. They had taken away our flowers, our summer days, and our bonuses, we were on a wage freeze and a hiring freeze, and people were flying out the door like so many dismantled dummies.",
+    "title": "The point was we took this shit very",
+    "createdAt": "2026-05-23 04:49:36.741 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.741 +00:00"
+  },
+  {
+    "id": 123,
+    "userId": "5",
+    "text": "young people around him and it suddenly occurred to him that he was the only one in the whole audience who had the privilege of freedom, ",
+    "title": "The old scholar was watching the noisy",
+    "createdAt": "2026-05-23 04:49:36.748 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.748 +00:00"
+  },
+  {
+    "id": 124,
+    "userId": "150",
+    "text": "had to be suspicious of 'normality'. The striking thing about the normal is that there is nothing normal about it:",
+    "title": "Later, on my walk, I wondered why I felt I",
+    "createdAt": "2026-05-23 04:49:36.756 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.756 +00:00"
+  },
+  {
+    "id": 125,
+    "userId": "152",
+    "text": "always appalled by the memory of his passivity, hard though it was to see what else he could have done. He could have refused to pay for the gravy damage to his room, could have refused to change his shoes,",
+    "title": "Looking back on those incidents,",
+    "createdAt": "2026-05-23 04:49:36.765 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.765 +00:00"
+  },
+  {
+    "id": 126,
+    "userId": "102",
+    "text": "under no illusions that she might remember me in any way fondly; that is, if she remembered me at all. I was but one of a procession; I provided extra food, drink, that day some tobacco, beyond that I did not exist for her.",
+    "title": "I hoped she did not dislike me,",
+    "createdAt": "2026-05-23 04:49:36.773 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.773 +00:00"
+  },
+  {
+    "id": 127,
+    "userId": "43",
+    "text": "was not merely over head and ears in love with her, but I was saturated through and through. Enough love might have been wrung out of me, metaphorically speaking,",
+    "title": "If I may so express it, I was steeped in Dora.",
+    "createdAt": "2026-05-23 04:49:36.781 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.781 +00:00"
+  },
+  {
+    "id": 128,
+    "userId": "63",
+    "text": "statement immediately becomes truth. Yesterday the poet said life is a vale of tears; today he said life is a land of smiles; and he was right both times. There is no inconsistency.",
+    "title": "Lyrical poetry is a realm in which any",
+    "createdAt": "2026-05-23 04:49:36.789 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.789 +00:00"
+  },
+  {
+    "id": 129,
+    "userId": "128",
+    "text": "digging up Walter's bones and making his own life unfamiliar to him, he feels almost impelled to speak in defense of his father, his childhood. But it is no use to justify yourself. It is no good to explain. It is weak to be anecdotal.",
+    "title": "Sometimes, when Chapuys has finished",
+    "createdAt": "2026-05-23 04:49:36.797 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.797 +00:00"
+  },
+  {
+    "id": 130,
+    "userId": "48",
+    "text": "Always I had acted as if a third person was watching and listening and giving me marks for good or bad behaviour - a god like a novelist, to whom I turned, like a character with the power to please, the sensitivity to feel slighted, the ability to adapt himself to whatever he believed the novelist-god wanted.",
+    "title": "Always I had acted as if a third person was watching",
+    "createdAt": "2026-05-23 04:49:36.805 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.805 +00:00"
+  },
+  {
+    "id": 131,
+    "userId": "30",
+    "text": "Near enough what Conchis had had me told: nothing but the net sum of countless wrong turnings. I dismissed most of the Freudian jargon of the trial; but all my life I had tried to turn life to fiction, to hold reality away.",
+    "title": "What was I after all?",
+    "createdAt": "2026-05-23 04:49:36.812 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.812 +00:00"
+  },
+  {
+    "id": 132,
+    "userId": "170",
+    "text": "Now they were in the earth to which they had given their lives; and slowly, year by year, the earth would take them.",
+    "title": "Now they were in the earth",
+    "createdAt": "2026-05-23 04:49:36.820 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.820 +00:00"
+  },
+  {
+    "id": 133,
+    "userId": "116",
+    "text": "He thought of the cost exacted, year after year, by the soil; and it remained as it had been—a little more barren, perhaps, a little more frugal of increase. Nothing had changed. Their lives had been expended in cheerless labor, their wills broken, their intelligences numbed.",
+    "title": "He thought of the cost exacted",
+    "createdAt": "2026-05-23 04:49:36.828 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.828 +00:00"
+  },
+  {
+    "id": 134,
+    "userId": "97",
+    "text": "He buried her beside her husband. After the services were over and the few mourners had gone, he stood alone in a cold November wind and looked at the two graves, one open to its burden and the other mounded and covered by a thin fuzz of grass.",
+    "title": "He buried her beside her husband",
+    "createdAt": "2026-05-23 04:49:36.837 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.837 +00:00"
+  },
+  {
+    "id": 135,
+    "userId": "87",
+    "text": "I was disconcerted, for I had broken away without quite seeing where I was going to. It was not to be shuffled off now, however, and I answered, `The beautiful young lady at Miss Havisham's, and she's more beautiful than anybody ever was, and I admire her dreadfully, and I want to be a gentleman on her account.'",
+    "title": "I was disconcerted, for I had broken away",
+    "createdAt": "2026-05-23 04:49:36.845 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.845 +00:00"
+  },
+  {
+    "id": 136,
+    "userId": "106",
+    "text": "You must thrive in spite of yourself; and so that you may do it, God takes out your heart of flesh, and gives you a heart of stone.",
+    "title": "You must thrive in spite of yourself",
+    "createdAt": "2026-05-23 04:49:36.853 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.853 +00:00"
+  },
+  {
+    "id": 137,
+    "userId": "59",
+    "text": "He once thought it himself, that he might die with grief: for his wife, his daughters, his sisters, his father and master the cardinal. But pulse, obdurate, keeps its rhythm. You think you cannot keep breathing, but your ribcage has other ideas, rising and falling, emitting sighs.˝",
+    "title": "He once thought it himself, that he might die",
+    "createdAt": "2026-05-23 04:49:36.861 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.861 +00:00"
+  },
+  {
+    "id": 138,
+    "userId": "126",
+    "text": "On foot, from necessity or in deference to his dismounted commander or associates, his conduct was the same. He would stand like a rock in the open when officers and men alike had taken to cover;",
+    "title": "On foot, from necessity or in deference",
+    "createdAt": "2026-05-23 04:49:36.869 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.869 +00:00"
+  },
+  {
+    "id": 139,
+    "userId": "125",
+    "text": "Adjusting the hair and putting the finishing touches to the simple toilet, doing all mechanically, with soulless care. And still through his consciousness ran an undersense of conviction that all was right—that he should have her again as before, and everything explained.",
+    "title": "He stood over the body in the fading light",
+    "createdAt": "2026-05-23 04:49:36.878 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.878 +00:00"
+  },
+  {
+    "id": 140,
+    "userId": "150",
+    "text": "A secret always has a strengthening effect upon a newborn friendship, as does the shared impression than an external figure is to blame: the men of the Crown have become united less by their shared beliefs, we observe, than by their shared misgivings.",
+    "title": "A secret always has a strengthening effect",
+    "createdAt": "2026-05-23 04:49:36.886 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.886 +00:00"
+  },
+  {
+    "id": 141,
+    "userId": "34",
+    "text": "A judgment that is necessarily hampered, bot only by the scope and limits of his imagination, but by the ever-changing measure of his doubt and self-esteem.",
+    "title": "A judgment that is necessarily hampered",
+    "createdAt": "2026-05-23 04:49:36.895 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.895 +00:00"
+  },
+  {
+    "id": 142,
+    "userId": "35",
+    "text": "For although a man is judged by his actions, by what he has said and done, a man judges himself by what he is willing to do, by what he might have said, or might have done",
+    "title": "For although a man is judged by his actions",
+    "createdAt": "2026-05-23 04:49:36.906 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.906 +00:00"
+  },
+  {
+    "id": 143,
+    "userId": "34",
+    "text": "Everything failed to subdue me. Soon everything seemed dull: another sunrise, the lives of heroes, failing love, war, the discoveries people made about each other.",
+    "title": "Everything failed to subdue me",
+    "createdAt": "2026-05-23 04:49:36.919 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.919 +00:00"
+  },
+  {
+    "id": 144,
+    "userId": "104",
+    "text": "In the hospital men's room, as I'm washing my hands, I glance in the mirror. The man I see is not so much me as my father. When did he show up? There is no soap; I rub hand sanitizer into my face-it burns. I nearly drown myself in the sink trying to rinse it off.",
+    "title": "In the hospital men's room",
+    "createdAt": "2026-05-23 04:49:36.931 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.931 +00:00"
+  },
+  {
+    "id": 145,
+    "userId": "126",
+    "text": "I also didn't want to find myself too much in love with them. There are parents who don't like to hear their little girl crying at night, at the vast approaching dark of sleep, and so in their torment think why not feed her a lollipop, and a few years later that kid's got seven cavities and a pulled tooth.",
+    "title": "But just as I didn't want to resent my kids",
+    "createdAt": "2026-05-23 04:49:36.943 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.943 +00:00"
+  },
+  {
+    "id": 146,
+    "userId": "189",
+    "text": "You don't get on by being original. You don't get on by being bright. You don't get on by being strong. You get on by being a subtle crook;",
+    "title": "Christ, he thinks, by my age I ought to know",
+    "createdAt": "2026-05-23 04:49:36.954 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.954 +00:00"
+  },
+  {
+    "id": 147,
+    "userId": "126",
+    "text": "They look so fine, and young, and wrapped up in each other. Love is so fresh and clean at that age. Don't you think?",
+    "title": "They look so fine, and young",
+    "createdAt": "2026-05-23 04:49:36.965 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.965 +00:00"
+  },
+  {
+    "id": 148,
+    "userId": "138",
+    "text": "Your only chance of survival, if you are sincerely smitten, lies in hiding this fact from the woman you love, of feigning a casual detachment under all circumstances.",
+    "title": "Your only chance of survival",
+    "createdAt": "2026-05-23 04:49:36.975 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.975 +00:00"
+  },
+  {
+    "id": 149,
+    "userId": "56",
+    "text": "During the first part of your life, you only become aware of happiness once you have lost it. Then an age comes, a second one, in which you already know, at the moment when you begin to experience true happiness.",
+    "title": "During the first part of your life",
+    "createdAt": "2026-05-23 04:49:36.987 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.987 +00:00"
+  },
+  {
+    "id": 150,
+    "userId": "94",
+    "text": "The question is in a way meaningless, she knows, but one must ask. Love in such situations is rarely real. Sex is the engine, exalting and ruining people, sex and frustration. Love is what people believe is worth the path of devastation.",
+    "title": "Were you in love with her?",
+    "createdAt": "2026-05-23 04:49:36.999 +00:00",
+    "updatedAt": "2026-05-23 04:49:36.999 +00:00"
+  },
+  {
+    "id": 151,
+    "userId": "108",
+    "text": "The sun set below the horizon, and the sky turned a deep shade of purple. The stars began to appear, and the world was bathed in a soft, silvery light. It was a beautiful sight, and for a moment, all was right with the world.",
+    "title": "The sun set below the horizon",
+    "createdAt": "2026-05-23 04:49:37.011 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.011 +00:00"
+  },
+  {
+    "id": 152,
+    "userId": "57",
+    "text": "Memories of a bygone era, each picture telling a story of love, loss, and life. They were his treasures, his link to the past. The sepia tones and worn edges spoke of days long gone, of moments frozen in time that still held so much emotion and significance.",
+    "title": "He gazed at the old photographs",
+    "createdAt": "2026-05-23 04:49:37.022 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.022 +00:00"
+  },
+  {
+    "id": 153,
+    "userId": "24",
+    "text": "Birds sang, leaves rustled, and a gentle stream trickled nearby. It was a symphony of life, a reminder of the world's beauty. The dense canopy overhead filtered the sunlight, creating a mosaic of light and shadow on the forest floor, a tranquil haven far from the chaos of modern life.",
+    "title": "The forest was alive with the sounds of nature",
+    "createdAt": "2026-05-23 04:49:37.035 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.035 +00:00"
+  },
+  {
+    "id": 154,
+    "userId": "133",
+    "text": "Each page a new adventure, a new world to explore. They were her escape, her refuge from the chaos of reality. Lost in the stories, she traveled to distant lands, met fascinating characters, and experienced the thrill of the unknown, all from the comfort of her favorite chair.",
+    "title": "She found solace in books",
+    "createdAt": "2026-05-23 04:49:37.051 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.051 +00:00"
+  },
+  {
+    "id": 155,
+    "userId": "37",
+    "text": "But amidst the chaos, there was beauty. The lights, the energy, the endless possibilities. It was alive, vibrant, and ever-changing. Each street had its own rhythm, a pulse that spoke of countless stories unfolding, dreams being chased, and lives intertwining.",
+    "title": "The city was a jungle of concrete and steel",
+    "createdAt": "2026-05-23 04:49:37.058 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.058 +00:00"
+  },
+  {
+    "id": 156,
+    "userId": "108",
+    "text": "Each star a beacon of light in the vast darkness. It was a reminder of how small we are, and yet how connected. The constellations told ancient stories, while the Milky Way stretched across the sky like a river of light, evoking a sense of wonder and infinite possibilities.",
+    "title": "He marveled at the starry sky",
+    "createdAt": "2026-05-23 04:49:37.066 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.066 +00:00"
+  },
+  {
+    "id": 157,
+    "userId": "92",
+    "text": "Stories of adventure, love, and loss. His eyes sparkled with memories, his voice rich with emotion. Each tale was a piece of history, a fragment of a life lived fully, offering lessons learned and wisdom gained through years of experience.",
+    "title": "The old man told tales of his youth",
+    "createdAt": "2026-05-23 04:49:37.073 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.073 +00:00"
+  },
+  {
+    "id": 158,
+    "userId": "179",
+    "text": "Each surge of water a testament to the ocean's power and beauty. It was a mesmerizing dance of nature. The relentless rhythm of the waves, their thunderous impact, and the frothy spray all spoke of the untamed force and majesty of the sea.",
+    "title": "The waves crashed against the rocks",
+    "createdAt": "2026-05-23 04:49:37.079 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.079 +00:00"
+  },
+  {
+    "id": 159,
+    "userId": "9",
+    "text": "Flowers of every hue bloomed in a chaotic harmony, a feast for the eyes and a balm for the soul. The air was fragrant with their scent, and the buzzing of bees added a vibrant soundtrack to the dazzling display of natural artistry.",
+    "title": "The garden was a riot of color",
+    "createdAt": "2026-05-23 04:49:37.085 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.085 +00:00"
+  },
+  {
+    "id": 160,
+    "userId": "108",
+    "text": "Those rare times when the world slowed down, and she could breathe, reflect, and simply be. In the stillness, she found clarity and peace, a chance to reconnect with herself and appreciate the simple joys of life.",
+    "title": "She cherished the quiet moments",
+    "createdAt": "2026-05-23 04:49:37.091 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.091 +00:00"
+  },
+  {
+    "id": 161,
+    "userId": "204",
+    "text": "Each note a thread in a tapestry of sound, weaving a story of joy, sorrow, and everything in between. The melody carried her away, evoking memories and emotions she thought long forgotten, a powerful reminder of the transformative power of music.",
+    "title": "The music filled the room",
+    "createdAt": "2026-05-23 04:49:37.098 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.098 +00:00"
+  },
+  {
+    "id": 162,
+    "userId": "32",
+    "text": "Its beam of light cutting through the thick fog, guiding ships safely to harbor. The lighthouse was a symbol of hope and safety, its solitary presence a beacon for sailors navigating treacherous waters. Its history was etched into the weathered stones, a testament to its enduring purpose.",
+    "title": "The lighthouse stood tall on the rocky shore",
+    "createdAt": "2026-05-23 04:49:37.105 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.105 +00:00"
+  },
+  {
+    "id": 163,
+    "userId": "26",
+    "text": "The remnants of a civilization long gone. Each stone, each archway told a story of a bygone era, of people who lived, loved, and dreamed. The air was thick with history, and she felt a deep connection to the past as she explored the crumbling walls.",
+    "title": "She wandered through the ancient ruins",
+    "createdAt": "2026-05-23 04:49:37.111 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.111 +00:00"
+  },
+  {
+    "id": 164,
+    "userId": "65",
+    "text": "A vast expanse of golden sands under a blazing sun. The silence was profound, broken only by the occasional whisper of the wind. It was a place of stark beauty and harsh reality, where survival required resilience and respect for nature's power.",
+    "title": "The desert stretched out before him",
+    "createdAt": "2026-05-23 04:49:37.118 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.118 +00:00"
+  },
+  {
+    "id": 165,
+    "userId": "133",
+    "text": "A marvel of engineering from a bygone era. It connected two worlds, carrying the weight of countless journeys and stories. As he walked across, he felt the bridge's history beneath his feet, a silent witness to the passage of time.",
+    "title": "The old bridge spanned the wide river",
+    "createdAt": "2026-05-23 04:49:37.124 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.124 +00:00"
+  },
+  {
+    "id": 166,
+    "userId": "131",
+    "text": "Each drop a gentle reminder of nature's rhythm. The world outside was a blur of gray, but inside she felt a deep sense of peace. The rain was a lullaby, soothing her mind and soul, a moment of calm in a chaotic world.",
+    "title": "She listened to the rain pattering on the roof",
+    "createdAt": "2026-05-23 04:49:37.131 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.131 +00:00"
+  },
+  {
+    "id": 167,
+    "userId": "118",
+    "text": "Stalls filled with colorful produce, the air rich with the scent of spices and fresh flowers. Vendors called out their wares, and the crowd moved in a vibrant dance. It was a place of energy and life, where every visit promised something new.",
+    "title": "The market was a bustling maze of sights and sounds",
+    "createdAt": "2026-05-23 04:49:37.137 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.137 +00:00"
+  },
+  {
+    "id": 168,
+    "userId": "110",
+    "text": "Its once-grand facade now crumbling and overgrown with ivy. It was a place of mystery and melancholy, a relic of a past age. Inside, dust-covered furniture and faded portraits hinted at stories long forgotten, waiting to be discovered.",
+    "title": "The abandoned mansion loomed on the hill",
+    "createdAt": "2026-05-23 04:49:37.143 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.143 +00:00"
+  },
+  {
+    "id": 169,
+    "userId": "18",
+    "text": "From bustling cities to serene countryside. Each view from the window was a snapshot of life, a moving picture of the world outside. The rhythmic clatter of the tracks and the gentle sway of the carriage created a meditative experience.",
+    "title": "The train journey took him through diverse landscapes",
+    "createdAt": "2026-05-23 04:49:37.151 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.151 +00:00"
+  },
+  {
+    "id": 170,
+    "userId": "208",
+    "text": "Surrounded by rolling hills and lush greenery. It was a place where time seemed to slow down, where everyone knew each other by name. The village was a tight-knit community, its traditions and stories passed down through generations.",
+    "title": "The small village was nestled in a valley",
+    "createdAt": "2026-05-23 04:49:37.158 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.158 +00:00"
+  },
+  {
+    "id": 171,
+    "userId": "46",
+    "text": "Rows upon rows of books, each holding a world of knowledge and imagination. The scent of old paper and the quiet rustle of pages created an atmosphere of calm and inspiration. It was a place where stories came to life and minds were set free.",
+    "title": "The library was a haven for book lovers",
+    "createdAt": "2026-05-23 04:49:37.165 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.165 +00:00"
+  },
+  {
+    "id": 172,
+    "userId": "51",
+    "text": "A kaleidoscope of colors under the bright summer sun. Bees buzzed from bloom to bloom, and the air was filled with the sweet scent of flowers. It was a place of pure joy and natural beauty, where one could lose themselves in the simple wonders of the world.",
+    "title": "The meadow was awash with wildflowers",
+    "createdAt": "2026-05-23 04:49:37.172 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.172 +00:00"
+  },
+  {
+    "id": 173,
+    "userId": "175",
+    "text": "The room was silent, waiting for the first note. As he played, the music flowed, filling the space with melody and emotion. Each piece was a journey, a story told through sound, transporting listeners to places both familiar and unknown.",
+    "title": "He sat at the piano, fingers poised over the keys",
+    "createdAt": "2026-05-23 04:49:37.179 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.179 +00:00"
+  },
+  {
+    "id": 174,
+    "userId": "198",
+    "text": "Pots clanged, and the air was thick with the aroma of home-cooked meals. Family members bustled about, preparing food and sharing stories. It was a place of warmth and togetherness, where traditions were honored and memories were made.",
+    "title": "The farmhouse kitchen was a hub of activity",
+    "createdAt": "2026-05-23 04:49:37.186 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.186 +00:00"
+  },
+  {
+    "id": 175,
+    "userId": "128",
+    "text": "Reflecting the snow-capped peaks and clear blue sky. The water was crystal clear, inviting and serene. It was a place of tranquility, where one could sit on the shore and lose themselves in the beauty of nature's perfection.",
+    "title": "The mountain lake was a mirror",
+    "createdAt": "2026-05-23 04:49:37.192 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.192 +00:00"
+  },
+  {
+    "id": 176,
+    "userId": "80",
+    "text": "Cobblestone streets and centuries-old buildings stood alongside modern cafes and boutiques. It was a place where history met contemporary life, creating a unique and vibrant atmosphere. Every corner had a story to tell, a piece of the past woven into the present.",
+    "title": "The city's historic district was a blend of old and new",
+    "createdAt": "2026-05-23 04:49:37.200 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.200 +00:00"
+  },
+  {
+    "id": 177,
+    "userId": "112",
+    "text": "Was a sanctuary of knowledge and quiet. High ceilings and towering shelves filled with books created a majestic space. Here, scholars and dreamers alike could find inspiration, lose themselves in stories, and explore the vast realms of human thought.",
+    "title": "The library's grand reading room",
+    "createdAt": "2026-05-23 04:49:37.206 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.206 +00:00"
+  },
+  {
+    "id": 178,
+    "userId": "201",
+    "text": "The sky transformed into a canvas of vibrant colors, each wave catching the light in a dance of gold and crimson. Couples strolled along the shore, hand in hand, as children played at the water's edge. It was a moment of pure beauty, a day ending with a promise of tomorrow.",
+    "title": "The beach at sunset was a sight to behold",
+    "createdAt": "2026-05-23 04:49:37.213 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.213 +00:00"
+  },
+  {
+    "id": 179,
+    "userId": "83",
+    "text": "Its ornate decorations and grand stage spoke of a time when it was the heart of the city's cultural scene. Even in its faded glory, it retained a charm that drew visitors in, sparking imaginations and whispering tales of performances long past.",
+    "title": "The old theater was a relic of a glamorous past",
+    "createdAt": "2026-05-23 04:49:37.219 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.219 +00:00"
+  },
+  {
+    "id": 180,
+    "userId": "195",
+    "text": "A place where she could escape the stresses of daily life. Surrounded by greenery and the sound of birdsong, she found peace and solace. Each plant, each bloom was a testament to her care and love, a living tapestry of colors and scents.",
+    "title": "The garden was a sanctuary",
+    "createdAt": "2026-05-23 04:49:37.225 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.225 +00:00"
+  },
+  {
+    "id": 181,
+    "userId": "36",
+    "text": "Every shelf crammed with stories waiting to be discovered. The scent of old books and the quiet atmosphere created a haven for book lovers. It was a place where time stood still, and one could lose themselves in the magic of reading.",
+    "title": "The bookshop was a treasure trove",
+    "createdAt": "2026-05-23 04:49:37.231 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.231 +00:00"
+  },
+  {
+    "id": 182,
+    "userId": "44",
+    "text": "Rows of fruit trees stood adorned with delicate blossoms, their petals falling like confetti in the gentle breeze. The air was fragrant with the promise of a bountiful harvest, and the soft hum of bees added a musical backdrop to the idyllic scene.",
+    "title": "The orchard was in full bloom",
+    "createdAt": "2026-05-23 04:49:37.237 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.237 +00:00"
+  },
+  {
+    "id": 183,
+    "userId": "2",
+    "text": "Was a sensory overload of colors, sounds, and scents. Vendors called out their wares, and the crowd moved in a vibrant dance. Fresh produce, handmade crafts, and exotic spices filled the stalls, each one a testament to the rich culture and community spirit.",
+    "title": "The bustling marketplace",
+    "createdAt": "2026-05-23 04:49:37.243 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.243 +00:00"
+  },
+  {
+    "id": 184,
+    "userId": "185",
+    "text": "Its pages filled with handwritten notes, sketches, and pressed flowers. It was a treasure trove of memories, a window into the life of its owner. Each entry told a story, offering glimpses into moments of joy, sorrow, and everyday life from a different time.",
+    "title": "The old journal revealed secrets of the past",
+    "createdAt": "2026-05-23 04:49:37.249 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.249 +00:00"
+  },
+  {
+    "id": 185,
+    "userId": "201",
+    "text": "Golden sands stretched as far as the eye could see, meeting the turquoise waters of the ocean. Palm trees swayed gently in the breeze, and the sound of waves crashing against the shore was a soothing symphony. It was a place where worries melted away under the sun.",
+    "title": "The beach was a paradise",
+    "createdAt": "2026-05-23 04:49:37.256 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.256 +00:00"
+  },
+  {
+    "id": 186,
+    "userId": "26",
+    "text": "Brightly colored tents and booths lined the streets, offering games, food, and crafts. Children ran about with cotton candy, while adults enjoyed the live music and entertainment. It was a day of fun and community spirit, where everyone came together to celebrate.",
+    "title": "The village fair was in full swing",
+    "createdAt": "2026-05-23 04:49:37.262 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.262 +00:00"
+  },
+  {
+    "id": 187,
+    "userId": "11",
+    "text": "Was a perfect retreat from the hustle and bustle of everyday life. Surrounded by towering trees and the sounds of nature, it offered peace and solitude. Inside, the rustic charm of wooden beams and a roaring fireplace made it a cozy haven.",
+    "title": "The cabin in the woods",
+    "createdAt": "2026-05-23 04:49:37.268 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.268 +00:00"
+  },
+  {
+    "id": 188,
+    "userId": "162",
+    "text": "Each piece a masterpiece, telling a story through color, form, and texture. Visitors moved from one exhibit to another, lost in contemplation. The gallery was a place of inspiration and creativity, where art came alive and sparked the imagination.",
+    "title": "The art gallery was a feast for the eyes",
+    "createdAt": "2026-05-23 04:49:37.275 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.275 +00:00"
+  },
+  {
+    "id": 189,
+    "userId": "167",
+    "text": "Under the starry sky, the music flowed, captivating the audience. The performers poured their hearts into each note, creating a tapestry of sound that resonated with everyone present. It was a night of shared joy and musical wonder.",
+    "title": "The evening concert was magical",
+    "createdAt": "2026-05-23 04:49:37.281 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.281 +00:00"
+  },
+  {
+    "id": 190,
+    "userId": "188",
+    "text": "Animals roamed the fields, and the air was filled with the sounds of clucking chickens and lowing cows. Crops swayed in the breeze, promising a good harvest. It was a place of hard work and satisfaction, where the rhythm of life followed the seasons.",
+    "title": "The farm was a bustling hub of activity",
+    "createdAt": "2026-05-23 04:49:37.286 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.286 +00:00"
+  },
+  {
+    "id": 191,
+    "userId": "134",
+    "text": "But the views from the top were breathtaking. Each step was a test of endurance, but reaching the summit made it all worthwhile. The panorama of rugged peaks and valleys stretched out before him, a reward for his determination and effort.",
+    "title": "The mountain trail was challenging",
+    "createdAt": "2026-05-23 04:49:37.293 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.293 +00:00"
+  },
+  {
+    "id": 192,
+    "userId": "183",
+    "text": "Tucked away from the main beach, it was a tranquil spot where crystal-clear waters met soft, white sands. The sound of gentle waves and the occasional call of a seagull created a serene atmosphere. It was a perfect place to escape and soak in the natural beauty.",
+    "title": "The hidden cove was a secret paradise",
+    "createdAt": "2026-05-23 04:49:37.303 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.303 +00:00"
+  },
+  {
+    "id": 193,
+    "userId": "82",
+    "text": "Was a scene of elegance and grandeur. Crystal chandeliers hung from the ceiling, casting a warm glow over the polished marble floor. Guests in their finest attire danced to the orchestra, their movements a graceful dance of opulence and refinement.",
+    "title": "The grand ballroom",
+    "createdAt": "2026-05-23 04:49:37.313 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.313 +00:00"
+  },
+  {
+    "id": 194,
+    "userId": "145",
+    "text": "Its towering walls and turrets a testament to a rich history. Ivy crept up its stone facade, and inside, the halls echoed with the footsteps of those long gone. Each room held artifacts and stories, making it a living museum of the past.",
+    "title": "The ancient castle stood atop the hill",
+    "createdAt": "2026-05-23 04:49:37.324 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.324 +00:00"
+  },
+  {
+    "id": 195,
+    "userId": "181",
+    "text": "Its waters sparkling in the sunlight. Along its banks, wildflowers bloomed, and birds sang from the trees. It was a place of natural beauty and calm, where one could sit by the water's edge and feel at peace with the world.",
+    "title": "The river flowed gently through the valley",
+    "createdAt": "2026-05-23 04:49:37.349 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.349 +00:00"
+  },
+  {
+    "id": 196,
+    "userId": "164",
+    "text": "Ships of all sizes came and went, and the air was filled with the sound of seagulls and the smell of the sea. Fishermen unloaded their catch, while tourists explored the nearby shops and cafes. It was a vibrant, dynamic place where life never stood still.",
+    "title": "The bustling harbor was alive with activity",
+    "createdAt": "2026-05-23 04:49:37.361 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.361 +00:00"
+  },
+  {
+    "id": 197,
+    "userId": "150",
+    "text": "Transformed the town into a carnival of lights and sounds. Streets were lined with stalls offering food, games, and crafts. Music filled the air, and the laughter of children added to the festive atmosphere. It was a time of joy and community spirit, where everyone came together to celebrate.",
+    "title": "The summer festival",
+    "createdAt": "2026-05-23 04:49:37.372 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.372 +00:00"
+  },
+  {
+    "id": 198,
+    "userId": "156",
+    "text": "Was a riot of color, with leaves in shades of red, orange, and yellow. The crisp air and the crunch of leaves underfoot made it a perfect place for a walk. Each tree seemed to tell its own story, and the changing seasons added a sense of wonder to the landscape.",
+    "title": "The autumn forest",
+    "createdAt": "2026-05-23 04:49:37.383 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.383 +00:00"
+  },
+  {
+    "id": 199,
+    "userId": "83",
+    "text": "Had stood for centuries, its light guiding sailors safely to shore. Perched on a rocky cliff, it faced the relentless waves with steadfast determination. Inside, the spiral staircase led to a room with a panoramic view of the ocean, a reminder of the lighthouse's vital role.",
+    "title": "The old lighthouse",
+    "createdAt": "2026-05-23 04:49:37.394 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.394 +00:00"
+  },
+  {
+    "id": 200,
+    "userId": "127",
+    "text": "Looked like a scene from a postcard. Smoke curled from chimneys, and the streets were lined with festive decorations. Children played in the snow, building snowmen and sledding down hills. It was a picture of warmth and community spirit, despite the cold weather.",
+    "title": "The snow-covered village",
+    "createdAt": "2026-05-23 04:49:37.406 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.406 +00:00"
+  },
+  {
+    "id": 201,
+    "userId": "93",
+    "text": "Was a haven of peace and beauty. Pathways meandered through beds of exotic plants and flowers, each one labeled with its name and origin. The scent of blooms filled the air, and the gentle sound of water features added to the tranquil atmosphere.",
+    "title": "The botanical garden",
+    "createdAt": "2026-05-23 04:49:37.419 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.419 +00:00"
+  },
+  {
+    "id": 202,
+    "userId": "159",
+    "text": "Each twinkling light seemed to tell a story of its own, as if the universe itself was whispering secrets. The vastness of space stretched out endlessly, filling the night with a sense of wonder and possibility. It was a sight that made one feel both small and connected to something greater.",
+    "title": "The starlit sky dazzled above the desert",
+    "createdAt": "2026-05-23 04:49:37.431 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.431 +00:00"
+  },
+  {
+    "id": 203,
+    "userId": "102",
+    "text": "Their rugged beauty a testament to the power of the ocean. Seabirds circled overhead, their cries carried by the salty breeze. Down below, tide pools teemed with life, hidden gems waiting to be discovered by adventurous explorers. It was a place where land and sea converged in a breathtaking display of nature's grandeur.",
+    "title": "The coastal cliffs towered over the crashing waves",
+    "createdAt": "2026-05-23 04:49:37.443 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.443 +00:00"
+  },
+  {
+    "id": 204,
+    "userId": "19",
+    "text": "Market stalls lined the cobblestone streets, offering fresh produce, handmade crafts, and local delicacies. Children played games in the fountain, their laughter mingling with the chatter of residents and tourists alike. It was a scene straight out of a storybook, where time seemed to stand still amidst the timeless charm of the village.",
+    "title": "The quaint village square bustled with activity",
+    "createdAt": "2026-05-23 04:49:37.455 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.455 +00:00"
+  },
+  {
+    "id": 205,
+    "userId": "174",
+    "text": "Its weathered stone walls adorned with intricate carvings and statues of forgotten gods. Vines and moss clung to the ruins, reclaiming them for nature. Despite the passage of centuries, there was a palpable sense of reverence and spirituality in the air, as if the spirits of the past still lingered among the crumbling stones.",
+    "title": "The ancient temple stood silent in the jungle",
+    "createdAt": "2026-05-23 04:49:37.466 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.466 +00:00"
+  },
+  {
+    "id": 206,
+    "userId": "142",
+    "text": "Its crystal-clear waters bubbling over smooth rocks and pebbles. Tall trees shaded the banks, their leaves rustling in the gentle breeze. The air was fresh and invigorating, carrying with it the scent of pine and wildflowers. It was a scene of pure serenity, a hidden gem tucked away in the heart of the wilderness.",
+    "title": "The mountain stream sparkled in the sunlight",
+    "createdAt": "2026-05-23 04:49:37.477 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.477 +00:00"
+  },
+  {
+    "id": 207,
+    "userId": "157",
+    "text": "Vendors from around the world offered spices, textiles, and handicrafts, each item a reflection of its creator's heritage. The air was filled with the aroma of exotic foods cooking on open grills, tempting passersby with their savory scents. It was a vibrant celebration of diversity, where strangers became friends over shared experiences and shared meals.",
+    "title": "The bustling city market was a melting pot of cultures",
+    "createdAt": "2026-05-23 04:49:37.489 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.489 +00:00"
+  },
+  {
+    "id": 208,
+    "userId": "61",
+    "text": "Its gnarled branches reaching towards the sky, a silent witness to the passage of time. Birds nested in its leafy canopy, and squirrels darted among its roots. Beneath its shade, wildflowers bloomed, adding splashes of color to the verdant landscape. It was a symbol of strength and resilience, a constant presence in an ever-changing world.",
+    "title": "The old oak tree stood sentinel in the meadow",
+    "createdAt": "2026-05-23 04:49:37.501 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.501 +00:00"
+  },
+  {
+    "id": 209,
+    "userId": "155",
+    "text": "Guests were greeted with a smile and offered a seat at low wooden tables. The aroma of freshly brewed tea filled the air, mingling with the soft sounds of conversation and laughter. It was a place of relaxation and connection, where strangers became friends over shared cups of tea and shared stories.",
+    "title": "The traditional tea house exuded warmth and hospitality",
+    "createdAt": "2026-05-23 04:49:37.512 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.512 +00:00"
+  },
+  {
+    "id": 210,
+    "userId": "180",
+    "text": "Fields of golden wheat stretched to the horizon, swaying in the gentle breeze. Cows grazed lazily in lush green pastures, and chickens pecked at the ground in search of insects. The air was filled with the scent of fresh hay and the distant sound of a tractor chugging along. It was a scene straight out of a pastoral painting, a timeless reminder of the beauty of rural life.",
+    "title": "The rural farmstead was a picture of idyllic simplicity",
+    "createdAt": "2026-05-23 04:49:37.524 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.524 +00:00"
+  },
+  {
+    "id": 211,
+    "userId": "12",
+    "text": "Its thunderous roar drowned out all other sounds, filling the air with energy and vitality. Mist rose from the churning pool below, creating rainbows in the sunlight. Around the waterfall, lush vegetation thrived, nourished by the constant spray. It was a spectacle of nature's power and beauty, a sight that left all who beheld it in awe.",
+    "title": "The majestic waterfall cascaded down the cliffside",
+    "createdAt": "2026-05-23 04:49:37.535 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.535 +00:00"
+  },
+  {
+    "id": 212,
+    "userId": "130",
+    "text": "Stone columns stood like silent sentinels, their weathered surfaces bearing the scars of time. In the midst of the ruins, a lone statue remained, its features worn but still dignified. It was a place where history came alive, where the echoes of ancient civilizations lingered in the air.",
+    "title": "The ancient ruins whispered tales of the past",
+    "createdAt": "2026-05-23 04:49:37.546 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.546 +00:00"
+  },
+  {
+    "id": 213,
+    "userId": "122",
+    "text": "Tall trees stretched towards the sky, their branches forming a canopy overhead. Shafts of golden light filtered through the leaves, illuminating the forest floor in a patchwork of light and shadow. It was a place of tranquility and beauty, where one could lose themselves in the wonders of nature.",
+    "title": "The sun-dappled forest was alive with the chatter of birds",
+    "createdAt": "2026-05-23 04:49:37.557 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.557 +00:00"
+  },
+  {
+    "id": 214,
+    "userId": "48",
+    "text": "Fishermen returned from sea with their catch of the day, which was then sold at the bustling fish market. Restaurants lined the waterfront, offering freshly prepared dishes that showcased the bounty of the ocean. It was a place where the salty tang of the sea lingered in the air and every meal was a celebration of coastal living.",
+    "title": "The coastal town was a haven for seafood lovers",
+    "createdAt": "2026-05-23 04:49:37.567 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.567 +00:00"
+  },
+  {
+    "id": 215,
+    "userId": "47",
+    "text": "Its towering spires reached for the sky, a testament to the faith and craftsmanship of generations past. Stained glass windows bathed the interior in a kaleidoscope of colors, and the air was filled with the soft murmur of prayers. It was a place of awe and reverence, where the divine felt close at hand.",
+    "title": "The ancient cathedral soared towards the heavens",
+    "createdAt": "2026-05-23 04:49:37.578 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.578 +00:00"
+  },
+  {
+    "id": 216,
+    "userId": "6",
+    "text": "Stalls overflowed with fruits, vegetables, and spices from around the world, creating a riot of color and scent. Street performers entertained the crowds with music and dance, while vendors called out their wares in a cacophony of voices. It was a place where the pulse of the city could be felt most keenly, a melting pot of cultures and commerce.",
+    "title": "The vibrant street market buzzed with energy",
+    "createdAt": "2026-05-23 04:49:37.589 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.589 +00:00"
+  },
+  {
+    "id": 217,
+    "userId": "120",
+    "text": "Its weathered sails creaked and groaned in the wind, a reminder of a time when such structures dotted the countryside. Inside, the machinery lay dormant, its purpose long forgotten. Yet the windmill remained a beloved landmark, a link to the past in an ever-changing world.",
+    "title": "The old windmill stood as a symbol of bygone days",
+    "createdAt": "2026-05-23 04:49:37.600 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.600 +00:00"
+  },
+  {
+    "id": 218,
+    "userId": "2",
+    "text": "Neon lights flashed, and the air was thick with the scent of street food cooking on open grills. Pedestrians jostled for space on crowded sidewalks, their voices blending into a vibrant symphony of urban life. It was a place where every corner held a new adventure, where the pulse of the city could be felt in every heartbeat.",
+    "title": "The bustling city street was a feast for the senses",
+    "createdAt": "2026-05-23 04:49:37.611 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.611 +00:00"
+  },
+  {
+    "id": 219,
+    "userId": "184",
+    "text": "Dotted with sheep grazing peacefully in the meadows. Fences crisscrossed the landscape, dividing fields of green and gold. In the distance, a lone farmhouse stood silhouetted against the sky. It was a scene of pastoral tranquility, where time seemed to slow and the worries of the world faded away.",
+    "title": "The rolling hills stretched to the horizon",
+    "createdAt": "2026-05-23 04:49:37.622 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.622 +00:00"
+  },
+  {
+    "id": 220,
+    "userId": "174",
+    "text": "Its cozy rooms and warm hearth offered respite from the road. In the tavern below, locals gathered to share stories over pints of ale, their laughter echoing through the rafters. It was a place where strangers became friends and memories were made, a home away from home for those in need of rest.",
+    "title": "The quaint village inn welcomed weary travelers",
+    "createdAt": "2026-05-23 04:49:37.633 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.633 +00:00"
+  },
+  {
+    "id": 221,
+    "userId": "61",
+    "text": "Moss-covered trees loomed overhead, their twisted branches reaching towards the sky like skeletal fingers. The forest floor was carpeted in ferns and fallen leaves, and shafts of sunlight pierced the canopy in ethereal beams. It was a place where legends were born and adventurers dared to tread, drawn by the promise of untold treasures hidden in its depths.",
+    "title": "The ancient forest was shrouded in mystery",
+    "createdAt": "2026-05-23 04:49:37.646 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.646 +00:00"
+  },
+  {
+    "id": 222,
+    "userId": "163",
+    "text": "Stretching for miles along the rugged coastline, the cliffs rose majestically from the crashing waves below. Seabirds circled overhead, riding the ocean breezes, while below, hidden coves and sea caves beckoned adventurous explorers. It was a place where the raw power of nature met the beauty of the sea.",
+    "title": "The coastal cliffs provided a breathtaking view",
+    "createdAt": "2026-05-23 04:49:37.657 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.657 +00:00"
+  },
+  {
+    "id": 223,
+    "userId": "199",
+    "text": "Surrounded by historic buildings and modern skyscrapers, the square buzzed with activity day and night. Street performers entertained crowds, while vendors sold their wares from colorful stalls. It was a place where cultures collided and history was written with every step.",
+    "title": "The bustling city square was the heart of urban life",
+    "createdAt": "2026-05-23 04:49:37.668 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.668 +00:00"
+  },
+  {
+    "id": 224,
+    "userId": "170",
+    "text": "Stretching across the landscape, the aqueducts carried water from distant sources to the bustling cities of old. Their arches soared high above the ground, a marvel of Roman ingenuity and craftsmanship. Even in ruins, they remained a symbol of civilization's triumph over nature.",
+    "title": "The ancient aqueducts stood as a testament to engineering prowess",
+    "createdAt": "2026-05-23 04:49:37.679 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.679 +00:00"
+  },
+  {
+    "id": 225,
+    "userId": "134",
+    "text": "Nestled among towering peaks and lush forests, the village seemed untouched by time. Its cobblestone streets and ancient buildings whispered tales of a simpler era, while the surrounding landscape offered endless opportunities for adventure. It was a place where modern life felt a world away.",
+    "title": "The remote mountain village was a hidden gem",
+    "createdAt": "2026-05-23 04:49:37.691 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.691 +00:00"
+  },
+  {
+    "id": 226,
+    "userId": "182",
+    "text": "Its glassy surface reflecting the blue sky above and the green trees along its shores. Ducks glided across the water, leaving ripples in their wake, while fishermen cast their lines from the wooden pier. It was a scene of timeless beauty, where nature's harmony was on full display.",
+    "title": "The tranquil lake mirrored the surrounding mountains",
+    "createdAt": "2026-05-23 04:49:37.701 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.701 +00:00"
+  },
+  {
+    "id": 227,
+    "userId": "7",
+    "text": "Its stone walls and imposing towers a reminder of a bygone era. Inside, tapestries lined the walls, and suits of armor stood sentinel in the grand hall. From the ramparts, one could see for miles in every direction, a view that spoke of centuries of power and prestige.",
+    "title": "The historic castle loomed over the town below",
+    "createdAt": "2026-05-23 04:49:37.712 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.712 +00:00"
+  },
+  {
+    "id": 228,
+    "userId": "81",
+    "text": "Ships of all sizes came and went, their colorful sails billowing in the wind. Fishermen unloaded their catch, while dockworkers bustled about, loading and unloading cargo. It was a place where the rhythm of life was dictated by the tides, and every day brought new adventures on the high seas.",
+    "title": "The bustling harbor was a hive of activity",
+    "createdAt": "2026-05-23 04:49:37.723 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.723 +00:00"
+  },
+  {
+    "id": 229,
+    "userId": "138",
+    "text": "Surrounded by a riot of flowers and greenery, the cottage seemed straight out of a fairy tale. Smoke curled from the chimney, and the sound of birdsong filled the air. It was a place of peace and tranquility, where time moved at its own pace.",
+    "title": "The charming cottage nestled in a sun-dappled clearing",
+    "createdAt": "2026-05-23 04:49:37.734 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.734 +00:00"
+  },
+  {
+    "id": 230,
+    "userId": "29",
+    "text": "Vendors from far and wide gathered to sell their goods, their voices blending into a cacophony of languages and dialects. Spices, textiles, and handicrafts filled the stalls, creating a riot of color and scent. It was a place where the world came together, united by the shared experience of trade and commerce.",
+    "title": "The bustling market square was a melting pot of cultures",
+    "createdAt": "2026-05-23 04:49:37.745 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.745 +00:00"
+  },
+  {
+    "id": 231,
+    "userId": "175",
+    "text": "Tall trees swayed in the breeze, their branches reaching towards the sky like fingers seeking the heavens. Moss-covered stones dotted the forest floor, marking the passage of time. It was a place of magic and mystery, where legends walked among the shadows.",
+    "title": "The ancient forest whispered secrets to those who dared to listen",
+    "createdAt": "2026-05-23 04:49:37.757 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.757 +00:00"
+  },
+  {
+    "id": 232,
+    "userId": "89",
+    "text": "Rows of grapevines marched in perfect formation, their leaves rustling in the gentle breeze. The air was heavy with the scent of ripe fruit, and the distant sound of laughter echoed through the valley. It was a place where time seemed to stand still, and every sip of wine was a toast to the beauty of life.",
+    "title": "The sun-kissed vineyard stretched across the hills",
+    "createdAt": "2026-05-23 04:49:37.769 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.769 +00:00"
+  },
+  {
+    "id": 233,
+    "userId": "172",
+    "text": "Surrounded by centuries-old buildings, the square bore witness to generations of history. A statue of a local hero stood at its center, immortalized in bronze. Cafes and shops lined the cobblestone streets, each one a testament to the enduring spirit of the town.",
+    "title": "The historic town square was a living museum",
+    "createdAt": "2026-05-23 04:49:37.780 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.780 +00:00"
+  },
+  {
+    "id": 234,
+    "userId": "189",
+    "text": "Water lilies floated serenely on the surface, their delicate blooms a splash of color against the greenery. Ducks paddled lazily in the shallows, while fish darted beneath the surface. It was a place where nature thrived, untouched by the chaos of the world beyond.",
+    "title": "The tranquil pond was a haven for wildlife",
+    "createdAt": "2026-05-23 04:49:37.791 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.791 +00:00"
+  },
+  {
+    "id": 235,
+    "userId": "88",
+    "text": "Stalls overflowed with exotic spices, fresh produce, and handmade crafts from around the world. The air was thick with the scent of roasting coffee and sizzling street food. It was a place where the pulse of the city could be felt most keenly, where every corner held a new adventure.",
+    "title": "The bustling city market was a feast for the senses",
+    "createdAt": "2026-05-23 04:49:37.803 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.803 +00:00"
+  },
+  {
+    "id": 236,
+    "userId": "35",
+    "text": "Its pristine waters shimmered in the sunlight, creating rainbows in the mist. Ferns and moss clung to the rocks, adding to the sense of natural beauty. It was a place where the power of nature was on full display, where every drop of water was a testament to the earth's resilience.",
+    "title": "The picturesque waterfall cascaded down the rocky cliffs",
+    "createdAt": "2026-05-23 04:49:37.813 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.813 +00:00"
+  },
+  {
+    "id": 237,
+    "userId": "178",
+    "text": "Smoke curled from the chimney, and the sound of crackling logs filled the air. Outside, snowflakes drifted lazily to the ground, transforming the landscape into a winter wonderland. It was a place where warmth and comfort awaited, a sanctuary from the cold embrace of winter.",
+    "title": "The cozy cabin nestled in the snowy mountains",
+    "createdAt": "2026-05-23 04:49:37.824 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.824 +00:00"
+  },
+  {
+    "id": 238,
+    "userId": "192",
+    "text": "Books lined the shelves from floor to ceiling, their leather-bound covers worn with age. Dust motes danced in the sunlight that streamed through stained glass windows. It was a place where scholars and seekers alike came to lose themselves in the wisdom of the ages.",
+    "title": "The ancient library was a treasure trove of knowledge",
+    "createdAt": "2026-05-23 04:49:37.834 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.834 +00:00"
+  },
+  {
+    "id": 239,
+    "userId": "83",
+    "text": "Towering trees provided shade from the sun, while colorful flowers bloomed in every corner. Children laughed and played on the playground, while couples strolled hand in hand along winding paths. It was a place where the beauty of nature and the energy of the city came together in perfect harmony.",
+    "title": "The vibrant city park was a green oasis",
+    "createdAt": "2026-05-23 04:49:37.846 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.846 +00:00"
+  },
+  {
+    "id": 240,
+    "userId": "205",
+    "text": "Its weathered facade bore the marks of countless seasons, yet it stood strong and proud against the elements. Chickens scratched in the dirt, and cows grazed lazily in the pasture. It was a place where the simple pleasures of life were cherished, and hard work was its own reward.",
+    "title": "The rustic farmhouse stood amidst fields of golden wheat",
+    "createdAt": "2026-05-23 04:49:37.858 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.858 +00:00"
+  },
+  {
+    "id": 241,
+    "userId": "90",
+    "text": "Flowers of every hue bloomed in profusion, their petals kissed by the golden rays of the sun. Bees buzzed from blossom to blossom, gathering nectar for their hive. It was a place where beauty and life abounded, where the passage of time was marked by the changing seasons.",
+    "title": "The sunlit garden was a riot of color",
+    "createdAt": "2026-05-23 04:49:37.868 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.868 +00:00"
+  },
+  {
+    "id": 242,
+    "userId": "60",
+    "text": "Dotted with wildflowers and bathed in golden sunlight, the meadow was a picture of tranquility. Butterflies flitted from bloom to bloom, while bees hummed lazily in the warm air. It was a place where time seemed to stand still, a sanctuary from the chaos of the world.",
+    "title": "The serene meadow stretched to the horizon",
+    "createdAt": "2026-05-23 04:49:37.876 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.876 +00:00"
+  },
+  {
+    "id": 243,
+    "userId": "150",
+    "text": "Its steeple reached towards the heavens, a symbol of hope and salvation. Inside, shafts of sunlight streamed through stained glass windows, casting colorful patterns on the worn wooden pews. It was a place where the weary found solace and the lost found direction.",
+    "title": "The quaint village church stood as a beacon of faith",
+    "createdAt": "2026-05-23 04:49:37.886 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.886 +00:00"
+  },
+  {
+    "id": 244,
+    "userId": "58",
+    "text": "Stone pillars stood in silent testimony to the glory of civilizations long gone. Crumbling walls bore the scars of battles fought and empires risen and fallen. It was a place where history whispered its secrets to those who dared to listen.",
+    "title": "The ancient ruins were a window into the past",
+    "createdAt": "2026-05-23 04:49:37.892 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.892 +00:00"
+  },
+  {
+    "id": 245,
+    "userId": "196",
+    "text": "Its waters flowed lazily, reflecting the blue sky above and the green trees along its banks. Fish darted beneath the surface, and dragonflies flitted above the reeds. It was a place where one could escape the noise of the world and find peace in the gentle rhythm of nature.",
+    "title": "The tranquil river wound its way through the countryside",
+    "createdAt": "2026-05-23 04:49:37.899 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.899 +00:00"
+  },
+  {
+    "id": 246,
+    "userId": "88",
+    "text": "People hurried along the sidewalks, their footsteps echoing off the towering buildings. Cars honked and sirens wailed, creating a symphony of urban sounds. It was a place where dreams were chased and fortunes made, where every corner held the promise of adventure.",
+    "title": "The bustling city streets were alive with energy",
+    "createdAt": "2026-05-23 04:49:37.905 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.905 +00:00"
+  },
+  {
+    "id": 247,
+    "userId": "132",
+    "text": "Shelves lined with books stretched from floor to ceiling, each one a portal to another world. The scent of paper and ink filled the air, and the sound of pages turning was like music to the ears. It was a place where imaginations soared and hearts found refuge.",
+    "title": "The cozy bookstore was a haven for book lovers",
+    "createdAt": "2026-05-23 04:49:37.912 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.912 +00:00"
+  },
+  {
+    "id": 248,
+    "userId": "93",
+    "text": "Skyscrapers towered overhead, their lights twinkling like stars against the darkness. Below, the streets pulsed with life, as cars and pedestrians moved in a constant dance. It was a place where dreams took flight and the possibilities seemed endless.",
+    "title": "The vibrant city skyline glittered in the night",
+    "createdAt": "2026-05-23 04:49:37.919 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.919 +00:00"
+  },
+  {
+    "id": 249,
+    "userId": "149",
+    "text": "Its intricate carvings and towering columns spoke of a time when gods walked among mortals. Inside, priests tended to sacred fires, their chants filling the air with reverence. It was a place where the divine felt close at hand, where prayers were offered and answered.",
+    "title": "The ancient temple stood as a testament to human ingenuity",
+    "createdAt": "2026-05-23 04:49:37.926 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.926 +00:00"
+  },
+  {
+    "id": 250,
+    "userId": "52",
+    "text": "Beneath the shade of a towering oak tree, villagers gathered to chat and share stories. Children played games on the cobblestone streets, while elders watched with fond smiles. It was a place where time seemed to move more slowly, and the simple joys of life were savored.",
+    "title": "The peaceful village square was a gathering place for locals",
+    "createdAt": "2026-05-23 04:49:37.934 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.934 +00:00"
+  },
+  {
+    "id": 251,
+    "userId": "187",
+    "text": "Its waters cascading in a frothy torrent, sending mist into the air. Rainbows danced in the spray, adding to the spectacle of nature's power. It was a place where one could feel the heartbeat of the earth, a reminder of the awe-inspiring beauty of the natural world.",
+    "title": "The majestic waterfall thundered down the mountainside",
+    "createdAt": "2026-05-23 04:49:37.943 +00:00",
+    "updatedAt": "2026-05-23 04:49:37.943 +00:00"
+  },
+  {
+    "id": 252,
+    "userId": "99",
+    "text": "Oiii",
+    "title": "Oii",
+    "createdAt": "2026-05-23 05:07:24.417 +00:00",
+    "updatedAt": "2026-05-23 05:07:24.417 +00:00"
+  },
+  {
+    "id": 253,
+    "userId": "99",
+    "text": "Oiii",
+    "title": "Oii",
+    "createdAt": "2026-05-23 05:07:46.719 +00:00",
+    "updatedAt": "2026-05-23 05:07:46.719 +00:00"
+  },
+  {
+    "id": 254,
+    "userId": "99",
+    "text": "Musica :D",
+    "title": "hehe",
+    "createdAt": "2026-05-23 05:08:15.201 +00:00",
+    "updatedAt": "2026-05-23 05:08:15.201 +00:00"
+  },
+  {
+    "id": 255,
+    "userId": "",
+    "text": "",
+    "title": "",
+    "createdAt": "2026-05-23 16:49:41.957 +00:00",
+    "updatedAt": "2026-05-23 16:49:41.957 +00:00"
+  }
+], {});
+  },
+
+  async down (queryInterface, Sequelize) {
+    await queryInterface.bulkDelete('posts', null, {});
+  }
+};

@@ -33,6 +33,7 @@ module.exports = (sequelize) => {
         port: { type: DataTypes.STRING, defaultValue: '' },
         token: { type: DataTypes.STRING, defaultValue: '' },
         maxPlayers: { type: DataTypes.INTEGER, defaultValue: 30 },
+        playersCount: { type: DataTypes.INTEGER, defaultValue: 0 },
         scene: { type: DataTypes.STRING, defaultValue: '' },
         language: { type: DataTypes.STRING, defaultValue: '' },
         uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },//instancia

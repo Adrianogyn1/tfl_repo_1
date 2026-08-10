@@ -40,7 +40,7 @@ async function getAll(req, res) {
             nextPage: servers?.count <= 0 ? 0 : Math.ceil((offset + limit) / limit) + 1,
         });
     } catch (err) {
-        return res.status(500).json({ success: false, data: [], error: err.message });
+        return res.json({ success: false, data: [], error: err.message });
     }
 }
 
@@ -48,11 +48,11 @@ async function getById(req, res) {
     try {
         const server = await repo.ServerModel.findByPk(req.params.id);
         if (!server) {
-            return res.status(404).json({ error: "Server not found", success: false });
+            return res.json({ error: "Server not found", success: false });
         }
         return res.json({ success: true, data: server });
     } catch (err) {
-        return res.status(500).json({ error: err.message, success: false });
+        return res.json({ error: err.message, success: false });
     }
 }
 
@@ -62,13 +62,13 @@ async function create(req, res) {
         const error = checkData(serverData);
 
         if (error) {
-            return res.status(400).json({ error: error, success: false });
+            return res.json({ error: error, success: false });
         }
 
         const server = await repo.Server.create(serverData);
         return res.json({ success: true, data: server });
     } catch (err) {
-        return res.status(500).json({ error: err.message, success: false });
+        return res.json({ error: err.message, success: false });
     }
 }
 
@@ -76,12 +76,12 @@ async function update(req, res) {
     try {
         const error = checkData(req.body);
         if (error) {
-            return res.status(400).json({ error: error, success: false });
+            return res.json({ error: error, success: false });
         }
 
         const serverExists = await repo.Server.findByPk(req.params.id);
         if (!serverExists) {
-            return res.status(404).json({ error: "Server not found", success: false });
+            return res.json({ error: "Server not found", success: false });
         }
 
         await repo.Server.update(req.body, { where: { id: req.params.id } });
@@ -89,7 +89,7 @@ async function update(req, res) {
         
         return res.json({ success: true, data: updatedServer });
     } catch (err) {
-        return res.status(500).json({ error: err.message, success: false });
+        return res.json({ error: err.message, success: false });
     }
 }
 
@@ -97,13 +97,13 @@ async function remove(req, res) {
     try {
         const server = await repo.Server.findByPk(req.params.id);
         if (!server) {
-            return res.status(404).json({ error: "Server not found", success: false });
+            return res.json({ error: "Server not found", success: false });
         }
 
         await repo.Server.destroy({ where: { id: req.params.id } });
         return res.json({ success: true, message: "Server deleted successfully" });
     } catch (err) {
-        return res.status(500).json({ error: err.message, success: false });
+        return res.json({ error: err.message, success: false });
     }
 }
 

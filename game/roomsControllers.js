@@ -344,8 +344,6 @@ function resolveRoom(room){
 
 async function getAll(req, res) {
     try {
-      
-        
         const queryStr = req.query?.q || req.body?.q || '';
         const whereCondition = repo.parseQueryStringToWhere(queryStr);
         const orderCondition = repo.parseOrderByString(queryStr);

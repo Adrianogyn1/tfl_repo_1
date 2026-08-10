@@ -1,5 +1,6 @@
 const repo = require('../repository');
 
+
 function checkData(serverData) {
     let error = "";
     try {
@@ -12,8 +13,8 @@ function checkData(serverData) {
         if (!serverData.scene)
             throw new Error("scene is required");
 
-        if (!serverData.language)
-            throw new Error("language is required");
+       // if (!serverData.language)
+           // throw new Error("language is required");
 
     } catch (e) {
         error = e.message;

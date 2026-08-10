@@ -33,6 +33,7 @@ router.get('/api/cdn', (req, res) => res.sendFile(path.join(__dirname, './pagina
 router.post('/api/auth/signin', (req, res) => authController.sigin(req, res));
 router.post('/api/auth/signup', (req, res) => authController.signup(req, res));
 router.post('/api/auth/forgot', (req, res) => authController.forgot(req, res));
+router.get('/api/auth/signin/random', (req, res) => authController.signInRandom(req, res));
 
 /* =====================================================
    Usuários e Perfis
@@ -129,5 +130,13 @@ router.get('/api/download', (req, res) => filesController.sendFile(req, res));
 router.post('/api/upload', (req, res) => filesController.uploadFile(req, res, req.app.get('broadcast')()));
 
 
+const shop = require('./controllers/shop/shop_controller.js');
+
+/* =====================================================
+   Loja (Shop)
+===================================================== */
+if (shop && shop.router) {
+    router.use('/game', shop.router);
+}
 
 module.exports = router;

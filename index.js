@@ -10,9 +10,9 @@ const repo = require('./repository.js');
 const { settings } = require('cluster');
 const { Op } = require('sequelize');
 require('dotenv').config();
-
+const appHandlers = require('./controllers/appHandlers.js');
 //game
-const  routeGameController  = require('./game/routers.js');
+const routeGameController = require('./game/routers.js');
 
 const Settings = {
     PORT: process.env.PORT || 5000,
@@ -31,36 +31,36 @@ app.use('/static', express.static(Settings.PUBLIC_DIR));
 //app.use(express.json({ limit: '10mb' }));
 
 // Transformada em async para esperar a resposta do banco de dados
-global.CheckLogin = async function(req, res) {
+global.CheckLogin = async function (req, res) {
     // 1. Captura o token de todas as origens possíveis (Headers, Query String ou Body)
-    let token = req.userToken;   
+    let token = req.userToken;
     // 3. Executa a busca usando findOne do Sequelize
-    const user = await repo.User.findOne({ where: { token: token } });    
+    const user = await repo.User.findOne({ where: { token: token } });
     if (!user) {
-        console.log(`[Auth Falhou] Token recebido: "${token}"`);        
+        console.log(`[Auth Falhou] Token recebido: "${token}"`);
         // Se nem o usuário de teste existir, bloqueia a requisição
         res.status(401).json({ error: 'Unauthorized' });
         return false;
     }
 
-    req.userId = user.id;    
+    req.userId = user.id;
     return true;
 };
 
 // Middleware de autenticação adaptado para o Sequelize (async/await)
 app.use(async (req, res, next) => {
-    req.userToken = req.headers['tfl-token'] || req.headers['token'] || '';    
-    
+    req.userToken = req.headers['tfl-token'] || req.headers['token'] || '';
+
     // Procura o usuário de forma estrita no banco de dados
-    const user = await repo.User.findOne({ where: { token: req.userToken } });   
-    
+    const user = await repo.User.findOne({ where: { token: req.userToken } });
+
     if (user) {
         req.userId = user.id;
         console.log(`Usuário Autenticado -> ID: ${req.userId} | Token: ${req.userToken}`);
-    } else {  
+    } else {
         console.log(`⚠️ Token Inválido ou Ausente recebido  Token: "${req.userToken}"`);
     }
-    
+
     next();
 });
 
@@ -76,12 +76,12 @@ app.use(routeGameController);
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 const clients = new Set();
-
+chatModule.setWss(wss);
 // Evento de conexão adaptado com async para realizar a busca no Sequelize
 wss.on('connection', async (ws, req) => {
     // 1. Tenta pegar dos cabeçalhos HTTP normais
     let tk = req.headers['tfl-token'] || req.headers['token'];
-    
+
     // 2. Se não achar nos cabeçalhos, extrai da Query String da URL de forma segura
     if (!tk && req.url) {
         try {
@@ -93,33 +93,48 @@ wss.on('connection', async (ws, req) => {
             console.error("Erro ao processar parâmetros da URL do WebSocket:", e);
         }
     }
-    
+
     // Garante que se tudo falhar, vire uma string vazia
     tk = tk || '';
-    
+    if (tk == "app_open") {
+        appHandlers.setApp(ws);
+        console.log("📡 Conexão Estabelecida: App Open");
+        return;
+    }
+
     // Busca o usuário no banco usando findOne do Sequelize
     const user = await repo.User.findOne({ where: { token: tk } });
-    
+
     if (!user) {
         console.log(`⚠️ Conexão Recusada: Token "${tk}" inválido ou não encontrado no banco.`);
-        ws.close(4001, 'Unauthorized'); 
+        ws.close(4001, 'Unauthorized');
         return;
     }
 
     ws.userId = user.id;
     clients.add(ws);
+    console.log(`📡 Conexão Estabelecida: ID ${user.id} | Token: ${tk}`);
 
     ws.on('message', (message) => {
         try {
-            const packet = JSON.parse(message);
+            const payload = message.toString('utf-8');
+            console.log('Message:', payload);
+
+            const packet = JSON.parse(payload);
             console.log(`📡 Recebendo pacote: ${packet.Event}`);
-            
-            chatModule.route(ws, packet.Event, packet.Data);
+
+            if (packet.Event.includes("chat"))
+                chatModule.route(ws, packet.Event, packet.Data, wss);
+            else if (packet.Event.includes("room"))
+                appHandlers.route(ws, packet.Event, packet.Data, wss);
+
+            else
+                console.log(`Rota nao encontrada para o evento: ${packet.Event}`);
+
         } catch (err) {
             console.error('Erro ao analisar pacote:', err);
         }
     });
-
     ws.on('close', () => clients.delete(ws));
 });
 

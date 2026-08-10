@@ -4,24 +4,24 @@ module.exports = (sequelize) => {
     class RoomModel extends Model {
 
         isValid(obj) {
-            try{
-                if(Object.type(obj) != 'object') throw new Error('obj is not an object');
-                if(!obj.name) throw new Error('name is required');
-                if(!obj.scene) throw new Error('scene is required');
-                if(!obj.ownnerID) throw new Error('ownnerID is required');
+            try {
+                if (Object.type(obj) != 'object') throw new Error('obj is not an object');
+                if (!obj.name) throw new Error('name is required');
+                if (!obj.scene) throw new Error('scene is required');
+                if (!obj.ownnerID) throw new Error('ownnerID is required');
                 return true;
             }
-            catch(e){
+            catch (e) {
                 return e.message;
             }
         }
     }
 
     RoomModel.init({
-        id: { 
-            type: DataTypes.INTEGER, 
-            primaryKey: true, 
-            autoIncrement: true 
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
         },
         name: { type: DataTypes.STRING, defaultValue: '' },
         link: { type: DataTypes.STRING, defaultValue: '' },
@@ -40,8 +40,8 @@ module.exports = (sequelize) => {
         inventoryId: { type: DataTypes.INTEGER, defaultValue: 0 },
         uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
         target_uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-      requestOnlineData: { type: DataTypes.BOOLEAN, defaultValue: false },
-      size: { type: DataTypes.FLOAT, defaultValue: 1 },
+        requestOnlineData: { type: DataTypes.BOOLEAN, defaultValue: false },
+        size: { type: DataTypes.FLOAT, defaultValue: 1 },
         createdAt: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
@@ -51,7 +51,7 @@ module.exports = (sequelize) => {
             defaultValue: DataTypes.NOW
         },
         userId: { type: DataTypes.INTEGER, defaultValue: 0 }
-    
+
     }, {
         sequelize, // <-- Faltava esse bloco de opções aqui
         modelName: 'RoomModel',

@@ -29,3 +29,5 @@ Thumbs.db
 # Arquivos de Build/Saída
 dist/
 build/
+
+*.obj

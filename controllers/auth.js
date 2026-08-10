@@ -49,6 +49,15 @@ async function CheckLogin(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized' });
 }
 
+async function signInRandom(req, res) {
+  const user = await repo.User.findOne({
+        order: repo.Sequelize.literal('RANDOM()')
+    });
+    
+    req.body = { login: user.login, password: user.password };
+    return sigin(req, res);
+}
+
 
 async function sigin(req, res) {
     const { login, password } = req.body;
@@ -83,7 +92,7 @@ async function sigin(req, res) {
         // Mapeia os usuários a partir de allUsers.rows
         data.friends = friends;
         
-        const rooms = await repo.RoomModel.findAll();//{ where: { userId: user.id }, raw: true });
+        const rooms = [];//await repo.RoomModel.findAll();//{ where: { userId: user.id }, raw: true });
         data.roomsInfo = rooms;
 
         console.log(data);
@@ -162,4 +171,4 @@ async function logout(req, res) {
     res.status(200).json({ success: true , data:{} });
 }
 
-module.exports = { sigin, signup, logout, forgot, CheckLogin };
+module.exports = { sigin, signup, logout, forgot, CheckLogin, signInRandom };
