@@ -49,6 +49,10 @@ module.exports = (sequelize) => {
             primaryKey: true,
             autoIncrement: true
         },
+        containerId: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
         model: {
             type: DataTypes.STRING,
             allowNull: true
@@ -98,7 +102,7 @@ module.exports = (sequelize) => {
         }
     });
 
-    // Definindo a relação 1:N (Um Container possui vários Items)
+    // Definindo a relação 1:N com chaves explícitas
     ShopContainer.hasMany(ItemResource, {
         as: 'items',
         foreignKey: 'containerId',
@@ -106,6 +110,7 @@ module.exports = (sequelize) => {
     });
 
     ItemResource.belongsTo(ShopContainer, {
+        as: 'container',
         foreignKey: 'containerId'
     });
 

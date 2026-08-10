@@ -40,16 +40,33 @@ async function GetAll(req, res) {
         const query = (req.query.q || '').trim();
         const offset = page * limit;
 
+        // Monta condição de busca ignorando Case Sensitivity
         const whereCondition = query ? {
             [Op.or]: [
-                { title: { [Op.like]: `%${query}%` } },
-                { description: { [Op.like]: `%${query}%` } }
+                repo.sequelize.where(
+                    repo.sequelize.fn('LOWER', repo.sequelize.col('shop_container.title')),
+                    { [Op.like]: `%${query.toLowerCase()}%` }
+                ),
+                repo.sequelize.where(
+                    repo.sequelize.fn('LOWER', repo.sequelize.col('shop_container.description')),
+                    { [Op.like]: `%${query.toLowerCase()}%` }
+                ),
+                repo.sequelize.where(
+                    repo.sequelize.fn('LOWER', repo.sequelize.col('items.model')),
+                    { [Op.like]: `%${query.toLowerCase()}%` }
+                )
             ]
         } : {};
 
         const { count, rows } = await repo.ShopContainer.findAndCountAll({
             where: whereCondition,
-            include: [{ model: repo.ItemResource, as: 'items' }],
+            include: [{ 
+                model: repo.ItemResource, 
+                as: 'items',
+                required: false
+            }],
+            distinct: true,
+            subQuery: false,
             limit: limit,
             offset: offset,
             order: [['id', 'DESC']]
@@ -68,7 +85,6 @@ async function GetAll(req, res) {
 
             if (Array.isArray(container.items)) {
                 container.items = container.items.map(resItem => {
-                    // Garante parse se textures_paths vier como string/JSON do banco
                     if (typeof resItem.textures_paths === 'string') {
                         try {
                             resItem.textures_paths = JSON.parse(resItem.textures_paths);
@@ -87,7 +103,6 @@ async function GetAll(req, res) {
                         }
                     }
 
-                    // Remove preenchimentos com 'default' ou 'null' para evitar erros no C#
                     const sanitizeDict = (obj) => {
                         if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
                         const clean = {};
@@ -118,7 +133,7 @@ async function GetAll(req, res) {
             error: '',
             data: data,
             count: data.length,
-            total: count,
+            total: typeof count === 'number' ? count : count.length,
             offset: offset,
             limit: limit
         });
@@ -130,7 +145,6 @@ async function GetAll(req, res) {
         });
     }
 }
-
 async function SaveMaterial(req, res) {
     try {
         const payload = JSON.parse(req.body.payload || '{}');
