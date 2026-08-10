@@ -68,7 +68,17 @@ async function GetAll(req, res) {
 
             if (Array.isArray(container.items)) {
                 container.items = container.items.map(resItem => {
-                    resItem.textures_paths = resItem.textures_paths || {};
+                    // Garante parse se textures_paths vier como string/JSON do banco
+                    if (typeof resItem.textures_paths === 'string') {
+                        try {
+                            resItem.textures_paths = JSON.parse(resItem.textures_paths);
+                        } catch (e) {
+                            resItem.textures_paths = {};
+                        }
+                    } else {
+                        resItem.textures_paths = resItem.textures_paths || {};
+                    }
+
                     for (const key in resItem.textures_paths) {
                         if (resItem.textures_paths[key]) {
                             resItem.textures_paths[key] = resItem.textures_paths[key].startsWith('http')
@@ -77,19 +87,24 @@ async function GetAll(req, res) {
                         }
                     }
 
-                    const ensureDict = (obj) => {
-                        if (obj && typeof obj === 'object' && Object.keys(obj).length > 0) {
-                            return obj;
+                    // Remove preenchimentos com 'default' ou 'null' para evitar erros no C#
+                    const sanitizeDict = (obj) => {
+                        if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
+                        const clean = {};
+                        for (const key in obj) {
+                            if (obj[key] !== null && obj[key] !== undefined && obj[key] !== "") {
+                                clean[key] = obj[key];
+                            }
                         }
-                        return { default: "" };
+                        return clean;
                     };
 
-                    resItem.values = ensureDict(resItem.values);
-                    resItem.colors = ensureDict(resItem.colors);
-                    resItem.ints = ensureDict(resItem.ints);
-                    resItem.bools = ensureDict(resItem.bools);
-                    resItem.strings = ensureDict(resItem.strings);
-                    resItem.vectors = ensureDict(resItem.vectors);
+                    resItem.values = sanitizeDict(resItem.values);
+                    resItem.colors = sanitizeDict(resItem.colors);
+                    resItem.ints = sanitizeDict(resItem.ints);
+                    resItem.bools = sanitizeDict(resItem.bools);
+                    resItem.strings = sanitizeDict(resItem.strings);
+                    resItem.vectors = sanitizeDict(resItem.vectors);
 
                     return resItem;
                 });
