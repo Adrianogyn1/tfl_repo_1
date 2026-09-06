@@ -1,18 +1,17 @@
-const repo = require("../repository.js");
+const repo = require("../../repository.js");
 
 async function API(req, res) {
   try {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
     const allTables = repo.sequelize.models;
     const databaseSummary = {};
-   
 
     // 1. Busca o primeiro token disponível na tabela User para injetar nos links de teste
     let testToken = "SEU_TOKEN_AQUI";
     if (repo.User) {
       const firstUser = await repo.User.findOne({
-        attributes: ['token'],
-        where: repo.sequelize.literal("token IS NOT NULL AND token != ''")
+        attributes: ["token"],
+        where: repo.sequelize.literal("token IS NOT NULL AND token != ''"),
       });
       if (firstUser && firstUser.token) {
         testToken = firstUser.token;
@@ -22,19 +21,17 @@ async function API(req, res) {
     // 2. Mapeia os dados do Banco de Dados
     const qtd = parseInt(req.query?.qtd || req.body?.qtd, 10);
     for (const modelName in allTables) {
-      const model = allTables[modelName];      
+      const model = allTables[modelName];
       const firstItems = await model.findAll({ limit: qtd || 1, offset: 0 });
       const count = await model.count();
-      
+
       databaseSummary[modelName] = {
         total_records: count,
-        ...(qtd ? { sample: firstItems } : {})
+        ...(qtd ? { sample: firstItems } : {}),
       };
     }
-    
-function renderOptins(obj, template_help){
 
-}
+    function renderOptins(obj, template_help) {}
     // 3. Renderiza o HTML de documentação amigável
     const html = `
     <!DOCTYPE html>
@@ -500,12 +497,16 @@ function renderOptins(obj, template_help){
                   </tr>
                 </thead>
                 <tbody>
-                  ${Object.keys(databaseSummary).map(modelName => `
+                  ${Object.keys(databaseSummary)
+                    .map(
+                      (modelName) => `
                     <tr>
                       <td><strong>${modelName}</strong></td>
                       <td>${databaseSummary[modelName].total_records}</td>
                     </tr>
-                  `).join('')}
+                  `,
+                    )
+                    .join("")}
                 </tbody>
               </table>
             </div>
@@ -583,7 +584,7 @@ function renderOptins(obj, template_help){
     </html>
     `;
 
-    res.setHeader('Content-Type', 'text/html');
+    res.setHeader("Content-Type", "text/html");
     return res.send(html);
   } catch (error) {
     return res.status(500).json({ error: error.message });

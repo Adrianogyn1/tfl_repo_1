@@ -1,12 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR" class="h-full bg-gray-50">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Loja de Materiais & Containers</title>
 
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
@@ -17,163 +19,294 @@
     <!-- Babylon.js Core e Loaders -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-</head>
+  </head>
 
-<body class="p-4 bg-[#1e1f22] text-white min-h-screen flex flex-col items-center">
-
+  <body
+    class="p-4 bg-[#1e1f22] text-white min-h-screen flex flex-col items-center"
+  >
     <!-- Topo da Loja: Busca Global e Ação de Criar -->
-    <div class="w-full max-w-7xl bg-[#2b2d31] p-4 rounded-lg shadow-lg border border-gray-700 mb-6 flex items-center justify-between gap-4">
-        <input type="text" id="search-input" placeholder="Buscar containers ou itens salvos..."
-            class="flex-1 px-4 py-2 rounded bg-[#1e1f22] text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-sm">
-        
-        <button id="btn-open-modal-create" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition duration-200 flex items-center gap-2">
-            <span>+</span> Novo Container
-        </button>
+    <div
+      class="w-full max-w-7xl bg-[#2b2d31] p-4 rounded-lg shadow-lg border border-gray-700 mb-6 flex items-center justify-between gap-4"
+    >
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Buscar containers ou itens salvos..."
+        class="flex-1 px-4 py-2 rounded bg-[#1e1f22] text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+      />
+
+      <button
+        id="btn-open-modal-create"
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition duration-200 flex items-center gap-2"
+      >
+        <span>+</span> Novo Container
+      </button>
     </div>
 
     <!-- Grid de Containers Salvos da Loja -->
     <div class="w-full max-w-7xl">
-        <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <!-- Renderizado via JS -->
-        </div>
+      <div
+        id="items-container"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+      >
+        <!-- Renderizado via JS -->
+      </div>
 
-        <div id="loading" class="text-center py-6 hidden text-gray-400 font-semibold text-sm">
-            Carregando mais itens...
-        </div>
+      <div
+        id="loading"
+        class="text-center py-6 hidden text-gray-400 font-semibold text-sm"
+      >
+        Carregando mais itens...
+      </div>
     </div>
 
     <!-- Modal Principal de Criação/Edição do Container -->
-    <div id="modal-container" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-[#2b2d31] w-full max-w-6xl rounded-lg p-6 shadow-2xl border border-gray-700 text-left max-h-[92vh] overflow-y-auto">
+    <div
+      id="modal-container"
+      class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50"
+    >
+      <div
+        class="bg-[#2b2d31] w-full max-w-6xl rounded-lg p-6 shadow-2xl border border-gray-700 text-left max-h-[92vh] overflow-y-auto"
+      >
+        <div
+          class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4"
+        >
+          <h3 class="text-lg font-bold text-gray-200">
+            Criar / Editar Container
+          </h3>
+          <button
+            type="button"
+            id="btn-close-modal"
+            class="text-gray-400 hover:text-white text-xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
 
-            <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
-                <h3 class="text-lg font-bold text-gray-200">Criar / Editar Container</h3>
-                <button type="button" id="btn-close-modal" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+        <form id="form-container" class="flex flex-col gap-6">
+          <!-- 1. Informações Globais do Container -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#1e1f22] p-4 rounded border border-gray-700"
+          >
+            <div>
+              <label
+                class="block text-xs text-gray-400 font-semibold uppercase mb-1"
+                >Título do Container</label
+              >
+              <input
+                type="text"
+                id="container-title"
+                placeholder="Ex: Conjunto de Armaduras Raras"
+                class="w-full px-3 py-2 text-sm bg-[#2b2d31] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+                required
+              />
             </div>
 
-            <form id="form-container" class="flex flex-col gap-6">
+            <div>
+              <label
+                class="block text-xs text-gray-400 font-semibold uppercase mb-1"
+                >Preço (Total/Pacote)</label
+              >
+              <input
+                type="number"
+                id="container-price"
+                min="0"
+                step="0.01"
+                value="0"
+                class="w-full px-3 py-2 text-sm bg-[#2b2d31] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              />
+            </div>
 
-                <!-- 1. Informações Globais do Container -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#1e1f22] p-4 rounded border border-gray-700">
-                    <div>
-                        <label class="block text-xs text-gray-400 font-semibold uppercase mb-1">Título do Container</label>
-                        <input type="text" id="container-title" placeholder="Ex: Conjunto de Armaduras Raras"
-                            class="w-full px-3 py-2 text-sm bg-[#2b2d31] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500" required>
-                    </div>
+            <!-- Origem da Thumbnail (Upload ou Print Babylon) -->
+            <div class="flex flex-col gap-1">
+              <label
+                class="block text-xs text-gray-400 font-semibold uppercase mb-1"
+                >Thumbnail do Container</label
+              >
+              <div class="flex items-center gap-4 text-xs mb-1">
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="thumb-source"
+                    value="upload"
+                    checked
+                    class="text-blue-600"
+                  />
+                  <span>Upload</span>
+                </label>
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="thumb-source"
+                    value="canvas"
+                    class="text-blue-600"
+                  />
+                  <span>Print Canvas</span>
+                </label>
+              </div>
 
-                    <div>
-                        <label class="block text-xs text-gray-400 font-semibold uppercase mb-1">Preço (Total/Pacote)</label>
-                        <input type="number" id="container-price" min="0" step="0.01" value="0"
-                            class="w-full px-3 py-2 text-sm bg-[#2b2d31] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500">
-                    </div>
+              <div id="thumb-upload-container">
+                <input
+                  type="file"
+                  id="container-thumb"
+                  accept="image/*"
+                  class="text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer w-full"
+                />
+              </div>
 
-                    <!-- Origem da Thumbnail (Upload ou Print Babylon) -->
-                    <div class="flex flex-col gap-1">
-                        <label class="block text-xs text-gray-400 font-semibold uppercase mb-1">Thumbnail do Container</label>
-                        <div class="flex items-center gap-4 text-xs mb-1">
-                            <label class="flex items-center gap-1 cursor-pointer">
-                                <input type="radio" name="thumb-source" value="upload" checked class="text-blue-600">
-                                <span>Upload</span>
-                            </label>
-                            <label class="flex items-center gap-1 cursor-pointer">
-                                <input type="radio" name="thumb-source" value="canvas" class="text-blue-600">
-                                <span>Print Canvas</span>
-                            </label>
-                        </div>
-
-                        <div id="thumb-upload-container">
-                            <input type="file" id="container-thumb" accept="image/*"
-                                class="text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer w-full">
-                        </div>
-
-                        <div id="thumb-print-container" class="hidden flex flex-col gap-2">
-                            <button type="button" id="btn-capture-canvas" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded transition">
-                                📷 Capturar Canvas 3D
-                            </button>
-                            <div class="flex items-center gap-2">
-                                <img id="canvas-preview-img" src="" class="w-12 h-12 rounded border border-gray-600 object-cover hidden" />
-                                <span id="canvas-preview-placeholder" class="text-[10px] text-gray-500">Nenhum print capturado</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-3">
-                        <label class="block text-xs text-gray-400 font-semibold uppercase mb-1">Descrição</label>
-                        <textarea id="container-description" rows="2" placeholder="Descreva o conteúdo deste pacote..."
-                            class="w-full px-3 py-2 text-sm bg-[#2b2d31] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500 resize-none"></textarea>
-                    </div>
+              <div
+                id="thumb-print-container"
+                class="hidden flex flex-col gap-2"
+              >
+                <button
+                  type="button"
+                  id="btn-capture-canvas"
+                  class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded transition"
+                >
+                  📷 Capturar Canvas 3D
+                </button>
+                <div class="flex items-center gap-2">
+                  <img
+                    id="canvas-preview-img"
+                    src=""
+                    class="w-12 h-12 rounded border border-gray-600 object-cover hidden"
+                  />
+                  <span
+                    id="canvas-preview-placeholder"
+                    class="text-[10px] text-gray-500"
+                    >Nenhum print capturado</span
+                  >
                 </div>
+              </div>
+            </div>
 
-                <!-- 2. Seleção e Adição de Modelos aos Itens do Container -->
-                <div class="border border-gray-700 p-4 rounded bg-[#222428] flex flex-col gap-3">
-                    <h4 class="text-xs text-gray-400 font-semibold uppercase">Adicionar Item ao Container</h4>
-                    
-                    <div class="flex flex-wrap items-center gap-2">
-                        <input type="text" id="model-search-input" placeholder="Buscar modelo..."
-                            class="flex-1 min-w-[150px] px-3 py-1.5 text-xs bg-[#1e1f22] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500">
+            <div class="md:col-span-3">
+              <label
+                class="block text-xs text-gray-400 font-semibold uppercase mb-1"
+                >Descrição</label
+              >
+              <textarea
+                id="container-description"
+                rows="2"
+                placeholder="Descreva o conteúdo deste pacote..."
+                class="w-full px-3 py-2 text-sm bg-[#2b2d31] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500 resize-none"
+              ></textarea>
+            </div>
+          </div>
 
-                        <!-- Filtro de Categorias -->
-                        <select id="select-category" class="px-2 py-1.5 text-xs bg-[#1e1f22] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500 cursor-pointer">
-                            <option value="all">Todas as Categorias</option>
-                            <option value="head">Head / Cabeça</option>
-                            <option value="torso">Torso / Blusa</option>
-                            <option value="legs">Legs / Calça</option>
-                            <option value="hair">Hair / Cabelo</option>
-                            <option value="shoes">Shoes / Sapatos</option>
-                        </select>
+          <!-- 2. Seleção e Adição de Modelos aos Itens do Container -->
+          <div
+            class="border border-gray-700 p-4 rounded bg-[#222428] flex flex-col gap-3"
+          >
+            <h4 class="text-xs text-gray-400 font-semibold uppercase">
+              Adicionar Item ao Container
+            </h4>
 
-                        <!-- Filtro de Gênero -->
-                        <select id="select-gender" class="px-2 py-1.5 text-xs bg-[#1e1f22] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500 cursor-pointer">
-                            <option value="all">Todos os Gêneros</option>
-                            <option value="male">Masculino (male)</option>
-                            <option value="female">Feminino (female)</option>
-                            <option value="unisex">Unissex</option>
-                        </select>
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Filtro de Busca -->
+              <input
+                type="text"
+                id="model-search-input"
+                placeholder="Buscar modelo..."
+                class="flex-1 min-w-[150px] px-3 py-1.5 text-xs bg-[#1e1f22] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              />
 
-                        <button type="button" id="btn-add-model-to-list" disabled
-                            class="px-4 py-1.5 bg-green-600 disabled:opacity-40 hover:bg-green-700 text-white text-xs font-semibold rounded transition">
-                            + Adicionar à Lista
-                        </button>
-                    </div>
+              <!-- Filtro de Categorias -->
+              <select
+                id="select-category"
+                class="px-2 py-1.5 text-xs bg-[#1e1f22] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500 cursor-pointer"
+              >
+                <option value="all">Todas as Categorias</option>
+                <option value="head">Head / Cabeça</option>
+                <option value="torso">Torso / Blusa</option>
+                <option value="legs">Legs / Calça</option>
+                <option value="hair">Hair / Cabelo</option>
+                <option value="shoes">Shoes / Sapatos</option>
+              </select>
 
-                    <!-- Mini Grid de Seleção de Modelos -->
-                    <div id="models-cards-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-36 overflow-y-auto p-2 bg-[#1e1f22] rounded border border-gray-700">
-                        <!-- Inseridos via JS -->
-                    </div>
-                </div>
+              <!-- Filtro de Gênero -->
+              <select
+                id="select-gender"
+                class="px-2 py-1.5 text-xs bg-[#1e1f22] text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500 cursor-pointer"
+              >
+                <option value="all">Todos os Gêneros</option>
+                <option value="male">Masculino (male)</option>
+                <option value="female">Feminino (female)</option>
+                <option value="Universal">Unissex</option>
+              </select>
 
-                <!-- 3. Visualização 3D e Lista de Itens no Container -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- Preview 3D com Babylon.js -->
-                    <div class="flex flex-col gap-2">
-                        <span class="text-xs text-gray-400 font-semibold uppercase">Preview 3D do Item Selecionado</span>
-                        <div class="w-full h-64 bg-black rounded border border-gray-700 relative overflow-hidden">
-                            <canvas id="babylon-canvas" class="w-full h-full outline-none"></canvas>
-                        </div>
-                    </div>
+              <button
+                type="button"
+                id="btn-add-model-to-list"
+                disabled
+                class="px-4 py-1.5 bg-green-600 disabled:opacity-40 hover:bg-green-700 text-white text-xs font-semibold rounded transition"
+              >
+                + Adicionar à Lista
+              </button>
+            </div>
 
-                    <!-- Lista de Itens e Configuração de Materiais/Slot -->
-                    <div class="flex flex-col gap-3">
-                        <span class="text-xs text-gray-400 font-semibold uppercase">Itens no Container (<span id="items-count">0</span>)</span>
-                        
-                        <div id="container-items-list" class="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
-                            <!-- Lista de itens dinâmicos -->
-                        </div>
-                    </div>
+            <!-- Mini Grid de Seleção de Modelos -->
+            <div
+              id="models-cards-grid"
+              class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-36 overflow-y-auto p-2 bg-[#1e1f22] rounded border border-gray-700"
+            >
+              <!-- Inseridos via JS -->
+            </div>
+          </div>
 
-                </div>
+          <!-- 3. Visualização 3D e Lista de Itens no Container -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Preview 3D com Babylon.js -->
+            <div class="flex flex-col gap-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase"
+                >Preview 3D do Item Selecionado</span
+              >
+              <div
+                class="w-full h-64 bg-black rounded border border-gray-700 relative overflow-hidden"
+              >
+                <canvas
+                  id="babylon-canvas"
+                  class="w-full h-full outline-none"
+                ></canvas>
+              </div>
+            </div>
 
-                <div class="" id="shop-list"></div>
+            <!-- Lista de Itens e Configuração de Materiais/Slot -->
+            <div class="flex flex-col gap-3">
+              <span class="text-xs text-gray-400 font-semibold uppercase"
+                >Itens no Container (<span id="items-count">0</span>)</span
+              >
 
-                <!-- Ações do Modal -->
-                <div class="flex justify-end gap-3 border-t border-gray-700 pt-4">
-                    <button type="button" id="btn-cancel-modal" class="px-5 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded transition">Cancelar</button>
-                    <button type="submit" id="btn-save-container" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition">Salvar Container</button>
-                </div>
+              <div
+                id="container-items-list"
+                class="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1"
+              >
+                <!-- Lista de itens dinâmicos -->
+              </div>
+            </div>
+          </div>
 
-            </form>
-        </div>
+          <div class="" id="shop-list"></div>
+
+          <!-- Ações do Modal -->
+          <div class="flex justify-end gap-3 border-t border-gray-700 pt-4">
+            <button
+              type="button"
+              id="btn-cancel-modal"
+              class="px-5 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              id="btn-save-container"
+              class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition"
+            >
+              Salvar Container
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script src="/static/scripts/models_data.js"></script>
@@ -182,96 +315,104 @@
 
     <!-- LÓGICA DE SCROLL INFINITO -->
     <script>
-        $(document).ready(function() {
-            const currentOrigin = window.location.origin;
-            const currentFullUrl = window.location.href;
-            const URL_GET_ITEMS = `${currentOrigin}/game/shop`;//"http://localhost:5000/game/shop";
-            
-            let currentPage = 1;
-            let isLoading = false;
-            let hasMore = true;
-            let searchSearchTimeout = null;
+      $(document).ready(function () {
+        const currentOrigin = window.location.origin;
+        const currentFullUrl = window.location.href;
+        const URL_GET_ITEMS = `${currentOrigin}/game/shop`; //"http://localhost:5000/game/shop";
 
-            // Busca Inicial
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMore = true;
+        let searchSearchTimeout = null;
+
+        // Busca Inicial
+        loadShopItems(currentPage);
+
+        // Evento de Scroll da Janela
+        $(window).on("scroll", function () {
+          if (isLoading || !hasMore) return;
+
+          // Verifica se chegou a 200px do final da página
+          if (
+            $(window).scrollTop() + $(window).height() >=
+            $(document).height() - 200
+          ) {
+            currentPage++;
             loadShopItems(currentPage);
+          }
+        });
 
-            // Evento de Scroll da Janela
-            $(window).on('scroll', function() {
-                if (isLoading || !hasMore) return;
+        // Evento de Busca Global com Debounce (300ms)
+        $("#search-input").on("input", function () {
+          clearTimeout(searchSearchTimeout);
+          searchSearchTimeout = setTimeout(() => {
+            currentPage = 1;
+            hasMore = true;
+            $("#items-container").empty();
+            loadShopItems(currentPage);
+          }, 300);
+        });
 
-                // Verifica se chegou a 200px do final da página
-                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 200) {
-                    currentPage++;
-                    loadShopItems(currentPage);
+        // Função de Carregamento Paginado
+        function loadShopItems(page) {
+          isLoading = true;
+          $("#loading").removeClass("hidden");
+
+          const searchQuery = $("#search-input").val().trim();
+
+          $.ajax({
+            url: URL_GET_ITEMS,
+            type: "GET",
+            data: {
+              page: page,
+              limit: 12,
+              search: searchQuery,
+            },
+            dataType: "json",
+            success: function (result) {
+              isLoading = false;
+              $("#loading").addClass("hidden");
+
+              const items = result.data || result.items || [];
+
+              if (items.length === 0) {
+                hasMore = false;
+                if (page === 1) {
+                  $("#items-container").html(
+                    '<div class="col-span-full text-center py-10 text-gray-500">Nenhum container encontrado.</div>',
+                  );
                 }
-            });
+                return;
+              }
 
-            // Evento de Busca Global com Debounce (300ms)
-            $('#search-input').on('input', function() {
-                clearTimeout(searchSearchTimeout);
-                searchSearchTimeout = setTimeout(() => {
-                    currentPage = 1;
-                    hasMore = true;
-                    $("#items-container").empty();
-                    loadShopItems(currentPage);
-                }, 300);
-            });
+              items.forEach((item) => {
+                renderItem(item);
+              });
 
-            // Função de Carregamento Paginado
-            function loadShopItems(page) {
-                isLoading = true;
-                $("#loading").removeClass('hidden');
+              // Se veio menos itens do que o limite por página, acabou a lista
+              if (items.length < 12) {
+                hasMore = false;
+              }
+            },
+            error: function (err) {
+              isLoading = false;
+              $("#loading").addClass("hidden");
+              console.error("Erro ao carregar itens da loja:", err);
+            },
+          });
+        }
 
-                const searchQuery = $('#search-input').val().trim();
+        // Função de Renderização dos Cards
+        function renderItem(item) {
+          const title = item.title || item.name || "Container Sem Nome";
+          const price = parseFloat(item.price || 0).toFixed(2);
+          const image =
+            item.image_url ||
+            item.thumb ||
+            "https://via.placeholder.com/300x200?text=Sem+Imagem";
+          const description = item.description || "Sem descrição cadastrada.";
 
-                $.ajax({
-                    url: URL_GET_ITEMS,
-                    type: 'GET',
-                    data: {
-                        page: page,
-                        limit: 12,
-                        search: searchQuery
-                    },
-                    dataType: 'json',
-                    success: function (result) {
-                        isLoading = false;
-                        $("#loading").addClass('hidden');
-
-                        const items = result.data || result.items || [];
-
-                        if (items.length === 0) {
-                            hasMore = false;
-                            if (page === 1) {
-                                $("#items-container").html('<div class="col-span-full text-center py-10 text-gray-500">Nenhum container encontrado.</div>');
-                            }
-                            return;
-                        }
-
-                        items.forEach(item => {
-                            renderItem(item);
-                        });
-
-                        // Se veio menos itens do que o limite por página, acabou a lista
-                        if (items.length < 12) {
-                            hasMore = false;
-                        }
-                    },
-                    error: function (err) {
-                        isLoading = false;
-                        $("#loading").addClass('hidden');
-                        console.error("Erro ao carregar itens da loja:", err);
-                    }
-                });
-            }
-
-            // Função de Renderização dos Cards
-            function renderItem(item) {
-                const title = item.title || item.name || 'Container Sem Nome';
-                const price = parseFloat(item.price || 0).toFixed(2);
-                const image = item.image_url || item.thumb || 'https://via.placeholder.com/300x200?text=Sem+Imagem';
-                const description = item.description || 'Sem descrição cadastrada.';
-
-                const html = `
+          const html = `
                     <div class="bg-[#2b2d31] border border-gray-700 rounded-lg overflow-hidden shadow-md flex flex-col hover:border-gray-500 transition duration-200">
                         <img src="${image}" alt="${title}" class="w-full h-40 object-cover bg-black/40">
                         <div class="p-4 flex flex-col flex-1 justify-between gap-3">
@@ -287,10 +428,9 @@
                     </div>
                 `;
 
-                $("#items-container").append(html);
-            }
-        });
+          $("#items-container").append(html);
+        }
+      });
     </script>
-</body>
-
+  </body>
 </html>

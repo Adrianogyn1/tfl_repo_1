@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unity-style Sprite Editor & Packer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip for ZIP exporting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver for downloading files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- FontAwesome for Unity-like Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              unity: {
+                bg: "#222222",
+                panel: "#2a2a2a",
+                header: "#1e1e1e",
+                border: "#383838",
+                accent: "#2c5d88",
+                accentHover: "#3873a8",
+                active: "#4287f5",
+                text: "#c4c4c4",
+                textLight: "#ffffff",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e1e1e;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #383838;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555555;
+      }
+
+      .checkerboard {
+        background-color: #2a2a2a;
+        background-image:
+          linear-gradient(45deg, #1e1e1e 25%, transparent 25%),
+          linear-gradient(-45deg, #1e1e1e 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #1e1e1e 75%),
+          linear-gradient(-45deg, transparent 75%, #1e1e1e 75%);
+        background-size: 20px 20px;
+        background-position:
+          0 0,
+          0 10px,
+          10px -10px,
+          -10px 0px;
+      }
+
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-unity-bg text-unity-text font-sans h-full flex flex-col overflow-hidden select-none"
+  >
+    <header
+      class="bg-unity-header border-b border-unity-border px-4 py-2 flex items-center justify-between z-10"
+    >
+      <div class="flex items-center space-x-3">
+        <div
+          class="flex items-center font-bold text-unity-textLight text-lg tracking-wide"
+        >
+          <i class="fa-solid me-2 text-unity-active fa-cubes"></i>
+          Unity Sprite Editor
+        </div>
+        <span class="text-xs text-zinc-500 border-l border-zinc-700 pl-3"
+          >v1.0.0</span
+        >
+      </div>
+
+      <!-- Toolbar Center Actions -->
+      <div class="flex items-center space-x-2">
+        <label
+          class="bg-unity-panel hover:bg-zinc-700 border border-unity-border text-xs px-3 py-1.5 rounded cursor-pointer transition flex items-center gap-2 text-unity-textLight"
+        >
+          <i class="fa-solid fa-folder-open"></i> Importar Imagem
+          <input type="file" id="imageInput" accept="image/*" class="hidden" />
+        </label>
+
+        <button
+          id="sliceBtn"
+          class="bg-unity-accent hover:bg-unity-accentHover text-xs px-3 py-1.5 rounded font-medium text-white transition flex items-center gap-1.5"
+        >
+          <i class="fa-solid fa-scissors"></i> Slice / Fatiar
+        </button>
+
+        <button
+          id="clearBtn"
+          class="bg-unity-panel hover:bg-red-900/50 hover:border-red-700 border border-unity-border text-xs px-3 py-1.5 rounded text-red-400 transition flex items-center gap-1.5"
+        >
+          <i class="fa-solid fa-trash"></i> Limpar Rects
+        </button>
+      </div>
+
+      <!-- Export Action -->
+      <div class="flex items-center space-x-2">
+        <button
+          id="exportZipBtn"
+          class="bg-emerald-700 hover:bg-emerald-600 text-xs px-4 py-1.5 rounded font-medium text-white transition flex items-center gap-2"
+        >
+          <i class="fa-solid fa-file-zipper"></i> Exportar (.ZIP)
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+      <!-- LEFT SIDEBAR: Layers / Sprite List -->
+      <aside
+        class="w-64 bg-unity-panel border-r border-unity-border flex flex-col"
+      >
+        <div
+          class="p-2 border-b border-unity-border flex items-center justify-between bg-unity-header"
+        >
+          <span
+            class="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            >Hierarquia / Camadas</span
+          >
+          <span
+            id="rectCount"
+            class="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono"
+            >0</span
+          >
+        </div>
+        <div class="p-2 border-b border-unity-border">
+          <input
+            type="text"
+            id="searchFilter"
+            placeholder="Filtrar por nome..."
+            class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-unity-active"
+          />
+        </div>
+        <!-- Hierarchical Tree Container -->
+        <div
+          id="hierarchyTree"
+          class="flex-1 overflow-y-auto divide-y divide-zinc-800/50 p-1"
+        >
+          <div class="p-4 text-center text-xs text-zinc-500 italic">
+            Nenhuma imagem carregada.
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER: Main Canvas Editor Window -->
+      <main
+        class="flex-1 relative checkerboard overflow-hidden flex items-center justify-center"
+        id="canvasContainer"
+      >
+        <!-- Canvas Overlay UI Controls -->
+        <div
+          class="absolute top-3 left-3 bg-unity-panel/90 backdrop-blur border border-unity-border rounded p-1.5 flex items-center space-x-2 text-xs z-10 shadow-lg"
+        >
+          <button
+            id="toolSelect"
+            title="Modo Seleção (S)"
+            class="p-1.5 rounded hover:bg-zinc-700 bg-unity-active text-white"
+          >
+            <i class="fa-solid fa-arrow-pointer"></i>
+          </button>
+          <button
+            id="toolDraw"
+            title="Modo Desenhar Rect (D)"
+            class="p-1.5 rounded hover:bg-zinc-700 text-zinc-300"
+          >
+            <i class="fa-solid fa-vector-square"></i>
+          </button>
+          <div class="h-4 border-r border-zinc-700 my-auto"></div>
+          <button
+            id="zoomOutBtn"
+            title="Diminuir Zoom"
+            class="p-1.5 rounded hover:bg-zinc-700 text-zinc-300"
+          >
+            <i class="fa-solid fa-minus"></i>
+          </button>
+          <span id="zoomLevel" class="font-mono text-zinc-300 w-12 text-center"
+            >100%</span
+          >
+          <button
+            id="zoomInBtn"
+            title="Aumentar Zoom"
+            class="p-1.5 rounded hover:bg-zinc-700 text-zinc-300"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <button
+            id="resetZoomBtn"
+            title="Resetar Visualização"
+            class="p-1.5 rounded hover:bg-zinc-700 text-zinc-300"
+          >
+            <i class="fa-solid fa-expand"></i>
+          </button>
+        </div>
+
+        <!-- Empty Dropzone Helper Overlay -->
+        <div
+          id="dropZone"
+          class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900/80 text-zinc-400 border-2 border-dashed border-zinc-700 hover:border-unity-active transition cursor-pointer z-20"
+        >
+          <i
+            class="fa-solid fa-cloud-arrow-up text-5xl mb-3 text-unity-active"
+          ></i>
+          <p class="text-sm font-medium text-zinc-200">
+            Arraste e solte o Sprite Sheet aqui
+          </p>
+          <p class="text-xs text-zinc-500 mt-1">
+            Suporta imagens PNG, JPG, WEBP
+          </p>
+        </div>
+
+        <!-- Main Interactive Canvas -->
+        <canvas id="mainCanvas" class="cursor-crosshair shadow-2xl"></canvas>
+      </main>
+
+      <!-- RIGHT SIDEBAR: Inspector & Slice Controls -->
+      <aside
+        class="w-80 bg-unity-panel border-l border-unity-border flex flex-col overflow-y-auto"
+      >
+        <!-- Slice Settings Panel -->
+        <div class="p-3 border-b border-unity-border bg-unity-header">
+          <h3
+            class="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-sliders text-unity-active"></i> Configurações
+            de Slice
+          </h3>
+        </div>
+        <div class="p-3 space-y-3 text-xs border-b border-unity-border">
+          <div>
+            <label class="block text-zinc-400 mb-1">Tipo de Fatiamento</label>
+            <select
+              id="sliceType"
+              class="w-full bg-zinc-900 border border-unity-border rounded p-1.5 text-zinc-200 focus:border-unity-active"
+            >
+              <option value="auto">
+                Automático (Canal Alpha / Transparência)
+              </option>
+              <option value="gridBySize">Grid por Tamanho da Célula</option>
+              <option value="gridByCount">
+                Grid por Número de Colunas/Linhas
+              </option>
+            </select>
+          </div>
+
+          <!-- Settings for Alpha Auto Slice -->
+          <div id="autoSliceSettings" class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-zinc-400">Tolerância Transparência</span>
+              <input
+                id="alphaThreshold"
+                type="number"
+                min="0"
+                max="255"
+                value="10"
+                class="w-16 bg-zinc-900 border border-unity-border rounded px-2 py-1 text-right"
+              />
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-zinc-400">Tamanho Mínimo (px)</span>
+              <input
+                id="minSpriteSize"
+                type="number"
+                min="1"
+                value="4"
+                class="w-16 bg-zinc-900 border border-unity-border rounded px-2 py-1 text-right"
+              />
+            </div>
+          </div>
+
+          <!-- Settings for Grid Slice -->
+          <div id="gridSliceSettings" class="space-y-2 hidden">
+            <!-- Modes: Grid by Size vs Grid by Count -->
+            <div id="gridBySizeInputs" class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-zinc-400 block mb-0.5">Largura (W)</label>
+                <input
+                  id="cellW"
+                  type="number"
+                  value="32"
+                  min="1"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label class="text-zinc-400 block mb-0.5">Altura (H)</label>
+                <input
+                  id="cellH"
+                  type="number"
+                  value="32"
+                  min="1"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+            </div>
+
+            <div id="gridByCountInputs" class="grid grid-cols-2 gap-2 hidden">
+              <div>
+                <label class="text-zinc-400 block mb-0.5">Colunas (Cols)</label>
+                <input
+                  id="gridCols"
+                  type="number"
+                  value="4"
+                  min="1"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label class="text-zinc-400 block mb-0.5">Linhas (Rows)</label>
+                <input
+                  id="gridRows"
+                  type="number"
+                  value="4"
+                  min="1"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-zinc-400 block mb-0.5">Offset X</label>
+                <input
+                  id="offsetX"
+                  type="number"
+                  value="0"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label class="text-zinc-400 block mb-0.5">Offset Y</label>
+                <input
+                  id="offsetY"
+                  type="number"
+                  value="0"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-zinc-400 block mb-0.5"
+                  >Padding X (Espaço)</label
+                >
+                <input
+                  id="paddingX"
+                  type="number"
+                  value="0"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label class="text-zinc-400 block mb-0.5"
+                  >Padding Y (Espaço)</label
+                >
+                <input
+                  id="paddingY"
+                  type="number"
+                  value="0"
+                  class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rect Inspector Panel -->
+        <div class="p-3 border-b border-unity-border bg-unity-header">
+          <h3
+            class="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-circle-info text-unity-active"></i> Inspetor
+            de Rect Selecionado
+          </h3>
+        </div>
+
+        <div id="inspectorPanel" class="p-3 space-y-3 text-xs flex-1">
+          <div class="text-zinc-500 italic text-center py-6">
+            Selecione um retângulo na imagem para editar seus parâmetros.
+          </div>
+        </div>
+
+        <!-- Export Settings Summary -->
+        <div
+          class="p-3 border-t border-unity-border bg-unity-header/50 space-y-2"
+        >
+          <label class="block text-xs font-semibold text-zinc-400"
+            >Opções de Exportação</label
+          >
+          <div class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="includeJson"
+              checked
+              class="rounded bg-zinc-900 border-unity-border text-unity-active focus:ring-0"
+            />
+            <label for="includeJson" class="text-xs text-zinc-300"
+              >Incluir arquivo sprites.json</label
+            >
+          </div>
+          <div class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="trimAlpha"
+              class="rounded bg-zinc-900 border-unity-border text-unity-active focus:ring-0"
+            />
+            <label for="trimAlpha" class="text-xs text-zinc-300"
+              >Ajustar transparência extra (Trim)</label
+            >
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div
+      id="toast"
+      class="fixed bottom-4 right-4 bg-zinc-800 text-white text-xs px-4 py-2.5 rounded-lg border border-unity-border shadow-xl transform translate-y-10 opacity-0 transition duration-200 z-50 flex items-center gap-2"
+    >
+      <i id="toastIcon" class="fa-solid fa-info-circle text-unity-active"></i>
+      <span id="toastMsg">Mensagem</span>
+    </div>
+
+    <script>
+      // Application State
+      const state = {
+        image: null,
+        rootName: "sprite_sheet",
+        rects: [],
+        selectedRectIndex: -1,
+        isRootSelected: false,
+        tool: "select", // 'select' or 'draw'
+
+        // Canvas View Transform
+        scale: 1,
+        panX: 0,
+        panY: 0,
+        isPanning: false,
+        panStart: { x: 0, y: 0 },
+
+        // Draw interaction state
+        isDrawing: false,
+        drawStart: { x: 0, y: 0 },
+
+        // Resize and move interaction state
+        activeHandle: null,
+        isResizing: false,
+        isMoving: false,
+        dragStart: { x: 0, y: 0 },
+        initialRectState: null,
+      };
+
+      // DOM Element references
+      const canvas = document.getElementById("mainCanvas");
+      const ctx = canvas.getContext("2d");
+      const dropZone = document.getElementById("dropZone");
+      const imageInput = document.getElementById("imageInput");
+      const sliceTypeSelect = document.getElementById("sliceType");
+      const autoSliceSettings = document.getElementById("autoSliceSettings");
+      const gridSliceSettings = document.getElementById("gridSliceSettings");
+      const gridBySizeInputs = document.getElementById("gridBySizeInputs");
+      const gridByCountInputs = document.getElementById("gridByCountInputs");
+      const hierarchyTree = document.getElementById("hierarchyTree");
+      const rectCount = document.getElementById("rectCount");
+      const inspectorPanel = document.getElementById("inspectorPanel");
+      const zoomLevel = document.getElementById("zoomLevel");
+
+      window.addEventListener("load", () => {
+        setupEventListeners();
+        resizeCanvasContainer();
+        window.addEventListener("resize", resizeCanvasContainer);
+      });
+
+      function setupEventListeners() {
+        // Drag and Drop
+        dropZone.addEventListener("click", () => imageInput.click());
+        dropZone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropZone.classList.add("border-unity-active", "bg-zinc-800/90");
+        });
+        dropZone.addEventListener("dragleave", () => {
+          dropZone.classList.remove("border-unity-active", "bg-zinc-800/90");
+        });
+        dropZone.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropZone.classList.remove("border-unity-active", "bg-zinc-800/90");
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            loadImageFromFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        imageInput.addEventListener("change", (e) => {
+          if (e.target.files && e.target.files[0]) {
+            loadImageFromFile(e.target.files[0]);
+          }
+        });
+
+        // Slice Dropdown Toggle UI
+        sliceTypeSelect.addEventListener("change", (e) => {
+          const mode = e.target.value;
+          if (mode === "auto") {
+            autoSliceSettings.classList.remove("hidden");
+            gridSliceSettings.classList.add("hidden");
+          } else if (mode === "gridBySize") {
+            autoSliceSettings.classList.add("hidden");
+            gridSliceSettings.classList.remove("hidden");
+            gridBySizeInputs.classList.remove("hidden");
+            gridByCountInputs.classList.add("hidden");
+          } else if (mode === "gridByCount") {
+            autoSliceSettings.classList.add("hidden");
+            gridSliceSettings.classList.remove("hidden");
+            gridBySizeInputs.classList.add("hidden");
+            gridByCountInputs.classList.remove("hidden");
+          }
+        });
+
+        // Toolbar buttons
+        document
+          .getElementById("sliceBtn")
+          .addEventListener("click", executeSlice);
+        document
+          .getElementById("clearBtn")
+          .addEventListener("click", clearRects);
+        document
+          .getElementById("exportZipBtn")
+          .addEventListener("click", exportToZip);
+
+        // Tools
+        const toolSelectBtn = document.getElementById("toolSelect");
+        const toolDrawBtn = document.getElementById("toolDraw");
+
+        toolSelectBtn.addEventListener("click", () => setTool("select"));
+        toolDrawBtn.addEventListener("click", () => setTool("draw"));
+
+        // Zoom Controls
+        document
+          .getElementById("zoomInBtn")
+          .addEventListener("click", () => zoom(1.2));
+        document
+          .getElementById("zoomOutBtn")
+          .addEventListener("click", () => zoom(0.8));
+        document
+          .getElementById("resetZoomBtn")
+          .addEventListener("click", resetView);
+
+        // Filter
+        document
+          .getElementById("searchFilter")
+          .addEventListener("input", renderHierarchy);
+
+        // Canvas Mouse Events
+        canvas.addEventListener("mousedown", handleMouseDown);
+        canvas.addEventListener("mousemove", handleMouseMove);
+        canvas.addEventListener("mouseup", handleMouseUp);
+        canvas.addEventListener("wheel", handleWheel, { passive: false });
+
+        // Keyboard Shortcuts
+        window.addEventListener("keydown", (e) => {
+          if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT")
+            return;
+
+          if (e.key === "Delete" || e.key === "Backspace") {
+            if (state.selectedRectIndex >= 0) {
+              deleteRect(state.selectedRectIndex);
+            }
+          } else if (e.key === "s" || e.key === "S") {
+            setTool("select");
+          } else if (e.key === "d" || e.key === "D") {
+            setTool("draw");
+          }
+        });
+      }
+
+      function loadImageFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            state.image = img;
+            state.rootName = file.name.replace(/\.[^/.]+$/, "");
+            state.rects = [];
+            state.selectedRectIndex = -1;
+            state.isRootSelected = false;
+            dropZone.classList.add("hidden");
+            resetView();
+            renderHierarchy();
+            updateInspector();
+            showToast(`Imagem carregada: ${img.width}x${img.height}px`);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function handleMouseDown(e) {
+        if (!state.image) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const imgCoords = screenToImageCoords(mouseX, mouseY);
+
+        // Middle Mouse or Shift held -> Pan View
+        if (e.button === 1 || e.shiftKey) {
+          state.isPanning = true;
+          state.panStart = { x: mouseX - state.panX, y: mouseY - state.panY };
+          return;
+        }
+
+        if (e.button === 0) {
+          // Left Click
+          if (state.selectedRectIndex >= 0) {
+            const handle = getHandleAtPoint(
+              state.selectedRectIndex,
+              mouseX,
+              mouseY,
+            );
+            if (handle) {
+              state.isResizing = true;
+              state.activeHandle = handle;
+              state.dragStart = { x: mouseX, y: mouseY };
+              state.initialRectState = {
+                ...state.rects[state.selectedRectIndex],
+              };
+              return;
+            }
+          }
+
+          if (state.tool === "select") {
+            // 1. Check if clicking inside currently selected rect to move
+            if (
+              state.selectedRectIndex >= 0 &&
+              isPointInRect(imgCoords, state.rects[state.selectedRectIndex])
+            ) {
+              state.isMoving = true;
+              state.dragStart = { x: imgCoords.x, y: imgCoords.y };
+              state.initialRectState = {
+                ...state.rects[state.selectedRectIndex],
+              };
+              return;
+            }
+
+            // 2. Try selecting another rect under cursor
+            const hitIndex = findRectAtPoint(imgCoords);
+            if (hitIndex >= 0) {
+              selectRect(hitIndex);
+              state.isMoving = true;
+              state.dragStart = { x: imgCoords.x, y: imgCoords.y };
+              state.initialRectState = { ...state.rects[hitIndex] };
+            } else {
+              // Deselect if clicking empty space
+              selectRect(-1);
+            }
+          } else if (state.tool === "draw") {
+            // Start drawing new Rect
+            state.isDrawing = true;
+            state.drawStart = imgCoords;
+          }
+        }
+      }
+
+      function handleMouseMove(e) {
+        if (!state.image) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const imgCoords = screenToImageCoords(mouseX, mouseY);
+
+        if (state.isPanning) {
+          state.panX = mouseX - state.panStart.x;
+          state.panY = mouseY - state.panStart.y;
+          renderCanvas();
+          return;
+        }
+
+        if (state.isResizing && state.selectedRectIndex >= 0) {
+          resizeSelectedRect(mouseX, mouseY);
+          renderCanvas();
+          updateInspector();
+          return;
+        }
+
+        if (state.isMoving && state.selectedRectIndex >= 0) {
+          const dx = imgCoords.x - state.dragStart.x;
+          const dy = imgCoords.y - state.dragStart.y;
+          const r = state.rects[state.selectedRectIndex];
+
+          // Keep rect within bounds of the sprite sheet
+          r.x = Math.max(
+            0,
+            Math.min(
+              state.image.width - r.w,
+              Math.round(state.initialRectState.x + dx),
+            ),
+          );
+          r.y = Math.max(
+            0,
+            Math.min(
+              state.image.height - r.h,
+              Math.round(state.initialRectState.y + dy),
+            ),
+          );
+
+          renderCanvas();
+          updateInspector();
+          return;
+        }
+
+        if (state.isDrawing) {
+          renderCanvas();
+          const x1 = Math.min(state.drawStart.x, imgCoords.x);
+          const y1 = Math.min(state.drawStart.y, imgCoords.y);
+          const w = Math.abs(imgCoords.x - state.drawStart.x);
+          const h = Math.abs(imgCoords.y - state.drawStart.y);
+
+          const s1 = imageToScreenCoords(x1, y1);
+          ctx.strokeStyle = "#4287f5";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.strokeRect(s1.x, s1.y, w * state.scale, h * state.scale);
+          ctx.setLineDash([]);
+          return;
+        }
+
+        updateCursorStyle(mouseX, mouseY, imgCoords);
+      }
+
+      function handleMouseUp(e) {
+        if (state.isPanning) state.isPanning = false;
+
+        if (state.isDrawing) {
+          state.isDrawing = false;
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+          const imgCoords = screenToImageCoords(mouseX, mouseY);
+
+          const x = Math.max(0, Math.min(state.drawStart.x, imgCoords.x));
+          const y = Math.max(0, Math.min(state.drawStart.y, imgCoords.y));
+          const w = Math.abs(imgCoords.x - state.drawStart.x);
+          const h = Math.abs(imgCoords.y - state.drawStart.y);
+
+          if (w > 2 && h > 2) {
+            const newRect = {
+              name: `${state.rootName}_${state.rects.length}`,
+              x,
+              y,
+              w,
+              h,
+              pivotX: 0.5,
+              pivotY: 0.5,
+            };
+            state.rects.push(newRect);
+            selectRect(state.rects.length - 1);
+            renderHierarchy();
+            showToast("Novo Rect criado!");
+          }
+        }
+
+        if (state.isResizing) state.isResizing = false;
+        if (state.isMoving) state.isMoving = false;
+
+        renderCanvas();
+      }
+
+      function executeSlice() {
+        if (!state.image) {
+          showToast("Por favor, importe uma imagem primeiro!", "error");
+          return;
+        }
+
+        const type = sliceTypeSelect.value;
+        state.rects = [];
+
+        if (type === "auto") {
+          sliceAutomatic();
+        } else if (type === "gridBySize") {
+          sliceGridBySize();
+        } else if (type === "gridByCount") {
+          sliceGridByCount();
+        }
+
+        state.selectedRectIndex = state.rects.length > 0 ? 0 : -1;
+        state.isRootSelected = false;
+        renderHierarchy();
+        updateInspector();
+        renderCanvas();
+        showToast(
+          `Fatiamento concluído! ${state.rects.length} rects encontrados.`,
+        );
+      }
+
+      function sliceGridBySize() {
+        const cellW = parseInt(document.getElementById("cellW").value) || 32;
+        const cellH = parseInt(document.getElementById("cellH").value) || 32;
+        const offsetX = parseInt(document.getElementById("offsetX").value) || 0;
+        const offsetY = parseInt(document.getElementById("offsetY").value) || 0;
+        const padX = parseInt(document.getElementById("paddingX").value) || 0;
+        const padY = parseInt(document.getElementById("paddingY").value) || 0;
+
+        const imgW = state.image.width;
+        const imgH = state.image.height;
+
+        let count = 0;
+        for (let y = offsetY; y + cellH <= imgH; y += cellH + padY) {
+          for (let x = offsetX; x + cellW <= imgW; x += cellW + padX) {
+            state.rects.push({
+              name: `${state.rootName}_${count++}`,
+              x,
+              y,
+              w: cellW,
+              h: cellH,
+              pivotX: 0.5,
+              pivotY: 0.5,
+            });
+          }
+        }
+      }
+
+      function sliceGridByCount() {
+        const cols = Math.max(
+          1,
+          parseInt(document.getElementById("gridCols").value) || 1,
+        );
+        const rows = Math.max(
+          1,
+          parseInt(document.getElementById("gridRows").value) || 1,
+        );
+        const offsetX = parseInt(document.getElementById("offsetX").value) || 0;
+        const offsetY = parseInt(document.getElementById("offsetY").value) || 0;
+        const padX = parseInt(document.getElementById("paddingX").value) || 0;
+        const padY = parseInt(document.getElementById("paddingY").value) || 0;
+
+        const imgW = state.image.width;
+        const imgH = state.image.height;
+
+        // Calculate cell sizes based on available space and padding
+        const totalPadW = (cols - 1) * padX;
+        const totalPadH = (rows - 1) * padY;
+
+        const cellW = Math.max(
+          1,
+          Math.floor((imgW - offsetX - totalPadW) / cols),
+        );
+        const cellH = Math.max(
+          1,
+          Math.floor((imgH - offsetY - totalPadH) / rows),
+        );
+
+        let count = 0;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = offsetX + c * (cellW + padX);
+            const y = offsetY + r * (cellH + padY);
+
+            if (x + cellW <= imgW && y + cellH <= imgH) {
+              state.rects.push({
+                name: `${state.rootName}_${count++}`,
+                x,
+                y,
+                w: cellW,
+                h: cellH,
+                pivotX: 0.5,
+                pivotY: 0.5,
+              });
+            }
+          }
+        }
+      }
+
+      function clearRects() {
+        state.rects = [];
+        state.selectedRectIndex = -1;
+        state.isRootSelected = false;
+        renderHierarchy();
+        updateInspector();
+        renderCanvas();
+        showToast("Todos os rects foram removidos.");
+      }
+
+      function selectRect(index) {
+        state.selectedRectIndex = index;
+        state.isRootSelected = false;
+        renderHierarchy();
+        updateInspector();
+        renderCanvas();
+      }
+
+      function selectRoot() {
+        state.selectedRectIndex = -1;
+        state.isRootSelected = true;
+        renderHierarchy();
+        updateInspector();
+        renderCanvas();
+      }
+
+      function deleteRect(index) {
+        state.rects.splice(index, 1);
+        if (state.selectedRectIndex >= state.rects.length) {
+          state.selectedRectIndex = state.rects.length - 1;
+        }
+        renderHierarchy();
+        updateInspector();
+        renderCanvas();
+        showToast("Rect excluído");
+      }
+
+      function renderHierarchy() {
+        rectCount.textContent = state.rects.length;
+        const filter = (
+          document.getElementById("searchFilter").value || ""
+        ).toLowerCase();
+
+        if (!state.image) {
+          hierarchyTree.innerHTML = `<div class="p-4 text-center text-xs text-zinc-500 italic">Nenhuma imagem carregada.</div>`;
+          return;
+        }
+
+        hierarchyTree.innerHTML = "";
+
+        // ROOT NODE
+        const rootItem = document.createElement("div");
+        rootItem.className = `p-2 px-2 text-xs flex items-center justify-between cursor-pointer rounded transition select-none ${
+          state.isRootSelected
+            ? "bg-zinc-700 text-white font-medium"
+            : "hover:bg-zinc-800/80 text-zinc-200"
+        }`;
+
+        rootItem.innerHTML = `
+                <div class="flex items-center gap-2 overflow-hidden w-full">
+                    <i class="fa-solid fa-folder-tree text-amber-500 text-xs"></i>
+                    <span id="rootLabel" class="truncate font-semibold tracking-wide">${state.rootName}</span>
+                </div>
+            `;
+
+        rootItem.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectRoot();
+        });
+
+        // Double click to rename ROOT
+        rootItem.addEventListener("dblclick", (e) => {
+          e.stopPropagation();
+          const label = rootItem.querySelector("#rootLabel");
+          const currentName = state.rootName;
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = currentName;
+          input.className =
+            "w-full bg-zinc-900 border border-unity-active text-white text-xs px-1 rounded focus:outline-none";
+
+          label.replaceWith(input);
+          input.focus();
+          input.select();
+
+          const finishRename = () => {
+            const newName = input.value.trim() || currentName;
+            state.rootName = newName;
+            renderHierarchy();
+            updateInspector();
+          };
+
+          input.addEventListener("blur", finishRename);
+          input.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter") finishRename();
+            if (ev.key === "Escape") renderHierarchy();
+          });
+        });
+
+        hierarchyTree.appendChild(rootItem);
+
+        // CHILDREN CONTAINER (Rects)
+        const childrenContainer = document.createElement("div");
+        childrenContainer.className =
+          "pl-4 mt-0.5 space-y-0.5 border-l border-zinc-800 ml-3";
+
+        state.rects.forEach((r, idx) => {
+          if (filter && !r.name.toLowerCase().includes(filter)) return;
+
+          const isSelected =
+            idx === state.selectedRectIndex && !state.isRootSelected;
+          const item = document.createElement("div");
+          item.className = `p-1.5 px-2 text-xs flex items-center justify-between cursor-pointer rounded transition select-none ${
+            isSelected
+              ? "bg-unity-accent text-white font-medium"
+              : "hover:bg-zinc-800 text-zinc-300"
+          }`;
+
+          item.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden flex-1">
+                        <i class="fa-solid fa-vector-square text-zinc-400 text-[10px]"></i>
+                        <span class="sprite-name truncate">${r.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-[10px] opacity-75 font-mono">
+                        <span>${r.w}x${r.h}</span>
+                        <button onclick="event.stopPropagation(); deleteRect(${idx})" class="hover:text-red-400 p-0.5">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+
+          item.addEventListener("click", (e) => {
+            e.stopPropagation();
+            selectRect(idx);
+          });
+
+          // Double click to rename RECT
+          item.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            const label = item.querySelector(".sprite-name");
+            const currentName = r.name;
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = currentName;
+            input.className =
+              "w-full bg-zinc-900 border border-unity-active text-white text-xs px-1 rounded focus:outline-none";
+
+            label.replaceWith(input);
+            input.focus();
+            input.select();
+
+            const finishRename = () => {
+              r.name = input.value.trim() || currentName;
+              renderHierarchy();
+              updateInspector();
+            };
+
+            input.addEventListener("blur", finishRename);
+            input.addEventListener("keydown", (ev) => {
+              if (ev.key === "Enter") finishRename();
+              if (ev.key === "Escape") renderHierarchy();
+            });
+          });
+
+          childrenContainer.appendChild(item);
+        });
+
+        hierarchyTree.appendChild(childrenContainer);
+      }
+
+      function updateInspector() {
+        if (state.isRootSelected && state.image) {
+          inspectorPanel.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="text-xs font-semibold text-unity-active flex items-center gap-1.5 pb-1 border-b border-zinc-700">
+                            <i class="fa-solid fa-folder-tree"></i> Ativo Root (Sprite Sheet)
+                        </div>
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Nome do Root</label>
+                            <input id="inspRootName" type="text" value="${state.rootName}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1 text-zinc-100 focus:border-unity-active">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-zinc-400">
+                            <div>
+                                <span class="block text-[10px]">Largura Total</span>
+                                <span class="text-zinc-200 font-mono">${state.image.width} px</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px]">Altura Total</span>
+                                <span class="text-zinc-200 font-mono">${state.image.height} px</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="block text-zinc-400 text-[10px]">Total de Sprites Filhos</span>
+                            <span class="text-zinc-200 font-mono">${state.rects.length}</span>
+                        </div>
+                    </div>
+                `;
+
+          document
+            .getElementById("inspRootName")
+            .addEventListener("input", (e) => {
+              state.rootName = e.target.value.trim() || "sprite_sheet";
+              renderHierarchy();
+            });
+          return;
+        }
+
+        if (
+          state.selectedRectIndex < 0 ||
+          state.selectedRectIndex >= state.rects.length
+        ) {
+          inspectorPanel.innerHTML = `<div class="text-zinc-500 italic text-center py-6">Selecione um retângulo na imagem ou na hierarquia para editar suas propriedades.</div>`;
+          return;
+        }
+
+        const r = state.rects[state.selectedRectIndex];
+
+        inspectorPanel.innerHTML = `
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-zinc-400 block mb-1">Nome do Sprite</label>
+                        <input id="inspName" type="text" value="${r.name}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1 text-zinc-100 focus:border-unity-active">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Posição X</label>
+                            <input id="inspX" type="number" value="${r.x}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1">
+                        </div>
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Posição Y</label>
+                            <input id="inspY" type="number" value="${r.y}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Largura (W)</label>
+                            <input id="inspW" type="number" value="${r.w}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1">
+                        </div>
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Altura (H)</label>
+                            <input id="inspH" type="number" value="${r.h}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Pivot X (0-1)</label>
+                            <input id="inspPivotX" type="number" step="0.1" min="0" max="1" value="${r.pivotX ?? 0.5}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1">
+                        </div>
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Pivot Y (0-1)</label>
+                            <input id="inspPivotY" type="number" step="0.1" min="0" max="1" value="${r.pivotY ?? 0.5}" class="w-full bg-zinc-900 border border-unity-border rounded px-2 py-1">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        document.getElementById("inspName").addEventListener("input", (e) => {
+          r.name = e.target.value;
+          renderHierarchy();
+        });
+        document.getElementById("inspX").addEventListener("change", (e) => {
+          r.x = parseInt(e.target.value) || 0;
+          renderCanvas();
+        });
+        document.getElementById("inspY").addEventListener("change", (e) => {
+          r.y = parseInt(e.target.value) || 0;
+          renderCanvas();
+        });
+        document.getElementById("inspW").addEventListener("change", (e) => {
+          r.w = parseInt(e.target.value) || 2;
+          renderCanvas();
+        });
+        document.getElementById("inspH").addEventListener("change", (e) => {
+          r.h = parseInt(e.target.value) || 2;
+          renderCanvas();
+        });
+        document
+          .getElementById("inspPivotX")
+          .addEventListener("change", (e) => {
+            r.pivotX = parseFloat(e.target.value) || 0.5;
+            renderCanvas();
+          });
+        document
+          .getElementById("inspPivotY")
+          .addEventListener("change", (e) => {
+            r.pivotY = parseFloat(e.target.value) || 0.5;
+            renderCanvas();
+          });
+      }
+
+      async function exportToZip() {
+        if (!state.image) {
+          showToast("Nenhuma imagem para exportar!", "error");
+          return;
+        }
+
+        if (state.rects.length === 0) {
+          showToast("Crie pelo menos um rect para exportar!", "error");
+          return;
+        }
+
+        showToast("Preparando arquivo ZIP...");
+        const zip = new JSZip();
+        const includeJson = document.getElementById("includeJson").checked;
+
+        const offCanvas = document.createElement("canvas");
+        const offCtx = offCanvas.getContext("2d");
+
+        const metadata = {
+          sheetName: state.rootName,
+          imageWidth: state.image.width,
+          imageHeight: state.image.height,
+          sprites: [],
+        };
+
+        for (let i = 0; i < state.rects.length; i++) {
+          const r = state.rects[i];
+          offCanvas.width = r.w;
+          offCanvas.height = r.h;
+          offCtx.clearRect(0, 0, r.w, r.h);
+
+          offCtx.drawImage(state.image, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+
+          const blob = await new Promise((resolve) =>
+            offCanvas.toBlob(resolve, "image/png"),
+          );
+          zip.file(`${r.name}.png`, blob);
+
+          metadata.sprites.push({
+            name: r.name,
+            x: r.x,
+            y: r.y,
+            width: r.w,
+            height: r.h,
+            pivot: { x: r.pivotX, y: r.pivotY },
+          });
+        }
+
+        if (includeJson) {
+          zip.file("sprites.json", JSON.stringify(metadata, null, 2));
+        }
+
+        const zipContent = await zip.generateAsync({ type: "blob" });
+        saveAs(zipContent, `${state.rootName}_sprites.zip`);
+        showToast("Download do ZIP iniciado com sucesso!");
+      }
+
+      function resizeCanvasContainer() {
+        const container = document.getElementById("canvasContainer");
+        if (!container) return;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        renderCanvas();
+      }
+
+      function resetView() {
+        if (!state.image) {
+          state.scale = 1;
+          state.panX = 0;
+          state.panY = 0;
+        } else {
+          const container = document.getElementById("canvasContainer");
+          const padding = 40;
+          const scaleX = (container.clientWidth - padding) / state.image.width;
+          const scaleY =
+            (container.clientHeight - padding) / state.image.height;
+          state.scale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.1), 5);
+          state.panX = 0;
+          state.panY = 0;
+        }
+        zoomLevel.textContent = `${Math.round(state.scale * 100)}%`;
+        renderCanvas();
+      }
+
+      function zoom(factor) {
+        const newScale = Math.min(Math.max(state.scale * factor, 0.1), 20);
+        state.scale = newScale;
+        zoomLevel.textContent = `${Math.round(state.scale * 100)}%`;
+        renderCanvas();
+      }
+
+      function handleWheel(e) {
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+        zoom(zoomFactor);
+      }
+
+      function setTool(toolName) {
+        state.tool = toolName;
+        const selectBtn = document.getElementById("toolSelect");
+        const drawBtn = document.getElementById("toolDraw");
+
+        if (toolName === "select") {
+          selectBtn.className = "p-1.5 rounded bg-unity-active text-white";
+          drawBtn.className = "p-1.5 rounded hover:bg-zinc-700 text-zinc-300";
+        } else {
+          drawBtn.className = "p-1.5 rounded bg-unity-active text-white";
+          selectBtn.className = "p-1.5 rounded hover:bg-zinc-700 text-zinc-300";
+        }
+      }
+
+      function screenToImageCoords(screenX, screenY) {
+        if (!state.image) return { x: 0, y: 0 };
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        const x = Math.floor(
+          (screenX - (cx + state.panX)) / state.scale + state.image.width / 2,
+        );
+        const y = Math.floor(
+          (screenY - (cy + state.panY)) / state.scale + state.image.height / 2,
+        );
+        return { x, y };
+      }
+
+      function imageToScreenCoords(imgX, imgY) {
+        if (!state.image) return { x: 0, y: 0 };
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        const x =
+          (imgX - state.image.width / 2) * state.scale + cx + state.panX;
+        const y =
+          (imgY - state.image.height / 2) * state.scale + cy + state.panY;
+        return { x, y };
+      }
+
+      function isPointInRect(pt, r) {
+        return (
+          pt.x >= r.x && pt.x <= r.x + r.w && pt.y >= r.y && pt.y <= r.y + r.h
+        );
+      }
+
+      function findRectAtPoint(imgCoords) {
+        for (let i = state.rects.length - 1; i >= 0; i--) {
+          if (isPointInRect(imgCoords, state.rects[i])) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      function getHandleAtPoint(rectIndex, screenX, screenY) {
+        const r = state.rects[rectIndex];
+        if (!r) return null;
+
+        const pTL = imageToScreenCoords(r.x, r.y);
+        const pBR = imageToScreenCoords(r.x + r.w, r.y + r.h);
+
+        const left = pTL.x;
+        const top = pTL.y;
+        const right = pBR.x;
+        const bottom = pBR.y;
+        const midX = (left + right) / 2;
+        const midY = (top + bottom) / 2;
+
+        const handles = {
+          nw: { x: left, y: top },
+          n: { x: midX, y: top },
+          ne: { x: right, y: top },
+          e: { x: right, y: midY },
+          se: { x: right, y: bottom },
+          s: { x: midX, y: bottom },
+          sw: { x: left, y: bottom },
+          w: { x: left, y: midY },
+        };
+
+        const handleRadius = 7;
+        for (const [key, pos] of Object.entries(handles)) {
+          const dx = screenX - pos.x;
+          const dy = screenY - pos.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= handleRadius) {
+            return key;
+          }
+        }
+        return null;
+      }
+
+      function resizeSelectedRect(screenX, screenY) {
+        const r = state.rects[state.selectedRectIndex];
+        if (!r || !state.initialRectState || !state.activeHandle) return;
+
+        const imgCoords = screenToImageCoords(screenX, screenY);
+        const init = state.initialRectState;
+        let newX = init.x;
+        let newY = init.y;
+        let newW = init.w;
+        let newH = init.h;
+
+        const h = state.activeHandle;
+
+        if (h.includes("e")) newW = Math.max(2, imgCoords.x - init.x);
+        if (h.includes("s")) newH = Math.max(2, imgCoords.y - init.y);
+        if (h.includes("w")) {
+          const right = init.x + init.w;
+          newX = Math.min(imgCoords.x, right - 2);
+          newW = right - newX;
+        }
+        if (h.includes("n")) {
+          const bottom = init.y + init.h;
+          newY = Math.min(imgCoords.y, bottom - 2);
+          newH = bottom - newY;
+        }
+
+        r.x = Math.max(0, newX);
+        r.y = Math.max(0, newY);
+        r.w = Math.min(state.image.width - r.x, newW);
+        r.h = Math.min(state.image.height - r.y, newH);
+      }
+
+      function updateCursorStyle(mouseX, mouseY, imgCoords) {
+        if (state.selectedRectIndex >= 0) {
+          const handle = getHandleAtPoint(
+            state.selectedRectIndex,
+            mouseX,
+            mouseY,
+          );
+          if (handle) {
+            const cursors = {
+              nw: "nwse-resize",
+              se: "nwse-resize",
+              ne: "nesw-resize",
+              sw: "nesw-resize",
+              n: "ns-resize",
+              s: "ns-resize",
+              e: "ew-resize",
+              w: "ew-resize",
+            };
+            canvas.style.cursor = cursors[handle];
+            return;
+          }
+        }
+
+        if (state.tool === "draw") {
+          canvas.style.cursor = "crosshair";
+        } else if (
+          state.selectedRectIndex >= 0 &&
+          isPointInRect(imgCoords, state.rects[state.selectedRectIndex])
+        ) {
+          canvas.style.cursor = "move";
+        } else {
+          canvas.style.cursor = "default";
+        }
+      }
+
+      function renderCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!state.image) return;
+
+        const p0 = imageToScreenCoords(0, 0);
+        const imgW = state.image.width * state.scale;
+        const imgH = state.image.height * state.scale;
+
+        // Draw Image
+        ctx.drawImage(state.image, p0.x, p0.y, imgW, imgH);
+
+        // Draw Image Outline Border
+        ctx.strokeStyle = "#555555";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(p0.x, p0.y, imgW, imgH);
+
+        // Draw all Rects
+        state.rects.forEach((r, idx) => {
+          const isSelected =
+            idx === state.selectedRectIndex && !state.isRootSelected;
+          const sp = imageToScreenCoords(r.x, r.y);
+          const sw = r.w * state.scale;
+          const sh = r.h * state.scale;
+
+          // Rect Fill & Border
+          ctx.fillStyle = isSelected
+            ? "rgba(66, 135, 245, 0.25)"
+            : "rgba(44, 93, 136, 0.15)";
+          ctx.fillRect(sp.x, sp.y, sw, sh);
+
+          ctx.strokeStyle = isSelected ? "#4287f5" : "#00bfff";
+          ctx.lineWidth = isSelected ? 2 : 1;
+          ctx.strokeRect(sp.x, sp.y, sw, sh);
+
+          // Draw Pivot point
+          const px = sp.x + sw * (r.pivotX ?? 0.5);
+          const py = sp.y + sh * (r.pivotY ?? 0.5);
+          ctx.fillStyle = isSelected ? "#ffcc00" : "rgba(255, 204, 0, 0.7)";
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // If selected, draw resize handles
+          if (isSelected) {
+            const left = sp.x;
+            const top = sp.y;
+            const right = sp.x + sw;
+            const bottom = sp.y + sh;
+            const midX = (left + right) / 2;
+            const midY = (top + bottom) / 2;
+
+            const handleCoords = [
+              { x: left, y: top },
+              { x: midX, y: top },
+              { x: right, y: top },
+              { x: right, y: midY },
+              { x: right, y: bottom },
+              { x: midX, y: bottom },
+              { x: left, y: bottom },
+              { x: left, y: midY },
+            ];
+
+            handleCoords.forEach((pos) => {
+              ctx.fillStyle = "#ffffff";
+              ctx.strokeStyle = "#4287f5";
+              ctx.lineWidth = 1.5;
+              ctx.fillRect(pos.x - 4, pos.y - 4, 8, 8);
+              ctx.strokeRect(pos.x - 4, pos.y - 4, 8, 8);
+            });
+          }
+        });
+      }
+
+      function sliceAutomatic() {
+        const alphaThreshold =
+          parseInt(document.getElementById("alphaThreshold").value) || 10;
+        const minSize =
+          parseInt(document.getElementById("minSpriteSize").value) || 4;
+
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = state.image.width;
+        tempCanvas.height = state.image.height;
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCtx.drawImage(state.image, 0, 0);
+
+        const imgData = tempCtx.getImageData(
+          0,
+          0,
+          state.image.width,
+          state.image.height,
+        );
+        const data = imgData.data;
+        const width = state.image.width;
+        const height = state.image.height;
+        const visited = new Uint8Array(width * height);
+
+        let count = 0;
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = y * width + x;
+            if (visited[idx]) continue;
+
+            const alpha = data[idx * 4 + 3];
+            if (alpha > alphaThreshold) {
+              let minX = x,
+                maxX = x,
+                minY = y,
+                maxY = y;
+              const queue = [[x, y]];
+              visited[idx] = 1;
+
+              let qHead = 0;
+              while (qHead < queue.length) {
+                const [cx, cy] = queue[qHead++];
+                if (cx < minX) minX = cx;
+                if (cx > maxX) maxX = cx;
+                if (cy < minY) minY = cy;
+                if (cy > maxY) maxY = cy;
+
+                const neighbors = [
+                  [cx + 1, cy],
+                  [cx - 1, cy],
+                  [cx, cy + 1],
+                  [cx, cy - 1],
+                ];
+
+                for (let n = 0; n < neighbors.length; n++) {
+                  const nx = neighbors[n][0];
+                  const ny = neighbors[n][1];
+                  if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const nIdx = ny * width + nx;
+                    if (!visited[nIdx]) {
+                      visited[nIdx] = 1;
+                      if (data[nIdx * 4 + 3] > alphaThreshold) {
+                        queue.push([nx, ny]);
+                      }
+                    }
+                  }
+                }
+              }
+
+              const w = maxX - minX + 1;
+              const h = maxY - minY + 1;
+
+              if (w >= minSize && h >= minSize) {
+                state.rects.push({
+                  name: `${state.rootName}_${count++}`,
+                  x: minX,
+                  y: minY,
+                  w,
+                  h,
+                  pivotX: 0.5,
+                  pivotY: 0.5,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Toast message system
+      function showToast(message, type = "info") {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toastMsg");
+        const toastIcon = document.getElementById("toastIcon");
+
+        toastMsg.textContent = message;
+        toastIcon.className =
+          type === "error"
+            ? "fa-solid fa-circle-exclamation text-red-400"
+            : "fa-solid fa-info-circle text-unity-active";
+
+        toast.classList.remove("translate-y-10", "opacity-0");
+
+        setTimeout(() => {
+          toast.classList.add("translate-y-10", "opacity-0");
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>
