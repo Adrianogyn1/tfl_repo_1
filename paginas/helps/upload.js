@@ -208,20 +208,42 @@ router.post("/helps/deleteFile", express.json(), (req, res) => {
   });
 });
 
-router.post("/helps/updateGit", (req, res) => {
-  exec('git pull', (err, stdout) => {
-    res.status(err ? 500 : 200).send(err ? 'Erro ao atualizar: ' + err.message : 'Atualizado com sucesso\n' + stdout);
-  });
-});
 
-router.post("/helps/create_repositorio", (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).send('Dados inválidos');
-  
-  exec(`git clone https://github.com/${name}.git`, (err, stdout) => {
-    res.status(err ? 500 : 200).send(err ? 'Erro ao clonar: ' + err.message : 'Clonado com sucesso\n' + stdout);
-  });
-});
+async function updateGit() {
+    const output = document.getElementById('git-output');
+    output.innerText = 'Atualizando...';
+    try {
+        const res = await fetch('/helps/updateGit', { method: 'POST' });
+        const text = await res.text();
+        output.innerText = text;
+    } catch (err) {
+        output.innerText = 'Erro na requisição: ' + err.message;
+    }
+}
+
+async function createRepository() {
+    const nameInput = document.getElementById('repo-name');
+    const output = document.getElementById('git-output');
+    const name = nameInput.value.trim();
+
+    if (!name) {
+        output.innerText = 'Informe o repositório.';
+        return;
+    }
+
+    output.innerText = 'Clonando...';
+    try {
+        const res = await fetch('/helps/create_repositorio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        const text = await res.text();
+        output.innerText = text;
+    } catch (err) {
+        output.innerText = 'Erro na requisição: ' + err.message;
+    }
+}
 
 
 module.exports = router;
