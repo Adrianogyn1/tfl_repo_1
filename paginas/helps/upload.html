@@ -11,26 +11,29 @@
 <body class="flex h-screen bg-gray-100 font-sans">
     
     <!-- Sidebar -->
-    <aside class="w-80 bg-white border-r border-gray-200 p-5 flex flex-col">
-        <h3 class="text-lg font-bold text-gray-700 mb-4">Pastas</h3>
-        <div class="flex gap-2 mb-4">
-            <input type="text" id="new-folder-name" placeholder="Nova pasta..." class="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="createFolder()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">Criar</button>
-        </div>
-        <div id="tree" class="flex-1 overflow-y-auto text-sm text-gray-600">Carregando...</div>
-    </aside>
-<!-- Git-->
-       <!-- Git -->
-    <aside class="w-80 bg-white border-r border-gray-200 p-5 flex flex-col">
-        <h3 class="text-lg font-bold text-gray-700 mb-4">Git</h3>
-        <div class="flex flex-col gap-3">
-            <button onclick="updateGit()" class="bg-gray-800 hover:bg-gray-900 text-white px-3 py-2 rounded text-sm transition">Atualizar Projeto (Git Pull)</button>
-            <div class="flex flex-col gap-2 mt-4">
-                <input type="text" id="repo-name" placeholder="usuario/repositorio" class="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="createRepository()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">Clonar Repositório</button>
+    <aside class="w-80 bg-white border-r border-gray-200 p-5 flex flex-col gap-6">
+        <div>
+            <h3 class="text-lg font-bold text-gray-700 mb-3">Pastas</h3>
+            <div class="flex gap-2">
+                <input type="text" id="new-folder-name" placeholder="Nova pasta..." class="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="createFolder()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">Criar</button>
             </div>
         </div>
-        <div id="git-output" class="mt-4 flex-1 overflow-y-auto text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-200 font-mono">Aguardando ações...</div>
+        <div id="tree" class="h-40 overflow-y-auto text-sm text-gray-600 border border-gray-100 rounded p-2 bg-gray-50">Carregando...</div>
+
+        <hr class="border-gray-200">
+
+        <div class="flex flex-col flex-1">
+            <h3 class="text-lg font-bold text-gray-700 mb-3">Git</h3>
+            <div class="flex flex-col gap-3">
+                <button onclick="updateGit()" class="bg-gray-800 hover:bg-gray-900 text-white px-3 py-2 rounded text-sm transition">Atualizar Projeto (Git Pull)</button>
+                <div class="flex flex-col gap-2">
+                    <input type="text" id="repo-name" placeholder="usuario/repositorio" class="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="createRepository()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">Clonar Repositório</button>
+                </div>
+            </div>
+            <div id="git-output" class="mt-3 flex-1 overflow-y-auto text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-200 font-mono">Aguardando ações...</div>
+        </div>
     </aside>
 
     <!-- Content -->
