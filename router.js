@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
+require("dotenv").config();
 
 const { repo } = require("./repository.js");
 
@@ -16,6 +17,21 @@ const userController = require("./controllers/user");
 const comentsController = require("./controllers/coments");
 const profileController = require("./controllers/profile");
 
+router.use("/api", authController.router);
+
+//router.use("/api",postsController.router);
+//router.use("/api",galleryController.router);
+//router.use("/api",matchController.router);
+//router.use("/api",socialController.router);
+//router.use("/api",filesController.router);
+//router.use("/api",chatController.router);
+//router.use("/api",cdnController.router);
+//router.use("/api",userController.router);
+//router.use("/api",comentsController.router);
+//router.use("/api",profileController.router);
+
+
+
 //
 /* =====================================================
    Páginas Base e CDN
@@ -23,6 +39,34 @@ const profileController = require("./controllers/profile");
 router.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "./paginas/index.html")),
 );
+router.get("/api/home/info", (req, res) =>
+{
+  const images = {
+    "https://placeimg.com/640/480/any?1": { active: true },
+    "https://placeimg.com/640/480/any?2": { active: true },
+    "https://placeimg.com/640/480/any?3": { active: true },
+  };
+  const files = {
+    android: { url: process.env.ANDROID_DOWNLOAD || "", active: true },
+    ios: { url: process.env.IOS_DOWNLOAD || "", active: false },
+    windows: { url: process.env.WINDOWS_DOWNLOAD || "", active: true },
+    linux: { url: process.env.LINUX_DOWNLOAD || "", active: true },
+  };
+  const pix = {
+    pix: { url: process.env.PIX || "", active: true },
+  };
+
+  const info = {
+    images,
+    files,
+    pix
+  };
+  res.json(info);
+});
+
+
+
+
 router.get("/api/place", (req, res) => placeholdersController.seedDatabase);
 
 router.get("/api", (req, res) => res.json({ hello: "world" }));
@@ -30,15 +74,7 @@ router.get("/api/cdn", (req, res) =>
   res.sendFile(path.join(__dirname, "./paginas/cdn/index.html")),
 );
 
-/* =====================================================
-   Autenticação
-===================================================== */
-router.post("/api/auth/signin", (req, res) => authController.sigin(req, res));
-router.post("/api/auth/signup", (req, res) => authController.signup(req, res));
-router.post("/api/auth/forgot", (req, res) => authController.forgot(req, res));
-router.get("/api/auth/signin/random", (req, res) =>
-  authController.signInRandom(req, res),
-);
+
 
 /* =====================================================
    Usuários e Perfis
@@ -48,12 +84,8 @@ router.get("/api/user/:id", (req, res) => userController.getUser(req, res));
 router.get("/api/users/search", (req, res) =>
   socialController.searchUsers(req, res),
 );
-router.get("/api/profile/:id", (req, res) =>
-  socialController.loadProfile(req, res),
-);
-router.put("/api/profile", (req, res) =>
-  socialController.updateProfile(req, res),
-);
+router.get("/api/profile/:id", (req, res) => socialController.loadProfile(req, res));
+router.put("/api/profile", (req, res) => socialController.updateProfile(req, res));
 
 /* =====================================================
    Social, Feed e Follow
@@ -136,7 +168,8 @@ router.post("/api/gallery", filesController.multer.single("file"), (req, res) =>
 router.post(
   ["/api/gallery/profile", "/api/profile/upload", "/api/cdn/upload"],
   filesController.multer.single("file"),
-  (req, res) => {
+  (req, res) =>
+  {
     return galleryController.addPhotoProfile(req, res);
   },
 );
@@ -220,7 +253,8 @@ const shop = require("./controllers/shop/shop_controller.js");
 /* =====================================================
    Loja (Shop)
 ===================================================== */
-if (shop && shop.router) {
+if (shop && shop.router)
+{
   router.use("/game", shop.router);
 }
 

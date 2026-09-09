@@ -10,12 +10,15 @@ const repo = require("./repository.js");
 const { settings } = require("cluster");
 const { Op } = require("sequelize");
 require("dotenv").config();
+
+
 const appHandlers = require("./controllers/appHandlers.js");
 //game
 const routeGameController = require("./controllers/game/routers.js");
 
 const Settings = {
   PORT: process.env.PORT || 5000,
+  WSS_PORT: process.env.WSS_PORT || process.env.PORT || 5000,
   UPLOAD_DIR: path.join(__dirname, "./uploads"),
   PUBLIC_DIR: path.join(__dirname, "./paginas/public"),
 };
@@ -78,6 +81,7 @@ app.use(routeGameController);
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
+//const wss = new WebSocketServer({port: Settings.WSS_PORT});
 const clients = new Set();
 chatModule.setWss(wss);
 // Evento de conexão adaptado com async para realizar a busca no Sequelize
@@ -167,7 +171,7 @@ function broadcast(eventName, data) {
 }
 const api = require("./controllers/game/Api.js");
 app.get("/game", api.API);
-server.listen(Settings.PORT, () =>
+server.listen(Settings.PORT,"0.0.0.0", () =>
   console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`),
 );
 
@@ -178,17 +182,30 @@ app.get("/online", (req, res) => {
 app.get("/helps", (req, res) => {
   res.sendFile(path.join(__dirname, "/paginas/helps/index.html"));
 });
+
+
+
 app.get("/helps/sprite", (req, res) => {
-  res.sendFile(path.join(__dirname, "paginas/helps/sprite.html"));
+  res.sendFile(path.join(__dirname, "./paginas/helps/sprite.html"));
 });
+
+const uploadsInfo = require("./paginas/helps/upload.js");
+app.use(uploadsInfo);
+
+
 //youtube
 const youtubeRouter = require("./paginas/helps/youtube.js");
 app.use(youtubeRouter);
 
 //Inicia o instanciador
 const { spawn } = require("child_process");
-const appOpen = path.resolve("AppOpen/app.js");
-spawn("node", [appOpen]);
+
+//const appOpen = path.resolve("AppOpen/app.js");
+//spawn("node", [appOpen], { stdio: "inherit" });
+
+//const balance = require("./controllers/gameBalance.js");
+
+
 
 //remover<-
 //require('./controllers/placeHolder.js');

@@ -2,62 +2,83 @@ const repo = require("../../repository");
 const router = require("express").Router();
 
 const CheckAuth = require("../auth").CheckLogin;
-//Organizar rotas
 
+
+//Organizar rotas
 router.get("/game/avatars", CheckAuth, getAll);
 router.get("/game/avatar/find", CheckAuth, get);
 router.get("/game/avatar/:id", CheckAuth, findByPk);
-
+//
 router.post("/game/avatar", CheckAuth, create);
 router.put("/game/avatar/:id", CheckAuth, update);
 router.delete("/game/avatar/:id", CheckAuth, remove);
 
-function checkData(avatarData) {
+router.get("/game/profiles", CheckAuth, getAll);
+router.get("/game/profile/:id", CheckAuth, findByPk);
+router.post("/game/profile", CheckAuth, create);
+router.put("/game/profile/:id", CheckAuth, update);
+router.delete("/game/profile/:id", CheckAuth, remove);
+
+
+function checkData(avatarData)
+{
   let error = "";
-  try {
+  try
+  {
     if (!avatarData) throw new Error("Dados do avatar são obrigatórios.");
 
     if (!avatarData.name) throw new Error("O nome do avatar é obrigatório.");
-  } catch (e) {
+  } catch (e)
+  {
     error = e.message;
   }
   return error;
 }
 
-async function create(req, res) {
-  try {
+async function create(req, res)
+{
+  try
+  {
     const avatarData = req.body;
     var result = await AvatarCreateHandler(avatarData, req.userId);
     if (!result.success) throw new Error(result.error);
 
     return res.status(200).json(result);
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function findByPk(req, res) {
-  try {
+async function findByPk(req, res)
+{
+  try
+  {
+        const full = req.query?.full || req.body?.full || false;
     const avatarInstance = await repo.Avatar.findByPk(req.params.id);
-    if (!avatarInstance) {
-      return res
-        .status(404)
-        .json({ error: "Avatar not found", success: false });
+    if (!avatarInstance)
+    {
+      return res.json({ error: "Avatar not found", success: false });
     }
 
-    const avatar = avatarInstance.get({ plain: true });
+    let avatar = avatarInstance.get({ plain: true });
+    avatar = await getInfo(avatar, full);
     return res.json({
       success: true,
       data: avatar,
     });
-  } catch (err) {
-    return res.status(500).json({ error: err.message, success: false });
+  } catch (err)
+  {
+    return res.json({ error: err.message, success: false });
   }
 }
 
-async function get(req, res) {
-  try {
+async function get(req, res)
+{
+  try
+  {
     const queryStr = req.query?.q || req.body?.q || "";
+    const full = req.query?.full || req.body?.full;
     const whereCondition = repo.parseQueryStringToWhere(queryStr);
     const orderCondition = repo.parseOrderByString(queryStr);
 
@@ -66,33 +87,39 @@ async function get(req, res) {
       order: orderCondition,
     });
 
-    if (!avatarInstance) {
-      return res.json({ success: true, data: null });
+    if (!avatarInstance)
+    {
+      return res.json({ success: false, data: null });
     }
 
     const avatar = avatarInstance.get({ plain: true });
     return res.json({
       success: true,
-      data: getInfo(avatar),
+      data: await getInfo(avatar, full),
     });
-  } catch (err) {
-    return res.status(500).json({ error: err.message, success: false });
+  } catch (err)
+  {
+    return res.json({ error: err.message, success: false });
   }
 }
 
-async function getAll(req, res) {
-  try {
+async function getAll(req, res)
+{
+  try
+  {
     const queryStr = req.query?.q || req.body?.q || "";
     const whereCondition = repo.parseQueryStringToWhere(queryStr);
     const orderCondition = repo.parseOrderByString(queryStr);
+
+    const full = req.query?.full || req.body?.full;
 
     const limit = parseInt(req.query?.limit || req.body?.limit) || 10;
     const offset =
       parseInt(
         req.query?.offset ||
-          req.body?.take ||
-          req.body?.skip ||
-          req.body?.offset,
+        req.body?.take ||
+        req.body?.skip ||
+        req.body?.offset,
       ) || 0;
 
     const avatars = await repo.Avatar.findAndCountAll({
@@ -103,9 +130,10 @@ async function getAll(req, res) {
     });
 
     const preppedAvatars = [];
-    for (const avatarInstance of avatars.rows || []) {
-      const avatar = avatarInstance.get({ plain: true });
-      avatar = await getInfo(avatar);
+    for (const avatarInstance of avatars.rows || [])
+    {
+      let avatar = avatarInstance.get({ plain: true });
+      avatar = await getInfo(avatar, full);
       preppedAvatars.push(avatar);
     }
 
@@ -120,50 +148,86 @@ async function getAll(req, res) {
       limit: limit,
       nextPage: nextPageNum,
     });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function getAvatarInfo(avatarId, full = false) {
-  let data = await repo.Avatar.findByPk(avatarId, { raw: true });
+async function getAvatarInfo(avatarId, full = false)
+{
+  let data = await repo.Avatar.findByPk(avatarId);
   if (!data) return null;
   if (!full) return data;
 
-  return await getInfo(data, full);
+  return await getInfo(data.get({ plain: true }), full);
 }
 
-async function getInfo(avatar, full = false) {
+async function getInfo(avatar, full = false)
+{
   let data = avatar;
-  if (data) {
+  if (data)
+  {
     data.vip = data.vipExpiresAt >= new Date();
     data.currentRoom = null;
     data.rooms = [];
     //
-    data.friends = [];
-    data.ignored = [];
-    data.friendRequestsSent = [];
-    data.friendRequestsReceived = [];
-    data.friendRequestsReceived = [];
-    data.followersList = [];
-    data.followingList = [];
+
+    data.friends = {};
+    data.ignored = {};
+    data.friendRequestsSent = {};
+    data.friendRequestsReceived = {};
+    data.friendRequestsReceived = {};
+    data.followersList =  {};
+    data.followingList = {};
     //counts
     data.followers = 0;
     data.friendCount = 0;
     data.followersCount = 0;
     data.followingCount = 0;
 
-    if (full) {
+    if (full)
+    {
+      //pode trazer milhares de resultados      
+      data.wallet = {
+        registers: [],
+        coins: 0,
+        chips: 0,
+        cash: 0
+      };
+      var coinController = require("./currencyRegisterController");
+      data.wallet.coins = await coinController.GetValue(avatar.id, 'Coins');
+      data.wallet.chips = await coinController.GetValue(avatar.id, 'Chips');
+      data.wallet.cash = await coinController.GetValue(avatar.id, 'Cash');
+      data.wallet.registers = await coinController.GetRegisters(avatar.id, "all", 100);
+
+
+
+
+
+
+
+      //data.currentRoom = data.currentRoom?.get({ plain: true });
+      /* const rooms = await repo.Room.findAll({
+         where: { userId: avatar.id },
+       });
+       data.rooms = rooms?.map((room) => room.get({ plain: true }));
+       */
     }
-  } else {
+  } else
+  {
     data = null;
   }
   return data;
 }
-async function update(req, res) {
-  try {
+
+async function update(req, res)
+{
+  try
+  {
     const erro = checkData(req.body);
-    if (erro) {
+    if (erro)
+    {
       return res.status(400).json({ error: erro, success: false });
     }
 
@@ -172,14 +236,17 @@ async function update(req, res) {
     const isAdmin = adminRoles.includes(user.role);
     const avatarValid = await repo.Avatar.findByPk(req.params.id);
 
-    if (!avatarValid) {
+    if (!avatarValid)
+    {
       return res
         .status(404)
         .json({ error: "Avatar not found", success: false });
     }
 
-    if (!isAdmin) {
-      if (avatarValid.userId != req.userId) {
+    if (!isAdmin)
+    {
+      if (avatarValid.userId != req.userId)
+      {
         return res.status(401).json({ error: "Unauthorized", success: false });
       }
     }
@@ -193,13 +260,16 @@ async function update(req, res) {
       success: true,
       data: avatar,
     });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function remove(req, res) {
-  try {
+async function remove(req, res)
+{
+  try
+  {
     const avatar = await repo.Avatar.findByPk(req.params.id);
     if (!avatar)
       return res
@@ -209,7 +279,8 @@ async function remove(req, res) {
     const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
     const isAdmin = adminRoles.includes(req.userData.role);
 
-    if (!isAdmin && avatar.userId != req.userId) {
+    if (!isAdmin && avatar.userId != req.userId)
+    {
       return res.status(401).json({ error: "Unauthorized", success: false });
     }
 
@@ -217,13 +288,16 @@ async function remove(req, res) {
     if (!result.success) throw new Error(result.error);
 
     return res.json({ success: true, message: "Avatar deleted successfully" });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function AvatarCreateHandler(avatar, userID) {
-  try {
+async function AvatarCreateHandler(avatar, userID)
+{
+  try
+  {
     const error = checkData(avatar);
     if (error) throw new Error(error);
     if (!userID) throw new Error("O userId é obrigatório.");
@@ -236,7 +310,8 @@ async function AvatarCreateHandler(avatar, userID) {
     avatar.vipExpires = new Date().setMonth(-1);
 
     const count = await repo.Avatar.count({ where: { userId: userID } });
-    return await repo.sequelize.transaction(async (t) => {
+    return await repo.sequelize.transaction(async (t) =>
+    {
       //cria um avatar
       const newAvatar = await repo.Avatar.create(avatarData, {
         transaction: t,
@@ -253,7 +328,8 @@ async function AvatarCreateHandler(avatar, userID) {
         { transaction: t },
       );
       //da uma moedas para ele
-      if (count == 0) {
+      if (count == 0)
+      {
         const handleCoins = require("./currencyRegisterController");
         const result = await handleCoins.CreateCurrencyRegister(
           {
@@ -273,62 +349,72 @@ async function AvatarCreateHandler(avatar, userID) {
         where: { userId: newAvatar.userId },
         transaction: t,
       });
-      const avatarVal = { avatar: newAvatar, room: room, wallet: wallet };
-      return { success: true, data: avatarVal, error: "" };
+      // const avatarVal = { avatar: newAvatar, room: room, wallet: wallet };
+      const avatarVal = getAvatarInfo(newAvatar.id, true);
+      return { success: true, profile: avatarVal, data: avatarVal, error: "" };
     });
-  } catch (e) {
+  } catch (e)
+  {
     console.log(e);
     return { success: false, data: null, error: e.message };
   }
 }
 
-async function AvatarDeleteHandle(avatarID) {
-  try {
+async function AvatarDeleteHandle(avatarID)
+{
+  try
+  {
     const avatar = await repo.Avatar.findByPk(avatarID);
     if (!avatar) throw new Error("Avatar não encontrado.");
 
     const files = await repo.FileInfo.findAll({ where: { uid: avatar.uid } });
 
-    await repo.sequelize.transaction(async (t) => {
+    await repo.sequelize.transaction(async (t) =>
+    {
       await repo.Avatar.destroy({ where: { id: avatarID }, transaction: t });
-      for (const [key, model] of Object.entries(repo.sequelize.models)) {
-        if (key !== "FileInfo" && model.rawAttributes.uid) {
+      for (const [key, model] of Object.entries(repo.sequelize.models))
+      {
+        if (key !== "FileInfo" && model.rawAttributes.uid)
+        {
           //  await model.destroy({ where: { uid: avatar.uid }, transaction: t });
           continue;
         }
-        if (key === "CurrencyRegister" && model.rawAttributes.target_uid) {
+        if (key === "CurrencyRegister" && model.rawAttributes.target_uid)
+        {
           //  await model.destroy({ where: { target_uid: avatar.uid }, transaction: t });
           continue;
         }
       }
     });
 
-    for (const file of files) {
-      try {
-        if (file.inCdn) {
+    for (const file of files)
+    {
+      try
+      {
+        if (file.inCdn)
+        {
           await cloudinary.uploader.destroy(file.publicId);
-        } else {
+        } else
+        {
           const fullPath = path.join(UPLOAD_DIR, file.url.split("/").pop());
           if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
         }
         await repo.FileInfo.destroy({ where: { target_uid: file.id } });
-      } catch (e) {
+      } catch (e)
+      {
         console.error("Erro ao deletar arquivo externo:", e.message);
       }
     }
     return { success: true, error: "" };
-  } catch (e) {
+  } catch (e)
+  {
     return { success: false, error: e.message };
   }
 }
 
+
+
 module.exports = {
-  // create,
-  // findByPk,
-  // get,
-  // getAll,
-  // update,
-  // remove,
   router,
   getInfo,
   getAvatarInfo,

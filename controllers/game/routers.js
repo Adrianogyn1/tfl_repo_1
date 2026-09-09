@@ -10,9 +10,10 @@ const controllers = require("./index.js");
 //importação por controllers
 Object.values(controllers).forEach((controller) => {
   if (controller && controller.router) {
-    router.use(controller.router);
+    router.use(controller.router);//
   } else if (controller && typeof controller === "function") {
     // Caso o export seja o próprio router (função de middleware)
+   // router.use("/api", controller);
     router.use(controller);
   }
 });
@@ -98,11 +99,6 @@ router.delete(
   controllers.OutfitItems.remove,
 );
 
-// Ações para Servers (Servidores)
-router.get("/game/servers", CheckAuth, controllers.Server.getAll);
-router.get("/game/servers/:id", CheckAuth, controllers.Server.getById);
-router.post("/game/servers", CheckAuth, controllers.Server.create);
-router.put("/game/servers/:id", CheckAuth, controllers.Server.update);
-router.delete("/game/servers/:id", CheckAuth, controllers.Server.remove);
+
 
 module.exports = router;

@@ -20,6 +20,102 @@ function checkData(registerData) {
   return error;
 }
 
+ var types = ['Coins', 'Cash', 'Chips', 'None', 'All'];
+
+async function GetValue(avatarID, type = 'Coins') {
+  let value = 0; 
+  if(!types.includes(type)) return value;
+
+  if (type === 'Coins') {
+    value = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'Coins',
+      },
+    });
+  }
+  else if (type === 'Cash') {
+    value = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'Cash',
+      },
+    });
+  }
+  else if (type === 'Chips') {
+    value = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'Chips',
+      },
+    });
+  }
+  else if (type === 'None') {
+    value = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'None',
+      },
+    });
+  }
+  else {
+    value = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+      },
+    });
+  }
+
+  return value??0;
+}
+async function GetRegisters(avatarID, type = 'Coin', limit=100) {
+  let registers = [];
+//if(!types.includes(type)) return registers;
+  switch (type) {
+    case 'Coin':
+      registers= await repo.CurrencyRegister.findAll({
+        where: {
+          ownerId: avatarID,
+          type: 'Coins',
+        },
+        limit
+      });
+    case 'Cash':
+      registers= await repo.CurrencyRegister.findAll({
+        where: {
+          ownerId: avatarID,
+          type: 'Cash',
+        },
+        limit
+      });
+    case 'Chips':
+      registers= await repo.CurrencyRegister.findAll({
+        where: {
+          ownerId: avatarID,
+          type: 'Chips',
+        },
+        limit
+      });
+    case 'None':
+      registers= await repo.CurrencyRegister.findAll({
+        where: {
+          ownerId: avatarID,
+          type: 'None',
+        },
+        limit
+      });
+    default:
+      registers = await repo.CurrencyRegister.findAll({
+        where: {
+          ownerId: avatarID,
+        },
+        limit
+      });
+  }
+  return registers;
+  
+}
+
 async function getAll(req, res) {
   try {
     // Obtém a query string do request
@@ -139,11 +235,7 @@ async function UpdateCurrencyRegister(
   }
 }
 
-async function CreateCurrencyRegister(
-  registerData,
-  userId,
-  transaction = null,
-) {
+async function CreateCurrencyRegister(registerData, userId, transaction = null) {
   try {
     const valid = checkData(registerData);
     if (valid) {
@@ -181,4 +273,7 @@ module.exports = {
   remove,
   CreateCurrencyRegister,
   UpdateCurrencyRegister,
+
+  GetValue,
+  GetRegisters,
 };

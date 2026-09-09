@@ -6,6 +6,11 @@ const {
   LikeDto,
   PhotoDto,
 } = require("../Models/dto/postDto");
+const router = require("express").Router();
+
+
+
+
 
 async function loadFeed(req, res) {
   //fala comentario sobre comentarioss
@@ -364,4 +369,5 @@ module.exports = {
   loadFeed,
   likePost,
   dislikePost,
+  router
 };

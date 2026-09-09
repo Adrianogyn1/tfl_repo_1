@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  balancer:
+    build: .
+    container_name: udp-balancer
+    ports:
+      - "7000:7000/udp"
+    command: ["node", "balancer.js"]
+    networks:
+      - rede-interna
+
+  app_1:
+    build: .
+    environment:
+      - INSTANCE_ID=1
+    networks:
+      - rede-interna
+
+  app_2:
+    build: .
+    environment:
+      - INSTANCE_ID=2
+    networks:
+      - rede-interna
+
+  app_3:
+    build: .
+    environment:
+      - INSTANCE_ID=3
+    networks:
+      - rede-interna
+
+networks:
+  rede-interna:

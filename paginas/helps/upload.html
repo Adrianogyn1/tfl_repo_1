@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciador de Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+</head>
+<body class="flex h-screen bg-gray-100 font-sans">
+    
+    <!-- Sidebar -->
+    <aside class="w-80 bg-white border-r border-gray-200 p-5 flex flex-col">
+        <h3 class="text-lg font-bold text-gray-700 mb-4">Pastas</h3>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="new-folder-name" placeholder="Nova pasta..." class="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="createFolder()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">Criar</button>
+        </div>
+        <div id="tree" class="flex-1 overflow-y-auto text-sm text-gray-600">Carregando...</div>
+    </aside>
+<!-- Git-->
+       <!-- Git -->
+    <aside class="w-80 bg-white border-r border-gray-200 p-5 flex flex-col">
+        <h3 class="text-lg font-bold text-gray-700 mb-4">Git</h3>
+        <div class="flex flex-col gap-3">
+            <button onclick="updateGit()" class="bg-gray-800 hover:bg-gray-900 text-white px-3 py-2 rounded text-sm transition">Atualizar Projeto (Git Pull)</button>
+            <div class="flex flex-col gap-2 mt-4">
+                <input type="text" id="repo-name" placeholder="usuario/repositorio" class="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="createRepository()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">Clonar Repositório</button>
+            </div>
+        </div>
+        <div id="git-output" class="mt-4 flex-1 overflow-y-auto text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-200 font-mono">Aguardando ações...</div>
+    </aside>
+
+    <!-- Content -->
+    <main class="flex-1 p-8 overflow-y-auto flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="current-dir" class="text-xl font-semibold text-gray-800">Selecione uma pasta</h2>
+            <button id="btn-download-folder" style="display:none;" onclick="downloadFolder()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition shadow">Baixar Pasta (ZIP)</button>
+        </div>
+        
+        <form id="form" style="display:none;" class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-6">
+            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer mb-4 bg-gray-50">
+                <input type="file" id="file" multiple required class="hidden">
+                <p class="text-sm text-gray-600 mb-1">Arraste e solte arquivos aqui ou <span class="text-blue-600 font-semibold underline">clique para selecionar</span></p>
+                <p id="file-count-label" class="text-xs text-gray-400">Nenhum arquivo selecionado</p>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">Enviar Arquivos</button>
+        </form>
+        
+        <div id="progress-container" class="w-full bg-gray-200 rounded-full h-4 mb-4 hidden overflow-hidden">
+            <div id="progress-bar" class="bg-green-500 h-4 text-center text-white text-xs leading-none transition-all duration-300" style="width: 0%">0%</div>
+        </div>
+        <p id="status" class="font-semibold text-sm mb-4 text-gray-700"></p>
+        
+        <h3 class="text-lg font-bold text-gray-700 mb-3">Arquivos na Pasta</h3>
+        <ul id="file-list" class="space-y-2"></ul>
+    </main>
+
+    <!-- Modal de Edição -->
+    <div id="modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg w-[850px] shadow-xl flex flex-col">
+            <h3 id="modal-title" class="text-lg font-bold text-gray-800 mb-3">Editando arquivo</h3>
+            <div class="border border-gray-300 rounded overflow-hidden mb-4">
+                <textarea id="modal-textarea"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm transition">Cancelar</button>
+                <button onclick="saveFileContent()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+<style>
+    ul.tree, ul.tree ul { list-style-type: none; padding-left: 1rem; margin: 0; }
+    .folder { cursor: pointer; padding: 4px 6px; margin: 2px 0; border-radius: 4px; user-select: none; display: flex; align-items: center; }
+    .folder:hover { background: #f3f4f6; }
+    .folder.selected { background: #2563eb !important; color: white !important; }
+    .caret { display: inline-block; margin-right: 5px; font-size: 10px; }
+    .nested { display: none; }
+    .active { display: block; }
+    .CodeMirror { height: 400px; font-size: 14px; }
+    .CodeMirror-hints { background: #282a36 !important; color: #f8f8f2 !important; border: 1px solid #44475a !important; font-family: monospace; z-index: 99999; }
+    .CodeMirror-hint-active { background: #44475a !important; color: #50fa7b !important; }
+    #drop-zone.dragover { background-color: #eff6ff; border-color: #2563eb; }
+</style>
+
+<!-- CodeMirror Scripts + Addons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
+
+<script>
+let selectedPath = '.';
+let currentEditingPath = '';
+let codeEditor = CodeMirror.fromTextArea(document.getElementById('modal-textarea'), {
+    lineNumbers: true,
+    theme: 'dracula',
+    mode: 'javascript',
+    indentUnit: 4,
+    lineWrapping: true,
+    extraKeys: { "Ctrl-Space": "autocomplete" }
+});
+
+codeEditor.on("inputRead", function (cm, change) {
+    if (change.text[0].match(/\w/)) {
+        cm.showHint({ completeSingle: false });
+    }
+});
+
+async function loadFolders() {
+    let res = await fetch('/helps/getfolders');
+    let dirs = await res.json();
+    let root = buildTree(dirs);
+    let treeContainer = document.getElementById('tree');
+    treeContainer.innerHTML = '';
+    treeContainer.appendChild(renderTree(root));
+}
+
+function buildTree(paths) {
+    let root = {};
+    paths.forEach(p => {
+        let parts = p.split('/').filter(Boolean);
+        let current = root;
+        parts.forEach(part => {
+            if (!current[part]) current[part] = {};
+            current = current[part];
+        });
+    });
+    return root;
+}
+
+function renderTree(node, currentPath = '.') {
+    let ul = document.createElement('ul');
+    ul.className = currentPath === '.' ? 'tree active' : 'nested';
+
+    for (let key in node) {
+        let li = document.createElement('li');
+        let fullPath = currentPath === '.' ? './' + key : currentPath + '/' + key;
+        let hasChildren = Object.keys(node[key]).length > 0;
+
+        let div = document.createElement('div');
+        div.className = 'folder';
+
+        if (fullPath === './.') {
+            div.classList.add('selected');
+        }
+
+        if (hasChildren) {
+            let caret = document.createElement('span');
+            caret.className = 'caret';
+            caret.textContent = '▼';
+            caret.onclick = (e) => {
+                e.stopPropagation();
+                let nested = li.querySelector('.nested');
+                if (nested) {
+                    nested.classList.toggle('active');
+                    caret.textContent = nested.classList.contains('active') ? '▼' : '▶';
+                }
+            };
+            div.appendChild(caret);
+        }
+
+        let label = document.createElement('span');
+        label.textContent = key === '.' ? 'Raiz (Atual)' : key;
+        div.appendChild(label);
+
+        div.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.folder').forEach(f => f.classList.remove('selected'));
+            div.classList.add('selected');
+            selectedPath = fullPath;
+            document.getElementById('current-dir').textContent = 'Destino: ' + fullPath;
+            document.getElementById('form').style.display = 'block';
+            document.getElementById('btn-download-folder').style.display = 'block';
+            loadFiles(fullPath);
+        };
+
+        li.appendChild(div);
+
+        if (hasChildren) {
+            let nestedUl = renderTree(node[key], fullPath);
+            if (currentPath === '.') {
+                nestedUl.classList.add('active');
+            }
+            li.appendChild(nestedUl);
+        }
+        ul.appendChild(li);
+    }
+    return ul;
+}
+
+async function loadFiles(path) {
+    let res = await fetch('/helps/getfiles?path=' + encodeURIComponent(path));
+    let files = await res.json();
+    let list = document.getElementById('file-list');
+    list.innerHTML = '';
+    files.forEach(f => {
+        let li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-white border border-gray-200 p-3 rounded-lg shadow-sm text-sm';
+        
+        let leftDiv = document.createElement('div');
+        leftDiv.className = 'flex items-center gap-3';
+
+        let filePath = path + '/' + f;
+        let ext = f.split('.').pop().toLowerCase();
+        if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico'].includes(ext)) {
+            let img = document.createElement('img');
+            img.src = `/helps/downloadFile?path=${encodeURIComponent(filePath)}`;
+            img.className = 'w-10 h-10 object-cover rounded border border-gray-300';
+            leftDiv.appendChild(img);
+        } else {
+            let icon = document.createElement('div');
+            icon.className = 'w-10 h-10 bg-gray-100 rounded border border-gray-300 flex items-center justify-center text-xs font-bold text-gray-500 uppercase';
+            icon.textContent = ext;
+            leftDiv.appendChild(icon);
+        }
+
+        let span = document.createElement('span');
+        span.textContent = f;
+        span.className = 'font-medium text-gray-700';
+        leftDiv.appendChild(span);
+        li.appendChild(leftDiv);
+
+        let actions = document.createElement('div');
+        actions.className = 'flex gap-2';
+
+        let btnEdit = document.createElement('button');
+        btnEdit.textContent = 'Editar';
+        btnEdit.className = 'bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs transition';
+        btnEdit.onclick = () => openEditModal(filePath);
+        actions.appendChild(btnEdit);
+
+        let btnDownload = document.createElement('button');
+        btnDownload.textContent = 'Baixar';
+        btnDownload.className = 'bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs transition';
+        btnDownload.onclick = () => window.location.href = `/helps/downloadFile?path=${encodeURIComponent(filePath)}`;
+        actions.appendChild(btnDownload);
+
+        let btnRename = document.createElement('button');
+        btnRename.textContent = 'Renomear';
+        btnRename.className = 'bg-yellow-50 hover:bg-yellow-100 text-yellow-600 px-3 py-1 rounded text-xs transition';
+        btnRename.onclick = () => renameFile(path, f);
+        actions.appendChild(btnRename);
+
+        if (f.endsWith('.tar.gz') || f.endsWith('.zip')) {
+            let btnExtract = document.createElement('button');
+            btnExtract.textContent = 'Descompactar';
+            btnExtract.className = 'bg-purple-50 hover:bg-purple-100 text-purple-600 px-3 py-1 rounded text-xs transition';
+            btnExtract.onclick = () => extractFile(path, f);
+            actions.appendChild(btnExtract);
+        }
+
+        let btnDelete = document.createElement('button');
+        btnDelete.textContent = 'Excluir';
+        btnDelete.className = 'bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded text-xs transition';
+        btnDelete.onclick = () => deleteFile(path, f);
+        actions.appendChild(btnDelete);
+
+        li.appendChild(actions);
+        list.appendChild(li);
+    });
+}
+
+function getEditorMode(filename) {
+    let ext = filename.split('.').pop().toLowerCase();
+    if (['js', 'mjs', 'cjs'].includes(ext)) return 'javascript';
+    if (['html', 'htm'].includes(ext)) return 'htmlmixed';
+    if (['css', 'scss'].includes(ext)) return 'css';
+    if (['json', 'xml'].includes(ext)) return 'javascript';
+    if (['py'].includes(ext)) return 'python';
+    if (['sql'].includes(ext)) return 'sql';
+    if (['md'].includes(ext)) return 'markdown';
+    if (['java', 'cpp', 'c', 'cs', 'php'].includes(ext)) return 'clike';
+    return 'javascript';
+}
+
+async function openEditModal(filePath) {
+    currentEditingPath = filePath;
+    let res = await fetch(`/helps/editFile?path=${encodeURIComponent(filePath)}`);
+    if (!res.ok) {
+        alert('Erro ao abrir o arquivo');
+        return;
+    }
+    let content = await res.text();
+    document.getElementById('modal-title').textContent = 'Editando: ' + filePath;
+    
+    codeEditor.setOption('mode', getEditorMode(filePath));
+    codeEditor.setValue(content);
+    
+    document.getElementById('modal').style.display = 'flex';
+    setTimeout(() => codeEditor.refresh(), 10);
+}
+
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+}
+
+async function saveFileContent() {
+    let content = codeEditor.getValue();
+    let res = await fetch('/helps/saveFile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: currentEditingPath, content })
+    });
+    let msg = await res.text();
+    alert(msg);
+    if (res.ok) closeModal();
+}
+
+function downloadFolder() {
+    if (!selectedPath) return;
+    window.location.href = `/helps/downloadFolder?path=${encodeURIComponent(selectedPath)}`;
+}
+
+async function createFolder() {
+    if (!selectedPath) return alert('Selecione uma pasta primeiro!');
+    let folderName = document.getElementById('new-folder-name').value;
+    if (!folderName) return alert('Digite o nome da pasta');
+
+    let res = await fetch('/helps/createFolder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parent: selectedPath, name: folderName })
+    });
+    let msg = await res.text();
+    alert(msg);
+    document.getElementById('new-folder-name').value = '';
+    loadFolders();
+}
+
+async function renameFile(dir, oldName) {
+    let newName = prompt('Novo nome:', oldName);
+    if (!newName || !newName.trim() || newName === oldName) return;
+
+    let res = await fetch('/helps/renameFile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dir, oldName, newName })
+    });
+    let msg = await res.text();
+    alert(msg);
+    loadFiles(dir);
+}
+
+async function extractFile(dir, fileName) {
+    if (!confirm(`Deseja descompactar ${fileName}?`)) return;
+    let res = await fetch('/helps/extractFile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dir, fileName })
+    });
+    let msg = await res.text();
+    alert(msg);
+    loadFiles(dir);
+}
+
+async function deleteFile(dir, fileName) {
+    if (!confirm(`Deseja realmente excluir ${fileName}?`)) return;
+
+    let res = await fetch('/helps/deleteFile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dir, fileName })
+    });
+    let msg = await res.text();
+    alert(msg);
+    loadFiles(dir);
+}
+
+// Configuração de Drag and Drop e Múltiplos Arquivos
+let dropZone = document.getElementById('drop-zone');
+let fileInput = document.getElementById('file');
+let fileCountLabel = document.getElementById('file-count-label');
+
+dropZone.onclick = () => fileInput.click();
+
+fileInput.onchange = () => {
+    updateFileLabel(fileInput.files);
+};
+
+dropZone.ondragover = (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+};
+
+dropZone.ondragleave = () => {
+    dropZone.classList.remove('dragover');
+};
+
+dropZone.ondrop = (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        updateFileLabel(fileInput.files);
+    }
+};
+
+function updateFileLabel(files) {
+    if (files.length === 1) {
+        fileCountLabel.textContent = `1 arquivo selecionado: ${files[0].name}`;
+    } else if (files.length > 1) {
+        fileCountLabel.textContent = `${files.length} arquivos selecionados`;
+    } else {
+        fileCountLabel.textContent = 'Nenhum arquivo selecionado';
+    }
+}
+
+document.getElementById('form').onsubmit = (e) => {
+    e.preventDefault();
+    let files = fileInput.files;
+    if (!files || files.length === 0) return alert('Selecione ao menos um arquivo!');
+
+    let fd = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        fd.append('file', files[i]);
+    }
+    fd.append('dest', selectedPath);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', '/helps/uploadFile', true);
+
+    document.getElementById('progress-container').classList.remove('hidden');
+    let progressBar = document.getElementById('progress-bar');
+    
+    xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+            let percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+        }
+    };
+
+    xhr.onload = () => {
+        document.getElementById('status').textContent = xhr.responseText;
+        loadFiles(selectedPath);
+        fileInput.value = '';
+        fileCountLabel.textContent = 'Nenhum arquivo selecionado';
+        setTimeout(() => {
+            document.getElementById('progress-container').classList.add('hidden');
+            progressBar.style.width = '0%';
+        }, 2000);
+    };
+
+    xhr.send(fd);
+};
+
+function createRepository() {
+    let name = document.getElementById('repo-name').value;
+    if (!name) return alert('Digite o nome do repositório');
+    let res = fetch('/helps/createRepository', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    });
+    let msg = res.text();
+    alert(msg);
+}
+
+function updateGit() {
+    let res = fetch('/helps/updateGit', {
+        method: 'POST'
+    });
+    let msg = res.text();
+    alert(msg);
+}
+
+// Inicializa selecionando a pasta atual de execução logo ao carregar
+selectedPath = './.';
+document.getElementById('current-dir').textContent = 'Destino: ./';
+document.getElementById('form').style.display = 'block';
+document.getElementById('btn-download-folder').style.display = 'block';
+loadFiles('./.');
+loadFolders();
+</script>
+</body>
+</html>

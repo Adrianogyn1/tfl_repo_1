@@ -45,6 +45,11 @@ const fileManager = require("./files");
 const { Op } = require("sequelize");
 const UPLOAD_DIR = path.join(__dirname, "uploads");
 
+const router = require("express").Router();
+
+
+
+
 async function loadGallery(req, res) {
   if (!(await global.CheckLogin(req, res))) return;
   delete global.req;
@@ -323,4 +328,5 @@ module.exports = {
   deleteLike,
   addComment,
   deleteComment,
+  router
 };

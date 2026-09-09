@@ -6,6 +6,16 @@ const {
   RoomBaseInfo,
 } = require("../Models/dto/userDto");
 
+const router = require("express").Router();
+
+/* =====================================================
+   Autenticação
+===================================================== */
+router.post("/auth/signin", (req, res) => sigin(req, res));
+router.post("/auth/signup", (req, res) => signup(req, res));
+router.post("/auth/forgot", (req, res) => forgot(req, res));
+router.get("/auth/signin/random", (req, res) => signInRandom(req, res));
+
 function encryptPassword(password) {
   return password;
 }
@@ -46,7 +56,17 @@ async function CheckLogin(req, res, next) {
 }
 
 async function signInRandom(req, res) {
+  const avatars = await repo.Avatar.findOne(
+    {
+      order: repo.Sequelize.literal("RANDOM()"),
+    }
+  );
+  const userID = avatars.userId;
+
+
+
   const user = await repo.User.findOne({
+   // where: { id: userID },
     order: repo.Sequelize.literal("RANDOM()"),
   });
 
@@ -76,20 +96,20 @@ async function sigin(req, res) {
       let data = await repo.Avatar.findOne({
         where: {
           userId: user.id,
-        },
-        plain: true,
-      });
+        }});
+
+      let profile = null;
       if (data) {
         var crt = require("../controllers/game/avatarController");
-        data = await crt.getInfo(data, true);
+        profile = await crt.getInfo(data.get({ plain: true }), true);
       }
 
       return res.status(200).json({
         token: user.token,
         user: userPlain,
-        profile: data,
+        profile: profile,
         success: true,
-        data: data,
+        data: {}
       });
     } else {
       return res.status(401).json({
@@ -169,4 +189,4 @@ async function logout(req, res) {
   return res.status(200).json({ success: true, data: {} });
 }
 
-module.exports = { sigin, signup, logout, forgot, CheckLogin, signInRandom };
+module.exports = { sigin, signup, logout, forgot, CheckLogin, signInRandom, router };

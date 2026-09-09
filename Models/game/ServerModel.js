@@ -32,6 +32,7 @@ module.exports = (sequelize) => {
       roomId: { type: DataTypes.INTEGER, defaultValue: 0 },
       ip: { type: DataTypes.STRING, defaultValue: "" },
       port: { type: DataTypes.STRING, defaultValue: "" },
+      publicPort: { type: DataTypes.STRING, defaultValue: "" },
       token: { type: DataTypes.STRING, defaultValue: "" },
       maxPlayers: { type: DataTypes.INTEGER, defaultValue: 30 },
       playersCount: { type: DataTypes.INTEGER, defaultValue: 0 },

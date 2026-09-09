@@ -1,27 +1,39 @@
 const { spawn } = require("child_process");
 const path = require("path");
 const WebSocket = require("ws");
+const { settings } = require("cluster");
+require("dotenv").config();
+const proxyNode = require("./proxy.js");
 
-const webService = "ws://localhost:5000";
-const myIP = "127.0.0.1";
-const token = "app_open";
+const config = {
+  TOKEN: "app_open",
+  IP: process.env.SERVER_IP || "127.0.0.1",
+  WS_URL: process.env.WS_URL || "ws://localhost",
+  WSS_PORT: process.env.WSS_PORT || process.env.PORT || 5000,
+  PORT: process.env.PORT || 5000,
+  GODOT_EXEC_PATH: process.env.GODOT_EXEC_PATH || "/media/not/Godot_v4.7-stable_mono_linux_x86_64/Godot_v4.7-stable_mono_linux.x86_64",
+  PROJECT_PATH: process.env.PROJECT_PATH || "/media/not/Win Docs/godot/tfl-1",
+  SERVER_APP: process.env.SERVER_APP || "/media/not/Win Docs/godot/tfl-1/TFLServer.exe",
+  USE_SERVER_APP: process.env.USE_SERVER_APP || false,
+};
 
-const godotExecPath =
-  "/media/not/Godot_v4.7-stable_mono_linux_x86_64/Godot_v4.7-stable_mono_linux.x86_64";
-const projectPath = "/media/not/Win Docs/godot/tfl-1";
+const webService = `${config.WS_URL}:${config.WSS_PORT}`;
 
 const instances = {};
 let wsClient = null;
 let reconnectInterval = null;
 
-function connectWebSocket() {
-  console.log("🔄 Tentando conectar ao servidor de WebSocket...");
-  wsClient = new WebSocket(`${webService}?token=${token}&host=${myIP}`);
+function connectWebSocket()
+{
+  console.log(`🔄 Tentando conectar ao servidor de WebSocket... ${webService}`);
+  wsClient = new WebSocket(`${webService}?token=${config.TOKEN}&host=${config.IP}`);
 
-  wsClient.on("open", () => {
-    console.log("✅ Conectado ao WebSocket!");
+  wsClient.on("open", () =>
+  {
+    console.log(`✅ Conectado a ${webService}!`);
 
-    if (reconnectInterval) {
+    if (reconnectInterval)
+    {
       clearInterval(reconnectInterval);
       reconnectInterval = null;
     }
@@ -29,47 +41,58 @@ function connectWebSocket() {
     syncRunningRooms();
   });
 
-  wsClient.on("close", () => {
+  wsClient.on("close", () =>
+  {
     console.log("❌ Conexão com o WebSocket caiu.");
     scheduleReconnect();
   });
 
-  wsClient.on("error", (err) => {
+  wsClient.on("error", (err) =>
+  {
     console.error("⚠️ Erro na conexão do WebSocket:", err.message);
     wsClient.close();
   });
 
-  wsClient.on("message", (message) => {
-    try {
+  wsClient.on("message", (message) =>
+  {
+    try
+    {
       const data = JSON.parse(message.toString());
-      if (data.Event === "OnCreateRoom") {
-        // Decodifica a string Base64 enviada pelo servidor
+      if (data.Event === "OnCreateRoom")
+      {
+        console.log(`Criando sala...`);
         const jsonString = Buffer.from(data.Data, "base64").toString("utf-8");
         const roomData = JSON.parse(jsonString);
 
         createRoomInstance(roomData);
       }
-    } catch (e) {
+    } catch (e)
+    {
       console.error("Erro ao processar mensagem do WebSocket:", e);
     }
   });
 }
 
-function scheduleReconnect() {
-  if (!reconnectInterval) {
-    reconnectInterval = setInterval(() => {
+function scheduleReconnect()
+{
+  if (!reconnectInterval)
+  {
+    reconnectInterval = setInterval(() =>
+    {
       connectWebSocket();
     }, 5000);
   }
 }
 
-function syncRunningRooms() {
+function syncRunningRooms()
+{
   const activeRooms = Object.values(instances);
   if (
     activeRooms.length > 0 &&
     wsClient &&
     wsClient.readyState === WebSocket.OPEN
-  ) {
+  )
+  {
     wsClient.send(
       JSON.stringify({
         Event: "SyncRooms",
@@ -81,36 +104,53 @@ function syncRunningRooms() {
     );
   }
 }
-function createRoomInstance(room) {
-  room.host = myIP;
 
-  // Converte o objeto da sala para Base64
+function createRoomInstance(room)
+{
+
+  room.host = config.IP;
   const roomB64 = Buffer.from(JSON.stringify(room)).toString("base64");
 
-  const args = [
+  let args = [
     "--path",
-    projectPath,
+    config.PROJECT_PATH,
     "--headless",
     "--audio-driver",
     "Dummy",
-    `--room-data=${roomB64}`, // Alterado para bater com o C# (TryParse)
+    `--room-data=${roomB64}`,
   ];
 
-  const childProcess = spawn(godotExecPath, args, {
-    detached: false,
-    stdio: "inherit",
-  });
+  let childProcess = null;
+  console.log(config);
+  if (config.USE_SERVER_APP == true)
+  {
+    console.log(`🚀 Criando sala via ${config.SERVER_APP}`);
+    args = ["--headless", "--audio-driver", "Dummy", `--room-data=${roomB64}`];
+    childProcess = spawn(config.SERVER_APP, args, {
+      detached: false,
+      stdio: "inherit",
+    });
+  }
+  else
+  {
+    childProcess = spawn(config.GODOT_EXEC_PATH, args, {
+      detached: false,
+      stdio: "inherit",
+    });
+  }
 
   const pid = childProcess.pid;
 
-  if (!pid) {
+  if (!pid)
+  {
     console.error(`❌ Falha ao criar o processo da sala`);
     return;
   }
 
   instances[pid] = room;
 
-  childProcess.on("exit", (code) => {
+  childProcess.on("exit", (code) =>
+  {
     console.log(
       `ℹ️ Processo da sala (PID: ${pid}) finalizado com código ${code}`,
     );
@@ -121,7 +161,12 @@ function createRoomInstance(room) {
     `🚀 Sala criada via Godot (PID: ${pid}, Porta: ${room.port || "Desconhecida"})`,
   );
 
-  if (wsClient && wsClient.readyState === WebSocket.OPEN) {
+  if (wsClient && wsClient.readyState === WebSocket.OPEN)
+  {
+    //var clienteIp = wsClient._socket.remoteAddress;
+   // var clientePorta = wsClient._socket.remotePort;
+    //var targetPort = room.port;
+   // proxyNode.registerClientRouter(clienteIp, clientePorta, targetPort);
     wsClient.send(
       JSON.stringify({
         Event: "RoomCreated",
@@ -133,24 +178,29 @@ function createRoomInstance(room) {
 
 connectWebSocket();
 
-// --- LIMPEZA DE PROCESSOS AO FECHAR O APP ---
-function killAllRooms() {
+function killAllRooms()
+{
   console.log("🧹 Encerrando todas as salas abertas...");
-  for (const pid of Object.keys(instances)) {
-    try {
+  for (const pid of Object.keys(instances))
+  {
+    try
+    {
       process.kill(Number(pid), "SIGKILL");
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
-process.on("SIGINT", () => {
+process.on("SIGINT", () =>
+{
   killAllRooms();
   process.exit(0);
 });
-process.on("SIGTERM", () => {
+process.on("SIGTERM", () =>
+{
   killAllRooms();
   process.exit(0);
 });
-process.on("exit", () => {
+process.on("exit", () =>
+{
   killAllRooms();
 });
