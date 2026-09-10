@@ -1356,6 +1356,7 @@
             content.classList.add('dragging');
             $('drop-overlay-path').textContent = selectedPath;
         });
+        
         content.addEventListener('dragover', (e) => e.preventDefault());
         content.addEventListener('dragleave', (e) =>
         {
