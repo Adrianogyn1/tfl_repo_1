@@ -17,7 +17,13 @@ const userController = require("./controllers/user");
 const comentsController = require("./controllers/coments");
 const profileController = require("./controllers/profile");
 
+const {helps} = require("./routers/routes.js");
+
 router.use("/api", authController.router);
+
+router.use("/helps",helps);
+
+
 
 //router.use("/api",postsController.router);
 //router.use("/api",galleryController.router);
@@ -39,6 +45,8 @@ router.use("/api", authController.router);
 router.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "./paginas/index.html")),
 );
+
+
 router.get("/api/home/info", (req, res) =>
 {
   const images = {

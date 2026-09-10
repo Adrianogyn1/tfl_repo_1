@@ -179,18 +179,8 @@ app.get("/online", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.get("/helps", (req, res) => {
-  res.sendFile(path.join(__dirname, "/paginas/helps/index.html"));
-});
 
 
-
-app.get("/helps/sprite", (req, res) => {
-  res.sendFile(path.join(__dirname, "./paginas/helps/sprite.html"));
-});
-
-const uploadsInfo = require("./paginas/helps/upload.js");
-app.use(uploadsInfo);
 
 
 //youtube
