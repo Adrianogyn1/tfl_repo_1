@@ -17,14 +17,17 @@ router.get("/helps/getfolders", (req, res) => {
   });
 });
 
+
+
 router.get("/helps/getfiles", (req, res) => {
   const targetDir = req.query.path;
   if (!targetDir) return res.status(400).json({ error: 'Caminho não informado' });
   
   fs.readdir(path.resolve(targetDir), { withFileTypes: true }, (err, items) => {
     if (err) return res.status(500).json({ error: err.message });
-    const files = items.filter(item => !item.isDirectory()).map(item => item.name);
-    res.json(files);
+    // Retorna o nome de todos os itens (pastas e arquivos)
+    const fileNames = items.map(item => item.name);
+    res.json(fileNames);
   });
 });
 
@@ -209,27 +212,20 @@ router.post("/helps/deleteFile", express.json(), (req, res) => {
   });
 });
 
-router.post("/helps/updateGit", (req, res) => {
-    // Atualiza dentro da pasta do repositório clonado no diretório atual
-    exec('git pull', { cwd: __dirname }, (error, stdout, stderr) => {
-        if (error) return res.status(500).send(stderr);
-        res.send(stdout || 'Atualizado com sucesso!');
-    });
-});
 
-router.post("/helps/createRepository", (req, res) => {
-    const { name } = req.body;
-    const token = process.env.GITHUB_TOKEN;
-    
-    if (!name) return res.status(400).send('Informe o repositório.');
+router.post("/helps/deleteFolder", express.json(), (req, res) => {
+  const { dir } = req.body;
+  if (!dir) return res.status(400).send('Caminho não informado');
 
-    const repoUrl = `https://${token}@github.com/Adrianogyn1/${name}.git`;
-    
-    // Clona o repositório diretamente no diretório atual
-    exec(`git clone ${repoUrl}`, { cwd: __dirname }, (error, stdout, stderr) => {
-        if (error) return res.status(500).send(stderr);
-        res.send('Repositório clonado com sucesso!');
-    });
+  const folderPath = path.resolve(dir);
+  
+  if (folderPath === path.resolve(__dirname)) {
+    return res.status(403).send('Não é permitido excluir o diretório raiz.');
+  }
+
+  fs.rm(folderPath, { recursive: true, force: true }, (err) => {
+    res.status(err ? 500 : 200).send(err ? 'Erro ao excluir pasta: ' + err.message : 'Pasta excluída com sucesso');
+  });
 });
 
 router.post("/helps/reflash", (req, res) => {
@@ -237,10 +233,37 @@ router.post("/helps/reflash", (req, res) => {
 
   const cmd = `pm2 restart ${app}`;
 
-  exec('git pull', (error, stdout, stderr) => {
+  exec(cmd, (error, stdout, stderr) => {
         if (error) return res.status(500).send(stderr);
         res.send(stdout || 'Atualizado com sucesso!');
     });
 });
+
+
+router.post("/helps/updateGit", (req, res) => {
+   const rootDir = path.resolve(__dirname, './');
+    exec('git pull', { cwd: rootDir }, (error, stdout, stderr) => {
+        if (error) return res.status(500).send(stderr);
+        res.send(stdout || 'Atualizado com sucesso!');
+    });
+});
+
+router.post("/helps/createRepository", express.json(), (req, res) => {
+    const { name } = req.body;
+    const token = process.env.GITHUB_TOKEN;
+    
+    if (!name) return res.status(400).send('Informe o repositório.');
+
+    const repoUrl = `https://${token}@github.com/Adrianogyn1/${name}.git`;
+    const rootDir = path.resolve(__dirname, './');
+    
+    exec(`git clone ${repoUrl}`, { cwd: rootDir }, (error, stdout, stderr) => {
+        if (error) return res.status(500).send(stderr + '\n' + repoUrl);
+        res.send('Repositório clonado com sucesso na pasta raiz!  ' + repoUrl);
+    });
+});
+
+
+
 
 module.exports = router;
