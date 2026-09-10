@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const express = require('express');
+require('dotenv').config();
 const router = express.Router();
 
 router.get("/helps/files", (req, res) => {
@@ -208,42 +209,38 @@ router.post("/helps/deleteFile", express.json(), (req, res) => {
   });
 });
 
+router.post("/helps/updateGit", (req, res) => {
+    // Atualiza dentro da pasta do repositório clonado no diretório atual
+    exec('git pull', { cwd: __dirname }, (error, stdout, stderr) => {
+        if (error) return res.status(500).send(stderr);
+        res.send(stdout || 'Atualizado com sucesso!');
+    });
+});
 
-async function updateGit() {
-    const output = document.getElementById('git-output');
-    output.innerText = 'Atualizando...';
-    try {
-        const res = await fetch('/helps/updateGit', { method: 'POST' });
-        const text = await res.text();
-        output.innerText = text;
-    } catch (err) {
-        output.innerText = 'Erro na requisição: ' + err.message;
-    }
-}
+router.post("/helps/createRepository", (req, res) => {
+    const { name } = req.body;
+    const token = process.env.GITHUB_TOKEN;
+    
+    if (!name) return res.status(400).send('Informe o repositório.');
 
-async function createRepository() {
-    const nameInput = document.getElementById('repo-name');
-    const output = document.getElementById('git-output');
-    const name = nameInput.value.trim();
+    const repoUrl = `https://${token}@github.com/Adrianogyn1/${name}.git`;
+    
+    // Clona o repositório diretamente no diretório atual
+    exec(`git clone ${repoUrl}`, { cwd: __dirname }, (error, stdout, stderr) => {
+        if (error) return res.status(500).send(stderr);
+        res.send('Repositório clonado com sucesso!');
+    });
+});
 
-    if (!name) {
-        output.innerText = 'Informe o repositório.';
-        return;
-    }
+router.post("/helps/reflash", (req, res) => {
+  const app = req.body.app || 'all';
 
-    output.innerText = 'Clonando...';
-    try {
-        const res = await fetch('/helps/create_repositorio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
-        });
-        const text = await res.text();
-        output.innerText = text;
-    } catch (err) {
-        output.innerText = 'Erro na requisição: ' + err.message;
-    }
-}
+  const cmd = `pm2 restart ${app}`;
 
+  exec('git pull', (error, stdout, stderr) => {
+        if (error) return res.status(500).send(stderr);
+        res.send(stdout || 'Atualizado com sucesso!');
+    });
+});
 
 module.exports = router;

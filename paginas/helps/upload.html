@@ -773,10 +773,13 @@ $('btn-git-clone').onclick = async () => {
       body: JSON.stringify({ name })
     });
     logGit(await res.text());
+    $.post('/helps/refresh');
+    
   } catch (err) {
     logGit('Erro ao clonar: ' + err.message);
   }
 };
+
 
 /* ===================== Inicialização ===================== */
 renderBreadcrumbs(selectedPath);
