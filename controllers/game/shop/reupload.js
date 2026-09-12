@@ -5,7 +5,7 @@ require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 const fs = require("fs");
 const crypto = require("crypto");
 const { createClient } = require("@supabase/supabase-js");
-const repo = require("../../repository");
+const repo = require("../../../repository");
 
 // 1. Configuração do Supabase via process.env
 const SUPABASE_URL = process.env.SUPABASE_URL;

@@ -1,4 +1,4 @@
-const repo = require("../repository");
+const repo = require("../../repository");
 
 let webServices;
 function setWss(ws) {

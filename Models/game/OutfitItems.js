@@ -1,11 +1,16 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
-module.exports = (sequelize) => {
-  class OutfitItemsModel extends Model {
-    isValid(obj) {
-      try {
+module.exports = (sequelize) =>
+{
+  class OutfitItemsModel extends Model
+  {
+    isValid(obj)
+    {
+      try
+      {
         return true;
-      } catch (e) {
+      } catch (e)
+      {
         return e.message;
       }
     }
@@ -13,25 +18,14 @@ module.exports = (sequelize) => {
 
   OutfitItemsModel.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
+      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, },
       visible: { type: DataTypes.BOOLEAN, defaultValue: false },
       type: { type: DataTypes.STRING, defaultValue: "" },
       prefabId: { type: DataTypes.INTEGER, defaultValue: 0 },
       outfitId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
+      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
     },
     {
       sequelize,

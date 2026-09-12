@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class ServerModel extends Model {
@@ -23,11 +23,7 @@ module.exports = (sequelize) => {
 
   ServerModel.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true,},
       pid: { type: DataTypes.STRING, defaultValue: "" },
       roomId: { type: DataTypes.INTEGER, defaultValue: 0 },
       ip: { type: DataTypes.STRING, defaultValue: "" },
@@ -38,16 +34,10 @@ module.exports = (sequelize) => {
       playersCount: { type: DataTypes.INTEGER, defaultValue: 0 },
       scene: { type: DataTypes.STRING, defaultValue: "" },
       language: { type: DataTypes.STRING, defaultValue: "" },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 }, //instancia
-      target_uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 }, //room.uid
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+      target_uid: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4 }, //room.uid
+      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
+      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
     },
     {
       sequelize,

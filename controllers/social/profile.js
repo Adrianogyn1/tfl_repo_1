@@ -1,4 +1,4 @@
-const repo = require("../repository");
+const repo = require("../../repository");
 
 async function getProfile(req, res) {
   if (!global.CheckLogin(req, res)) return;

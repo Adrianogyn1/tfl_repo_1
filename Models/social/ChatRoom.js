@@ -1,32 +1,17 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class ChatRoom extends Model {}
-
-  ChatRoom.init(
+  const ChatRoom = sequelize.define(
+    "ChatRoom",
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.STRING },
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true,},
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: DataTypes.UUIDV4 },
       istyping: { type: DataTypes.BOOLEAN, defaultValue: false },
       name: { type: DataTypes.STRING, defaultValue: "" },
       users: { type: DataTypes.JSON, defaultValue: [] },
-      messages: { type: DataTypes.JSON, defaultValue: [] },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+   //   messages: { type: DataTypes.JSON, defaultValue: [] },
     },
     {
-      sequelize,
-      modelName: "ChatRoom",
       tableName: "chat_rooms",
       timestamps: true,
     },

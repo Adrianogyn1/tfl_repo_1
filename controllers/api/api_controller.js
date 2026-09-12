@@ -1,4 +1,7 @@
 const repo = require("../../repository.js");
+const router = require("express").Router();
+
+router.get("/", API);
 
 async function API(req, res) {
   try {
@@ -591,4 +594,4 @@ async function API(req, res) {
   }
 }
 
-module.exports = { API };
+module.exports = { API, router };

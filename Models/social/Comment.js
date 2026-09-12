@@ -1,32 +1,17 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class Comment extends Model {}
-
-  Comment.init(
+  const Comment = sequelize.define(
+    "Comment",
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      userId: { type: DataTypes.STRING, defaultValue: "" },
-      postId: { type: DataTypes.STRING, defaultValue: "" },
-      photoId: { type: DataTypes.STRING, defaultValue: "" },
-      commentId: { type: DataTypes.STRING, defaultValue: "" },
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true, },
+      userId: { type: DataTypes.INTEGER, allowNull: true },
+      postId: { type: DataTypes.INTEGER, allowNull: true },
+      photoId: { type: DataTypes.INTEGER, allowNull: true },
+      commentId: { type: DataTypes.INTEGER, allowNull: true },
       text: { type: DataTypes.STRING, defaultValue: "" },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
     },
     {
-      sequelize,
-      modelName: "Comment",
       tableName: "comments",
       timestamps: true,
     },

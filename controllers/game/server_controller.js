@@ -30,12 +30,13 @@ const portMap =
 
 
 // Ações para Servers (Servidores)
-router.get("/game/servers", getAll);//, CheckAuth, getAll);
-router.get("/game/server/:id", CheckAuth, getById);
-router.post("/game/server/", CheckAuth, create);
-router.put("/game/server/:id", CheckAuth, update);
-router.delete("/game/server/:id", CheckAuth, remove);
-router.get("/game/server_create", spawApp);
+router.get("/servers", getAll);//, CheckAuth, getAll);
+router.get("/server/:id", CheckAuth, getById);
+router.post("/server/", CheckAuth, create);
+router.put("/server/:id", CheckAuth, update);
+router.delete("/server/:id", CheckAuth, remove);
+router.get("/server_create", spawApp);
+
 
 
 function checkData(serverData)

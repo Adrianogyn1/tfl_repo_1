@@ -1,4 +1,4 @@
-const repo = require("../repository");
+const repo = require("../../repository");
 const { spawn } = require('child_process');
 const dgram = require('dgram');
 const { Op } = require('sequelize');

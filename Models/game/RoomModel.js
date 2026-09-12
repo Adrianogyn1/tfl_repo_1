@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class RoomModel extends Model {
@@ -18,11 +18,11 @@ module.exports = (sequelize) => {
 
   RoomModel.init(
     {
-      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },       
+      userId: { type: DataTypes.INTEGER, defaultValue: 0 },
       name: { type: DataTypes.STRING, defaultValue: "" },
       link: { type: DataTypes.STRING, defaultValue: "" },
       description: { type: DataTypes.STRING, defaultValue: "" },
-      uid: { type: DataTypes.STRING, defaultValue: "" },
       maxPlayers: { type: DataTypes.INTEGER, defaultValue: 30 },
       playersCount: { type: DataTypes.INTEGER, defaultValue: 0 },
       scene: { type: DataTypes.STRING, defaultValue: "" },
@@ -34,19 +34,14 @@ module.exports = (sequelize) => {
       ownnerId: { type: DataTypes.INTEGER, defaultValue: 0 },
       layoutId: { type: DataTypes.INTEGER, defaultValue: 0 },
       inventoryId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-      target_uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+      target_uid: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4 },
       requestOnlineData: { type: DataTypes.BOOLEAN, defaultValue: false },
-      size: { type: DataTypes.FLOAT, defaultValue: 1 },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      userId: { type: DataTypes.INTEGER, defaultValue: 0 },
+      size: { type: DataTypes.FLOAT, defaultValue: 1 },    
+
+
+      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
+      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
     },
     {
       sequelize, // <-- Faltava esse bloco de opções aqui

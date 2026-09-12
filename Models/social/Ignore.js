@@ -1,9 +1,8 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class Ignore extends Model {}
-
-  Ignore.init(
+  const Ignore = sequelize.define(
+    "Ignore",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -12,18 +11,9 @@ module.exports = (sequelize) => {
       },
       userid: { type: DataTypes.STRING, defaultValue: "" },
       targetid: { type: DataTypes.STRING, defaultValue: "" },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
     },
     {
-      sequelize,
-      modelName: "Ignore",
       tableName: "ignores",
       timestamps: true,
     },

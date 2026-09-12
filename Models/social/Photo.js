@@ -1,32 +1,21 @@
-const { Model, DataTypes } = require("sequelize");
-
+const { DataTypes, UUIDV4 } = require("sequelize");
 module.exports = (sequelize) => {
-  class Photo extends Model {}
-
-  Photo.init(
+  const Photo = sequelize.define(
+    "Photo",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      userId: { type: DataTypes.STRING, defaultValue: "" },
-      postId: { type: DataTypes.INTEGER, defaultValue: null },
+      userId: { type: DataTypes.INTEGER, allowNull: true },
+postId: { type: DataTypes.INTEGER, allowNull: true },
       url: { type: DataTypes.STRING, defaultValue: "" },
       description: { type: DataTypes.STRING, defaultValue: "" },
       isDefault: { type: DataTypes.BOOLEAN, defaultValue: false },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
     },
     {
-      sequelize,
-      modelName: "Photo",
       tableName: "photos",
       timestamps: true,
     },

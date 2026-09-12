@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class TextureModel extends Model {
@@ -13,11 +13,7 @@ module.exports = (sequelize) => {
 
   TextureModel.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true,},
       name: { type: DataTypes.STRING, defaultValue: "" },
       path: { type: DataTypes.STRING, defaultValue: "" },
       hash: { type: DataTypes.STRING, defaultValue: "" },
@@ -26,16 +22,9 @@ module.exports = (sequelize) => {
       url: { type: DataTypes.STRING, defaultValue: "" },
       userId: { type: DataTypes.INTEGER, defaultValue: 0 },
       inventoryID: { type: DataTypes.INTEGER, defaultValue: 0 },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
+      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
     },
     {
       sequelize,

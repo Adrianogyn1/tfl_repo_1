@@ -2,29 +2,107 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 require("dotenv").config();
-
 const { repo } = require("./repository.js");
 
+
 const authController = require("./controllers/auth");
-const postsController = require("./controllers/posts");
-const galleryController = require("./controllers/gallery");
-const matchController = require("./controllers/match");
-const socialController = require("./controllers/social");
-const filesController = require("./controllers/files");
-const chatController = require("./controllers/chat.js");
-const cdnController = require("./controllers/cdn");
-const userController = require("./controllers/user");
-const comentsController = require("./controllers/coments");
-const profileController = require("./controllers/profile");
+
+
+
+
 
 const {helps} = require("./routers/routes.js");
 
+//Auth
 router.use("/api", authController.router);
+
+
+//api
+const api = require("./controllers/api/api_controller.js");
+router.use("/api/", api.router);
+const routeGameController = require("./controllers/game/routers.js");
+router.use("/game/", routeGameController.router);
+
+
+//app.use(routeGameController);
+
+//Helps
 
 router.use("/helps",helps);
 
 
+const db = require("./repository.js");
+const sequelizeErd = require("sequelize-erd");
 
+router.use("/db", async (req, res) => {
+  try {
+    const svg = await sequelizeErd({
+      source: db.sequelize,
+      direction: "LR",
+    });
+
+    const html = '<html>' +
+      '<head>' +
+      '<style>' +
+      'body { margin: 0; background: #1a202c; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }' +
+      '.container { width: 100%; height: 100%; cursor: grab; display: flex; justify-content: center; align-items: center; }' +
+      '.container:active { cursor: grabbing; }' +
+      'svg { width: 100%; height: 100%; transform-origin: center; }' +
+      '</style>' +
+      '</head>' +
+      '<body>' +
+      '<div class="container" id="zoomContainer">' +
+      svg +
+      '</div>' +
+      '<script>' +
+      'const container = document.getElementById("zoomContainer");' +
+      'const svgEl = container.querySelector("svg");' +
+      'let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;' +
+      'container.addEventListener("mousedown", function(e) {' +
+      '  panning = true;' +
+      '  startX = e.clientX - pointX;' +
+      '  startY = e.clientY - pointY;' +
+      '});' +
+      'window.addEventListener("mouseup", function() { panning = false; });' +
+      'container.addEventListener("mousemove", function(e) {' +
+      '  if (!panning) return;' +
+      '  pointX = e.clientX - startX;' +
+      '  pointY = e.clientY - startY;' +
+      '  svgEl.style.transform = "translate(" + pointX + "px, " + pointY + "px) scale(" + scale + ")";' +
+      '});' +
+      'container.addEventListener("wheel", function(e) {' +
+      '  e.preventDefault();' +
+      '  var xs = (e.clientX - pointX) / scale, ys = (e.clientY - pointY) / scale;' +
+      '  scale = e.deltaY < 0 ? scale * 1.1 : scale / 1.1;' +
+      '  pointX = e.clientX - xs * scale;' +
+      '  pointY = e.clientY - ys * scale;' +
+      '  svgEl.style.transform = "translate(" + pointX + "px, " + pointY + "px) scale(" + scale + ")";' +
+      '});' +
+      '</script>' +
+      '</body>' +
+      '</html>';
+
+    res.send(html);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+//youtube
+const youtubeRouter = require("./paginas/helps/youtube.js");
+router.use(youtubeRouter);
+
+/*
+const postsController = require("./controllers/social/posts.js");
+const galleryController = require("./controllers/social/gallery.js");
+const matchController = require("./controllers/social/match.js");
+const socialController = require("./controllers/social/social.js");
+const filesController = require("./controllers/social/files.js");
+const chatController = require("./controllers/social/chat.js");
+const cdnController = require("./controllers/social/cdn.js");
+const userController = require("./controllers/social/user.js");
+const comentsController = require("./controllers/social/coments.js");
+const profileController = require("./controllers/social/profile.js");
 //router.use("/api",postsController.router);
 //router.use("/api",galleryController.router);
 //router.use("/api",matchController.router);
@@ -40,8 +118,8 @@ router.use("/helps",helps);
 
 //
 /* =====================================================
-   Páginas Base e CDN
-===================================================== */
+   Páginas
+===================================================== *
 router.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "./paginas/index.html")),
 );
@@ -86,7 +164,7 @@ router.get("/api/cdn", (req, res) =>
 
 /* =====================================================
    Usuários e Perfis
-===================================================== */
+===================================================== *
 router.get("/api/users", (req, res) => userController.getUsers(req, res));
 router.get("/api/user/:id", (req, res) => userController.getUser(req, res));
 router.get("/api/users/search", (req, res) =>
@@ -97,7 +175,7 @@ router.put("/api/profile", (req, res) => socialController.updateProfile(req, res
 
 /* =====================================================
    Social, Feed e Follow
-===================================================== */
+===================================================== *
 router.get("/api/feed", (req, res) => postsController.loadFeed(req, res));
 router.post(
   ["/api/feed", "/api/gallery/upload"],
@@ -122,7 +200,7 @@ router.post("/api/social/unfollow", (req, res) =>
 
 /* =====================================================
    Amigos (Friends)
-===================================================== */
+===================================================== *
 router.post("/api/friend/add", (req, res) =>
   socialController.addFriend(req, res),
 );
@@ -144,7 +222,7 @@ router.delete("/api/friend/unignore", (req, res) =>
 
 /* =====================================================
    Comentários
-===================================================== */
+===================================================== *
 router.post("/api/comment/feed", (req, res) =>
   comentsController.addComment(req, res),
 );
@@ -164,7 +242,7 @@ router.delete("/api/gallery/comment", (req, res) =>
 
 /* =====================================================
    Galeria
-===================================================== */
+===================================================== *
 router.get("/api/gallery", (req, res) =>
   galleryController.loadGallery(req, res),
 );
@@ -184,7 +262,7 @@ router.post(
 
 /* =====================================================
    Likes (Feed, Comentários, Galeria, Perfil)
-===================================================== */
+===================================================== *
 router.post("/api/feed/like", (req, res) => postsController.likePost(req, res));
 router.delete("/api/feed/like", (req, res) =>
   postsController.dislikePost(req, res),
@@ -220,7 +298,7 @@ router.delete(
 
 /* =====================================================
    Matchmaking
-===================================================== */
+===================================================== *
 router.get("/api/match/candidates", (req, res) =>
   matchController.loadCandidates(req, res),
 );
@@ -237,7 +315,7 @@ router.post("/api/match/like", (req, res) => socialController.like(req, res));
 
 /* =====================================================
    Chat
-===================================================== */
+===================================================== *
 router.post("/api/chat/message", (req, res) =>
   chatController.routeApi(req, res, req.app.get("clients")()),
 );
@@ -250,7 +328,7 @@ router.post("/api/chat/typing", (req, res) =>
 
 /* =====================================================
    Arquivos e Mídia
-===================================================== */
+===================================================== *
 router.get("/api/download", (req, res) => filesController.sendFile(req, res));
 router.post("/api/upload", (req, res) =>
   filesController.uploadFile(req, res, req.app.get("broadcast")()),
@@ -260,10 +338,12 @@ const shop = require("./controllers/shop/shop_controller.js");
 
 /* =====================================================
    Loja (Shop)
-===================================================== */
+===================================================== *
 if (shop && shop.router)
 {
   router.use("/game", shop.router);
 }
+*/
+
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class RoomLayout extends Model {}
@@ -12,16 +12,11 @@ module.exports = (sequelize) => {
       },
       name: { type: DataTypes.STRING, defaultValue: "" },
       data: { type: DataTypes.TEXT, defaultValue: "" },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
       userId: { type: DataTypes.STRING, defaultValue: "" },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+    
+      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
+      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
     },
     {
       sequelize,

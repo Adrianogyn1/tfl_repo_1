@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class Follow extends Model {
@@ -18,6 +18,7 @@ module.exports = (sequelize) => {
       },
       userid: { type: DataTypes.STRING, defaultValue: "" },
       targetid: { type: DataTypes.STRING, defaultValue: "" },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
       createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,

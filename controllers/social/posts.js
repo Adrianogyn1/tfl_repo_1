@@ -1,11 +1,11 @@
-const repo = require("../repository");
+const repo = require("../../repository");
 const { Op } = require("sequelize");
 const {
   PostDto,
   CommentDto,
   LikeDto,
   PhotoDto,
-} = require("../Models/dto/postDto");
+} = require("../../Models/dto/postDto");
 const router = require("express").Router();
 
 

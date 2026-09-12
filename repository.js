@@ -44,7 +44,8 @@ Object.keys(models).forEach((modelName) => {
 });
 
 sequelize
-  .sync()
+  .sync({alter: true})
+  //.sync()/////
   .then(() =>
     console.log("⚡ Banco PostgreSQL (Supabase) e tabelas sincronizados!"),
   )

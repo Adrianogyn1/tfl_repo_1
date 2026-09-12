@@ -1,22 +1,19 @@
-const { Model, DataTypes } = require("sequelize");
-
+const { DataTypes, UUIDV4 } = require("sequelize");
 module.exports = (sequelize) => {
-  class Like extends Model {}
-
-  Like.init(
+  
+  const Like = sequelize.define(
+    "Like",
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      postId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      userId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      photoId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      commentId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      profileId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      roomId: { type: DataTypes.INTEGER, defaultValue: 0 },
-      // Armazena o tipo da reação ('like', 'love', 'care', 'haha', 'wow', 'sad', 'angry'),
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true},
+      postId: { type: DataTypes.INTEGER, allowNull:true },
+      userId: { type: DataTypes.INTEGER, allowNull:true },
+      avatarId: { type: DataTypes.INTEGER, allowNull:true },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+    //  photoId: { type: DataTypes.INTEGER, defaultValue: 0 },
+    //  commentId: { type: DataTypes.INTEGER, defaultValue: 0 },
+    //  profileId: { type: DataTypes.INTEGER, defaultValue: 0 },
+    //  roomId: { type: DataTypes.INTEGER, defaultValue: 0 },
+
       type: {
         type: DataTypes.ENUM(
           "like",
@@ -32,10 +29,8 @@ module.exports = (sequelize) => {
       },
     },
     {
-      sequelize,
-      modelName: "Like",
       tableName: "likes",
-      timestamps: true, // Cria e gerencia automaticamente createdAt e updatedAt
+      timestamps: true,
     },
   );
 

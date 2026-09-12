@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class ObjectModel extends Model {
@@ -40,12 +40,12 @@ module.exports = (sequelize) => {
       },
       roomId: {
         type: DataTypes.INTEGER,
-        defaultValue: 0,
+      //  defaultValue: 0,
         allowNull: true,
       },
       userId: {
         type: DataTypes.INTEGER,
-        defaultValue: 0,
+      //  defaultValue: 0,
         allowNull: true,
       },
       // Campos de Texto
@@ -63,10 +63,10 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       addressable: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         allowNull: true,
       },
-      // Vetores do Unity (tratados como JSON devido ao atributo [JsonColumn])
+      // Vetores (tratados como JSON devido ao atributo [JsonColumn])
       position: {
         type: DataTypes.JSON, // Armazena {x, y, z}
         defaultValue: { x: 0, y: 0, z: 0 },
@@ -82,7 +82,7 @@ module.exports = (sequelize) => {
         defaultValue: { x: 1, y: 1, z: 1 },
         allowNull: true,
       },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
 
       // Campos de Data
       createdAt: {

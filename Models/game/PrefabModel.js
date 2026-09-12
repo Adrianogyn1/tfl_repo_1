@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class PrefabModel extends Model {
@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
       thumbnail: { type: DataTypes.STRING, defaultValue: "" },
       version: { type: DataTypes.STRING, defaultValue: "" },
       data: { type: DataTypes.STRING, defaultValue: "" },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
       type: {
         type: DataTypes.ENUM("RoomObject", "AvatarOutfit", "Otters"),
         defaultValue: "Otters",

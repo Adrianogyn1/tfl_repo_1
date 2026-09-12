@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
   class OutfitModel extends Model {
@@ -13,26 +13,17 @@ module.exports = (sequelize) => {
 
   OutfitModel.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true,},
       name: { type: DataTypes.STRING, defaultValue: "" },
       description: { type: DataTypes.STRING, defaultValue: "" },
       thumbnail: { type: DataTypes.STRING, defaultValue: "" },
       price: { type: DataTypes.FLOAT, defaultValue: 0 },
       tags: { type: DataTypes.STRING, defaultValue: "" },
       inventoryID: { type: DataTypes.INTEGER, defaultValue: 0 },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+     
+      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
+      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
     },
     {
       sequelize,

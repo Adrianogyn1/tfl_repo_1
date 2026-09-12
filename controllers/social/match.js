@@ -1,4 +1,4 @@
-const repo = require("../repository");
+const repo = require("../../repository");
 
 async function loadCandidates(req, res) {
   // Retorna a lista de candidatos disponíveis direto do banco

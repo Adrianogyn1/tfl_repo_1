@@ -8,16 +8,36 @@ const { CheckLogin: CheckAuth } = require("../auth");
 const controllers = require("./index.js");
 
 //importação por controllers
-Object.values(controllers).forEach((controller) => {
-  if (controller && controller.router) {
+Object.values(controllers).forEach((controller) =>
+{
+  if (!controller) return;
+
+  if (controller && controller.router)
+  {
     router.use(controller.router);//
-  } else if (controller && typeof controller === "function") {
-    // Caso o export seja o próprio router (função de middleware)
-   // router.use("/api", controller);
+  } else if (controller && typeof controller === "function")
+  {
     router.use(controller);
   }
 });
 
+router.use("/", (req, res) =>
+{
+  const result = {
+    message: "rota não encontrada, ou você não tem permissão",
+    error: true,
+    success: false
+
+  };
+  if (result.id)
+  {
+    delete result.id;
+  }
+  res.json({ result });
+});
+module.exports = { router };
+
+/*
 //
 //router.use(controllers.Object.router);
 
@@ -56,11 +76,13 @@ router.get(
   CheckAuth,
   controllers.CurrencyRegister.getAll,
 );
+
 router.get(
   "/game/currency-registers/:id",
   CheckAuth,
   controllers.CurrencyRegister.getById,
 );
+
 router.post(
   "/game/currency-registers",
   CheckAuth,
@@ -99,6 +121,6 @@ router.delete(
   controllers.OutfitItems.remove,
 );
 
+*/
 
 
-module.exports = router;

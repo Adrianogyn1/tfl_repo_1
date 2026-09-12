@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const multer = require("multer");
 const { Op } = require("sequelize");
 const { createClient } = require("@supabase/supabase-js");
-const repo = require("../../repository");
+const repo = require("../../../repository");
 
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
@@ -125,7 +125,7 @@ async function GetAll(req, res) {
       where: whereCondition,
       include: [
         {
-          model: repo.ItemResource,
+          model: repo.ShopItem,
           as: "items",
           required: false,
         },
@@ -262,11 +262,11 @@ async function SaveMaterial(req, res) {
         }),
       );
 
-      await repo.ItemResource.bulkCreate(itemsToCreate);
+      await repo.ShopItem.bulkCreate(itemsToCreate);
     }
 
     const fullCreated = await repo.ShopContainer.findByPk(createdContainer.id, {
-      include: [{ model: repo.ItemResource, as: "items" }],
+      include: [{ model: repo.ShopItem, as: "items" }],
     });
 
     res.status(201).json({

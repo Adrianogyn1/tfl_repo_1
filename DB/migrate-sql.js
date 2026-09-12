@@ -149,6 +149,23 @@ async function runMigration() {
     console.error("❌ Erro crítico no processo:", err);
   } finally {
     if (SYNC_SQLITE_DATA) await sqliteSequelize.close();
+    // Garante que todas as colunas dos models existam no Postgres antes do alter: true
+    for (const modelName of Object.keys(pgModels)) {
+      const model = pgModels[modelName];
+      const tableName = model.getTableName();
+      const tName = typeof tableName === "object" ? tableName.tableName : tableName;
+      const attributes = model.rawAttributes;
+
+      for (const attrName in attributes) {
+        try {
+          await pgSequelize.query(
+            `ALTER TABLE "${tName}" ADD COLUMN IF NOT EXISTS "${attrName}" VARCHAR(255);`
+          );
+        } catch (e) {
+          // Ignora se a coluna já for de outro tipo (ex: integer, boolean)
+        }
+      }
+    }
     await pgSequelize.close();
   }
 }

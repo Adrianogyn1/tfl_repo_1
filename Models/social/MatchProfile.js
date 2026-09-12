@@ -1,9 +1,8 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class MatchProfile extends Model {}
-
-  MatchProfile.init(
+  const MatchProfile = sequelize.define(
+    "MatchProfile",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -17,18 +16,9 @@ module.exports = (sequelize) => {
       avatar: { type: DataTypes.STRING, defaultValue: "" },
       location: { type: DataTypes.STRING, defaultValue: "" },
       photos: { type: DataTypes.JSON, defaultValue: [] },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
     },
     {
-      sequelize,
-      modelName: "MatchProfile",
       tableName: "match_profiles",
       timestamps: true,
     },

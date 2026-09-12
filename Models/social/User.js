@@ -1,13 +1,8 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class User extends Model {
-    static newToken() {
-      return require("crypto").randomBytes(16).toString("hex");
-    }
-  }
-
-  User.init(
+  const User = sequelize.define(
+    "User",
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       userName: { type: DataTypes.STRING, defaultValue: "", allowNull: false },
@@ -16,24 +11,14 @@ module.exports = (sequelize) => {
       login: { type: DataTypes.STRING, defaultValue: "", allowNull: false },
       password: { type: DataTypes.STRING, defaultValue: "" },
       age: { type: DataTypes.STRING, defaultValue: "", allowNull: false },
-      token: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: "",
-        allowNull: true,
-        unique: true,
-      },
-      roomId: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: "",
-        allowNull: true,
-      },
+      birdDay: { type: DataTypes.STRING, defaultValue: "", allowNull: false },
+      token: {type: DataTypes.STRING,allowNull: true,defaultValue: UUIDV4},
+      roomId: {type: DataTypes.STRING,allowNull: true,defaultValue:''},
       avatarId: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
       currencyId: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
       email: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-      gender: { type: DataTypes.INTEGER, defaultValue: "1" },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue:UUIDV4},
+      gender: { type: DataTypes.INTEGER, defaultValue: 1 },
 
       role: {
         type: DataTypes.ENUM(
@@ -45,22 +30,18 @@ module.exports = (sequelize) => {
         ),
         defaultValue: "player",
       },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+      createdAt: {type: DataTypes.DATE,defaultValue: DataTypes.NOW,},
+      updatedAt: {type: DataTypes.DATE,defaultValue: DataTypes.NOW,},
     },
     {
-      sequelize,
-      modelName: "User",
       tableName: "users",
-      timestamps: true, // Gerencia automaticamente createdAt e updatedAt
+      timestamps: true,
     },
   );
+
+  User.newToken = function () {
+    return require("crypto").randomBytes(16).toString("hex");
+  };
 
   return User;
 };

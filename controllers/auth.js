@@ -100,7 +100,7 @@ async function sigin(req, res) {
 
       let profile = null;
       if (data) {
-        var crt = require("../controllers/game/avatarController");
+        var crt = require('./game/avatar/avatar_controller');
         profile = await crt.getInfo(data.get({ plain: true }), true);
       }
 

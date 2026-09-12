@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const repo = require("../repository.js"); // Ajuste o caminho se necessário
+const repo = require("../../repository.js"); // Ajuste o caminho se necessário
 const axios = require("axios");
 
 async function seedDatabase() {

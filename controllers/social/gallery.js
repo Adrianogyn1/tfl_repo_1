@@ -39,7 +39,7 @@ deleteComment(req, res)
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
-const repo = require("../repository");
+const repo = require("../../repository");
 const cloudinary = require("cloudinary").v2;
 const fileManager = require("./files");
 const { Op } = require("sequelize");

@@ -1,4 +1,4 @@
-const { Model, DataTypes, ENUM } = require("sequelize");
+const { Model, DataTypes, ENUM , UUIDV4} = require("sequelize");
 
 module.exports = (sequelize) => {
   class Avatar extends Model {}
@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
   Avatar.init(
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
+      uid: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4 },
       name: { type: DataTypes.STRING, defaultValue: "" },
       bio: { type: DataTypes.TEXT, defaultValue: "" },
       gender: { type: DataTypes.INTEGER, defaultValue: 0 }, //0 universal, 1 male, 2 female
@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
       vipExpiresAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 
       //owner
-      userId: { type: DataTypes.INTEGER, defaultValue: 0 },
+      userId: { type: DataTypes.INTEGER, allowNull: true },
       //preview e status
       thumbnail: { type: DataTypes.STRING, defaultValue: "" },
       online: { type: DataTypes.BOOLEAN, defaultValue: false },

@@ -15,7 +15,7 @@ const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary").v2;
-const repo = require("../repository");
+const repo = require("../../repository");
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || "uploads");
 

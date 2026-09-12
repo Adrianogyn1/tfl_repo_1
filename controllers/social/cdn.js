@@ -1,6 +1,6 @@
 const crypto = require("crypto");
-const repo = require("../repository");
-const { post } = require("../router");
+const repo = require("../../repository");
+const { post } = require("../../router");
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({

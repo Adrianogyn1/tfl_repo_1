@@ -1,23 +1,22 @@
-const repo = require("../../repository");
+const repo = require("../../../repository");
 const router = require("express").Router();
-
-const CheckAuth = require("../auth").CheckLogin;
+const CheckAuth = require("../../auth").CheckLogin;
 
 
 //Organizar rotas
-router.get("/game/avatars", CheckAuth, getAll);
-router.get("/game/avatar/find", CheckAuth, get);
-router.get("/game/avatar/:id", CheckAuth, findByPk);
-//
-router.post("/game/avatar", CheckAuth, create);
-router.put("/game/avatar/:id", CheckAuth, update);
-router.delete("/game/avatar/:id", CheckAuth, remove);
+router.get("/avatars", CheckAuth, getAll);
+router.get("/avatar/find", CheckAuth, get);
+router.get("/avatar/:id", CheckAuth, findByPk);
+router.post("/avatar", CheckAuth, create);
+router.put("/avatar/:id", CheckAuth, update);
+router.delete("/avatar/:id", CheckAuth, remove);
 
-router.get("/game/profiles", CheckAuth, getAll);
-router.get("/game/profile/:id", CheckAuth, findByPk);
-router.post("/game/profile", CheckAuth, create);
-router.put("/game/profile/:id", CheckAuth, update);
-router.delete("/game/profile/:id", CheckAuth, remove);
+router.get("/profiles", CheckAuth, getAll);
+router.get("/profile/find", CheckAuth, get);
+router.get("/profile/:id", CheckAuth, findByPk);
+router.post("/profile", CheckAuth, create);
+router.put("/profile/:id", CheckAuth, update);
+router.delete("/profile/:id", CheckAuth, remove);
 
 
 function checkData(avatarData)
@@ -195,11 +194,11 @@ async function getInfo(avatar, full = false)
         chips: 0,
         cash: 0
       };
-      var coinController = require("./currencyRegisterController");
-      data.wallet.coins = await coinController.GetValue(avatar.id, 'Coins');
-      data.wallet.chips = await coinController.GetValue(avatar.id, 'Chips');
-      data.wallet.cash = await coinController.GetValue(avatar.id, 'Cash');
-      data.wallet.registers = await coinController.GetRegisters(avatar.id, "all", 100);
+     // var coinController = require("../currencyControllers.js");
+     // data.wallet.coins = await coinController.GetValue(avatar.id, 'Coins');
+     // data.wallet.chips = await coinController.GetValue(avatar.id, 'Chips');
+     // data.wallet.cash = await coinController.GetValue(avatar.id, 'Cash');
+     // data.wallet.registers = await coinController.GetRegisters(avatar.id, "all", 100);
 
 
 

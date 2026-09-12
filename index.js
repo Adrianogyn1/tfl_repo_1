@@ -4,7 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
-const chatModule = require("./controllers/chat.js");
+const chatModule = require("./controllers/social/chat.js");
 const routes = require("./router.js");
 const repo = require("./repository.js");
 const { settings } = require("cluster");
@@ -14,7 +14,7 @@ require("dotenv").config();
 
 const appHandlers = require("./controllers/appHandlers.js");
 //game
-const routeGameController = require("./controllers/game/routers.js");
+
 
 const Settings = {
   PORT: process.env.PORT || 5000,
@@ -77,7 +77,6 @@ app.set("broadcast", () => broadcast);
 app.set("sendPacketToUser", () => sendPacketToUser);
 
 app.use(routes);
-app.use(routeGameController);
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -169,23 +168,6 @@ function sendPacket(ws, eventName, data) {
 function broadcast(eventName, data) {
   clients.forEach((client) => sendPacket(client, eventName, data));
 }
-const api = require("./controllers/game/Api.js");
-app.get("/game", api.API);
-server.listen(Settings.PORT,"0.0.0.0", () =>
-  console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`),
-);
-
-app.get("/online", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-
-
-
-
-//youtube
-const youtubeRouter = require("./paginas/helps/youtube.js");
-app.use(youtubeRouter);
 
 //Inicia o instanciador
 const { spawn } = require("child_process");
@@ -199,3 +181,9 @@ const { spawn } = require("child_process");
 
 //remover<-
 //require('./controllers/placeHolder.js');
+
+
+
+server.listen(Settings.PORT,"0.0.0.0", () =>
+  console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`),
+);

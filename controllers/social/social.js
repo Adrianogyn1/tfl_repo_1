@@ -1,5 +1,5 @@
-const { where } = require("../Models/ModelBase");
-const repo = require("../repository");
+const { where } = require("../../Models/ModelBase");
+const repo = require("../../repository");
 
 function seachUsers(req, res) {
   const query = (req.query.q || "").toLowerCase();

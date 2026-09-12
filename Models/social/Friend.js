@@ -1,9 +1,8 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class Friend extends Model {}
-
-  Friend.init(
+  const Friend = sequelize.define(
+    "Friend",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -20,21 +19,10 @@ module.exports = (sequelize) => {
         defaultValue: "",
         field: "targetId",
       },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
       status: { type: DataTypes.STRING, defaultValue: "pending" },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: "createdAt",
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: "updatedAt",
-      },
     },
     {
-      sequelize,
-      modelName: "Friend",
       tableName: "friends",
       timestamps: true,
     },

@@ -1,4 +1,4 @@
-const repo = require("../repository");
+const repo = require("../../repository");
 
 async function getComments(req, res) {
   const queryOrBody = req.query || req.body || {};

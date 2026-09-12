@@ -4,14 +4,14 @@ const { CheckLogin: CheckAuth } = require("../auth");
 
 // Ações para Objects (Objetos)
 // 1. Rotas estáticas específicas (prefixo longo ou sem :id) primeiro
-router.get("/game/objects", getAll);
-router.post("/game/objects/bucket", CheckAuth, createAll);
-router.post("/game/objects", CheckAuth, create);
+router.get("/objects", getAll);
+router.post("/bucket", CheckAuth, createAll);
+router.post("/objects", CheckAuth, create);
 
 // 2. Rotas dinâmicas (com :id) por último
-router.get("/game/object/:id", CheckAuth, getById);
-router.put("/game/objects/:id", CheckAuth, update);
-router.delete("/game/objects/:id", CheckAuth, remove);
+router.get("/object/:id", CheckAuth, getById);
+router.put("/objects/:id", CheckAuth, update);
+router.delete("/objects/:id", CheckAuth, remove);
 
 function checkData(objectData) {
   let error = "";

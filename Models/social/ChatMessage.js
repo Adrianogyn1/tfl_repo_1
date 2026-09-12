@@ -1,38 +1,22 @@
-const { Model, DataTypes } = require("sequelize");
-
+const { DataTypes, UUIDV4 } = require("sequelize");
 module.exports = (sequelize) => {
-  class ChatMessage extends Model {}
-
-  ChatMessage.init(
+  const ChatMessage = sequelize.define(
+    "ChatMessage",
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.STRING },
-      userId: { type: DataTypes.STRING, defaultValue: "" },
-      text: { type: DataTypes.TEXT, defaultValue: "" }, // TEXT para suportar mensagens longas
+      id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true,},
+      uid: { type: DataTypes.STRING, defaultValue: DataTypes.STRING },
+     // userId: { type: DataTypes.INTEGER, allowNull: true },
+      text: { type: DataTypes.TEXT, defaultValue: "" },
       fileurl: { type: DataTypes.STRING, defaultValue: "" },
-      chatId: { type: DataTypes.STRING, defaultValue: "" },
+    //  chatId: { type: DataTypes.INTEGER, allowNull: true },
       seen: { type: DataTypes.BOOLEAN, defaultValue: false },
       hasFile: { type: DataTypes.BOOLEAN, defaultValue: false },
       hasImage: { type: DataTypes.BOOLEAN, defaultValue: false },
       hasVideo: { type: DataTypes.BOOLEAN, defaultValue: false },
       hasAudio: { type: DataTypes.BOOLEAN, defaultValue: false },
       hasLink: { type: DataTypes.BOOLEAN, defaultValue: false },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
     },
     {
-      sequelize,
-      modelName: "ChatMessage",
       tableName: "chat_messages",
       timestamps: true,
     },

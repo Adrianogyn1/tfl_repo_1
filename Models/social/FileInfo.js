@@ -1,9 +1,8 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class FileInfo extends Model {}
-
-  FileInfo.init(
+  const FileInfo = sequelize.define(
+    "FileInfo",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -20,21 +19,10 @@ module.exports = (sequelize) => {
       status: { type: DataTypes.STRING, defaultValue: "" },
       inCdn: { type: DataTypes.BOOLEAN, defaultValue: false },
       publicId: { type: DataTypes.STRING, defaultValue: "" },
-      uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-      target_uid: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
-
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+      target_uid: { type: DataTypes.STRING, allowNull: true, defaultValue: DataTypes.UUIDV4 },
     },
     {
-      sequelize,
-      modelName: "FileInfo",
       tableName: "file_infos",
       timestamps: true,
     },

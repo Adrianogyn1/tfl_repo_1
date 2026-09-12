@@ -1,5 +1,5 @@
 const { RAW } = require("sequelize/lib/query-types");
-const repo = require("../repository");
+const repo = require("../../repository");
 
 async function getUsers(req, res) {
   const qtd = req?.query?.qtd || req?.body?.qtd;
