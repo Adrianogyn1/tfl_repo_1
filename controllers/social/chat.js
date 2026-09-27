@@ -1,4 +1,7 @@
 const repo = require("../../repository");
+const router = require("express").Router();
+require("dotenv").config();
+
 
 let webServices;
 function setWss(ws) {
@@ -39,6 +42,13 @@ function broadcastRoom(roomId, eventName, data, excludeClients = []) {
     }
   });
 }
+
+//#region routers
+
+
+
+//#endregion
+
 
 // --- SALVAR E NOTIFICAR MENSAGEM DO CHAT ---
 async function SaveMessage(msg, wsSender) {

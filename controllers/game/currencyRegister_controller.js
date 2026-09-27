@@ -235,6 +235,12 @@ async function UpdateCurrencyRegister(
   }
 }
 
+
+
+
+
+
+
 async function CreateCurrencyRegister(registerData, userId, transaction = null) {
   try {
     const valid = checkData(registerData);

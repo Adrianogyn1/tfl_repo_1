@@ -23,16 +23,20 @@ router.get("/shop", GetAll);
 router.get("/shop/home", GetIndex);
 router.post("/shop/container", upload.any(), SaveMaterial);
 
-function GetIndex(req, res) {
+function GetIndex(req, res)
+{
   res.sendFile(path.join(__dirname, "../../paginas/shopUpload.html"));
 }
 
 // Auxiliar para sanitizar dicionários mantendo integridade com C#
-function sanitizeDict(obj) {
+function sanitizeDict(obj)
+{
   if (!obj || typeof obj !== "object" || Array.isArray(obj)) return {};
   const clean = {};
-  for (const key in obj) {
-    if (obj[key] !== null && obj[key] !== undefined && obj[key] !== "") {
+  for (const key in obj)
+  {
+    if (obj[key] !== null && obj[key] !== undefined && obj[key] !== "")
+    {
       clean[key] = obj[key];
     }
   }
@@ -40,7 +44,8 @@ function sanitizeDict(obj) {
 }
 
 // Auxiliar para upload Supabase
-async function uploadFileToSupabase(file, modelName) {
+async function uploadFileToSupabase(file, modelName)
+{
   if (!file) return null;
   const modelFolder = modelName
     ? modelName.replace(/[^a-zA-Z0-9_-]/g, "")
@@ -61,19 +66,45 @@ async function uploadFileToSupabase(file, modelName) {
   const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
   return data.publicUrl;
 }
-async function GetAll(req, res) {
-  try {
-    const page = parseInt(req.query.pg) || 0;
+
+async function GetAll(req, res)
+{
+  try
+  {
+    const search = req.query.q || "";
+    const linq = repo.parseQueryStringToWhere(search);
+    const order = repo.parseOrderByString(search);
     const limit = parseInt(req.query.limit) || 20;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const result = await repo.ShopContainer.findAll({
+      where: linq,
+      order: order,
+      limit: limit,
+      offset: offset,
+    });
+
+    const total = await repo.ShopContainer.count({ where: linq });
+    const pages = Math.ceil(total / 20);
+
+    /*
+
+    const page = parseInt(req.query.pg) || 0;
     const rawQuery = (req.query.q || "").trim().toLowerCase();
-    const offset = page * limit;
+   // const offset = page * limit;
     let gender = (req.query.gender || "universal").toLowerCase();
+
+    if (gender == '0') gender = 'female';
+    else if (gender == '1') gender = 'male';
+    else if (gender == '2') gender = 'universal';
+
 
     // Condições globais que sempre se aplicam
     // Opção 2: Com CAST para TEXT
     const andConditions = [];
 
-    if (gender !== "universal") {
+    if (gender !== "universal")
+    {
       andConditions.push(
         repo.sequelize.where(
           repo.sequelize.fn(
@@ -89,10 +120,12 @@ async function GetAll(req, res) {
     }
 
     // Adiciona os tokens de busca se houver texto em req.query.q
-    if (rawQuery) {
+    if (rawQuery)
+    {
       const tokens = rawQuery.split(/\s+/).filter((t) => t.length > 0);
 
-      tokens.forEach((token) => {
+      tokens.forEach((token) =>
+      {
         const term = `%${token}%`;
         andConditions.push({
           [Op.or]: [
@@ -137,8 +170,18 @@ async function GetAll(req, res) {
       order: [["id", "DESC"]],
     });
 
-    const data = rows.map((row) => {
+
+    const data = rows.map((row) =>
+    {
       const container = row.toJSON();
+      const genderToEnum = {
+        female: 0,
+        male: 1,
+        universal: 2,
+      };
+
+      container.gender = genderToEnum[String(container.gender ?? "universal").toLowerCase()] ?? 2;
+
 
       container.thumb = container.thumb
         ? container.thumb.startsWith("http")
@@ -146,20 +189,28 @@ async function GetAll(req, res) {
           : container.thumb.replace(/\\/g, "/")
         : "";
 
-      if (Array.isArray(container.items)) {
-        container.items = container.items.map((resItem) => {
-          if (typeof resItem.textures_paths === "string") {
-            try {
+      if (Array.isArray(container.items))
+      {
+        container.items = container.items.map((resItem) =>
+        {
+          if (typeof resItem.textures_paths === "string")
+          {
+            try
+            {
               resItem.textures_paths = JSON.parse(resItem.textures_paths);
-            } catch (e) {
+            } catch (e)
+            {
               resItem.textures_paths = {};
             }
-          } else {
+          } else
+          {
             resItem.textures_paths = resItem.textures_paths || {};
           }
 
-          for (const key in resItem.textures_paths) {
-            if (resItem.textures_paths[key]) {
+          for (const key in resItem.textures_paths)
+          {
+            if (resItem.textures_paths[key])
+            {
               resItem.textures_paths[key] = resItem.textures_paths[
                 key
               ].startsWith("http")
@@ -167,7 +218,7 @@ async function GetAll(req, res) {
                 : resItem.textures_paths[key].replace(/\\/g, "/");
             }
           }
-
+          resItem.gender = genderToEnum[String(container.gender ?? "universal").toLowerCase()] ?? 2;
           resItem.values = sanitizeDict(resItem.values);
           resItem.colors = sanitizeDict(resItem.colors);
           resItem.ints = sanitizeDict(resItem.ints);
@@ -181,17 +232,19 @@ async function GetAll(req, res) {
 
       return container;
     });
+    */
 
     res.status(200).json({
       success: true,
       error: "",
       data: data,
       count: data.length,
-      total: typeof count === "number" ? count : count.length,
+      total: typeof total === "number" ? total : count.length,
       offset: offset,
       limit: limit,
     });
-  } catch (err) {
+  } catch (err)
+  {
     res.status(500).json({
       success: false,
       error: err.message,
@@ -200,8 +253,10 @@ async function GetAll(req, res) {
   }
 }
 
-async function SaveMaterial(req, res) {
-  try {
+async function SaveMaterial(req, res)
+{
+  try
+  {
     const payload = JSON.parse(req.body.payload || "{}");
     const files = req.files || [];
 
@@ -213,7 +268,8 @@ async function SaveMaterial(req, res) {
     const textureFilesMap = {};
     files
       .filter((f) => f.fieldname.startsWith("texture_"))
-      .forEach((f) => {
+      .forEach((f) =>
+      {
         textureFilesMap[f.fieldname] = f;
       });
 
@@ -227,17 +283,22 @@ async function SaveMaterial(req, res) {
       gender: payload.gender,
     });
 
-    if (Array.isArray(payload.items)) {
+    if (Array.isArray(payload.items))
+    {
       const itemsToCreate = await Promise.all(
-        payload.items.map(async (resItem, index) => {
+        payload.items.map(async (resItem, index) =>
+        {
           const mappedTexturesPaths = {};
 
-          if (resItem.textures_paths) {
-            for (const key in resItem.textures_paths) {
+          if (resItem.textures_paths)
+          {
+            for (const key in resItem.textures_paths)
+            {
               const fieldKey = `texture_${index}_${key}`;
               const fileObj = textureFilesMap[fieldKey];
 
-              if (fileObj) {
+              if (fileObj)
+              {
                 mappedTexturesPaths[key] = await uploadFileToSupabase(
                   fileObj,
                   resItem.model,
@@ -274,7 +335,8 @@ async function SaveMaterial(req, res) {
       error: "",
       data: fullCreated,
     });
-  } catch (err) {
+  } catch (err)
+  {
     res.status(500).json({
       success: false,
       error: err.message,

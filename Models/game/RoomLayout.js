@@ -1,30 +1,18 @@
-const { Model, DataTypes, UUIDV4 } = require("sequelize");
+const { DataTypes, UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class RoomLayout extends Model {}
-
-  RoomLayout.init(
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      name: { type: DataTypes.STRING, defaultValue: "" },
-      data: { type: DataTypes.TEXT, defaultValue: "" },
-       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
-      userId: { type: DataTypes.STRING, defaultValue: "" },
-    
-      createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
-      updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, },
-    },
-    {
-      sequelize,
-      modelName: "RoomLayout",
-      tableName: "room_layouts",
-      timestamps: true,
-    },
-  );
+  const RoomLayout = sequelize.define("RoomLayout", {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    name: { type: DataTypes.STRING, defaultValue: "" },
+    data: { type: DataTypes.TEXT, defaultValue: "" },
+    uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+    userId: { type: DataTypes.STRING, defaultValue: "" },
+    createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+    updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  }, {
+    tableName: "room_layouts",
+    timestamps: true,
+  });
 
   return RoomLayout;
 };

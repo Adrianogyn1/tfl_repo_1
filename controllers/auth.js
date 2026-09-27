@@ -16,11 +16,13 @@ router.post("/auth/signup", (req, res) => signup(req, res));
 router.post("/auth/forgot", (req, res) => forgot(req, res));
 router.get("/auth/signin/random", (req, res) => signInRandom(req, res));
 
-function encryptPassword(password) {
+function encryptPassword(password)
+{
   return password;
 }
 
-async function CheckLogin(req, res, next) {
+async function CheckLogin(req, res, next)
+{
   var token =
     req.headers?.["tfl-token"] ||
     req.headers?.["token"] ||
@@ -29,9 +31,12 @@ async function CheckLogin(req, res, next) {
     req.params?.token ||
     "";
 
-  if (token) {
-    try {
-      if (token === "12345") {
+  if (token)
+  {
+    try
+    {
+      if (token === "12345")
+      {
         const usertemp = await repo.User.findOne();
         token = usertemp ? usertemp.token : token;
       }
@@ -40,13 +45,15 @@ async function CheckLogin(req, res, next) {
         where: { token: token },
       });
 
-      if (user) {
+      if (user)
+      {
         req.userId = user.id;
         req.userToken = token;
         req.userData = UserDto.fromObject(user.get({ plain: true }));
         return next();
       }
-    } catch (err) {
+    } catch (err)
+    {
       console.error("Erro ao verificar login:", err);
       return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -55,7 +62,8 @@ async function CheckLogin(req, res, next) {
   return res.status(401).json({ error: "Unauthorized" });
 }
 
-async function signInRandom(req, res) {
+async function signInRandom(req, res)
+{
   const avatars = await repo.Avatar.findOne(
     {
       order: repo.Sequelize.literal("RANDOM()"),
@@ -66,11 +74,12 @@ async function signInRandom(req, res) {
 
 
   const user = await repo.User.findOne({
-   // where: { id: userID },
+    // where: { id: userID },
     order: repo.Sequelize.literal("RANDOM()"),
   });
 
-  if (!user) {
+  if (!user)
+  {
     return res.status(404).json({ error: "Nenhum usuário encontrado." });
   }
 
@@ -78,8 +87,10 @@ async function signInRandom(req, res) {
   return sigin(req, res);
 }
 
-async function sigin(req, res) {
-  try {
+async function sigin(req, res)
+{
+  try
+  {
     const { login, password } = req.body;
     const Op = repo.Sequelize ? repo.Sequelize.Op : require("sequelize").Op;
 
@@ -87,38 +98,59 @@ async function sigin(req, res) {
       where: { login: login, password: encryptPassword(password) },
     });
 
-    if (user) {
+    if (user)
+    {
       user.token = repo.User.newToken();
       user.online = true;
       await user.save();
 
       const userPlain = user.get({ plain: true });
-      let data = await repo.Avatar.findOne({
+      let data = await repo.Avatar.findAll({
         where: {
           userId: user.id,
-        }});
+        }
+      });
 
-      let profile = null;
-      if (data) {
+      let profiles = [];
+      if (data)
+      {
         var crt = require('./game/avatar/avatar_controller');
-        profile = await crt.getInfo(data.get({ plain: true }), true);
+        //profiles = await crt.getInfo(data.get({ plain: true }), true);
+        for (let i = 0; i < data.length; i++)
+        {
+          const profile = data[i].get({ plain: true });
+          var prof = await crt.getInfo(profile, true);
+          var looby = prof?.rooms?.map(room =>
+          {
+            return { room: room.scene == "lobby" ? room : null }
+          })[0] ?? null;
+
+          profiles.push(prof);
+        }
+
+
       }
+      var dto = {
+        ...userPlain,
+        profiles: profiles
+      };
 
       return res.status(200).json({
         token: user.token,
-        user: userPlain,
-        profile: profile,
+        user: dto,
         success: true,
         data: {}
       });
-    } else {
+    } else
+    {
       return res.status(401).json({
         error: "Login ou senha inválidos.",
         success: false,
         data: {},
       });
     }
-  } catch (err) {
+  } catch (err)
+  {
     console.error("--- ERRO DETALHADO DA QUERY BANCO DE DADOS ---");
     console.error("Mensagem:", err.message);
     console.error("--------------------------------------------");
@@ -127,14 +159,17 @@ async function sigin(req, res) {
   }
 }
 
-async function signup(req, res) {
+async function signup(req, res)
+{
   const userId = req.userId;
-  if (userId) {
+  if (userId)
+  {
     return res.status(409).json({ error: "Usuário logado.", success: false });
   }
 
   const { login, password, userName, email, age } = req.body;
-  if (!login || !password) {
+  if (!login || !password)
+  {
     return res.status(422).json({
       error: "Campos vazios, verifique login e senha",
       success: false,
@@ -145,7 +180,8 @@ async function signup(req, res) {
     where: { login: login },
   });
 
-  if (!userExists) {
+  if (!userExists)
+  {
     const newUser = await repo.User.create({
       login: login,
       password: encryptPassword(password),
@@ -163,7 +199,8 @@ async function signup(req, res) {
       data: newUser,
       user: newUser,
     });
-  } else {
+  } else
+  {
     return res.status(409).json({
       error: `O login ${login} já existe.`,
       success: false,
@@ -172,16 +209,19 @@ async function signup(req, res) {
   }
 }
 
-function forgot(req, res) {
+function forgot(req, res)
+{
   return res
     .status(200)
     .json({ success: false, error: "Not implemented", data: {} });
 }
 
-async function logout(req, res) {
+async function logout(req, res)
+{
   const user = await repo.User.findByPk(req.userId);
 
-  if (user) {
+  if (user)
+  {
     user.token = null;
     user.online = false;
     await user.save();

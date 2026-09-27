@@ -4,9 +4,28 @@ async function updateDatabaseSchema() {
   const queryInterface = db.sequelize.getQueryInterface();
   const models = db.sequelize.models;
 
+  // Lista todas as tabelas existentes uma única vez (evita N describeTable falhando)
+  const allTables = await queryInterface.showAllTables();
+  const existingTableNames = allTables.map((t) =>
+    (typeof t === "string" ? t : t.tableName).toLowerCase()
+  );
+
   for (const modelName of Object.keys(models)) {
     const Model = models[modelName];
     const tableName = Model.getTableName();
+    const normalizedTableName =
+      typeof tableName === "string" ? tableName : tableName.tableName;
+
+    const tableExists = existingTableNames.includes(
+      normalizedTableName.toLowerCase()
+    );
+
+    if (!tableExists) {
+      console.log(`🆕 Tabela '${normalizedTableName}' não existe, criando...`);
+      await Model.sync(); // cria a tabela inteira a partir da definição do model
+      console.log(`✅ Tabela '${normalizedTableName}' criada.`);
+      continue; // já está completa, não precisa de diff de colunas
+    }
 
     // Pega as colunas como estão no banco de dados
     const tableDefinition = await queryInterface.describeTable(tableName);
@@ -20,12 +39,12 @@ async function updateDatabaseSchema() {
       // Busca se já existe uma coluna no banco com esse nome (independente de case)
       const exists = existingColumns.some(
         (existingCol) =>
-          existingCol.toLowerCase() === targetFieldName.toLowerCase(),
+          existingCol.toLowerCase() === targetFieldName.toLowerCase()
       );
 
       if (!exists) {
         console.log(
-          `➕ Adicionando coluna '${targetFieldName}' na tabela '${tableName}'...`,
+          `➕ Adicionando coluna '${targetFieldName}' na tabela '${tableName}'...`
         );
 
         await queryInterface.addColumn(tableName, targetFieldName, {

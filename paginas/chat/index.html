@@ -1,0 +1,1156 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat - WebSocket Real-time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#e9edf2; --panel:#fff; --side:#f5f7fa; --ink:#1a2230; --muted:#667085;
+    --line:#e0e5ec; --hover:#eaeef4; --active:#dcebea; --accent:#0f766e; --accent-ink:#fff;
+    --bubble-in:#f0f3f7; --danger:#b42318; --success:#0d8a5f; --rec:#d92d20; --online:#22c55e; --radius:16px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#10151c; --panel:#171d26; --side:#1b222c; --ink:#e8edf3; --muted:#93a0b2;
+      --line:#28313d; --hover:#222b37; --active:#1f3a3a; --accent:#2bb3a6; --accent-ink:#06201d;
+      --bubble-in:#232c38; --danger:#f97066; --success:#34d399; --rec:#f97066; --online:#34d399;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); font-size:15px; line-height:1.45; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app { display:grid; grid-template-columns:340px 1fr; height:100dvh; max-width:1280px; margin:0 auto; background:var(--panel); position:relative; }
+  @media (min-width:900px){
+    body{padding:16px;}
+    .app{height:calc(100dvh - 32px); border-radius:20px; overflow:hidden; box-shadow:0 10px 40px rgba(16,24,40,.12);}
+  }
+
+  .side { display:flex; flex-direction:column; min-height:0; background:var(--side); border-right:1px solid var(--line); }
+  .side-head { padding:18px 16px 12px; display:grid; gap:12px; }
+  .side-head-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .side-head h1 { margin:0; font-size:19px; font-weight:700; letter-spacing:-.01em; }
+  .me { display:grid; gap:4px; }
+  .me label { font-size:12.5px; color:var(--muted); }
+  .field { width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+  .tabs { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--hover); border-radius:12px; }
+  .tab { border:0; background:transparent; padding:7px 10px; border-radius:9px; font-weight:600; color:var(--muted); }
+  .tab[aria-selected="true"] { background:var(--panel); color:var(--ink); box-shadow:0 1px 2px rgba(16,24,40,.1); }
+
+  .bell { flex:none; width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:var(--panel); font-size:16px; position:relative; }
+  .bell:hover { background:var(--hover); }
+  .bell.on::after { content:""; position:absolute; top:5px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--success); }
+
+  .list { flex:1; overflow-y:auto; padding:6px 8px 12px; }
+  .row { display:flex; align-items:center; gap:12px; width:100%; padding:10px; border:0; border-radius:12px; background:transparent; text-align:left; }
+  .row:hover { background:var(--hover); }
+  .row.active { background:var(--active); }
+  .row-main { flex:1; min-width:0; display:grid; }
+  .row-title { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row-sub { color:var(--muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .badge { min-width:22px; height:22px; padding:0 6px; border-radius:11px; background:var(--accent); color:var(--accent-ink); font-size:12px; font-weight:700; display:grid; place-items:center; }
+  .empty { margin:24px 12px; color:var(--muted); font-size:14px; text-align:center; }
+
+  .avatar-wrap { position:relative; flex:none; }
+  .avatar { width:40px; height:40px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:14px; }
+  .avatar.sm { width:32px; height:32px; font-size:12px; }
+  .avatar.lg { width:84px; height:84px; font-size:26px; }
+  .dot { position:absolute; right:-2px; bottom:-2px; width:12px; height:12px; border-radius:50%; border:2px solid var(--side); background:var(--muted); }
+  .dot.online { background:var(--online); }
+  .avatar-wrap.clickable { cursor:pointer; }
+
+  .main { display:flex; flex-direction:column; min-width:0; min-height:0; background:var(--panel); }
+  .chat-head { display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid var(--line); }
+  .chat-head .who { display:flex; align-items:center; gap:12px; min-width:0; flex:1; border:0; background:transparent; text-align:left; padding:2px; border-radius:10px; }
+  .chat-head .who:hover { background:var(--hover); }
+  .chat-head .title { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chat-head .sub { font-size:13px; color:var(--muted); }
+  .chat-head .sub.online { color:var(--online); font-weight:600; }
+  .head-actions { display:flex; gap:6px; }
+  .back { display:none; border:0; background:var(--hover); border-radius:10px; padding:8px 12px; font-weight:600; }
+
+  .thread { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:6px; }
+  .more { align-self:center; border:1px solid var(--line); background:var(--panel); border-radius:999px; padding:6px 14px; color:var(--muted); font-weight:600; margin-bottom:8px; }
+  .more:hover { background:var(--hover); }
+  .typing-row { color:var(--muted); font-size:13px; font-style:italic; padding:2px 6px; }
+
+  .msg { display:flex; }
+  .msg.mine { justify-content:flex-end; }
+  .bubble { max-width:min(520px,78%); padding:8px 12px 6px; border-radius:14px; background:var(--bubble-in); overflow-wrap:anywhere; }
+  .mine .bubble { background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:4px; }
+  .theirs .bubble { border-bottom-left-radius:4px; }
+  .sender { font-size:12.5px; font-weight:700; color:var(--accent); margin-bottom:2px; border:0; background:transparent; padding:0; cursor:pointer; }
+  .mine .sender { color:inherit; opacity:.85; }
+  .text { margin:0; white-space:pre-wrap; }
+  .bubble .meta { display:flex; justify-content:flex-end; align-items:center; gap:4px; margin-top:2px; font-size:11px; opacity:.75; }
+  .bubble a { color:inherit; text-decoration:underline; }
+  .bubble img, .bubble video { display:block; max-width:100%; max-height:320px; border-radius:10px; margin:2px 0 6px; background:rgba(0,0,0,.08); }
+  .bubble img { cursor:zoom-in; }
+  .bubble audio { display:block; width:260px; max-width:100%; margin:2px 0 6px; }
+  .filebtn { display:inline-flex; align-items:center; gap:8px; margin:2px 0 6px; padding:8px 12px; border-radius:10px; border:1px solid currentColor; background:transparent; font-weight:600; }
+
+  .placeholder { flex:1; display:grid; place-items:center; padding:24px; text-align:center; color:var(--muted); }
+  .placeholder strong { display:block; color:var(--ink); font-size:17px; margin-bottom:4px; }
+
+  .composer { padding:12px 16px 16px; border-top:1px solid var(--line); display:grid; gap:8px; }
+  .chip { display:none; align-items:center; gap:8px; justify-self:start; padding:5px 6px 5px 12px; border-radius:999px; background:var(--hover); font-size:13px; font-weight:600; }
+  .chip.on { display:inline-flex; }
+  .chip button { border:0; background:var(--line); border-radius:50%; width:22px; height:22px; line-height:1; }
+  .compose-row { display:flex; gap:8px; align-items:center; }
+  .compose-row .field { flex:1; border-radius:999px; padding:11px 16px; }
+  .icon-btn { flex:none; width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:var(--panel); font-weight:700; font-size:18px; }
+  .icon-btn:hover { background:var(--hover); }
+  .icon-btn.rec.active { background:var(--rec); color:#fff; border-color:var(--rec); animation:pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.55;} }
+  .rec-bar { display:flex; align-items:center; gap:10px; padding:6px 12px; border-radius:999px; background:var(--hover); font-weight:600; color:var(--rec); }
+  .send { flex:none; border:0; border-radius:999px; padding:11px 20px; background:var(--accent); color:var(--accent-ink); font-weight:700; }
+  .send:disabled { opacity:.5; cursor:default; }
+
+  .toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--ink); color:var(--panel); padding:10px 16px; border-radius:12px; font-weight:600; font-size:14px; max-width:90vw; z-index:50; }
+  .toast[hidden] { display:none; }
+
+  /* ---------- modais ---------- */
+  .modal { position:fixed; inset:0; background:rgba(16,24,40,.45); display:none; align-items:center; justify-content:center; z-index:40; padding:16px; }
+  .modal.open { display:flex; }
+  .modal-card { background:var(--panel); border-radius:16px; width:min(420px,100%); max-height:80vh; overflow:auto; padding:18px; display:grid; gap:12px; }
+  .modal-card h2 { margin:0; font-size:17px; }
+  .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:4px; }
+  .btn { border:1px solid var(--line); background:var(--panel); border-radius:10px; padding:9px 16px; font-weight:600; }
+  .btn:hover { background:var(--hover); }
+  .btn.primary { border:0; background:var(--accent); color:var(--accent-ink); }
+  .btn.danger { border:0; background:var(--danger); color:#fff; }
+  .check-row { display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid var(--line); }
+  .check-row:last-child { border-bottom:0; }
+  .member-row { display:flex; align-items:center; gap:10px; padding:8px 4px; }
+  .member-row .row-main { flex:1; }
+  .member-actions { display:flex; gap:6px; }
+  .role-badge { font-size:11px; font-weight:700; color:var(--accent); background:var(--active); padding:2px 8px; border-radius:999px; }
+
+  /* ---------- painel de perfil (3a "pagina") ---------- */
+  .profile-panel {
+    position:fixed; top:0; right:0; height:100%; width:100%; max-width:380px;
+    background:var(--panel); box-shadow:-8px 0 30px rgba(16,24,40,.18);
+    transform:translateX(100%); transition:transform .25s ease; z-index:45;
+    display:flex; flex-direction:column;
+  }
+  .profile-panel.open { transform:translateX(0); }
+  .profile-backdrop { position:fixed; inset:0; background:rgba(16,24,40,.35); z-index:44; display:none; }
+  .profile-backdrop.open { display:block; }
+  .profile-head { display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--line); }
+  .profile-body { padding:22px 18px; display:grid; gap:6px; text-align:center; overflow-y:auto; }
+  .profile-name { font-size:19px; font-weight:700; margin-top:12px; }
+  .profile-status { font-size:13.5px; color:var(--muted); }
+  .profile-status.online { color:var(--online); font-weight:600; }
+  .profile-role { margin-top:4px; }
+  .profile-actions { display:grid; gap:8px; margin-top:18px; }
+
+  /* ---------- celular ---------- */
+  @media (max-width:720px) {
+    .app { grid-template-columns:1fr; }
+    .main { display:none; }
+    .app.has-chat .side { display:none; }
+    .app.has-chat .main { display:flex; }
+    .back { display:inline-block; }
+    .profile-panel { max-width:none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior:auto !important; } .icon-btn.rec.active{animation:none;} }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side">
+    <div class="side-head">
+      <div class="side-head-top">
+        <h1>Chat</h1>
+        <button class="bell" id="bell" type="button" title="Notificacoes e som" aria-label="Notificacoes e som">🔔</button>
+      </div>
+      <div class="me">
+        <label for="me">Entrar como</label>
+        <select id="me" class="field"></select>
+      </div>
+      <input id="search" class="field" type="search" placeholder="Buscar" autocomplete="off">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-users" aria-selected="true">Usuarios</button>
+        <button class="tab" role="tab" id="tab-chats" aria-selected="false">Conversas</button>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+
+  <main class="main" id="main"></main>
+</div>
+
+<div class="profile-backdrop" id="profileBackdrop"></div>
+<aside class="profile-panel" id="profilePanel">
+  <div class="profile-head">
+    <button class="back" id="profileBack" style="display:inline-block" type="button">Voltar</button>
+    <strong style="flex:1">Perfil</strong>
+  </div>
+  <div class="profile-body" id="profileBody"></div>
+</aside>
+
+<div class="modal" id="groupModal">
+  <div class="modal-card">
+    <h2>Criar grupo</h2>
+    <input id="groupName" class="field" type="text" placeholder="Nome do grupo" maxlength="80">
+    <div id="groupMembers"></div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="closeModal('groupModal')">Cancelar</button>
+      <button class="btn primary" type="button" id="groupCreateBtn">Criar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="addMemberModal">
+  <div class="modal-card">
+    <h2>Adicionar participante</h2>
+    <div id="addMemberList"></div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="closeModal('addMemberModal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="membersModal">
+  <div class="modal-card">
+    <h2 id="membersTitle">Membros do grupo</h2>
+    <div id="membersBody"></div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="addMemberOpenBtn">Adicionar</button>
+      <button class="btn" type="button" onclick="closeModal('membersModal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ============================================================
+   Configuracao
+   ============================================================ */
+const dominio = window.location.origin;
+const API = dominio + "/api/chats";
+const AVATARS_URL = dominio + "/game/avatars";
+const WS_PATH = ""; // WebSocket na raiz do servidor (sem path)
+
+/* localStorage pode ser bloqueado (sandbox, modo privado etc). Wrapper seguro com fallback em memoria. */
+const memStore = new Map();
+const safeStorage = {
+  get(key) {
+    try { return window.localStorage.getItem(key); } catch (_) { return memStore.get(key) ?? null; }
+  },
+  set(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (_) { memStore.set(key, value); }
+  },
+};
+
+const state = {
+  me: safeStorage.get("chat.me") || "",
+  users: [],
+  chats: [],
+  tab: "users",
+  current: null,          // { uid, type, title, otherId }
+  messages: [],
+  hasMore: false,
+  nextCursor: null,
+  file: null,
+  ws: null,
+  wsConnected: false,
+  onlineIds: new Set(),
+  typingByChat: new Map(), // roomUid -> Set<profileId>
+  typingSelfTimer: null,
+  recording: false,
+  mediaRecorder: null,
+  recordedChunks: [],
+  recordTimer: null,
+  recordSeconds: 0,
+  notifPermission: ("Notification" in window) ? Notification.permission : "unsupported",
+  soundEnabled: safeStorage.get("chat.sound") !== "off",
+  profileTarget: null,   // { id, name, role, isGroupMember }
+};
+const blobCache = new Map();
+
+/* ============================================================
+   Utilidades
+   ============================================================ */
+const $ = (sel, root = document) => root.querySelector(sel);
+
+function h(tag, props = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return el;
+}
+
+function avatar(name, size) {
+  const text = String(name || "?").trim();
+  const initials = text.split(/\s+/).slice(0, 2).map((p) => p[0] || "").join("").toUpperCase() || "?";
+  let hash = 0;
+  for (const ch of text) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return h("span", { class: "avatar" + (size ? " " + size : ""), style: `background:hsl(${hash % 360} 42% 40%)`, "aria-hidden": "true", text: initials });
+}
+
+/** Avatar com bolinha de status online/offline. onClick opcional abre o perfil. */
+function avatarWithStatus(name, id, opts = {}) {
+  const { size, onClick } = opts;
+  const wrap = h("span", { class: "avatar-wrap" + (onClick ? " clickable" : ""), onclick: onClick, role: onClick ? "button" : null, tabindex: onClick ? "0" : null },
+    avatar(name, size),
+    id != null && h("span", { class: "dot" + (state.onlineIds.has(String(id)) ? " online" : ""), "aria-hidden": "true" }));
+  return wrap;
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (el.hidden = true), 4000);
+}
+
+const fmtTime = (iso) => new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+const fmtSize = (n) => (n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB");
+const safeUrl = (u) => (/^https?:\/\//i.test(u) ? u : null);
+
+function closeModal(id) { $("#" + id).classList.remove("open"); }
+function openModalEl(id) { $("#" + id).classList.add("open"); }
+
+async function api(path, { method = "GET", json, body } = {}) {
+  const headers = {};
+  if (state.me) headers["X-Profile-Id"] = state.me;
+  if (json !== undefined) {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(json);
+  }
+  const res = await fetch(API + path, { method, headers, body, credentials: "include" });
+  if (res.status === 204) return null;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error || `Erro ${res.status}`);
+  return data;
+}
+
+/* ============================================================
+   Notificacoes push + som de mensagem
+   ============================================================ */
+function renderBell() {
+  const bell = $("#bell");
+  if (!bell) return;
+  bell.classList.toggle("on", state.notifPermission === "granted");
+  bell.textContent = state.soundEnabled ? "🔔" : "🔕";
+}
+
+async function toggleNotifications() {
+  if (state.notifPermission === "unsupported") {
+    state.soundEnabled = !state.soundEnabled;
+    safeStorage.set("chat.sound", state.soundEnabled ? "on" : "off");
+    toast(state.soundEnabled ? "Som de mensagens ativado." : "Som de mensagens desativado.");
+    renderBell();
+    return;
+  }
+  if (state.notifPermission !== "granted") {
+    try {
+      const perm = await Notification.requestPermission();
+      state.notifPermission = perm;
+      if (perm === "granted") toast("Notificacoes ativadas.");
+      else toast("Permissao de notificacao negada pelo navegador.");
+    } catch (e) { toast("Nao foi possivel solicitar permissao de notificacao."); }
+  } else {
+    state.soundEnabled = !state.soundEnabled;
+    safeStorage.set("chat.sound", state.soundEnabled ? "on" : "off");
+    toast(state.soundEnabled ? "Som de mensagens ativado." : "Som de mensagens desativado.");
+  }
+  renderBell();
+}
+
+/** Beep sintetizado via Web Audio API (nao depende de arquivo externo). */
+function playBeep() {
+  if (!state.soundEnabled) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.16, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.32);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.33);
+    osc.onended = () => ctx.close();
+  } catch (_) { /* ambiente sem audio, ignora */ }
+}
+
+function notifyIncoming(msg, room) {
+  const isCurrent = state.current && state.current.uid === room?.uid;
+  const iAmSender = String(msg.profileId) === state.me;
+  if (iAmSender) return;
+  playBeep();
+  if (state.notifPermission === "granted" && (document.hidden || !isCurrent)) {
+    try {
+      const title = room ? roomTitle(room) : "Nova mensagem";
+      const n = new Notification(title, { body: previewOf(msg), tag: room?.uid || "chat" });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch (_) { /* ignora */ }
+  }
+}
+
+/* ============================================================
+   WebSocket
+   ============================================================ */
+function wsUrl() {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  const qs = state.me ? `?profileId=${encodeURIComponent(state.me)}` : "";
+  return `${proto}//${location.host}${WS_PATH}${qs}`;
+}
+
+function connectWs() {
+  if (!state.me) return;
+  try {
+    if (state.ws) { state.ws.onclose = null; state.ws.close(); }
+    const ws = new WebSocket(wsUrl());
+    state.ws = ws;
+    ws.onopen = () => { state.wsConnected = true; updateConnBadge(); toast("Conectado ao servidor."); };
+    ws.onclose = () => { state.wsConnected = false; updateConnBadge(); setTimeout(() => { if (state.ws === ws) connectWs(); }, 3000); };
+    ws.onerror = () => { console.error("Erro WebSocket"); };
+    ws.onmessage = (ev) => {
+      let packet;
+      try { packet = JSON.parse(ev.data); } catch (_) { return; }
+      handleWsPacket(packet.Event || packet.event, packet.Data || packet.data || {});
+    };
+  } catch (e) { console.error("Falha ao conectar WS:", e); toast("Erro ao conectar ao WebSocket: " + e.message); }
+}
+
+function sendWs(event, data) {
+  if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+    state.ws.send(JSON.stringify({ Event: event, Data: data || {} }));
+  }
+}
+
+function updateConnBadge() {
+  const dot = $("#connDot");
+  if (dot) dot.classList.toggle("online", state.wsConnected);
+}
+
+function handleWsPacket(event, data) {
+  if (!event) return;
+  switch (event) {
+    case "presence:list":
+      state.onlineIds = new Set((data.onlineIds || []).map(String));
+      renderList(); renderChat();
+      break;
+    case "presence:online":
+      state.onlineIds.add(String(data.profileId));
+      renderList(); renderChat();
+      break;
+    case "presence:offline":
+      state.onlineIds.delete(String(data.profileId));
+      renderList(); renderChat();
+      break;
+    case "chat:message": {
+      const room = state.chats.find((r) => r.uid === data.roomUid) || { uid: data.roomUid, type: data.roomType };
+      if (state.current && state.current.uid === data.roomUid) {
+        const added = mergeMessages([data.message || data]);
+        if (added) { renderMessages(); scrollToBottom(); markRead(); }
+      }
+      notifyIncoming(data.message || data, room);
+      refreshChats();
+      break;
+    }
+    case "chat:message:deleted":
+      state.messages = state.messages.filter((m) => m.uid !== data.messageUid);
+      if (state.current && state.current.uid === data.roomUid) renderMessages();
+      break;
+    case "chat:read":
+      if (state.current && state.current.uid === data.roomUid) {
+        for (const m of state.messages) if (String(m.profileId) === state.me) m.readAt = m.readAt || data.readAt;
+        renderMessages();
+      }
+      break;
+    case "chat:typing": {
+      const set = state.typingByChat.get(data.roomUid) || new Set();
+      if (data.typing) set.add(String(data.profileId)); else set.delete(String(data.profileId));
+      state.typingByChat.set(data.roomUid, set);
+      if (state.current && state.current.uid === data.roomUid) renderTypingRow();
+      break;
+    }
+    case "chat:room:new":
+    case "chat:room:updated":
+    case "chat:participants:added":
+    case "chat:participants:updated":
+    case "chat:participants:removed":
+      refreshChats();
+      break;
+    case "chat:room:deleted":
+      if (state.current && state.current.uid === data.roomUid) closeChat();
+      refreshChats();
+      break;
+    case "chat:announcement":
+      toast(data.text || "Novo anuncio do sistema.");
+      break;
+    default:
+      break;
+  }
+}
+
+/* ============================================================
+   Usuarios
+   ============================================================ */
+function normalizeUser(a) {
+  const id = a.id ?? a.profileId ?? a.Id ?? a.ProfileId;
+  const name = a.name ?? a.username ?? a.displayName ?? a.Name ?? `Avatar ${id}`;
+  return { id: String(id), name: String(name) };
+}
+
+async function loadUsers() {
+  try {
+    const res = await fetch(AVATARS_URL, { credentials: "include" });
+    if (!res.ok) throw new Error(`Erro ${res.status}`);
+    const data = await res.json();
+    const arr = Array.isArray(data) ? data : data.avatars || data.data || data.items || [];
+    state.users = arr.map(normalizeUser).filter((u) => u.id && u.id !== "undefined");
+  } catch (e) {
+    toast("Nao foi possivel carregar os usuarios: " + e.message);
+    state.users = [];
+  }
+
+  if (!state.users.some((u) => u.id === state.me)) {
+    state.me = state.users[0]?.id || "";
+    safeStorage.set("chat.me", state.me);
+  }
+
+  const sel = $("#me");
+  sel.replaceChildren(...state.users.map((u) => h("option", { value: u.id, text: u.name, selected: u.id === state.me })));
+  renderList();
+  connectWs();
+}
+
+const userName = (id, fallback) =>
+  state.users.find((u) => u.id === String(id))?.name || fallback?.name || fallback?.username || `Usuario ${id}`;
+
+/* ============================================================
+   Conversas
+   ============================================================ */
+async function refreshChats() {
+  if (!state.me) return;
+  try {
+    state.chats = await api("/");
+    renderList();
+    if (state.current) renderChat();
+  } catch (e) { /* silencioso */ }
+}
+
+function roomTitle(room) {
+  if (room.type === "global") return "Chat global";
+  if (room.type === "group") return room.name || "Grupo";
+  const other = (room.profiles || []).find((p) => String(p.id) !== state.me);
+  return other ? userName(other.id, other) : "Conversa privada";
+}
+
+const previewOf = (m) =>
+  !m ? "Sem mensagens" :
+  m.text || (m.hasImage ? "Imagem" : m.hasVideo ? "Video" : m.hasAudio ? "Audio" : m.hasFile ? "Arquivo" : "");
+
+/* ============================================================
+   Lista lateral
+   ============================================================ */
+function renderList() {
+  const list = $("#list");
+  list.replaceChildren();
+  const q = $("#search").value.trim().toLowerCase();
+
+  if (state.tab === "users") {
+    const items = state.users.filter((u) => u.id !== state.me && u.name.toLowerCase().includes(q));
+    if (!items.length) {
+      list.append(h("p", { class: "empty", text: state.users.length ? "Nenhum usuario encontrado." : "Nenhum usuario carregado." }));
+      return;
+    }
+    for (const u of items) {
+      list.append(h("button", {
+        class: "row" + (state.current?.otherId === u.id ? " active" : ""),
+        onclick: () => openDirect(u),
+      }, avatarWithStatus(u.name, u.id), h("span", { class: "row-main" },
+        h("span", { class: "row-title", text: u.name }),
+        h("span", { class: "row-sub", text: state.onlineIds.has(u.id) ? "Online" : "Offline" }))));
+    }
+    return;
+  }
+
+  const items = state.chats.filter((r) => roomTitle(r).toLowerCase().includes(q));
+  if (!items.length) {
+    list.append(h("p", { class: "empty", text: "Nenhuma conversa ainda. Escolha um usuario para comecar." }));
+    return;
+  }
+  for (const r of items) {
+    const title = roomTitle(r);
+    const other = r.type === "private" ? (r.profiles || []).find((p) => String(p.id) !== state.me) : null;
+    list.append(h("button", {
+      class: "row" + (state.current?.uid === r.uid ? " active" : ""),
+      onclick: () => openRoom(r, title, other ? String(other.id) : null),
+    },
+      avatarWithStatus(title, other?.id ?? null),
+      h("span", { class: "row-main" },
+        h("span", { class: "row-title", text: title }),
+        h("span", { class: "row-sub", text: previewOf(r.lastMessage) })),
+      r.unread > 0 && state.current?.uid !== r.uid && h("span", { class: "badge", text: r.unread > 99 ? "99+" : r.unread })));
+  }
+}
+
+function setTab(tab) {
+  state.tab = tab;
+  $("#tab-users").setAttribute("aria-selected", tab === "users");
+  $("#tab-chats").setAttribute("aria-selected", tab === "chats");
+  if (tab === "chats") refreshChats();
+  renderList();
+}
+
+/* ============================================================
+   Abrir conversa
+   ============================================================ */
+async function openDirect(user) {
+  try {
+    const room = await api("/direct", { method: "POST", json: { profileId: Number(user.id) } });
+    openRoom(room, user.name, user.id);
+  } catch (e) { toast(e.message); }
+}
+
+function openRoom(room, title, otherId) {
+  state.current = { uid: room.uid, type: room.type, title, otherId };
+  state.messages = [];
+  state.hasMore = false;
+  state.nextCursor = null;
+  state.file = null;
+  $("#app").classList.add("has-chat");
+  renderChat();
+  loadMessages("init");
+  renderList();
+}
+
+function closeChat() {
+  state.current = null;
+  $("#app").classList.remove("has-chat");
+  renderChat();
+  renderList();
+}
+
+/* ============================================================
+   Mensagens
+   ============================================================ */
+function mergeMessages(list) {
+  const known = new Set(state.messages.map((m) => m.uid));
+  let added = 0;
+  for (const m of list) {
+    if (!known.has(m.uid)) { state.messages.push(m); added++; }
+  }
+  state.messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
+  return added;
+}
+
+async function loadMessages(mode) {
+  const c = state.current;
+  if (!c) return;
+  const qs = new URLSearchParams({ limit: "30" });
+  if (mode === "older" && state.nextCursor) qs.set("before", state.nextCursor);
+
+  try {
+    const data = await api(`/${c.uid}/messages?${qs}`);
+    if (state.current !== c) return;
+
+    const thread = $("#thread");
+    const prevHeight = thread ? thread.scrollHeight : 0;
+    const nearBottom = thread ? thread.scrollHeight - thread.scrollTop - thread.clientHeight < 120 : true;
+
+    if (mode !== "poll") { state.hasMore = data.hasMore; state.nextCursor = data.nextCursor; }
+    const added = mergeMessages(data.messages);
+    renderMessages();
+
+    const t = $("#thread");
+    if (mode === "older") t.scrollTop = t.scrollHeight - prevHeight;
+    else if (mode === "init" || nearBottom) t.scrollTop = t.scrollHeight;
+
+    if (mode !== "older") markRead();
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+function scrollToBottom() { const t = $("#thread"); if (t) t.scrollTop = t.scrollHeight; }
+
+async function markRead() {
+  const c = state.current;
+  if (!c) return;
+  try { await api(`/${c.uid}/read`, { method: "POST" }); refreshChats(); } catch (e) { /* ignora */ }
+}
+
+/* ---------- indicador "digitando" ---------- */
+function sendTyping(isTyping) {
+  const c = state.current;
+  if (!c) return;
+  sendWs("chat:typing", { roomUid: c.uid, typing: isTyping });
+}
+
+function onComposerInput() {
+  sendTyping(true);
+  clearTimeout(state.typingSelfTimer);
+  state.typingSelfTimer = setTimeout(() => sendTyping(false), 2500);
+}
+
+function renderTypingRow() {
+  const thread = $("#thread");
+  if (!thread || !state.current) return;
+  const existing = $("#typingRow");
+  const set = state.typingByChat.get(state.current.uid);
+  const typers = set ? Array.from(set).filter((id) => id !== state.me) : [];
+  if (!typers.length) { existing?.remove(); return; }
+  const label = typers.map((id) => userName(id)).join(", ") + (typers.length > 1 ? " estao escrevendo..." : " esta escrevendo...");
+  if (existing) { existing.textContent = label; return; }
+  thread.append(h("div", { class: "typing-row", id: "typingRow", text: label }));
+  scrollToBottom();
+}
+
+/* ---------- midia ---------- */
+function mediaUrl(m) {
+  const key = m.uid;
+  if (!blobCache.has(key)) {
+    blobCache.set(key, (async () => {
+      const headers = state.me ? { "X-Profile-Id": state.me } : {};
+      const res = await fetch(`${API}/${state.current.uid}/messages/${m.uid}/file`, { headers, credentials: "include" });
+      if (!res.ok) throw new Error("Falha ao baixar o arquivo");
+      return URL.createObjectURL(await res.blob());
+    })());
+  }
+  return blobCache.get(key);
+}
+
+function mediaEl(m) {
+  const fail = () => toast("Nao foi possivel carregar a midia.");
+  if (m.hasImage) {
+    const img = h("img", { alt: "Imagem enviada", loading: "lazy" });
+    mediaUrl(m).then((u) => { img.src = u; img.onclick = () => window.open(u, "_blank"); }).catch(fail);
+    return img;
+  }
+  if (m.hasVideo) {
+    const v = h("video", { controls: true, preload: "metadata" });
+    mediaUrl(m).then((u) => (v.src = u)).catch(fail);
+    return v;
+  }
+  if (m.hasAudio) {
+    const a = h("audio", { controls: true, preload: "metadata" });
+    mediaUrl(m).then((u) => (a.src = u)).catch(fail);
+    return a;
+  }
+  if (m.hasFile) {
+    const name = (m.filePath || "arquivo").split("/").pop();
+    return h("button", {
+      class: "filebtn",
+      onclick: async () => {
+        try {
+          const u = await mediaUrl(m);
+          const a = h("a", { href: u, download: name });
+          document.body.append(a); a.click(); a.remove();
+        } catch (e) { fail(); }
+      },
+    }, `Baixar ${name}` + (m.fileSize ? ` (${fmtSize(m.fileSize)})` : ""));
+  }
+  return null;
+}
+
+function messageEl(m) {
+  const mine = String(m.profileId) === state.me;
+  const showName = !mine && state.current.type !== "private";
+  const link = m.hasLink && m.linkFile ? safeUrl(m.linkFile) : null;
+  const nameBtn = showName && h("button", { class: "sender", type: "button", onclick: () => openProfileById(m.profileId, m.senderName) }, m.senderName);
+  return h("div", { class: "msg " + (mine ? "mine" : "theirs") },
+    h("div", { class: "bubble" },
+      nameBtn,
+      mediaEl(m),
+      m.text && h("p", { class: "text", text: m.text }),
+      link && h("a", { href: link, target: "_blank", rel: "noopener noreferrer", text: link }),
+      h("div", { class: "meta" },
+        h("time", { datetime: m.createdAt, text: fmtTime(m.createdAt) }),
+        mine && state.current.type === "private" && h("span", { text: m.readAt ? "Lido" : "Enviado" }))));
+}
+
+function renderMessages() {
+  const thread = $("#thread");
+  if (!thread) return;
+  thread.replaceChildren();
+  if (state.hasMore) thread.append(h("button", { class: "more", onclick: () => loadMessages("older"), text: "Carregar mensagens anteriores" }));
+  if (!state.messages.length) {
+    thread.append(h("p", { class: "empty", text: "Nenhuma mensagem ainda. Escreva a primeira." }));
+  } else {
+    for (const m of state.messages) thread.append(messageEl(m));
+  }
+  renderTypingRow();
+}
+
+/* ============================================================
+   Perfil do usuario (painel deslizante)
+   ============================================================ */
+function openProfileById(id, fallbackName) {
+  openProfile({ id: String(id), name: userName(id, { name: fallbackName }) });
+}
+
+function openProfile(target) {
+  state.profileTarget = target;
+  renderProfile();
+  $("#profilePanel").classList.add("open");
+  $("#profileBackdrop").classList.add("open");
+}
+
+function closeProfile() {
+  $("#profilePanel").classList.remove("open");
+  $("#profileBackdrop").classList.remove("open");
+  state.profileTarget = null;
+}
+
+function renderProfile() {
+  const t = state.profileTarget;
+  const body = $("#profileBody");
+  if (!t) { body.replaceChildren(); return; }
+  const online = state.onlineIds.has(String(t.id));
+  const isMe = String(t.id) === state.me;
+  body.replaceChildren(
+    avatarWithStatus(t.name, t.id, { size: "lg" }),
+    h("div", { class: "profile-name", text: t.name + (isMe ? " (voce)" : "") }),
+    h("div", { class: "profile-status" + (online ? " online" : ""), text: online ? "Online" : "Offline" }),
+    t.role && h("div", { class: "profile-role" }, h("span", { class: "role-badge", text: t.role === "admin" ? "Administrador" : "Membro" })),
+    !isMe && h("div", { class: "profile-actions" },
+      h("button", { class: "btn primary", type: "button", onclick: () => { closeProfile(); openDirect({ id: t.id, name: t.name }); } }, "Enviar mensagem"))
+  );
+}
+
+$("#profileBack").onclick = closeProfile;
+$("#profileBackdrop").onclick = closeProfile;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeProfile(); });
+
+/* ============================================================
+   Membros do grupo
+   ============================================================ */
+async function openMembers() {
+  const c = state.current;
+  if (!c || c.type !== "group") return;
+  try {
+    const members = await api(`/${c.uid}/participants`);
+    renderMembersModal(members);
+    openModalEl("membersModal");
+  } catch (e) { toast(e.message); }
+}
+
+function renderMembersModal(members) {
+  const body = $("#membersBody");
+  body.replaceChildren();
+  const me = members.find((m) => String(m.profileId ?? m.profile_id) === state.me);
+  const iAmAdmin = me && (me.role === "admin" || me.isAdmin);
+  $("#addMemberOpenBtn").style.display = iAmAdmin ? "inline-block" : "none";
+  $("#addMemberOpenBtn").onclick = () => openAddMember(members.map((m) => String(m.profileId ?? m.profile_id)));
+
+  for (const m of members) {
+    const pid = String(m.profileId ?? m.profile_id);
+    const name = userName(pid, m);
+    const isAdmin = m.role === "admin" || m.isAdmin;
+    body.append(h("div", { class: "member-row" },
+      avatarWithStatus(name, pid, { size: "sm", onClick: () => { closeModal("membersModal"); openProfile({ id: pid, name, role: isAdmin ? "admin" : "member" }); } }),
+      h("span", { class: "row-main" },
+        h("span", { class: "row-title", text: name + (pid === state.me ? " (voce)" : "") }),
+        h("span", { class: "row-sub", text: state.onlineIds.has(pid) ? "Online" : "Offline" })),
+      isAdmin && h("span", { class: "role-badge", text: "Admin" }),
+      iAmAdmin && pid !== state.me && h("div", { class: "member-actions" },
+        h("button", { class: "btn", type: "button", onclick: () => removeMember(pid) }, "Remover"))));
+  }
+}
+
+async function removeMember(profileId) {
+  const c = state.current;
+  if (!c) return;
+  try {
+    await api(`/${c.uid}/participants/${profileId}`, { method: "DELETE" });
+    toast("Participante removido.");
+    openMembers();
+  } catch (e) { toast(e.message); }
+}
+
+function openAddMember(existingIds) {
+  const list = $("#addMemberList");
+  list.replaceChildren();
+  const candidates = state.users.filter((u) => u.id !== state.me && !existingIds.includes(u.id));
+  if (!candidates.length) { list.append(h("p", { class: "empty", text: "Todos os usuarios ja estao no grupo." })); }
+  for (const u of candidates) {
+    list.append(h("button", { class: "row", type: "button", onclick: () => addMember(u.id) },
+      avatarWithStatus(u.name, u.id, { size: "sm" }),
+      h("span", { class: "row-main" }, h("span", { class: "row-title", text: u.name }))));
+  }
+  openModalEl("addMemberModal");
+}
+
+async function addMember(profileId) {
+  const c = state.current;
+  if (!c) return;
+  try {
+    await api(`/${c.uid}/participants`, { method: "POST", json: { profileId: Number(profileId) } });
+    toast("Participante adicionado.");
+    closeModal("addMemberModal");
+    openMembers();
+  } catch (e) { toast(e.message); }
+}
+
+/* ============================================================
+   Criar grupo
+   ============================================================ */
+function openGroupModal() {
+  $("#groupName").value = "";
+  const box = $("#groupMembers");
+  box.replaceChildren();
+  for (const u of state.users.filter((u) => u.id !== state.me)) {
+    box.append(h("label", { class: "check-row" },
+      h("input", { type: "checkbox", value: u.id, class: "gmember" }),
+      avatarWithStatus(u.name, u.id, { size: "sm" }),
+      h("span", { text: u.name })));
+  }
+  openModalEl("groupModal");
+}
+
+async function createGroup() {
+  const name = $("#groupName").value.trim();
+  const ids = Array.from(document.querySelectorAll(".gmember:checked")).map((i) => Number(i.value));
+  if (!name) return toast("Informe um nome para o grupo.");
+  if (!ids.length) return toast("Selecione ao menos um participante.");
+  try {
+    const room = await api("/group", { method: "POST", json: { name, profileIds: ids } });
+    closeModal("groupModal");
+    openRoom(room, name, null);
+    refreshChats();
+  } catch (e) { toast(e.message); }
+}
+$("#groupCreateBtn").onclick = createGroup;
+
+/* ============================================================
+   Gravacao de audio
+   ============================================================ */
+function pickAudioMime() {
+  if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return "";
+  const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
+  for (const c of candidates) if (MediaRecorder.isTypeSupported(c)) return c;
+  return "";
+}
+
+async function toggleRecording() {
+  if (state.recording) { stopRecording(); return; }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    toast("Seu navegador nao suporta gravacao de audio (API MediaRecorder indisponivel).");
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mime = pickAudioMime();
+    const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    state.recordedChunks = [];
+    mr.ondataavailable = (e) => { if (e.data && e.data.size) state.recordedChunks.push(e.data); };
+    mr.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      clearInterval(state.recordTimer);
+      const blob = new Blob(state.recordedChunks, { type: mr.mimeType || "audio/webm" });
+      if (blob.size > 0) {
+        const file = new File([blob], `audio-${Date.now()}.webm`, { type: blob.type });
+        setFile(file);
+      }
+      state.recording = false;
+      state.mediaRecorder = null;
+      renderComposerExtras();
+    };
+    mr.start();
+    state.mediaRecorder = mr;
+    state.recording = true;
+    state.recordSeconds = 0;
+    state.recordTimer = setInterval(() => { state.recordSeconds++; renderComposerExtras(); }, 1000);
+    renderComposerExtras();
+  } catch (err) {
+    if (err.name === "NotAllowedError" || err.name === "SecurityError") toast("Permissao de microfone negada. Habilite o acesso ao microfone para gravar audio.");
+    else if (err.name === "NotFoundError") toast("Nenhum microfone encontrado neste dispositivo.");
+    else toast("Nao foi possivel iniciar a gravacao: " + err.message);
+  }
+}
+
+function stopRecording() {
+  if (state.mediaRecorder && state.recording) state.mediaRecorder.stop();
+}
+
+function renderComposerExtras() {
+  const holder = $("#recHolder");
+  const micBtn = $("#micBtn");
+  if (!holder || !micBtn) return;
+  micBtn.classList.toggle("active", state.recording);
+  micBtn.textContent = state.recording ? "⏹" : "🎤";
+  if (state.recording) {
+    const mm = String(Math.floor(state.recordSeconds / 60)).padStart(2, "0");
+    const ss = String(state.recordSeconds % 60).padStart(2, "0");
+    holder.replaceChildren(h("span", { class: "rec-bar" }, `● Gravando ${mm}:${ss}`));
+  } else {
+    holder.replaceChildren();
+  }
+}
+
+/* ============================================================
+   Painel da conversa
+   ============================================================ */
+function renderChat() {
+  const main = $("#main");
+  main.replaceChildren();
+
+  if (!state.current) {
+    main.append(h("div", { class: "placeholder" }, h("div", {},
+      h("strong", { text: "Nenhuma conversa aberta" }),
+      "Escolha um usuario na lista para comecar a conversar.")));
+    return;
+  }
+
+  const c = state.current;
+  const other = c.otherId;
+  const sub = c.type === "private"
+    ? (state.onlineIds.has(String(other)) ? "Online" : "Offline")
+    : c.type === "group" ? "Grupo" : "Sala global";
+  const subOnline = c.type === "private" && state.onlineIds.has(String(other));
+
+  const fileInput = h("input", { type: "file", id: "file", hidden: true, onchange: (e) => setFile(e.target.files[0] || null) });
+  const chip = h("div", { class: "chip", id: "chip" },
+    h("span", { id: "chip-name" }),
+    h("button", { type: "button", "aria-label": "Remover anexo", onclick: () => setFile(null), text: "×" }));
+
+  const text = h("input", {
+    id: "text", class: "field", type: "text", placeholder: "Escreva uma mensagem", autocomplete: "off", maxlength: "4000",
+    oninput: onComposerInput,
+    onkeydown: (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } },
+  });
+
+  main.append(
+    h("header", { class: "chat-head" },
+      h("button", { class: "back", onclick: closeChat, text: "Voltar" }),
+      h("button", { class: "who", type: "button", onclick: () => openProfileFromHeader() },
+        avatarWithStatus(c.title, other),
+        h("div", {}, h("div", { class: "title", text: c.title }), h("div", { class: "sub" + (subOnline ? " online" : ""), text: sub }))),
+      h("div", { class: "head-actions" },
+        c.type === "group" && h("button", { class: "icon-btn", type: "button", title: "Ver membros", "aria-label": "Ver membros", onclick: openMembers, text: "👥" }))),
+    h("div", { class: "thread", id: "thread" }),
+    h("div", { class: "composer" },
+      chip,
+      h("div", { id: "recHolder" }),
+      h("div", { class: "compose-row" },
+        fileInput,
+        h("button", { class: "icon-btn", type: "button", title: "Anexar imagem, video, audio ou arquivo", "aria-label": "Anexar arquivo", onclick: () => fileInput.click(), text: "+" }),
+        h("button", { class: "icon-btn rec", id: "micBtn", type: "button", title: "Gravar audio", "aria-label": "Gravar audio", onclick: toggleRecording, text: "🎤" }),
+        text,
+        h("button", { class: "send", id: "send", type: "button", onclick: send, text: "Enviar" }))));
+
+  renderMessages();
+  renderComposerExtras();
+  text.focus();
+}
+
+function openProfileFromHeader() {
+  const c = state.current;
+  if (!c) return;
+  if (c.type === "group") { openMembers(); return; }
+  if (c.otherId) openProfile({ id: c.otherId, name: c.title });
+}
+
+function setFile(file) {
+  state.file = file;
+  const chip = $("#chip");
+  if (!chip) return;
+  chip.classList.toggle("on", !!file);
+  $("#chip-name").textContent = file ? `${file.name} (${fmtSize(file.size)})` : "";
+  if (!file) $("#file").value = "";
+}
+
+async function send() {
+  const c = state.current;
+  if (!c) return;
+  const input = $("#text");
+  const text = input.value.trim();
+  const file = state.file;
+  if (!text && !file) return;
+
+  sendTyping(false);
+  clearTimeout(state.typingSelfTimer);
+
+  const btn = $("#send");
+  btn.disabled = true;
+  try {
+    let msg;
+    if (file) {
+      const fd = new FormData();
+      fd.append("file", file);
+      if (text) fd.append("text", text);
+      msg = await api(`/${c.uid}/messages/media`, { method: "POST", body: fd });
+    } else {
+      msg = await api(`/${c.uid}/messages`, { method: "POST", json: { text } });
+    }
+    input.value = "";
+    setFile(null);
+    mergeMessages([msg]);
+    renderMessages();
+    scrollToBottom();
+    refreshChats();
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    btn.disabled = false;
+    input.focus();
+  }
+}
+
+/* ============================================================
+   Inicio
+   ============================================================ */
+$("#tab-users").onclick = () => setTab("users");
+$("#tab-chats").onclick = () => setTab("chats");
+$("#search").oninput = renderList;
+$("#bell").onclick = toggleNotifications;
+$("#me").onchange = (e) => {
+  state.me = e.target.value;
+  safeStorage.set("chat.me", state.me);
+  blobCache.clear();
+  state.onlineIds.clear();
+  state.typingByChat.clear();
+  closeChat();
+  closeProfile();
+  connectWs();
+  refreshChats();
+};
+
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal")) e.target.classList.remove("open");
+});
+
+window.addEventListener("beforeunload", () => { if (state.ws) state.ws.close(); });
+
+// botao flutuante simples para criar grupo (fica no header via tab de conversas)
+$("#tab-chats").addEventListener("dblclick", openGroupModal); // fallback discreto; ideal: adicionar botao dedicado no header
+
+renderBell();
+renderChat();
+loadUsers().then(refreshChats);
+</script>
+</body>
+</html>

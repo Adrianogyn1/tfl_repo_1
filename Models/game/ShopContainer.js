@@ -16,7 +16,7 @@ module.exports = (sequelize) => {
     uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
     gender: {
       type: DataTypes.ENUM,
-      values: ["male", "female", "universal"],
+      values: ["Male", "Female", "Universal"],
       allowNull: true,
       defaultValue: "universal",
     },

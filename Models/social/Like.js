@@ -9,6 +9,7 @@ module.exports = (sequelize) => {
       userId: { type: DataTypes.INTEGER, allowNull:true },
       avatarId: { type: DataTypes.INTEGER, allowNull:true },
        uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+       target_uid:{ type: DataTypes.STRING, allowNull: true, defaultValue: DataTypes.UUIDV4 },
     //  photoId: { type: DataTypes.INTEGER, defaultValue: 0 },
     //  commentId: { type: DataTypes.INTEGER, defaultValue: 0 },
     //  profileId: { type: DataTypes.INTEGER, defaultValue: 0 },

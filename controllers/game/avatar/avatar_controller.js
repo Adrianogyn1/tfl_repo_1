@@ -1,17 +1,19 @@
+const { where } = require("sequelize");
 const repo = require("../../../repository");
 const router = require("express").Router();
 const CheckAuth = require("../../auth").CheckLogin;
-
+require("dotenv").config();
+const REGISTER_VALUE_BONUS = process.env.REGISTER_VALUE_BONUS || 100;
 
 //Organizar rotas
-router.get("/avatars", CheckAuth, getAll);
+router.get("/avatars", getAll);
 router.get("/avatar/find", CheckAuth, get);
 router.get("/avatar/:id", CheckAuth, findByPk);
 router.post("/avatar", CheckAuth, create);
 router.put("/avatar/:id", CheckAuth, update);
 router.delete("/avatar/:id", CheckAuth, remove);
 
-router.get("/profiles", CheckAuth, getAll);
+router.get("/profiles", getAll);
 router.get("/profile/find", CheckAuth, get);
 router.get("/profile/:id", CheckAuth, findByPk);
 router.post("/profile", CheckAuth, create);
@@ -53,7 +55,7 @@ async function findByPk(req, res)
 {
   try
   {
-        const full = req.query?.full || req.body?.full || false;
+    const full = req.query?.full || req.body?.full || false;
     const avatarInstance = await repo.Avatar.findByPk(req.params.id);
     if (!avatarInstance)
     {
@@ -106,6 +108,7 @@ async function getAll(req, res)
 {
   try
   {
+
     const queryStr = req.query?.q || req.body?.q || "";
     const whereCondition = repo.parseQueryStringToWhere(queryStr);
     const orderCondition = repo.parseOrderByString(queryStr);
@@ -155,6 +158,7 @@ async function getAll(req, res)
 
 async function getAvatarInfo(avatarId, full = false)
 {
+
   let data = await repo.Avatar.findByPk(avatarId);
   if (!data) return null;
   if (!full) return data;
@@ -177,7 +181,7 @@ async function getInfo(avatar, full = false)
     data.friendRequestsSent = {};
     data.friendRequestsReceived = {};
     data.friendRequestsReceived = {};
-    data.followersList =  {};
+    data.followersList = {};
     data.followingList = {};
     //counts
     data.followers = 0;
@@ -187,31 +191,16 @@ async function getInfo(avatar, full = false)
 
     if (full)
     {
-      //pode trazer milhares de resultados      
+      //pode trazer milhares de resultados
+      const roomInfo = require("../rooms_controllers.js");
+      data.rooms = await roomInfo.__getAllRoomFromProfile(avatar.id, true);
+
       data.wallet = {
         registers: [],
         coins: 0,
         chips: 0,
         cash: 0
       };
-     // var coinController = require("../currencyControllers.js");
-     // data.wallet.coins = await coinController.GetValue(avatar.id, 'Coins');
-     // data.wallet.chips = await coinController.GetValue(avatar.id, 'Chips');
-     // data.wallet.cash = await coinController.GetValue(avatar.id, 'Cash');
-     // data.wallet.registers = await coinController.GetRegisters(avatar.id, "all", 100);
-
-
-
-
-
-
-
-      //data.currentRoom = data.currentRoom?.get({ plain: true });
-      /* const rooms = await repo.Room.findAll({
-         where: { userId: avatar.id },
-       });
-       data.rooms = rooms?.map((room) => room.get({ plain: true }));
-       */
     }
   } else
   {
@@ -309,18 +298,20 @@ async function AvatarCreateHandler(avatar, userID)
     avatar.vipExpires = new Date().setMonth(-1);
 
     const count = await repo.Avatar.count({ where: { userId: userID } });
-    return await repo.sequelize.transaction(async (t) =>
+    let newAvatar = null;
+    await repo.sequelize.transaction(async (t) =>
     {
       //cria um avatar
-      const newAvatar = await repo.Avatar.create(avatarData, {
+      newAvatar = await repo.Avatar.create(avatarData, {
         transaction: t,
       });
+
       //cria um room para o avatar
       const room = await repo.Room.create(
         {
           ownnerId: newAvatar.id,
           name: newAvatar.name,
-          scene: "Apartamento",
+          scene: "lobby",
           ownnerID: newAvatar.userId,
           userId: newAvatar.userId,
         },
@@ -329,12 +320,12 @@ async function AvatarCreateHandler(avatar, userID)
       //da uma moedas para ele
       if (count == 0)
       {
-        const handleCoins = require("./currencyRegisterController");
+        const handleCoins = require("../currencyRegister_controller");
         const result = await handleCoins.CreateCurrencyRegister(
           {
             userId: newAvatar.userId,
             ownnerId: newAvatar.id,
-            value: 100,
+            value: REGISTER_VALUE_BONUS,
             type: "Coins",
             transactionType: "Rewards",
           },
@@ -344,14 +335,10 @@ async function AvatarCreateHandler(avatar, userID)
 
         if (!result.success) throw new Error(result.error);
       }
-      const wallet = await repo.CurrencyRegister.findAll({
-        where: { userId: newAvatar.userId },
-        transaction: t,
-      });
-      // const avatarVal = { avatar: newAvatar, room: room, wallet: wallet };
-      const avatarVal = getAvatarInfo(newAvatar.id, true);
-      return { success: true, profile: avatarVal, data: avatarVal, error: "" };
     });
+
+    const avatarVal = await getAvatarInfo(newAvatar.id, true);
+    return { success: true, profile: avatarVal, data: avatarVal, error: "" };
   } catch (e)
   {
     console.log(e);

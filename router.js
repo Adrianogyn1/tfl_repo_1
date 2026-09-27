@@ -5,16 +5,21 @@ require("dotenv").config();
 const { repo } = require("./repository.js");
 
 
+
 const authController = require("./controllers/auth");
-
-
-
-
+const socialController = require("./controllers/social/router_controller.js");
 
 const {helps} = require("./routers/routes.js");
 
 //Auth
 router.use("/api", authController.router);
+
+//Social
+router.use("/api", socialController.router);
+//slots
+const slotsController = require("./controllers/game/slots/slots_controller.js");
+router.use("/slot", slotsController.router);
+
 
 
 //api
@@ -22,6 +27,10 @@ const api = require("./controllers/api/api_controller.js");
 router.use("/api/", api.router);
 const routeGameController = require("./controllers/game/routers.js");
 router.use("/game/", routeGameController.router);
+
+
+const manifestController = require("./controllers/api/manifest_controller.js");
+router.use("/api/manifest", manifestController.router);
 
 
 //app.use(routeGameController);

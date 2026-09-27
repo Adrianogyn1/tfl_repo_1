@@ -6,49 +6,75 @@ const multer = require("multer");
 const multerMiddleware = multer({ storage: multer.memoryStorage() });
 const router = require("express").Router();
 const { CheckLogin: CheckAuth } = require("../auth");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
-// Ações para Rooms (Salas)
-// 1. Rotas estáticas específicas (devem vir primeiro)
+//#region api rotas
+
+//#region [room]
 router.get(["/rooms"], CheckAuth, getAll);
 router.get(["/rooms/search"], CheckAuth, getAll);
 router.get("/rooms/search/find", CheckAuth, get); // Mudança crucial: antes do :id
-
-// 2. Rotas com parâmetros (devem vir depois)
-router.get("/room/:id", CheckAuth, findByPk);
-router.get("/room/:id/like", CheckAuth, like);
-router.get("/room/:id/favorite", CheckAuth, (req, res) =>
-  res.status(200).json({ success: true, error: "" }),
-);
-router.get("/room/:id/objects", CheckAuth, getObjects);
-router.get("/room/:id/all", CheckAuth, all);
-
-// ???. Métodos de escrita
 router.post("/room", CheckAuth, create);
 router.put("/room/:id", CheckAuth, update);
 router.delete("/room/:id", CheckAuth, remove);
-
-//saves
 router.post("/room/:id", CheckAuth, update); //salva infos da room
 router.post("/room/:id/objects", CheckAuth, updatedObjects); //salva os objets
+//#endregion
+
+
+router.get("/room/:id", CheckAuth, findByPk);
+router.get("/room/:id/like", CheckAuth, like);
+router.get("/room/:id/favorite", CheckAuth, (req, res) => res.status(200).json({ success: true, error: "" }),);
+router.get("/room/:id/objects", CheckAuth, getObjects);
+router.get("/room/:id/all", CheckAuth, all);
+
 
 //Terrain
-// ???. Uploads
 const crtTerraind = require("./terrainController");
-router.post(
-  "/game/room/:id/terrain",
-  CheckAuth,
-  multerMiddleware.single("file"),
-  uploadTerrain,
-);
+const { raw } = require("express");
 
-router.get("/game/room/:id/terrain", CheckAuth, getTerrain);
-router.get("/game/room/:id/terrain/download", CheckAuth, downloadTerrain);
 
 //layouts
 
 router.get("/game/room/:id/layout", CheckAuth, getLayout);
 router.post("/game/room/:id/layout", CheckAuth, updateLayout);
+
+router.get("/rooms/lobby", CheckAuth, getLoobyFromProfile);
+//#endregion
+
+//#region Get
+
+async function getLoobyFromProfile(req, res)
+{
+
+  if (!req.userId) res.error("Unauthorized")
+  const profile = await repo.Avatar.findOne({
+    where: {
+      userId: req.userId,
+    },
+  });
+  if (!profile) res.json({ success: false, data: null, message: "Profile not found" })
+
+  var room = await repo.RoomModel.findOne({
+    where: {
+      avatarId: profile.id,
+      scene: "lobby"
+    },
+  });
+
+
+
+  if (!room)
+  {
+    room = await __createLobby(profile.id, `Lobby de ${profile.name}`);
+  }
+
+  room = await __allInfo(room.id);
+
+  if (!room) res.json({ success: false, data: null, message: "Room not found" })
+
+  return res.json({ success: true, data: room });
+}
 
 async function getLayout(req, res)
 {
@@ -88,43 +114,242 @@ async function getLayout(req, res)
   }
 }
 
-async function updateLayout(req, res)
+async function all(req, res)
 {
   try
   {
-    const layoutId = req.params.id;
-    const roomId = req.params.roomId;
-    const hasRoom = await repo.RoomModel.findByPk(roomId);
-    if (!hasRoom) throw new Error("Room not found");
-    const layout = await repo.LayoutModel.findOne({
-      where: { id: layoutId },
-      raw: true,
-    });
-    if (!layout) throw new Error("Layout not found");
-    return res.json({ success: true, data: layout });
-  } catch (e)
+    const id = req.params.id;
+
+    const room = await __allInfo(id);
+    if (!room) throw new Error("Room not found");
+
+    return res.status(200).json({ success: true, data: room });
+  } catch (err)
   {
-    console.log(e);
-    return res.status(500).json({ success: false, error: e.message });
+    console.error("Erro no all:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: err.message, data: null });
   }
 }
 
-function checkData(roomData)
+async function findByPk(req, res)
 {
-  let error = "";
   try
   {
-    if (!roomData) throw new Error("Dados da sala é obrigatório.");
-    if (!roomData.name) throw new Error("O nome da sala é obrigatório.");
-    if (!roomData.description)
-      throw new Error("A descrição da sala é obrigatória.");
-    if (!roomData.scene) throw new Error("A cena da sala é obrigatória.");
-  } catch (e)
+    const roomId = req.params.id || req.body.id;
+    /*let roomInstance = null;
+    if (roomId == 0) {
+      roomInstance = await repo.RoomModel.findOne({
+        where: { userId: req.userId },
+      });
+    } else {
+      roomInstance = await repo.RoomModel.findByPk(roomId);
+    }
+
+   // if (!roomInstance)
+     // return res.status(404).json({ error: "Room not found", success: false });
+*/
+    const all = await __allInfo(roomId);
+    if (!all) throw new Error("Room not found info");
+
+    return res.json({ success: true, data: resolveRoom(all) });
+  } catch (err)
   {
-    error = e.message;
+    return res.status(500).json({ error: err.message, success: false });
   }
-  return error;
 }
+
+async function get(req, res)
+{
+  try
+  {
+    console.log("get room");
+    const queryStr = req.query?.q || req.body?.q || "";
+    const whereCondition = repo.parseQueryStringToWhere(queryStr);
+    const orderCondition = repo.parseOrderByString(queryStr);
+
+    const roomInstance = await repo.RoomModel.findOne({
+      where: whereCondition,
+      order: orderCondition,
+    });
+    if (!roomInstance) return res.json({ success: true, data: null });
+
+    const room = roomInstance.get({ plain: true });
+    const val = await __allInfo(room.id);
+
+    if (!val) throw new Error("Room not found");
+
+    console.log("val", val);
+    return res.json({ success: true, data: resolveRoom(val) });
+  } catch (err)
+  {
+    return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+async function getAll(req, res)
+{
+  try
+  {
+    const queryStr = req.query?.q || req.body?.q || "";
+    const whereCondition = repo.parseQueryStringToWhere(queryStr);
+    const orderCondition = repo.parseOrderByString(queryStr);
+
+    const limit = parseInt(req.query?.limit || req.body?.limit) || 50;
+    const offset =
+      parseInt(
+        req.query?.offset ||
+        req.body?.take ||
+        req.body?.skip ||
+        req.body?.offset,
+      ) || 0;
+
+    let roomsResult = await repo.RoomModel.findAndCountAll({
+      where: whereCondition,
+      limit: limit,
+      offset: offset,
+      order: orderCondition,
+    });
+
+    const user = req.userData;
+    const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
+    const isAdmin = adminRoles.includes(user.role);
+
+    let rowsToProcess = roomsResult.rows;
+
+    // Filtro de salas privadas corrigido e ativo
+    if (!isAdmin)
+    {
+      // rowsToProcess = rowsToProcess.filter(room => room.private === false || room.userId === user.id);
+    }
+
+    const preppedRooms = [];
+    for (const roomInstance of rowsToProcess)
+    {
+      const room = await __allInfo(roomInstance.id);//roomInstance.get({ plain: true });
+      delete room.password;
+      delete room.passoword; // Mantido o tipo original do seu código
+
+      preppedRooms.push(resolveRoom(room));
+    }
+
+    const hasNext = offset + limit < roomsResult.count;
+    const nextPageNum = hasNext ? Math.ceil((offset + limit) / limit) + 1 : 0;
+
+    return res.json({
+      success: true,
+      data: preppedRooms,
+      count: roomsResult.count,
+      skip: offset,
+      limit: limit,
+      nextPage: nextPageNum,
+    });
+  } catch (err)
+  {
+    console.error(err); // Adicionado para facilitar o seu debug interno
+    return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+async function update(req, res)
+{
+  try
+  {
+    const erro = checkData(req.body);
+    if (erro) return res.status(400).json({ error: erro, success: false });
+
+    const roomValid = await repo.RoomModel.findByPk(req.params.id);
+    if (!roomValid)
+      return res.status(404).json({ error: "Room not found", success: false });
+
+    const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
+    const user = req.userData;
+    const isAdmin = adminRoles.includes(user.role);
+
+    if (!isAdmin && roomValid.userId != req.userId)
+    {
+      return res.status(401).json({ error: "Unauthorized", success: false });
+    }
+
+    await repo.RoomModel.update(req.body, { where: { id: req.params.id } });
+
+    const roomInstance = await repo.RoomModel.findByPk(req.params.id);
+    const room = roomInstance.get({ plain: true });
+    return res.json({ success: true, data: room });
+  } catch (err)
+  {
+    return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+
+//#endregion
+
+//#region Create [Create, Update, Remove]
+
+async function create(req, res)
+{
+  try
+  {
+    const roomData = req.body;
+    let error = checkData(roomData);
+    if (error) return res.status(400).json({ error: error, success: false });
+    let room = await repo.RoomModel.create(roomData);
+    room = await __allInfo(room.id);
+    return res.json({ success: true, data: room });
+  } catch (err)
+  {
+    return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+async function updatedObjects(req, res)
+{
+  const id = req.params.id;
+  const objects = req.body;
+  var result = await updatedObjectsFromRoom(id, objects);
+
+  if (!result)
+    return res.json({ error: "Room not found", success: false });
+
+  return res.json({ success: true, message: "Objects updated successfully" });
+}
+
+async function remove(req, res)
+{
+  try
+  {
+    const roomValid = await repo.RoomModel.findByPk(req.params.id);
+    if (!roomValid)
+      return res.status(404).json({ error: "Room not found", success: false });
+
+    const user = req.userData;
+    const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
+    const isAdmin = adminRoles.includes(user.role);
+
+    if (!isAdmin && roomValid.userId != req.userId)
+    {
+      return res.status(401).json({ error: "Unauthorized", success: false });
+    }
+
+    await repo.RoomModel.destroy({ where: { id: req.params.id } });
+    return res.json({ success: true, message: "Room deleted successfully" });
+  } catch (err)
+  {
+    return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+
+//#endregion
+
+//#region Terrain
+
+router.post("/game/room/:id/terrain", CheckAuth, multerMiddleware.single("file"), uploadTerrain,);
+router.get("/game/room/:id/terrain", CheckAuth, getTerrain);
+router.get("/game/room/:id/terrain/download", CheckAuth, downloadTerrain);
+
 
 async function downloadTerrain(req, res)
 {
@@ -226,6 +451,75 @@ async function getTerrain(req, res)
   }
 }
 
+//#endregion
+
+//#region Objetos
+
+async function getObjects(req, res)
+{
+  try
+  {
+    const id = req.params.id;
+    const hasRoom = repo.RoomModel.findByPk(id);
+    if (!hasRoom) throw new Error("Room not found");
+
+    const objs = await __getObjects(id);
+
+    return res.status(200).json({ success: true, data: objs });
+  } catch (err)
+  {
+    return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+
+//#endregion
+
+//#region Layout
+
+async function updateLayout(req, res)
+{
+  try
+  {
+    const layoutId = req.params.id;
+    const roomId = req.params.roomId;
+    const hasRoom = await repo.RoomModel.findByPk(roomId);
+    if (!hasRoom) throw new Error("Room not found");
+    const layout = await repo.LayoutModel.findOne({
+      where: { id: layoutId },
+      raw: true,
+    });
+    if (!layout) throw new Error("Layout not found");
+    return res.json({ success: true, data: layout });
+  } catch (e)
+  {
+    console.log(e);
+    return res.status(500).json({ success: false, error: e.message });
+  }
+}
+
+//#endregion
+
+
+function checkData(roomData)
+{
+  let error = "";
+  try
+  {
+    if (!roomData) throw new Error("Dados da sala é obrigatório.");
+    if (!roomData.avatarId || roomData.avatarId == 0) throw new Error("O profile da sala é obrigatório.");
+    if (!roomData.name) throw new Error("O nome da sala é obrigatório.");
+    if (!roomData.description) throw new Error("A descrição da sala é obrigatória.");
+    if (!roomData.scene) throw new Error("A cena da sala é obrigatória.");
+  } catch (e)
+  {
+    error = e.message;
+  }
+  return error;
+}
+
+
+
 async function like(req, res)
 {
   const id =
@@ -253,170 +547,6 @@ async function like(req, res)
   }
 }
 
-async function all(req, res)
-{
-  try
-  {
-    const id = req.params.id;
-
-    const room = await __allInfo(id);
-    if (!room) throw new Error("Room not found");
-
-    return res.status(200).json({ success: true, data: room });
-  } catch (err)
-  {
-    console.error("Erro no all:", err);
-    return res
-      .status(500)
-      .json({ success: false, error: err.message, data: null });
-  }
-}
-
-async function __allInfo(roomId)
-{
-  try
-  {
-
-    const roomTemp = await repo.RoomModel.findOne({
-      where: { id: roomId },
-      include: [
-        { model: repo.ObjectModel, as: "objects" },
-        { model: repo.Terrain, as: "terrain" },
-        
-      ],
-     plain: true
-    });
-    //const roomData = roomTemp ? roomTemp.toJSON() : null;
-    //return roomData;
-    return roomTemp;
-
-
-    const [room, objs, likes, users] = await Promise.all([
-      repo.RoomModel.findByPk(roomId),
-      __getObjects(roomId),
-      repo.Like.findAndCountAll({
-        where: { roomId: roomId },
-        limit: 10,
-        offset: 0,
-        order: [["createdAt", "DESC"]],
-      }),
-      repo.User.findAndCountAll({
-        where: { roomId: roomId },
-        limit: 10,
-        offset: 0,
-        order: [["createdAt", "DESC"]],
-      }),
-    ]);
-    let terrain = await repo.Terrain.findOne({
-      where: { target_uid: room.uid },
-      raw: true,
-    });
-
-    const layout = await repo.LayoutModel.findOne({
-      where: { id: room.layoutId },
-      raw: true,
-    });
-    const roomValid = room.get({ plain: true });
-    roomValid.playersCount = users.count;
-    return {
-      ...roomValid,
-      layout: layout || {},
-      objects: objs || [],
-      terrain: terrain,
-      likes: { users: likes.rows, count: likes.count, limit: 10, offset: 0 },
-      users: users.rows,
-    };
-  } catch (err)
-  {
-    console.error("Erro no all:", err);
-    return null;
-  }
-}
-async function __getObjects(roomId)
-{
-  const objs = await repo.ObjectModel.findAll({ where: { roomId: roomId } });
-  const ids = objs.map((o) => o.materialId);
-  const materiais = await repo.Material.findAll({
-    where: { id: { [Op.in]: ids } },
-  });
-  objs.forEach((o) =>
-  {
-    o.materials = materiais.filter((m) => m.id === o.materialId);
-  });
-  return objs;
-}
-
-async function create(req, res)
-{
-  try
-  {
-    const roomData = req.body;
-    let error = checkData(roomData);
-    if (error) return res.status(400).json({ error: error, success: false });
-
-    let room = await repo.RoomModel.create(roomData);
-    room = await __allInfo(room.id);
-    return res.json({ success: true, data: room });
-  } catch (err)
-  {
-    return res.status(500).json({ error: err.message, success: false });
-  }
-}
-
-async function findByPk(req, res)
-{
-  try
-  {
-    const roomId = req.params.id || req.body.id;
-    /*let roomInstance = null;
-    if (roomId == 0) {
-      roomInstance = await repo.RoomModel.findOne({
-        where: { userId: req.userId },
-      });
-    } else {
-      roomInstance = await repo.RoomModel.findByPk(roomId);
-    }
-
-   // if (!roomInstance)
-     // return res.status(404).json({ error: "Room not found", success: false });
-*/
-    const all = await __allInfo(roomId);
-    if (!all) throw new Error("Room not found info");
-
-    return res.json({ success: true, data: resolveRoom(all) });
-  } catch (err)
-  {
-    return res.status(500).json({ error: err.message, success: false });
-  }
-}
-
-async function get(req, res)
-{
-  try
-  {
-    console.log("get room");
-    const queryStr = req.query?.q || req.body?.q || "";
-    const whereCondition = repo.parseQueryStringToWhere(queryStr);
-    const orderCondition = repo.parseOrderByString(queryStr);
-
-    const roomInstance = await repo.RoomModel.findOne({
-      where: whereCondition,
-      order: orderCondition,
-    });
-    if (!roomInstance) return res.json({ success: true, data: null });
-
-    const room = roomInstance.get({ plain: true });
-    const val = await __allInfo(room.id);
-
-    if (!val) throw new Error("Room not found");
-
-    console.log("val", val);
-    return res.json({ success: true, data: resolveRoom(val) });
-  } catch (err)
-  {
-    return res.status(500).json({ error: err.message, success: false });
-  }
-}
 
 function resolveRoom(room)
 {
@@ -427,189 +557,152 @@ function resolveRoom(room)
   return room;
 }
 
-async function getAll(req, res)
+
+
+
+//#region privates, exports
+
+async function __getAllRoomFromProfile(profileId, full = false)
 {
-  try
+  const rooms = await repo.RoomModel.findAll({
+    where: { avatarId: profileId }
+  }, { raw: true });
+
+  const map = rooms;
+
+  if (full)
   {
-    const queryStr = req.query?.q || req.body?.q || "";
-    const whereCondition = repo.parseQueryStringToWhere(queryStr);
-    const orderCondition = repo.parseOrderByString(queryStr);
-
-    const limit = parseInt(req.query?.limit || req.body?.limit) || 50;
-    const offset =
-      parseInt(
-        req.query?.offset ||
-        req.body?.take ||
-        req.body?.skip ||
-        req.body?.offset,
-      ) || 0;
-
-    let roomsResult = await repo.RoomModel.findAndCountAll({
-      where: whereCondition,
-      limit: limit,
-      offset: offset,
-      order: orderCondition,
-    });
-
-    const user = req.userData;
-    const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
-    const isAdmin = adminRoles.includes(user.role);
-
-    let rowsToProcess = roomsResult.rows;
-
-    // Filtro de salas privadas corrigido e ativo
-    if (!isAdmin)
+    let values = [];
+    for (let i = 0; i < map.length; i++)
     {
-      // rowsToProcess = rowsToProcess.filter(room => room.private === false || room.userId === user.id);
+      var val = await __allInfo(map[i].id);
+      values.push(val);
     }
-
-    const preppedRooms = [];
-    for (const roomInstance of rowsToProcess)
-    {
-      const room = await  __allInfo(roomInstance.id);//roomInstance.get({ plain: true });
-      delete room.password;
-      delete room.passoword; // Mantido o tipo original do seu código
-     
-      preppedRooms.push(resolveRoom(room));
-    }
-
-    const hasNext = offset + limit < roomsResult.count;
-    const nextPageNum = hasNext ? Math.ceil((offset + limit) / limit) + 1 : 0;
-
-    return res.json({
-      success: true,
-      data: preppedRooms,
-      count: roomsResult.count,
-      skip: offset,
-      limit: limit,
-      nextPage: nextPageNum,
-    });
-  } catch (err)
-  {
-    console.error(err); // Adicionado para facilitar o seu debug interno
-    return res.status(500).json({ error: err.message, success: false });
+    return values;
   }
+  return map;
 }
 
-async function update(req, res)
+async function __allInfo(roomId, full = true)
 {
   try
   {
-    const erro = checkData(req.body);
-    if (erro) return res.status(400).json({ error: erro, success: false });
-
-    const roomValid = await repo.RoomModel.findByPk(req.params.id);
-    if (!roomValid)
-      return res.status(404).json({ error: "Room not found", success: false });
-
-    const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
-    const user = req.userData;
-    const isAdmin = adminRoles.includes(user.role);
-
-    if (!isAdmin && roomValid.userId != req.userId)
+    let room = null;
+    if (full)
     {
-      return res.status(401).json({ error: "Unauthorized", success: false });
-    }
-
-    await repo.RoomModel.update(req.body, { where: { id: req.params.id } });
-
-    const roomInstance = await repo.RoomModel.findByPk(req.params.id);
-    const room = roomInstance.get({ plain: true });
-    return res.json({ success: true, data: room });
-  } catch (err)
-  {
-    return res.status(500).json({ error: err.message, success: false });
-  }
-}
-
-async function getObjects(req, res)
-{
-  try
-  {
-    const id = req.params.id;
-    const hasRoom = repo.RoomModel.findByPk(id);
-    if (!hasRoom) throw new Error("Room not found");
-
-    const objs = await __getObjects(id);
-
-    return res.status(200).json({ success: true, data: objs });
-  } catch (err)
-  {
-    return res.status(500).json({ error: err.message, success: false });
-  }
-}
-
-function updatedObjects(req, res)
-{
-  try
-  {
-    const id = req.params.id;
-    const roomValid = repo.RoomModel.findByPk(id);
-    if (!roomValid) throw new Error("Room not found");
-
-    const objects = req.body;
-    objects.forEach((object) =>
-    {
-      object.roomId = id;
-    });
-    //filters
-    const remove = objects.filter((obj) => obj.status === "remove");
-    const update = objects.filter((obj) => obj.status === "update");
-    const create = objects.filter((obj) => obj.status === "create");
-
-    //inicia uma transação
-    repo.sequelize.transaction(async (t) =>
-    {
-      //remove
-      if (remove.length > 0)
-        await repo.ObjectModel.destroy({
-          where: { id: remove.map((obj) => obj.id) },
-          transaction: t,
-        });
-      //update
-      if (update.length > 0)
-        await repo.ObjectModel.update(update, {
-          where: { id: update.map((obj) => obj.id) },
-          transaction: t,
-        });
-      //create
-      if (create.length > 0)
-        await repo.ObjectModel.bulkCreate(create, { transaction: t });
-      return res.json({
-        success: true,
-        message: "Objects updated successfully",
+      room = await repo.RoomModel.findOne({
+        where: { id: roomId },
+        include: [
+          { model: repo.ObjectModel, as: "objects" },
+          { model: repo.Terrain, as: "terrain" }
+        ]
       });
-    });
+    } else
+    {
+      room = await repo.RoomModel.findOne({
+        where: { id: roomId }
+      });
+    }
+
+    return room ? room.get({ plain: true }) : null;
   } catch (err)
+  {
+    console.error("Erro no all:", err);
+    return null;
+  }
+}
+async function __createLobby(avatarId, roomName)
+{
+  const room = await createRoomForProfile(avatarId, roomName, "lobby", roomName, "", true);
+  return room;
+}
+
+async function __getObjects(roomId)
+{
+  const objs = await repo.ObjectModel.findAll({ where: { roomId: roomId } });
+
+  return objs;
+}
+
+async function createRoomForProfile(avatarId, name, scene, description, password, privateRoom)
+{
+  try
+  {
+    var roomData = {
+      avatarId: avatarId,
+      scene: scene,
+      name: name,
+      description: description,
+      password: password,
+      private: privateRoom,
+    };
+
+    let error = checkData(roomData);
+    if (error) throw new Error(error);
+
+    let room = await repo.RoomModel.create(roomData, { raw: true });
+    room = await __allInfo(room.id);
+    return room;
+  } catch (err)
+  {
+    return null;
+  }
+}
+
+async function updatedObjectsFromRoom(roomId, _objects)
+{
+  try
+  {
+    const roomValid = await repo.RoomModel.findByPk(roomId);
+    if (!roomValid) throw new Error("Room not found");
+    if (!_objects || _objects.length == 0) throw new Error("Objects not found");
+
+    let objects = [];
+    _objects.forEach((obj) =>
+    {
+      obj.roomId = parseInt(roomId) || roomId;
+      objects.push(obj);
+    });
+
+    await repo.sequelize.transaction(async (t) =>
+    {
+      await repo.ObjectModel.destroy({
+        where: { roomId: roomValid.id },
+        transaction: t,
+      });
+      
+      await repo.ObjectModel.bulkCreate(objects, { transaction: t });
+    });
+
+    return true;
+  }
+  catch (err)
   {
     console.log(err);
-    return res.status(500).json({ error: err.message, success: false });
+    return false;
   }
 }
 
-async function remove(req, res)
-{
-  try
-  {
-    const roomValid = await repo.RoomModel.findByPk(req.params.id);
-    if (!roomValid)
-      return res.status(404).json({ error: "Room not found", success: false });
 
-    const user = req.userData;
-    const adminRoles = ["admin", "moderador", "desenvolvedor", "ownner"];
-    const isAdmin = adminRoles.includes(user.role);
+//#endregion
 
-    if (!isAdmin && roomValid.userId != req.userId)
-    {
-      return res.status(401).json({ error: "Unauthorized", success: false });
-    }
 
-    await repo.RoomModel.destroy({ where: { id: req.params.id } });
-    return res.json({ success: true, message: "Room deleted successfully" });
-  } catch (err)
-  {
-    return res.status(500).json({ error: err.message, success: false });
-  }
-}
 
-module.exports = { create, findByPk, get, getAll, update, remove, router };
+
+
+
+
+
+module.exports = {
+  //lixo
+  //create, findByPk, get, getAll, update, remove,
+
+  //rotas  
+  router,
+
+  //Metodos
+  __getAllRoomFromProfile,
+  __allInfo,
+  createRoomForProfile,
+  updatedObjectsFromRoom,
+};
