@@ -22,11 +22,12 @@ module.exports = (sequelize) => {
       thumbnail: { type: DataTypes.STRING, defaultValue: "" },
       version: { type: DataTypes.STRING, defaultValue: "" },
       data: { type: DataTypes.STRING, defaultValue: "" },
-       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
+      uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
       type: {
         type: DataTypes.ENUM("RoomObject", "AvatarOutfit", "Otters"),
         defaultValue: "Otters",
       },
+      active: { type: DataTypes.BOOLEAN, defaultValue: false },
       slot: { type: DataTypes.STRING, defaultValue: "" },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

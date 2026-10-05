@@ -71,91 +71,19 @@ async function GetAll(req, res)
 {
   try
   {
-    const search = req.query.q || "";
+    const search = String(req.query.q || "");
     const linq = repo.parseQueryStringToWhere(search);
     const order = repo.parseOrderByString(search);
-    const limit = parseInt(req.query.limit) || 20;
-    const offset = parseInt(req.query.offset) || 0;
 
-    const result = await repo.ShopContainer.findAll({
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+    const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
+    const { count: total, rows } = await repo.ShopContainer.findAndCountAll({
       where: linq,
-      order: order,
-      limit: limit,
-      offset: offset,
-    });
-
-    const total = await repo.ShopContainer.count({ where: linq });
-    const pages = Math.ceil(total / 20);
-
-    /*
-
-    const page = parseInt(req.query.pg) || 0;
-    const rawQuery = (req.query.q || "").trim().toLowerCase();
-   // const offset = page * limit;
-    let gender = (req.query.gender || "universal").toLowerCase();
-
-    if (gender == '0') gender = 'female';
-    else if (gender == '1') gender = 'male';
-    else if (gender == '2') gender = 'universal';
-
-
-    // Condições globais que sempre se aplicam
-    // Opção 2: Com CAST para TEXT
-    const andConditions = [];
-
-    if (gender !== "universal")
-    {
-      andConditions.push(
-        repo.sequelize.where(
-          repo.sequelize.fn(
-            "LOWER",
-            repo.sequelize.cast(
-              repo.sequelize.col("shop_container.gender"),
-              "text",
-            ),
-          ),
-          { [Op.eq]: gender },
-        ),
-      );
-    }
-
-    // Adiciona os tokens de busca se houver texto em req.query.q
-    if (rawQuery)
-    {
-      const tokens = rawQuery.split(/\s+/).filter((t) => t.length > 0);
-
-      tokens.forEach((token) =>
-      {
-        const term = `%${token}%`;
-        andConditions.push({
-          [Op.or]: [
-            repo.sequelize.where(
-              repo.sequelize.fn(
-                "LOWER",
-                repo.sequelize.col("shop_container.title"),
-              ),
-              { [Op.like]: term },
-            ),
-            repo.sequelize.where(
-              repo.sequelize.fn(
-                "LOWER",
-                repo.sequelize.col("shop_container.description"),
-              ),
-              { [Op.like]: term },
-            ),
-            repo.sequelize.where(
-              repo.sequelize.fn("LOWER", repo.sequelize.col("items.model")),
-              { [Op.like]: term },
-            ),
-          ],
-        });
-      });
-    }
-
-    const whereCondition = { [Op.and]: andConditions };
-
-    const { count, rows } = await repo.ShopContainer.findAndCountAll({
-      where: whereCondition,
+      order,
+      limit,
+      offset,
+      distinct: true,
       include: [
         {
           model: repo.ShopItem,
@@ -163,25 +91,20 @@ async function GetAll(req, res)
           required: false,
         },
       ],
-      distinct: true,
-      subQuery: false,
-      limit: limit,
-      offset: offset,
-      order: [["id", "DESC"]],
     });
 
+    const genderToEnum = {
+      female: 0,
+      male: 1,
+      universal: 2,
+    };
 
     const data = rows.map((row) =>
     {
       const container = row.toJSON();
-      const genderToEnum = {
-        female: 0,
-        male: 1,
-        universal: 2,
-      };
 
-      container.gender = genderToEnum[String(container.gender ?? "universal").toLowerCase()] ?? 2;
-
+      container.gender =
+        genderToEnum[String(container.gender ?? "universal").toLowerCase()] ?? 2;
 
       container.thumb = container.thumb
         ? container.thumb.startsWith("http")
@@ -198,27 +121,32 @@ async function GetAll(req, res)
             try
             {
               resItem.textures_paths = JSON.parse(resItem.textures_paths);
-            } catch (e)
+            }
+            catch
             {
               resItem.textures_paths = {};
             }
-          } else
+          }
+          else
           {
-            resItem.textures_paths = resItem.textures_paths || {};
+            resItem.textures_paths ??= {};
           }
 
           for (const key in resItem.textures_paths)
           {
-            if (resItem.textures_paths[key])
+            const path = resItem.textures_paths[key];
+
+            if (path)
             {
-              resItem.textures_paths[key] = resItem.textures_paths[
-                key
-              ].startsWith("http")
-                ? resItem.textures_paths[key]
-                : resItem.textures_paths[key].replace(/\\/g, "/");
+              resItem.textures_paths[key] = path.startsWith("http")
+                ? path
+                : path.replace(/\\/g, "/");
             }
           }
-          resItem.gender = genderToEnum[String(container.gender ?? "universal").toLowerCase()] ?? 2;
+
+          // container.gender já é o enum numérico convertido.
+          resItem.gender = container.gender;
+
           resItem.values = sanitizeDict(resItem.values);
           resItem.colors = sanitizeDict(resItem.colors);
           resItem.ints = sanitizeDict(resItem.ints);
@@ -232,19 +160,22 @@ async function GetAll(req, res)
 
       return container;
     });
-    */
 
     res.status(200).json({
       success: true,
       error: "",
-      data: data,
-      count: data.length,
-      total: typeof total === "number" ? total : count.length,
-      offset: offset,
-      limit: limit,
+      data,
+      count: total,
+      total,
+      offset,
+      limit,
+      pages: Math.ceil(total / limit),
     });
-  } catch (err)
+  }
+  catch (err)
   {
+    console.error("Erro ao listar itens da loja:", err);
+
     res.status(500).json({
       success: false,
       error: err.message,
@@ -252,7 +183,6 @@ async function GetAll(req, res)
     });
   }
 }
-
 async function SaveMaterial(req, res)
 {
   try

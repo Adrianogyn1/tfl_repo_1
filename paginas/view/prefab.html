@@ -1,0 +1,543 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prefab Admin</title>
+<style>
+  :root { --bg:#0f1115; --panel:#181b22; --line:#2a2f3a; --txt:#e6e8ee; --mut:#8b93a5; --pri:#4f8cff; --ok:#2ecc71; --warn:#f1c40f; --err:#e74c3c; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.4 system-ui,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:12px 16px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:8px; align-items:center; position:sticky; top:0; z-index:5; }
+  h1 { font-size:16px; margin:0 12px 0 0; }
+  input, select, textarea, button { font:inherit; color:var(--txt); background:#0d0f14; border:1px solid var(--line); border-radius:6px; padding:6px 8px; }
+  textarea { width:100%; min-height:70px; resize:vertical; }
+  button { cursor:pointer; background:#222734; }
+  button:hover { border-color:var(--pri); }
+  button.pri { background:var(--pri); border-color:var(--pri); color:#fff; }
+  button.danger { background:var(--err); border-color:var(--err); color:#fff; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; padding:10px 16px; align-items:center; border-bottom:1px solid var(--line); }
+  .sp { flex:1; }
+  .wrap { overflow:auto; max-height:calc(100vh - 150px); }
+  table { border-collapse:collapse; width:max-content; min-width:100%; }
+  th, td { border-bottom:1px solid var(--line); padding:3px 4px; text-align:left; white-space:nowrap; }
+  th { position:sticky; top:0; background:var(--panel); color:var(--mut); font-weight:600; font-size:12px; z-index:2; }
+  /* primeira coluna fixa: checkbox + ações */
+  th.first, td.first { position:sticky; left:0; background:var(--panel); z-index:3; }
+  th.first { z-index:4; }
+  td.first { display:flex; gap:6px; align-items:center; border-right:1px solid var(--line); }
+  td input, td select { width:100%; min-width:90px; border-color:transparent; background:transparent; }
+  td.first input[type=checkbox] { width:auto; min-width:0; }
+  td input:focus, td select:focus { border-color:var(--pri); background:#0d0f14; }
+  td.ro { color:var(--mut); font-size:12px; padding:3px 8px; max-width:200px; overflow:hidden; text-overflow:ellipsis; }
+  tr.dirty td:not(.first) { background:rgba(241,196,15,.10); }
+  tr.isnew td:not(.first) { background:rgba(46,204,113,.10); }
+  tr.dirty td.first { box-shadow:inset 3px 0 0 var(--warn); }
+  tr.isnew td.first { box-shadow:inset 3px 0 0 var(--ok); }
+  tr.sel td:not(.first) { box-shadow:inset 0 0 0 999px rgba(79,140,255,.10); }
+  .badge { font-size:12px; color:var(--mut); }
+  .act { display:flex; gap:4px; }
+  .act button { padding:3px 8px; font-size:12px; }
+
+  /* ordenação + filtros por coluna */
+  th.sortable { cursor:pointer; user-select:none; }
+  th.sortable:hover { color:var(--txt); }
+  th.sortable.active { color:var(--pri); }
+  tr.fl th { padding:3px 4px; }
+  tr.fl input { width:100%; min-width:90px; font-size:12px; padding:3px 6px; font-weight:400; }
+  tr.fl button { padding:2px 8px; font-size:12px; }
+
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:20; }
+  .overlay.open { display:flex; }
+  .modal { background:var(--panel); border:1px solid var(--line); border-radius:10px; width:min(680px,94vw); max-height:92vh; overflow:auto; padding:18px; }
+  .modal h2 { margin:0 0 12px; font-size:16px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .grid .full { grid-column:1/-1; }
+  .grid label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--mut); }
+  .grid input, .grid select { width:100%; color:var(--txt); }
+  .mfoot { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+  #toast { position:fixed; bottom:16px; right:16px; max-width:460px; display:flex; flex-direction:column; gap:8px; z-index:30; }
+  .t { padding:10px 12px; border-radius:8px; background:var(--panel); border-left:4px solid var(--pri); white-space:pre-wrap; font-size:13px; }
+  .t.ok { border-color:var(--ok); } .t.err { border-color:var(--err); }
+  .colwrap { position:relative; }
+  .colmenu { display:none; position:absolute; top:100%; left:0; margin-top:4px; z-index:15; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px; max-height:60vh; overflow:auto; min-width:210px; }
+  .colmenu.open { display:block; }
+  .colmenu .mb { display:flex; gap:6px; margin-bottom:6px; }
+  .colmenu .mb button { padding:3px 8px; font-size:12px; }
+  .colmenu label { display:flex; gap:6px; align-items:center; padding:2px 4px; cursor:pointer; font-size:13px; }
+  .colmenu input { padding:0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Prefab Admin</h1>
+  <input id="apiBase" placeholder="prefixo extra (normalmente vazio)" style="width:190px" title="Prefixo adicional antes de /game/prefab">
+  <input id="token" type="password" placeholder="Token" style="width:180px">
+  <button class="pri" id="btnLoad">Carregar</button>
+  <span class="badge" id="status"></span>
+</header>
+
+<div class="bar">
+  <input id="q" placeholder="Buscar por nome / addressable..." style="width:240px">
+  <select id="typeFilter">
+    <option value="">Todos os tipos</option>
+    <option>RoomObject</option><option>AvatarOutfit</option><option>Otters</option>
+  </select>
+  <button id="btnNew">+ Novo</button>
+  <div class="colwrap"><button id="btnCols">☰ Colunas</button><div class="colmenu" id="colMenu"></div></div>
+  <span class="sp"></span>
+  <button id="btnSave" class="pri" disabled>Salvar alterados (0)</button>
+  <button id="btnDelSel" class="danger" disabled>Excluir selecionados (0)</button>
+  <button id="btnDownload">⬇ Baixar CSV</button>
+  <button id="btnUpload">⬆ Upload CSV</button>
+  <input type="file" id="file" accept=".csv,text/csv" hidden>
+</div>
+
+<div class="wrap">
+  <table>
+    <thead>
+      <tr id="thead"></tr>
+      <tr id="thfilter" class="fl"></tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<!-- Modal edição -->
+<div class="overlay" id="editOv">
+  <div class="modal">
+    <h2 id="editTitle">Editar prefab</h2>
+    <div class="grid" id="editGrid"></div>
+    <div class="mfoot">
+      <button id="editCancel">Cancelar</button>
+      <button class="pri" id="editSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmação -->
+<div class="overlay" id="confOv">
+  <div class="modal" style="width:min(440px,94vw)">
+    <h2 id="confTitle">Confirmar</h2>
+    <div id="confMsg" style="color:var(--mut); white-space:pre-wrap"></div>
+    <div class="mfoot">
+      <button id="confNo">Cancelar</button>
+      <button class="danger" id="confYes">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const DEFAULT_COLUMNS = ["id","name","addressable","materialId","path","description","thumbnail","version","data","uid","type","slot","createdAt","updatedAt"];
+const TYPES = ["RoomObject","AvatarOutfit","Otters"];
+const RO = ["id","uid","createdAt","updatedAt"];   // somente leitura
+const MODAL_ONLY = ["data"];                       // não editável inline (campo longo)
+const MODAL_FULL = ["description","data"];         // textarea no modal
+
+let columns = [...DEFAULT_COLUMNS];   // atualizado dinamicamente pelo header do CSV
+let rows = [];                        // {key, orig, cur, isNew}
+let selected = new Set();
+let tmpCounter = 0;
+let editingKey = null;
+
+let sortCol = null, sortDir = 1;      // 1 = asc, -1 = desc
+const colFilters = {};                // { coluna: texto }
+
+const $ = id => document.getElementById(id);
+
+// ---------- storage seguro ----------
+const store = {
+  get(k){ try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch {} }
+};
+$("apiBase").value = store.get("pa_base");
+$("token").value = store.get("pa_token");
+let hidden = new Set();   // colunas ocultas
+try { hidden = new Set(JSON.parse(store.get("pa_hidden") || "[]")); } catch {}
+
+// ---------- CSV ----------
+function escapeCsv(v){
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+}
+function toCsv(list){
+  const lines = [columns.join(",")];
+  for (const r of list) lines.push(columns.map(c => escapeCsv(r[c])).join(","));
+  return lines.join("\r\n");
+}
+// retorna { header, rows }
+function parseCsv(text){
+  const out = []; let row = [], field = "", q = false;
+  text = text.replace(/^\uFEFF/, "");
+  for (let i=0;i<text.length;i++){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i+1] === '"'){ field += '"'; i++; } else q = false; }
+      else field += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ","){ row.push(field); field = ""; }
+    else if (ch === "\n" || ch === "\r"){
+      if (ch === "\r" && text[i+1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.some(f => f !== "")) out.push(row);
+      row = [];
+    } else field += ch;
+  }
+  if (field !== "" || row.length){ row.push(field); if (row.some(f => f !== "")) out.push(row); }
+  const [h, ...d] = out;
+  if (!h) return { header: [], rows: [] };
+  const header = h.map(x => x.trim());
+  return { header, rows: d.map(r => Object.fromEntries(header.map((k,i) => [k, r[i] ?? ""]))) };
+}
+
+// ---------- API ----------
+function base(){ return $("apiBase").value.trim().replace(/\/$/,""); }
+function headers(extra={}){
+  const h = {...extra};
+  const t = $("token").value.trim();
+  if (t) h["Authorization"] = t;
+  h["token"] = t;
+  return h;
+}
+async function api(path, opts={}){
+  const res = await fetch(document.location.origin + base() + path, {...opts, headers: headers(opts.headers||{})});
+  const text = await res.text();
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0,400)}`);
+  return text;
+}
+async function postCsv(csv){
+  const text = await api("/game/prefab/csv", { method:"POST", headers:{"Content-Type":"text/csv"}, body: csv });
+  return JSON.parse(text);
+}
+
+// ---------- UI helpers ----------
+function toast(msg, kind=""){
+  const el = document.createElement("div");
+  el.className = "t " + kind; el.textContent = msg;
+  $("toast").appendChild(el);
+  setTimeout(() => el.remove(), kind === "err" ? 9000 : 3500);
+}
+function confirmBox(title, msg){
+  return new Promise(resolve => {
+    $("confTitle").textContent = title; $("confMsg").textContent = msg;
+    $("confOv").classList.add("open");
+    const done = v => { $("confOv").classList.remove("open"); $("confYes").onclick = $("confNo").onclick = null; resolve(v); };
+    $("confYes").onclick = () => done(true);
+    $("confNo").onclick = () => done(false);
+  });
+}
+function isDirty(r){ return r.isNew || columns.some(c => (r.cur[c] ?? "") !== (r.orig[c] ?? "")); }
+function visibleCols(){ return columns.filter(c => !hidden.has(c)); }
+
+function updateCounters(){
+  const dirty = rows.filter(isDirty).length;
+  $("btnSave").textContent = `Salvar alterados (${dirty})`;
+  $("btnSave").disabled = dirty === 0;
+  const selDel = selected.size;
+  $("btnDelSel").textContent = `Excluir selecionados (${selDel})`;
+  $("btnDelSel").disabled = selDel === 0;
+  const shown = filtered().length;
+  const countTxt = shown === rows.length ? `${rows.length} registro(s)` : `${shown} de ${rows.length} registro(s)`;
+  $("status").textContent = `${countTxt} · ${columns.length - hidden.size}/${columns.length} coluna(s)`;
+}
+function typeSelect(value){
+  const sel = document.createElement("select");
+  const opts = TYPES.includes(value) || !value ? TYPES : [...TYPES, value];
+  opts.forEach(t => sel.add(new Option(t, t)));
+  sel.value = value || "Otters";
+  return sel;
+}
+
+// ---------- Load ----------
+async function load(){
+  store.set("pa_base", $("apiBase").value); store.set("pa_token", $("token").value);
+  $("status").textContent = "Carregando...";
+  try {
+    const csv = await api("/game/prefab/csv", { method:"GET", headers:{"Content-Type":"text/csv"} });
+    const parsed = parseCsv(csv);
+    columns = parsed.header.length ? parsed.header : [...DEFAULT_COLUMNS];
+    if (sortCol && !columns.includes(sortCol)) sortCol = null;
+    for (const k of Object.keys(colFilters)) if (!columns.includes(k)) delete colFilters[k];
+    buildColMenu();
+    rows = parsed.rows.map(r => ({ key: "id-" + r.id, orig: {...r}, cur: {...r}, isNew: false }));
+    selected.clear();
+    render();
+    toast(`${rows.length} prefab(s) carregado(s)`, "ok");
+  } catch (e) {
+    $("status").textContent = "";
+    toast("Erro ao carregar: " + e.message, "err");
+  }
+}
+
+// ---------- Filtro + ordenação ----------
+function filtered(){
+  const q = $("q").value.toLowerCase(), t = $("typeFilter").value;
+  // filtros de coluna só valem para colunas visíveis
+  const fs = Object.entries(colFilters)
+    .filter(([c,v]) => v && columns.includes(c) && !hidden.has(c))
+    .map(([c,v]) => [c, v.toLowerCase()]);
+
+  let list = rows.filter(r =>
+    (!t || r.cur.type === t) &&
+    (!q || (r.cur.name||"").toLowerCase().includes(q) || (r.cur.addressable||"").toLowerCase().includes(q)) &&
+    fs.every(([c,v]) => String(r.cur[c] ?? "").toLowerCase().includes(v))
+  );
+
+  if (sortCol && columns.includes(sortCol)){
+    list = [...list].sort((a,b) => {
+      const x = String(a.cur[sortCol] ?? ""), y = String(b.cur[sortCol] ?? "");
+      if (x === "" && y !== "") return 1;    // vazios sempre no fim
+      if (y === "" && x !== "") return -1;
+      return sortDir * x.localeCompare(y, undefined, { numeric:true, sensitivity:"base" });
+    });
+  }
+  return list;
+}
+
+// ---------- Render ----------
+function render(){ renderHead(); renderBody(); }
+
+function renderHead(){
+  const vis = visibleCols();
+  const th1 = $("thead"), th2 = $("thfilter");
+  th1.innerHTML = ""; th2.innerHTML = "";
+
+  // linha 1: títulos (clicáveis para ordenar)
+  const thF = document.createElement("th"); thF.className = "first";
+  const chkAll = document.createElement("input"); chkAll.type = "checkbox"; chkAll.id = "chkAll";
+  thF.append(chkAll, " ações"); th1.appendChild(thF);
+
+  vis.forEach(c => {
+    const th = document.createElement("th");
+    th.className = "sortable" + (sortCol === c ? " active" : "");
+    th.textContent = c + (sortCol === c ? (sortDir === 1 ? " ▲" : " ▼") : "");
+    th.title = "Clique para ordenar";
+    th.onclick = () => {
+      if (sortCol !== c){ sortCol = c; sortDir = 1; }
+      else if (sortDir === 1) sortDir = -1;
+      else sortCol = null;
+      renderHead(); renderBody();
+    };
+    th1.appendChild(th);
+  });
+
+  // linha 2: filtros por coluna
+  const tfF = document.createElement("th"); tfF.className = "first";
+  const bClr = document.createElement("button"); bClr.textContent = "✕ filtros"; bClr.title = "Limpar filtros das colunas";
+  bClr.onclick = () => { for (const k in colFilters) delete colFilters[k]; renderHead(); renderBody(); };
+  tfF.appendChild(bClr); th2.appendChild(tfF);
+
+  vis.forEach(c => {
+    const th = document.createElement("th");
+    const i = document.createElement("input");
+    i.placeholder = "filtrar"; i.value = colFilters[c] || "";
+    i.oninput = () => { colFilters[c] = i.value; renderBody(); };
+    th.appendChild(i); th2.appendChild(th);
+  });
+
+  chkAll.onchange = e => {
+    const on = e.target.checked;
+    filtered().forEach(r => on ? selected.add(r.key) : selected.delete(r.key));
+    renderBody();
+  };
+
+  // linha de filtros gruda logo abaixo da linha de títulos
+  const h = th1.getBoundingClientRect().height;
+  th2.querySelectorAll("th").forEach(th => th.style.top = h + "px");
+}
+
+function renderBody(){
+  const tb = $("tbody"); tb.innerHTML = "";
+  const vis = visibleCols();
+
+  for (const r of filtered()){
+    const tr = document.createElement("tr");
+    tr.className = (r.isNew ? "isnew " : isDirty(r) ? "dirty " : "") + (selected.has(r.key) ? "sel" : "");
+    tr.dataset.key = r.key;
+
+    // primeira célula: toggle + ações
+    const tdF = document.createElement("td"); tdF.className = "first";
+    const chk = document.createElement("input"); chk.type = "checkbox"; chk.checked = selected.has(r.key);
+    chk.onchange = () => { chk.checked ? selected.add(r.key) : selected.delete(r.key); tr.classList.toggle("sel", chk.checked); updateCounters(); };
+    const act = document.createElement("div"); act.className = "act";
+    const bE = document.createElement("button"); bE.textContent = "Editar"; bE.onclick = () => openEdit(r.key);
+    const bD = document.createElement("button"); bD.textContent = "Excluir"; bD.className = "danger"; bD.onclick = () => deleteRows([r.key]);
+    act.append(bE, bD);
+    tdF.append(chk, act); tr.appendChild(tdF);
+
+    for (const c of vis){
+      const td = document.createElement("td");
+      if (RO.includes(c) || MODAL_ONLY.includes(c)){
+        td.className = "ro"; td.textContent = r.cur[c] ?? ""; td.title = r.cur[c] ?? "";
+      } else {
+        let inp;
+        if (c === "type") inp = typeSelect(r.cur.type);
+        else { inp = document.createElement("input"); inp.value = r.cur[c] ?? ""; }
+        inp.oninput = inp.onchange = () => {
+          r.cur[c] = inp.value;
+          tr.classList.toggle("dirty", !r.isNew && isDirty(r));
+          updateCounters();
+        };
+        td.appendChild(inp);
+      }
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+  updateCounters();
+}
+
+// ---------- Modal edição ----------
+function openEdit(key){
+  editingKey = key;
+  const r = rows.find(x => x.key === key);
+  if (!r) return;
+  $("editTitle").textContent = r.isNew ? "Novo prefab" : `Editar prefab #${r.cur.id}`;
+  const g = $("editGrid"); g.innerHTML = "";
+  for (const c of columns){
+    const lab = document.createElement("label");
+    lab.textContent = c + (RO.includes(c) ? " (somente leitura)" : "") + (c==="name"||c==="addressable" ? " *" : "");
+    const v = r.cur[c] ?? "";
+    let el;
+    if (c === "type"){
+      el = typeSelect(r.cur.type);
+    } else if (MODAL_FULL.includes(c) || v.length > 80 || v.includes("\n")){
+      el = document.createElement("textarea"); el.value = v; lab.classList.add("full");
+    } else {
+      el = document.createElement("input"); el.value = v;
+    }
+    if (RO.includes(c)) el.disabled = true;
+    el.dataset.col = c;
+    lab.appendChild(el); g.appendChild(lab);
+  }
+  $("editOv").classList.add("open");
+}
+$("editCancel").onclick = () => {
+  const r = rows.find(x => x.key === editingKey);
+  if (r && r.isNew && !isDirtyBeyondBlank(r)) { rows = rows.filter(x => x !== r); render(); }
+  $("editOv").classList.remove("open");
+};
+function isDirtyBeyondBlank(r){ return !!(r.cur.name || r.cur.addressable); }
+$("editSave").onclick = async () => {
+  const r = rows.find(x => x.key === editingKey);
+  if (!r) return;
+  const draft = {...r.cur};
+  $("editGrid").querySelectorAll("[data-col]").forEach(el => { if (!el.disabled) draft[el.dataset.col] = el.value; });
+  if (!draft.name || !draft.addressable) return toast("name e addressable são obrigatórios", "err");
+  try {
+    const res = await postCsv(toCsv([draft]));
+    toast(`Salvo (criados: ${res.created}, atualizados: ${res.updated})`, "ok");
+    $("editOv").classList.remove("open");
+    await load();
+  } catch (e) { toast("Erro ao salvar: " + e.message, "err"); }
+};
+
+// ---------- Ações ----------
+$("btnNew").onclick = () => {
+  const key = "new-" + (++tmpCounter);
+  const blank = Object.fromEntries(columns.map(c => [c, ""])); blank.type = "Otters"; blank.version = "0";
+  rows.unshift({ key, orig: {}, cur: blank, isNew: true });
+  // garante que a linha nova não fique escondida por filtros/ordenação
+  $("q").value = ""; $("typeFilter").value = "";
+  for (const k in colFilters) delete colFilters[k];
+  sortCol = null;
+  render(); openEdit(key);
+};
+
+$("btnSave").onclick = async () => {
+  const dirty = rows.filter(isDirty);
+  const bad = dirty.filter(r => !r.cur.name || !r.cur.addressable);
+  if (bad.length) return toast(`${bad.length} linha(s) sem name/addressable`, "err");
+  try {
+    const res = await postCsv(toCsv(dirty.map(r => r.cur)));
+    toast(`Salvo em massa (criados: ${res.created}, atualizados: ${res.updated})`, "ok");
+    await load();
+  } catch (e) { toast("Erro ao salvar: " + e.message, "err"); }
+};
+
+async function deleteRows(keys){
+  const items = rows.filter(r => keys.includes(r.key));
+  if (!items.length) return;
+  const newOnes = items.filter(r => r.isNew);
+  const persisted = items.filter(r => !r.isNew);
+  const names = items.slice(0,5).map(r => r.cur.name || "(sem nome)").join(", ") + (items.length > 5 ? "…" : "");
+  const ok = await confirmBox("Excluir do banco?", `${items.length} registro(s): ${names}\nEsta ação não pode ser desfeita.`);
+  if (!ok) return;
+  rows = rows.filter(r => !newOnes.includes(r));
+  newOnes.forEach(r => selected.delete(r.key));
+  if (persisted.length){
+    let deleted = 0; const failed = [];
+    for (const r of persisted){
+      try {
+        await api(`/game/prefab/${encodeURIComponent(r.cur.id)}`, { method:"DELETE" });
+        deleted++;
+      } catch (e) { failed.push(`#${r.cur.id}: ${e.message}`); }
+    }
+    if (deleted) toast(`Excluídos: ${deleted}`, "ok");
+    if (failed.length) toast("Falhas:\n" + failed.join("\n"), "err");
+    await load();
+    return;
+  }
+  render();
+}
+$("btnDelSel").onclick = () => deleteRows([...selected]);
+
+$("btnDownload").onclick = () => {
+  const blob = new Blob(["\uFEFF" + toCsv(rows.filter(r => !r.isNew).map(r => r.orig))], { type:"text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "prefabs.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+$("btnUpload").onclick = () => $("file").click();
+$("file").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  const text = await f.text();
+  const parsed = parseCsv(text);
+  if (!parsed.rows.length) return toast("CSV vazio ou inválido", "err");
+  const ok = await confirmBox("Upload de CSV", `${parsed.rows.length} linha(s) em "${f.name}".\nLinhas com id existente serão atualizadas; as demais, criadas. Nada é excluído.`);
+  if (!ok) return;
+  try {
+    const res = await api("/game/prefab/csv", { method:"POST", headers:{"Content-Type":"text/csv"}, body:text });
+    const j = JSON.parse(res);
+    toast(`Upload OK (criados: ${j.created}, atualizados: ${j.updated})`, "ok");
+    await load();
+  } catch (e) { toast("Erro no upload: " + e.message, "err"); }
+};
+
+// ---------- Visibilidade de colunas ----------
+function saveHidden(){ store.set("pa_hidden", JSON.stringify([...hidden])); }
+function buildColMenu(){
+  const m = $("colMenu"); m.innerHTML = "";
+  const bar = document.createElement("div"); bar.className = "mb";
+  const bAll = document.createElement("button"); bAll.textContent = "Todas";
+  bAll.onclick = () => { hidden.clear(); saveHidden(); buildColMenu(); render(); };
+  const bNone = document.createElement("button"); bNone.textContent = "Nenhuma";
+  bNone.onclick = () => { columns.forEach(c => hidden.add(c)); saveHidden(); buildColMenu(); render(); };
+  bar.append(bAll, bNone); m.appendChild(bar);
+  for (const c of columns){
+    const l = document.createElement("label");
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !hidden.has(c);
+    cb.onchange = () => { cb.checked ? hidden.delete(c) : hidden.add(c); saveHidden(); render(); };
+    l.append(cb, c); m.appendChild(l);
+  }
+}
+$("btnCols").onclick = e => { e.stopPropagation(); $("colMenu").classList.toggle("open"); };
+document.addEventListener("click", e => { if (!e.target.closest(".colwrap")) $("colMenu").classList.remove("open"); });
+
+$("btnLoad").onclick = load;
+$("q").oninput = renderBody;
+$("typeFilter").onchange = renderBody;
+
+buildColMenu();
+render();
+load();
+</script>
+</body>
+</html>

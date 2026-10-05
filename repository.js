@@ -83,6 +83,10 @@ function parseOrderByString(queryString) {
   return [["id", "ASC"]];
 }
 
+//recebe o parseQueryStringToWhere, retorna o whereCondition
+
+
+
 function parseQueryStringToWhere(queryString) {
   if (!queryString) return {};
 
