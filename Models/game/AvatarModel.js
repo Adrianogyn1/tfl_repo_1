@@ -16,6 +16,7 @@ module.exports = (sequelize) => {
     data: { type: DataTypes.TEXT, defaultValue: "" },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+    selected: { type: DataTypes.BOOLEAN, defaultValue: false },
   }, {
     tableName: "avatars",
     timestamps: false,

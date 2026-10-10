@@ -8,6 +8,8 @@ module.exports = (sequelize) => {
     cash: { type: DataTypes.FLOAT, defaultValue: 0 },
     chips: { type: DataTypes.FLOAT, defaultValue: 0 },
     userId: { type: DataTypes.INTEGER, defaultValue: 0 },
+    ownerId :{ type: DataTypes.INTEGER, defaultValue: 0 },
+    pin: { type: DataTypes.STRING, defaultValue: "" },
     uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

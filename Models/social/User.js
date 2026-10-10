@@ -16,9 +16,11 @@ module.exports = (sequelize) => {
       roomId: {type: DataTypes.STRING,allowNull: true,defaultValue:''},
       avatarId: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
       currencyId: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
+      phone: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
       email: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
       uid: { type: DataTypes.STRING, allowNull: true, defaultValue:UUIDV4},
       gender: { type: DataTypes.INTEGER, defaultValue: 1 },
+      cpf: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
 
       role: {
         type: DataTypes.ENUM(

@@ -18,7 +18,11 @@ const FollowFactory = require("./social/Follow");
 const FileInfoFactory = require("./social/FileInfo");
 const GameModelsFactory = require("./game/index");
 
+//pagamento
+const PagBankFactory = require("./pagbank/pagbank");
+
 module.exports = (sequelize) => {
+  const PagBank = PagBankFactory(sequelize);
   const User = UserFactory(sequelize);
   const RoomModel = require("./game/RoomModel")(sequelize);
   const Profile = ProfileFactory(sequelize);
@@ -74,6 +78,7 @@ module.exports = (sequelize) => {
   chatAssociations({ Profile, ChatRoom, ChatMessage, ChatParticipant, SystemAnnouncement });
 
   return {
+    PagBank,
     User,
     Like,
     Post,

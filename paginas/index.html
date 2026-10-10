@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="The Fantasy Life - O Teu Lugar é aqui">
+    <meta name="fav-icon" content="static/images/favicon.ico" />
     <script src="https://cdn.tailwindcss.com"></script>
     <!--Jquery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -78,11 +80,7 @@
     <nav class="fixed w-full z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <svg width="38" height="38" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#2563eb" stroke-width="6"
-                        stroke-dasharray="20 10" />
-                    <circle cx="50" cy="50" r="25" fill="#2563eb" />
-                </svg>
+                   <img src="/static/images/Icon_tfl.png" alt="The Fantasy Life" class="w-10 h-10">
                 <div class="text-xl font-display font-black tracking-tight uppercase italic">
                     The <span class="text-blue-500">Fantasy</span> Life
                 </div>
@@ -201,22 +199,7 @@
                     <i class="fa-solid fa-mug-hot text-blue-500 text-2xl mb-4"></i>
                     <h4 class="font-bold mb-2">Um Café</h4>
                     <p class="text-xs text-zinc-500">
-                        Apoio simbólico para energia extra.
-                    </p>
-                </div>
-                <div
-                    id="donate-impulso" class="donate-trigger glass p-6 rounded-2xl border-blue-500/30 bg-blue-500/5 hover:border-blue-500 transition cursor-pointer" data-type="impulso">
-                    <i class="fa-solid fa-rocket text-blue-500 text-2xl mb-4"></i>
-                    <h4 class="font-bold mb-2">Impulso</h4>
-                    <p class="text-xs text-zinc-500">
-                        Ajuda direta na manutenção mensal.
-                    </p>
-                </div>
-                <div id="donate-fundador" class="donate-trigger glass p-6 rounded-2xl hover:border-blue-500/50 transition cursor-pointer" data-type="fundador">
-                    <i class="fa-solid fa-crown text-blue-500 text-2xl mb-4"></i>
-                    <h4 class="font-bold mb-2">Fundador</h4>
-                    <p class="text-xs text-zinc-500">
-                        Para quem acredita no futuro do projeto.
+                        Apoio simbólico para energia extra. Apoie-nos!
                     </p>
                 </div>
             </div>
@@ -287,10 +270,9 @@
                     </div>
                 </div>
                 
-                <div id="donate-external-container">
-                    <a id="link-donate-url" href="#" target="_blank" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-xs uppercase transition block">
-                        Realizar Doação Externa
-                    </a>
+                <div id="donate-image-container">
+                    <label class="block text-xs font-bold text-zinc-500 uppercase mb-2">Imagem Pix</label>
+                    <img id="donate-image" src="" alt="Imagem Pix" class="w-full rounded-xl" />
                 </div>
             </div>
         </div>
@@ -377,19 +359,10 @@ $(document).ready(function () {
 
                 // Doação / Pix
                 if (data.pix) {
-                    if (data.pix.pix && data.pix.pix.active && data.pix.pix.url) {
-                        $("#input-pix-key").val(data.pix.pix.url);
-                        $("#donate-pix-container").show();
-                    } else {
-                        $("#donate-pix-container").hide();
-                    }
-
-                    if (data.pix.url && data.pix.url.active && data.pix.url.url) {
-                        $("#link-donate-url").attr("href", data.pix.url.url);
-                        $("#donate-external-container").show();
-                    } else {
-                        $("#donate-external-container").hide();
-                    }
+                    $('#donate-pix-container').show();
+                    $('#donate-image-container').show();
+                    $('#donate-image').attr('src', data.pix.image);
+                    $('#input-pix-key').val(data.pix.payload);
                 }
             }
         }).fail(function() {
@@ -399,4 +372,15 @@ $(document).ready(function () {
     }
 });
 </script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SH2MFXDN52"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SH2MFXDN52');
+</script>
+
 </html>

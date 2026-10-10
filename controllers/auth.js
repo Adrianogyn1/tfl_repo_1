@@ -39,6 +39,19 @@ async function CheckLogin(req, res, next)
       {
         const usertemp = await repo.User.findOne();
         token = usertemp ? usertemp.token : token;
+        var avatar = await repo.Avatar.findOne({
+          where: {
+            userId: usertemp.id,
+            selected: true
+          }
+        });
+        if(!avatar){
+          avatar = await repo.Avatar.create({
+            userId: usertemp.id,
+            name: "Avatar Temporário",
+            selected: true
+          });
+        }
       }
 
       const user = await repo.User.findOne({
@@ -50,8 +63,18 @@ async function CheckLogin(req, res, next)
         req.userId = user.id;
         req.userToken = token;
         req.userData = UserDto.fromObject(user.get({ plain: true }));
+        //busca o profile principal selecionado
+        const profile = await repo.Avatar.findOne({
+          where: {
+            userId: req.userId,
+            selected: true
+          }          
+        });
+        req.profileId = profile?.id??-1;
+
         return next();
       }
+      
     } catch (err)
     {
       console.error("Erro ao verificar login:", err);

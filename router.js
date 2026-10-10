@@ -3,6 +3,7 @@ const router = express.Router();
 const path = require("path");
 require("dotenv").config();
 const { repo } = require("./repository.js");
+const webSite = (process.env.SERVER_URL || "localhost:5000").endsWith("/") ? process.env.SERVER_URL : `${process.env.SERVER_URL}/`;
 
 
 
@@ -11,14 +12,63 @@ const socialController = require("./controllers/social/router_controller.js");
 
 const {helps} = require("./routers/routes.js");
 
+router.get("/", (req, res) => { 
+  res.sendFile(path.join(__dirname, "./paginas/index.html"));
+});
+router.get("/api/home/info", async (req, res) =>
+{
+  const images = {
+    './static/images/galery/1.png': { active: true },
+    "./static/images/galey/2.png": { active: true },
+    "./static/images/galery/3.png": { active: true },
+     "./static/images/galery/4.png": { active: true },
+  };
+  const files = {
+    android: { url: process.env.ANDROID_DOWNLOAD || "", active: true },
+    ios: { url: process.env.IOS_DOWNLOAD || "", active: false },
+    windows: { url: process.env.WINDOWS_DOWNLOAD || "", active: true },
+    linux: { url: process.env.LINUX_DOWNLOAD || "", active: true },
+  };
+   const { QrCodePix } = require('qrcode-pix');
+
+    const qrCodePix = QrCodePix({
+        version: '01',
+        key: 'b73e1128-b80b-4058-903a-5ec11a67e5a8', // chave Pix (CPF, CNPJ, email, telefone ou aleatória)
+        name: 'THE FANTASY LIFE',
+        city: 'GOIANIA',
+        transactionId: 'donate',   // opcional, até 25 caracteres
+        message: 'Obrigado por nos ajudar!',  // opcional
+        // value: 10.5,                  // opcional
+    });
+
+  // return res.json({ "status": "ok",payload: qrCodePix.payload(), image: await qrCodePix.base64() });
+  const pix = {
+    payload: qrCodePix.payload(), image: await qrCodePix.base64()
+  };
+
+  const info = {
+    images,
+    files,
+    pix
+  };
+  res.json(info);
+});
+
+
 //Auth
 router.use("/api", authController.router);
 
 //Social
 router.use("/api", socialController.router);
+
 //slots
 const slotsController = require("./controllers/game/slots/slots_controller.js");
 router.use("/slot", slotsController.router);
+
+
+//webhook
+const webhookController = require("./controllers/api/api_webhock.js");
+router.use("/webhook", webhookController.router);
 
 
 

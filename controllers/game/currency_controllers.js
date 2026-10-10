@@ -1,28 +1,47 @@
-const repo = require("../../repository");
+/*
+* usado internamente para criação de carteira e transações
+*/
 
-function checkData(currencyData) {
+
+const repo = require("../../repository");
+const router = require("express").Router();//por hora nao usamos
+
+
+
+function checkData(currencyData)
+{
   let error = "";
-  try {
+  try
+  {
     if (!currencyData) throw new Error("Dados da moeda são obrigatórios.");
 
-    if (currencyData.value === undefined || currencyData.value === null)
+    if (currencyData.coins === undefined || currencyData.coins === null
+      || currencyData.cash === undefined || currencyData.cash === null
+      || currencyData.chips === undefined || currencyData.chips === null
+    )
       throw new Error("O valor da moeda é obrigatório.");
 
     if (!currencyData.userId) throw new Error("O userId é obrigatório.");
-  } catch (e) {
+    if(!currencyData.ownerId) throw new Error("O ownerId é obrigatório.");
+  } catch (e)
+  {
     error = e.message;
   }
   return error;
 }
 
-async function getAll(req, res) {
+
+//#region api rotas
+async function getAll(req, res)
+{
   const limit = parseInt(req.query?.limit || req.body?.limit) || 50;
   const offset =
     parseInt(
       req.query?.offset || req.body?.take || req.body?.skip || req.body?.offset,
     ) || 0;
 
-  try {
+  try
+  {
     const currencies = await repo.Currency.findAndCountAll({
       limit: limit,
       offset: offset,
@@ -37,54 +56,67 @@ async function getAll(req, res) {
       nextPage:
         currencies?.count <= 0 ? 0 : Math.ceil((offset + limit) / limit) + 1,
     });
-  } catch (err) {
+  } catch (err)
+  {
     return res
       .status(500)
       .json({ success: false, data: [], error: err.message });
   }
 }
 
-async function getById(req, res) {
-  try {
+async function getById(req, res)
+{
+  try
+  {
     const currency = await repo.Currency.findByPk(req.params.id);
-    if (!currency) {
+    if (!currency)
+    {
       return res
         .status(404)
         .json({ error: "Currency not found", success: false });
     }
     return res.json({ success: true, data: currency });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function create(req, res) {
-  try {
+async function create(req, res)
+{
+  try
+  {
     const currencyData = req.body;
     const error = checkData(currencyData);
     const role = req.userData.role;
 
-    if (error) {
+    if (error)
+    {
       return res.status(400).json({ error: error, success: false });
     }
 
     delete currencyData.uid;
     const currency = await repo.Currency.create(currencyData);
     return res.json({ success: true, data: currency });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function update(req, res) {
-  try {
+async function update(req, res)
+{
+  try
+  {
     const error = checkData(req.body);
-    if (error) {
+    if (error)
+    {
       return res.status(400).json({ error: error, success: false });
     }
 
     const currencyExists = await repo.Currency.findByPk(req.params.id);
-    if (!currencyExists) {
+    if (!currencyExists)
+    {
       return res
         .status(404)
         .json({ error: "Currency not found", success: false });
@@ -94,15 +126,19 @@ async function update(req, res) {
     const updatedCurrency = await repo.Currency.findByPk(req.params.id);
 
     return res.json({ success: true, data: updatedCurrency });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
   }
 }
 
-async function remove(req, res) {
-  try {
+async function remove(req, res)
+{
+  try
+  {
     const currency = await repo.Currency.findByPk(req.params.id);
-    if (!currency) {
+    if (!currency)
+    {
       return res
         .status(404)
         .json({ error: "Currency not found", success: false });
@@ -113,15 +149,114 @@ async function remove(req, res) {
       success: true,
       message: "Currency deleted successfully",
     });
-  } catch (err) {
+  } catch (err)
+  {
     return res.status(500).json({ error: err.message, success: false });
+  }
+}
+//#endregion
+
+
+//cria uma nova
+async function _create(wallet)
+{
+
+  try
+  {
+    var error = checkData(wallet);
+    if (error) throw new Error(error);
+
+    await repo.Currency.create(wallet);
+    return true;
+  }
+  catch (err)
+  {
+    console.log(err);
+    return false;
+  }
+}
+//atualiza
+async function _update(wallet, walletId)
+{
+
+  try
+  {
+    var error = checkData(wallet);
+    if (error) throw new Error(error);
+
+    await repo.Currency.update(wallet, { where: { id: walletId } });
+    return true;
+
+  } catch (err)
+  {
+    console.log(err);
+    return false;
+  }
+
+}
+//retorna a wallet pela id
+async function _getById(walletId) {
+  return await repo.Currency.findByPk(walletId);
+}
+async function _getByOwnerId(avatarID) {
+  return await repo.Currency.findOne({
+    where: {
+      ownerId: avatarID,
+    }
+  });
+}
+
+//usado sempre que houver alguma transacao
+async function SumBalance(avatarID)
+{
+  try
+  {
+    let coins, cash, chips;
+    coins = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'Coins',
+      },
+    });
+    cash = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'Cash',
+      },
+    });
+    chips = await repo.CurrencyRegister.sum('value', {
+      where: {
+        ownerId: avatarID,
+        type: 'Chips',
+      },
+    });
+    var wallet = await repo.Currency.findOne({
+      where: {
+        userId: avatarID,
+      }
+    });
+    if (!wallet)
+      throw new Error("Wallet not found");
+
+    wallet.coins = coins;
+    wallet.cash = cash;
+    wallet.chips = chips;
+
+    _update(wallet, wallet.id);
+
+    return true;
+  } catch (err)
+  {
+    console.log(err);
+    return false;
   }
 }
 
 module.exports = {
-  getAll,
-  getById,
-  create,
-  update,
-  remove,
+  _create,
+  _update,
+  _getById,
+  _getByOwnerId,
+  SumBalance,
+  router,
 };
