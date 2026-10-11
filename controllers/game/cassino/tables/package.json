@@ -1,0 +1,13 @@
+{
+  "name": "cassino-server",
+  "version": "1.0.0",
+  "description": "Servidor master com salas independentes de jogos (Roleta, Baccarat, Bacboo) usando Socket.IO",
+  "main": "server/master.js",
+  "scripts": {
+    "start": "node server/master.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}

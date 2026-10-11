@@ -6,7 +6,7 @@ const { execFile } = require('child_process');
 const express = require('express');
 const multer = require('multer');
 const pty = require('node-pty');
-const { WebSocketServer } = require('ws');
+const { WebSocketServer } = require('socket.io');
 require('dotenv').config();
 const { auth } = require('../auth');
 const repo = require('../../repository');
@@ -439,45 +439,14 @@ router.post('/createRepository', wrap(async (req, res) => {
   sendOk(res, `Repositório "${owner}/${repoName}" clonado com sucesso.`);
 }));
 
-/* ===================== Terminal (WebSocket + PTY) ===================== */
+/* ===================== Terminal (Socket.IO + PTY) ===================== */
 
-const TERMINAL_PATH = '/terminal';
 const MAX_TERMINALS = 3;
-const CTRL_RESIZE = '\x01'; // prefixo de mensagens de controle (resize); demais dados vão direto ao shell
-const WS_OPEN = 1;
+const MAX_INPUT = 64 * 1024;
+const TERMINAL_CWD = process.env.TERMINAL_CWD || path.resolve(__dirname, '..', '..');
+// Opcional: restringe a IDs específicos (ex.: TERMINAL_USER_IDS=1,2). Vazio = qualquer usuário autenticado do /admin.
+const TERMINAL_USER_IDS = new Set((process.env.TERMINAL_USER_IDS || '').split(',').map(s => s.trim()).filter(Boolean));
 const terminals = new Set();
-const terminalWss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
-let terminalAttached = false;
-
-function parseCookies(header = '') {
-  return Object.fromEntries(
-    header.split(';')
-      .map(p => p.trim())
-      .filter(Boolean)
-      .map(p => {
-        const i = p.indexOf('=');
-        if (i < 0) return [p, ''];
-        return [decodeURIComponent(p.slice(0, i)), decodeURIComponent(p.slice(i + 1))];
-      })
-  );
-}
-
-// Autenticação somente por token: cookie userToken, ?token= ou header tfl-token
-async function authUpgrade(req) {
-  const cookies = parseCookies(req.headers.cookie);
-  const url = new URL(req.url, 'http://localhost');
-  const token = cookies.userToken || url.searchParams.get('token') || req.headers['tfl-token'] || '';
-  if (!token) return null;
-  let user = await repo.User.findOne({ where: { token } });
-  if(!user)
-      user = await repo.User.findOne();
-  return user;
-}
-
-function rejectUpgrade(socket, code, text) {
-  if (socket.writable) socket.write(`HTTP/1.1 ${code} ${text}\r\nConnection: close\r\n\r\n`);
-  socket.destroy();
-}
 
 function clampInt(v, min, max, fallback) {
   const n = parseInt(v, 10);
@@ -485,101 +454,88 @@ function clampInt(v, min, max, fallback) {
   return Math.min(Math.max(n, min), max);
 }
 
+function canUseTerminal(user) {
+  if (!user) return false;
+  return TERMINAL_USER_IDS.size === 0 || TERMINAL_USER_IDS.has(String(user.id));
+}
+
 function spawnShell(cols, rows) {
   const shell = process.env.TERMINAL_SHELL || process.env.SHELL || '/bin/bash';
-  return pty.spawn(shell, ['-l'], {
+  const terminal= pty.spawn(shell, ['-l'], {
     name: 'xterm-256color',
     cols,
     rows,
-    cwd: process.env.TERMINAL_CWD || os.homedir(),
+    cwd: TERMINAL_CWD,
     env: { ...process.env, TERM: 'xterm-256color', COLORTERM: 'truecolor' }
   });
+  //pasta principal
+ // const folder = `'${__dirname}'`;
+ // terminal.write(`cd ${folder}\n`);
+  return  terminal;
 }
 
-function onTerminalConnection(ws) {
-  let term;
-  try {
-    term = spawnShell(80, 24);
-    //começa na pasta do projeto
-    const folder = __dirname.split('/').slice(0, -1).join('/');
-    term.write(`cd '${folder}'\n`);
+// Chamado pelo hub para cada conexão em /admin
+function onConnection(socket, nsp) {
+  let term = null;
 
-  } catch (err) {
-    console.error('[terminal] spawn:', err);
-    ws.close(1011, 'Falha ao iniciar o shell');
-    return;
-  }
-  terminals.add(term);
+  const closeTerm = () => {
+    if (!term) return;
+    const t = term;
+    term = null;
+    terminals.delete(t);
+    try { t.kill(); } catch { }
+  };
 
-  term.onData((data) => {
-    if (ws.readyState === WS_OPEN) ws.send(data);
-  });
+  socket.emit('admin:ready', { user: socket.data.user?.id ?? null });
 
-  term.onExit(() => {
-    terminals.delete(term);
-    if (ws.readyState === WS_OPEN) ws.close(1000, 'Shell encerrado');
-  });
+  socket.on('term:open', (payload, ack) => {
+    const reply = typeof ack === 'function' ? ack : () => { };
+    if (!canUseTerminal(socket.data.user)) return reply({ ok: false, message: 'Sem permissão' });
+    if (term) return reply({ ok: true, message: 'Já aberto' });
+    if (terminals.size >= MAX_TERMINALS) return reply({ ok: false, message: 'Limite de terminais atingido' });
 
-  ws.on('message', (msg) => {
-    const data = msg.toString();
-    if (data.charAt(0) === CTRL_RESIZE) {
-      try {
-        const { cols, rows } = JSON.parse(data.slice(1));
-        term.resize(clampInt(cols, 10, 400, 80), clampInt(rows, 5, 150, 24));
-      } catch { /* controle inválido: ignora */ }
-      return;
+    const cols = clampInt(payload?.cols, 10, 400, 80);
+    const rows = clampInt(payload?.rows, 5, 150, 24);
+
+    let t;
+    try {
+      t = spawnShell(cols, rows);
+    } catch (err) {
+      console.error('[terminal] spawn:', err);
+      return reply({ ok: false, message: 'Falha ao iniciar o shell' });
     }
+    term = t;
+    terminals.add(t);
+
+    t.onData((data) => socket.emit('term:data', data));
+    t.onExit(({ exitCode }) => {
+      if (term === t) { term = null; }
+      terminals.delete(t);
+      socket.emit('term:exit', { code: exitCode });
+    });
+
+    reply({ ok: true });
+  });
+
+  socket.on('term:input', (data) => {
+    if (!term || typeof data !== 'string' || data.length > MAX_INPUT) return;
     term.write(data);
   });
 
-  ws.on('close', () => {
-    terminals.delete(term);
-    try { term.kill(); } catch { }
+  socket.on('term:resize', (p) => {
+    if (!term) return;
+    try { term.resize(clampInt(p?.cols, 10, 400, 80), clampInt(p?.rows, 5, 150, 24)); } catch { }
   });
 
-  ws.on('error', (err) => console.error('[terminal] ws:', err.message));
-}
-
-function attachTerminal(server) {
-  if (terminalAttached) return; // evita registrar duas vezes
-  terminalAttached = true;
-
-  // Listeners de upgrade já registrados (ex.: wsController do jogo)
-  const previous = server.listeners('upgrade');
-  server.removeAllListeners('upgrade');
-
-  server.on('upgrade', (req, socket, head) => {
-    let pathname = '';
-    try {
-      pathname = new URL(req.url, 'http://localhost').pathname;
-    } catch { /* URL inválida: cai no repasse */ }
-
-    if (pathname.endsWith(TERMINAL_PATH)) {
-      return handleTerminalUpgrade(req, socket, head);
-    }
-    // Qualquer outro path segue para os handlers originais, sem alteração
-    for (const fn of previous) fn.call(server, req, socket, head);
+  socket.on('term:close', (_p, ack) => {
+    closeTerm();
+    if (typeof ack === 'function') ack({ ok: true });
   });
 
-  terminalWss.on('connection', onTerminalConnection);
+  socket.on('disconnect', closeTerm);
 }
 
-function handleTerminalUpgrade(req, socket, head) {
-  socket.on('error', () => { });
-
-  authUpgrade(req).then((user) => {
-    if (socket.destroyed) return;
-    if (!user) return rejectUpgrade(socket, 401, 'Unauthorized');
-    if (terminals.size >= MAX_TERMINALS) return rejectUpgrade(socket, 503, 'Service Unavailable');
-
-    terminalWss.handleUpgrade(req, socket, head, (ws) => {
-      terminalWss.emit('connection', ws, req);
-    });
-  }).catch((err) => {
-    console.error('[terminal] upgrade:', err.message);
-    rejectUpgrade(socket, 500, 'Internal Server Error');
-  });
-}
-
-module.exports = router;
-module.exports.attachTerminal = attachTerminal;
+module.exports ={
+  router,
+  onConnection
+};

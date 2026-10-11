@@ -12,7 +12,7 @@ const repo = require("./repository.js");
 const { settings } = require("cluster");
 const { Op } = require("sequelize");
 require("dotenv").config();
-
+const cors = require('cors');
 
 const appHandlers = require("./controllers/appHandlers.js");
 //game
@@ -247,9 +247,20 @@ const { spawn } = require("child_process");
 //remover<-
 //require('./controllers/placeHolder.js');
 
-
+/*
 const { attachTerminal } = require("./controllers/admin/files_controller.js");
 attachTerminal(server);
+const { router: cassino, attachWebSocket:cassinSocket } = require('./controllers/game/cassino/tables/master.js');
+app.use("/cassino",cassino);
+cassinSocket(server);
+*/
+
+const Cassino_Controller = require("./controllers/game/cassino/tables/master.js");
+app.use("/cassino",Cassino_Controller.router);
+
+const socketHub = require("./SoketHub").attachSocketIO;
+socketHub(server);
+
 
 server.listen(Settings.PORT, "0.0.0.0", () =>
   console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`),

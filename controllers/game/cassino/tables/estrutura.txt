@@ -1,0 +1,12 @@
+cassino/
+│   ├── master.js
+│   ├── SalaBase.js
+│   ├── SalaRoleta.js
+│   ├── SalaBaccarat.js
+│   └── SalaBacboo.js
+└── pages/
+    ├── index.html
+    └── games/
+        ├── roleta.html
+        ├── baccarat.html
+        └── bacboo.html

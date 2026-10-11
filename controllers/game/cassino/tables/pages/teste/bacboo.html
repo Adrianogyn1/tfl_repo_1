@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dado 3D - Player vs Banker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="./js/dados3D.js"></script>
+  <style>
+    body {
+      background:#064f2b; /* mesa verde */
+      color:white;
+      font-family: Arial, sans-serif;
+      padding:20px;
+    }
+
+    .slot {
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:20px auto;
+      box-shadow: inset 0 10px 20px rgba(0,0,0,0.8),
+                  inset 0 -5px 10px rgba(255,255,255,0.2);
+    }
+
+    .slot.player {
+      background:radial-gradient(circle at 30% 30%, #001a66 20%, #0044cc 90%);
+    }
+
+    .slot.banker {
+      background:radial-gradient(circle at 30% 30%, #660000 20%, #cc0000 90%);
+    }
+
+    h2 {
+      text-transform:uppercase;
+      font-weight:bold;
+      text-shadow:0 0 5px rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container text-center">
+  <div class="row mb-4">
+    <div class="col-6">
+      <h2>Player</h2>
+      <div class="slot player"><div id="dado1"></div></div>
+      <div class="slot player"><div id="dado2"></div></div>
+    </div>
+    <div class="col-6">
+      <h2>Banker</h2>
+      <div class="slot banker"><div id="dado3"></div></div>
+      <div class="slot banker"><div id="dado4"></div></div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <button id="rolarTodos" class="btn btn-primary me-2">🎲 Start (Rolar Todos)</button>
+    <button id="stopRandom" class="btn btn-danger">✋ Stop Aleatório</button>
+  </div>
+
+  <div class="d-flex justify-content-center flex-wrap gap-2">
+    <button class="btn btn-secondary stopBtn" data-num="1">1</button>
+    <button class="btn btn-secondary stopBtn" data-num="2">2</button>
+    <button class="btn btn-secondary stopBtn" data-num="3">3</button>
+    <button class="btn btn-secondary stopBtn" data-num="4">4</button>
+    <button class="btn btn-secondary stopBtn" data-num="5">5</button>
+    <button class="btn btn-secondary stopBtn" data-num="6">6</button>
+  </div>
+</div>
+
+<script>
+let dados = [];
+
+// Criar 4 dados nos buracos
+dados.push($('#dado1').addDado({
+  tamanho:70, alturaPulo:30,
+  callbackFim: num => console.log("Player dado 1 parou em "+num)
+}));
+dados.push($('#dado2').addDado({
+  tamanho:70, alturaPulo:30,
+  callbackFim: num => console.log("Player dado 2 parou em "+num)
+}));
+dados.push($('#dado3').addDado({
+  tamanho:70, alturaPulo:30,
+  callbackFim: num => console.log("Banker dado 1 parou em "+num)
+}));
+dados.push($('#dado4').addDado({
+  tamanho:70, alturaPulo:30,
+  callbackFim: num => console.log("Banker dado 2 parou em "+num)
+}));
+
+// Botão start todos
+$('#rolarTodos').click(()=>dados.forEach(d=>d.start()));
+
+// Botão stop aleatório
+$('#stopRandom').click(()=>dados.forEach(d=>d.stop()));
+
+// Botões parar específicos
+$('.stopBtn').click(function(){
+  let num = parseInt($(this).data('num'));
+  dados.forEach(d=>d.stop(num));
+});
+</script>
+
+</body>
+</html>

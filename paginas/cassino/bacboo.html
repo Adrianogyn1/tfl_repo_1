@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Bacboo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    
+    
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+      <script src="./js/dados3D.js"></script>
+    
+    <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    #status { font-weight: bold; }
+    #error { color: red; margin-top: 10px; }
+    #log { margin-top: 15px; padding: 10px; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; font-size: 14px; background: #f9f9f9; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 5px 0; }
+    
+    .round { margin-bottom: 20px; }
+  .hand { display: inline-block; margin-right: 50px; }
+  .dice { font-size: 2em; margin: 5px; display: inline-block; }
+  .winner { font-weight: bold; font-size: 1.5em; color: green; }
+
+body {
+      background:#064f2b; /* mesa verde */
+      color:white;
+      font-family: Arial, sans-serif;
+      padding:20px;
+    }
+
+    .slot {
+      width:100px;
+      height:100px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:20px auto;
+      box-shadow: inset 0 10px 20px rgba(0,0,0,0.8),
+                  inset 0 -5px 10px rgba(255,255,255,0.2);
+    }
+
+    .slot.player {
+      background:radial-gradient(circle at 30% 30%, #001a66 20%, #0044cc 90%);
+    }
+
+    .slot.banker {
+      background:radial-gradient(circle at 30% 30%, #660000 20%, #cc0000 90%);
+    }
+
+    h2 {
+      text-transform:uppercase;
+      font-weight:bold;
+      text-shadow:0 0 5px rgba(0,0,0,0.8);
+    }
+
+
+</style>
+</head>
+<body>
+<h1>Bacboo</h1>
+<div id="tempo"></div>
+<div id="round"></div>
+<div>Status: <span id="status">Aguardando</span></div>
+
+
+<div class="container text-center">
+  <div class="row mb-4">
+    <div class="col-6">
+      <h2>Player</h2>
+      <div class="slot player"><div id="dado1"></div></div>
+      <div class="slot player"><div id="dado2"></div></div>
+    </div>
+    <div class="col-6">
+      <h2>Banker</h2>
+      <div class="slot banker"><div id="dado3"></div></div>
+      <div class="slot banker"><div id="dado4"></div></div>
+    </div>
+  </div>
+    </div>
+
+<div id="error"></div>
+<div id="log"></div>
+<ul id="history"></ul>
+
+<script>
+$(function() {
+    
+    
+    let dados = [];
+
+// Criar 4 dados nos buracos
+dados.push($('#dado1').addDado({
+  tamanho:50, alturaPulo:30,
+  callbackFim: num => console.log("Player dado 1 parou em "+num)
+}));
+dados.push($('#dado2').addDado({
+  tamanho:50, alturaPulo:30,
+  callbackFim: num => console.log("Player dado 2 parou em "+num)
+}));
+dados.push($('#dado3').addDado({
+  tamanho:50, alturaPulo:30,
+  callbackFim: num => console.log("Banker dado 1 parou em "+num)
+}));
+dados.push($('#dado4').addDado({
+  tamanho:50, alturaPulo:30,
+  callbackFim: num => console.log("Banker dado 2 parou em "+num)
+}));
+    
+    
+    const params = new URLSearchParams(window.location.search);
+    const $roomName = params.get('room');
+    const url = "https://cassinoserver-production.up.railway.app";
+    const socket = io(url);
+
+    const $history = $('#history');
+    const $status = $('#status');
+    const $error = $('#error');
+    const $round = $('#round');
+    const $log = $('#log');
+    const $tempo = $('#tempo');
+
+function AddDeck(data){
+    
+    
+    
+    
+    return;
+    $round.html("");
+const div = document.createElement('div');
+    div.classList.add('round');
+
+    div.innerHTML = `
+        <div class="hand">
+            <strong>Player:</strong>
+            ${data.player.dados.map(d => `<span class="dice">${d}</span>`).join('')}
+            ${data.player.complete ? '' : '<em>(rolando...)</em>'}
+        </div>
+        <div class="hand">
+            <strong>Banker:</strong>
+            ${data.banker.dados.map(d => `<span class="dice">${d}</span>`).join('')}
+            ${data.banker.complete ? '' : '<em>(rolando...)</em>'}
+        </div>
+        ${data.player.complete && data.banker.complete ? `<div class="winner">Vencedor: ${data.vencedor.toUpperCase()}</div>` : ''}
+        <hr>
+    `;
+
+// Adiciona no container $round
+$round.append(div);
+}
+    function log(msg) {
+        $log.append(`<div>${msg}</div>`);
+        $log.scrollTop($log[0].scrollHeight); // rola sempre pro final
+    }
+
+    // Recebe histórico completo da sala
+    socket.on('history', data => {
+        $history.empty();
+        data.forEach(r => $history.append(`<b>${r.vencedor} </b>`));
+        log("📜 Histórico carregado (" + data.length + " itens)");
+    });
+
+    // Recebe novos resultados
+    socket.on('newResult', data => {
+        const valor = data.vencedor;// Array.isArray(data.data) ? data.data.join(' ') : data.data;
+        $history.append(`<b>${valor} </b>`);
+        if ($history.children().length > 20) {
+            $history.children().first().remove();
+        }
+        
+        dados[0].stop(data.player[0],100);
+        dados[1].stop(data.player[1],400);
+        dados[2].stop(data.banker[0],500);
+        dados[3].stop(data.banker[1],200);
+        
+       // AddDeck(data);
+    setTimeout(()=>{$round.html("");},4000);
+        log("🎲 Novo resultado: " + valor);
+    });
+
+    // Atualiza status da sala
+    socket.on('status', data => {
+        $status.text(data);
+        log("ℹ️ Status: " +   data);
+    });
+    
+    socket.on('round', data => 
+    {
+        //AddDeck(data);
+
+    $round.prepend(div); // mostra o
+    
+    
+
+    console.log("Round:", data);
+});
+
+    
+    socket.on('tempo', data => {
+    $tempo.text(data);
+    if(data<=4)
+    dados.forEach((c)=> {if(!c.isRolling())c.start();});
+   // log("ℹ️ Status: " + data);
+});
+
+    // Exibe erros
+    socket.on('error', data => {
+        $error.text(data.error || 'Erro desconhecido');
+        log("❌ Erro: " + (data.error || 'Erro desconhecido'));
+    });
+
+    // Eventos de conexão
+    socket.on("connect", () => {
+        $status.text("Conectado");
+        socket.emit("joinRoom", $roomName);
+        log("✅ Conectado ao servidor (ID: " + socket.id + ")");
+    });
+
+    socket.on("connect_error", (err) => {
+        $status.text("Erro");
+        $error.text("Erro ao conectar: " + err.message);
+        log("❌ Erro de conexão: " + err.message);
+    });
+
+    socket.on("reconnect_attempt", (attempt) => {
+        $status.text("Reconectando...");
+        log("🔄 Tentando reconectar... tentativa #" + attempt);
+    });
+
+    socket.on("disconnect", (reason) => {
+        $status.text("Desconectado");
+        log("⚠️ Desconectado: " + reason);
+    });
+});
+</script>
+</body>
+</html>

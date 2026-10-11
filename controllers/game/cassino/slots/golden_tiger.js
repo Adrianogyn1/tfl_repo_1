@@ -9,7 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 const router = require("express").Router();
-const sessionService = require("./sessionService");
+const sessionService = require("../sessionService");
 
 // ============= SÍMBOLOS =============
 const S = {

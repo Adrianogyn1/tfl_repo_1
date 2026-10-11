@@ -1,0 +1,133 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#status {
+    font-weight: bold;
+}
+
+#error {
+    color: red;
+    margin-top: 10px;
+}
+
+#log {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 14px;
+    background: #f9f9f9;
+    color: black;
+    
+}
+
+.carta {
+    width: 50px;
+    /*5rem;*/
+    height: 80px;
+    /* 7rem;*/
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);
+    /* normal, vertical */
+    transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, box-shadow 0.3s ease;
+}
+
+.carta.rot90 {
+    transform: rotate(90deg);
+    width: 80px;
+    /* 7rem;*/
+    height: 50px;
+    /* 5rem;*/
+    box-shadow: 4px 2px 6px rgba(0, 0, 0, 0.3);
+    /* ajustado para horizontal */
+}
+
+
+.bead {
+    width: 10px;
+    height: 10px;
+    display: flex;
+    border-radius: 50%;
+    align-items: center;
+    color: #fff;
+    font-size: 6px;
+    font-weight: bold;
+    position: relative;
+    justify-content: center;
+}
+
+#historico-container
+{
+    overflow-x:auto; 
+    width:100%; 
+    border:1px solid #ccc;
+    padding:5px;
+}
+
+#historico{
+    gap:5px; 
+    height:110px; 
+    max-height: 110px; 
+    background-color: whitesmoke;
+}
+
+
+
+.chip1 {
+    background: #565656;
+}
+
+.chip2 {
+    background: #00EEBB;
+}
+
+.chip {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 6px dashed #fff;
+    background: var(--chip-bg, #e11d48);
+    /* fundo base (rosa/vermelho por padrão) */
+    color: #fff;
+    font-weight: 700;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+    overflow: hidden;
+}
+
+/* gomos decorativos */
+.chip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg,
+            rgba(255, 255, 255, 0.25) 0deg 15deg,
+            /* gomo claro */
+            transparent 15deg 30deg
+            /* espaço vazio */
+        );
+    mix-blend-mode: overlay;
+    /* mescla com a cor da ficha */
+}
+
+/* anel interno */
+.chip::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, .4);
+}

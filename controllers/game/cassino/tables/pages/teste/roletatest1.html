@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>European Roulette</title>
+<style>
+body {
+  background-color: #006600;
+  font-family: Arial, sans-serif;
+  user-select: none;
+}
+
+.container {
+  width: 900px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.header {
+  color: white;
+  font-size: 36px;
+  margin-bottom: 20px;
+  text-shadow: 1px 0 0 black;
+}
+
+/* Grid para os números */
+.roulette-grid {
+  display: grid;
+  grid-template-columns: 50px repeat(12, 50px) 50px; /* zero + 12 números + coluna 2-1 */
+  gap: 0;
+}
+
+/* Células */
+.cell {
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid white;
+  box-sizing: border-box;
+  color: white;
+  font-size: 16px;
+}
+
+/* Cores */
+.red { background: linear-gradient(to bottom, #c61313 0%, #840000 100%); }
+.black { background: linear-gradient(to bottom, #424242 0%, #000000 100%); }
+.green { background: #0f8; color: black; }
+.span-cell { font-size: 14px; }
+
+/* Para simular rowspan e colspan */
+.rowspan-3 { grid-row: span 3; }
+.colspan-2 { grid-column: span 2; }
+.colspan-4 { grid-column: span 4; }
+
+/* Apostas especiais */
+.betting-row .cell {
+  height: 40px;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">European Roulette</div>
+
+  <div class="roulette-grid">
+    <!-- Zero -->
+    <div class="cell green rowspan-3">0</div>
+
+    <!-- Linha 1 -->
+    <div class="cell red">3</div>
+    <div class="cell black">6</div>
+    <div class="cell red">9</div>
+    <div class="cell red">12</div>
+    <div class="cell black">15</div>
+    <div class="cell red">18</div>
+    <div class="cell red">21</div>
+    <div class="cell black">24</div>
+    <div class="cell red">27</div>
+    <div class="cell red">30</div>
+    <div class="cell black">33</div>
+    <div class="cell red">36</div>
+    <div class="cell span-cell">2-1</div>
+
+    <!-- Linha 2 -->
+    <div class="cell black">2</div>
+    <div class="cell red">5</div>
+    <div class="cell black">8</div>
+    <div class="cell black">11</div>
+    <div class="cell red">14</div>
+    <div class="cell black">17</div>
+    <div class="cell black">20</div>
+    <div class="cell red">23</div>
+    <div class="cell black">26</div>
+    <div class="cell black">29</div>
+    <div class="cell red">32</div>
+    <div class="cell black">35</div>
+    <div class="cell span-cell">2-1</div>
+
+    <!-- Linha 3 -->
+    <div class="cell red">1</div>
+    <div class="cell black">4</div>
+    <div class="cell red">7</div>
+    <div class="cell black">10</div>
+    <div class="cell black">13</div>
+    <div class="cell red">16</div>
+    <div class="cell black">19</div>
+    <div class="cell black">22</div>
+    <div class="cell red">25</div>
+    <div class="cell red">28</div>
+    <div class="cell black">31</div>
+    <div class="cell red">34</div>
+    <div class="cell span-cell">2-1</div>
+
+    <!-- 12s -->
+    <div class="cell betting-row colspan-4">1st 12</div>
+    <div class="cell betting-row colspan-4">2nd 12</div>
+    <div class="cell betting-row colspan-4">3rd 12</div>
+    <div class="cell betting-row"></div>
+
+    <!-- Apostas externas -->
+    <div class="cell betting-row colspan-2">1-18</div>
+    <div class="cell betting-row colspan-2">Even</div>
+    <div class="cell betting-row colspan-2 red">Red</div>
+    <div class="cell betting-row colspan-2 black">Black</div>
+    <div class="cell betting-row colspan-2">Odd</div>
+    <div class="cell betting-row colspan-2">19-36</div>
+    <div class="cell betting-row"></div>
+  </div>
+</div>
+</body>
+</html>

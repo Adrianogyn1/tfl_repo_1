@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Roleta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/roletaPlguin.js"></script>
+  <script src="../js/NunInfo.js"></script>
+  <script src="../js/user.js"></script>
+  
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #176B44;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    
+    .table-container {
+      position: relative;
+      display: flex;
+      !important justify-content: center;
+    }
+    
+    .aposta-externa-container {
+      width: 90px;
+      height: 520px;
+    }
+    
+    .aposta-externa {
+      float: left;
+    }
+    
+    /* ---------------- APOSTAS ---------------- */
+    .aposta-externa div,
+    .table-nums .col {
+      border: 1px solid #fff;
+      text-align: center;
+      font-weight: bold;
+      color: white;
+    }
+    
+    .aposta-externa .dezena,
+    .aposta-externa .opcional {
+      background: #198754;
+      border: 1px solid #fff;
+      //  border-radius: .25rem;
+      // display: flex;
+      justify-content: center;
+      align-items: center;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    
+    .aposta-externa .dezena {
+      width: 40px;
+      height: 160px;
+    }
+    
+    .aposta-externa .opcional {
+      width: 40px;
+      height: 80px;
+      
+    }
+    
+    .aposta-externa .opcional-null {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 0px;
+    }
+    
+    /* ---------------- NÚMEROS ---------------- */
+    .table-nums {
+      width: 120px;
+      !important height: 520px;
+      !important margin: 3px;
+      z-index=499;
+      !important float: :right;
+    }
+    
+    .table-nums .row div {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+    }
+    
+    .table-nums .row .zero {
+      width: 120px;
+      height: 40px;
+      line-height: 40px;
+      background: green !important;
+    }
+    
+    .table-nums .col {
+      //background: #6c757d;
+    }
+    
+    .vermelho {
+      background: red !important;
+    }
+    
+    .preto {
+      background: black !important;
+    }
+    
+    /* ---------------- COLUNAS ---------------- */
+    .aposta-externa-col {
+      //  display: flex;
+      //   justify-content: space-between;
+      // margin-top: 5px;
+    }
+    
+    .aposta-externa-col .col {
+      
+      background: #198754;
+      color: #fff;
+      font-weight: bold;
+      
+      text-align: center;
+      width: 40px;
+      !important height: 40px;
+      !important line-height: 40px;
+      
+    }
+    
+    .chip1 {
+      background: #565656;
+    }
+    
+    .chip2 {
+      background: #00EEBB;
+    }
+    
+    .chip {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 6px dashed #fff;
+      background: var(--chip-bg, #e11d48);
+      /* fundo base (rosa/vermelho por padrão) */
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+      overflow: hidden;
+    }
+    
+    /* gomos decorativos */
+    .chip::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: repeating-conic-gradient(from 0deg,
+          rgba(255, 255, 255, 0.25) 0deg 15deg,
+          /* gomo claro */
+          transparent 15deg 30deg
+          /* espaço vazio */
+        );
+      mix-blend-mode: overlay;
+      /* mescla com a cor da ficha */
+    }
+    
+    /* anel interno */
+    .chip::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, .4);
+    }
+    
+    .scene {
+      perspective: 1000px;
+    }
+    
+    .historico {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 10px;
+      background: #176B44;
+      border-radius: 8px;
+      max-width: 400px;
+    }
+    
+    .historico div {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      border-radius: 10%;
+      border: 1px solid #fff;
+      font-family: Arial, sans-serif;
+    }
+    
+    .red {
+      background-color: #ff4d4d;
+      color: #fff;
+      font-weight: bold;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .black {
+      background-color: #333333;
+      color: #fff;
+      font-weight: bold;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .green {
+      background-color: #00cc44;
+      color: #fff;
+      font-weight: bold;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    
+    #status {
+      font-weight: bold;
+    }
+    
+    #error {
+      color: red;
+      margin-top: 10px;
+    }
+    
+    #log {
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 14px;
+      background: #f9f9f9;
+    }
+  </style>
+  
+  
+</head>
+
+<body>
+  
+  
+  <div> <span id="tempo"></span> </div>
+  
+  <div class="">
+    <canvas id="roulette" width="300" height="300" style="display: none;"></canvas>
+  </div>
+  
+  
+  
+  
+  
+  
+  <div class="scene">
+    <canvas id="roulette" class="abc" width="300" height="300" style="display: none;"></canvas>
+  </div>
+  
+  <div class="game row" style="position: relative;">
+    <div class="col align-items-center">
+      
+      <div class="table-container">
+        
+        <!-- Apostas externas -->
+        <div class="aposta-externa-container">
+          <div class="aposta-externa col">
+            <div class="opcional-null"></div>
+            <div class="opcional betClick" data-bet="" data-nums="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18">1 - 18</div>
+            <div class="opcional betClick" data-bet="" data-nums="1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35">Ímpar</div>
+            <div class="preto opcional betClick" data-bet="" data-nums="2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35">Preto</div>
+            <div class="vermelho opcional betClick" data-bet="" data-nums="1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36">Vermelho</div>
+            <div class="opcional betClick" data-bet="" data-nums="2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36">Par</div>
+            <div class="opcional betClick" data-bet="" data-nums="19,20,21,22,23,24,25,26,27,28,29,30,21,32,33,34,35,36">19 - 36</div>
+          </div>
+          
+          <!-- Dúzias -->
+          <div class="aposta-externa">
+            <div class="opcional-null"></div>
+            <div class="dezena betClick" data-bet="" data-nums="1,2,3,4,5,6,7,8,9,10,11,12">1ª Dúzia</div>
+            <div class="dezena betClick" data-bet="" data-nums="13,14,15,16,17,18,19,20,21,22,23,24">2ª Dúzia</div>
+            <div class="dezena betClick" data-bet="" data-nums="25,26,27,28,29,30,31,32,33,34,35,36">3ª Dúzia</div>
+          </div>
+        </div>
+        
+        <!-- Números -->
+        <div class="table-nums">
+          <div class="row">
+            <div class="col zero betClick" data-bet="" data-numero="0">0</div>
+          </div>
+          <!-- 1 a 36 com data-bet -->
+          <div class="row">
+            <div class="col vermelho betClick" data-bet="" data-numero="1">1</div>
+            <div class="col preto betClick" data-bet="" data-numero="2">2</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="3">3</div>
+          </div>
+          <div class="row">
+            <div class="col preto betClick" data-bet="" data-numero="4">4</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="5">5</div>
+            <div class="col preto betClick" data-bet="" data-numero="6">6</div>
+          </div>
+          <div class="row">
+            <div class="col vermelho betClick" data-bet="" data-numero="7">7</div>
+            <div class="col preto betClick" data-bet="" data-numero="8">8</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="9">9</div>
+          </div>
+          <div class="row">
+            <div class="col preto betClick" data-bet="" data-numero="10">10</div>
+            <div class="col preto betClick" data-bet="" data-numero="11">11</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="12">12</div>
+          </div>
+          <div class="row">
+            <div class="col preto betClick" data-bet="" data-numero="13">13</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="14">14</div>
+            <div class="col preto betClick" data-bet="" data-numero="15">15</div>
+          </div>
+          <div class="row">
+            <div class="col vermelho betClick" data-bet="" data-numero="16">16</div>
+            <div class="col preto betClick" data-bet="" data-numero="17">17</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="18">18</div>
+          </div>
+          <div class="row">
+            <div class="col vermelho betClick" data-bet="" data-numero="19">19</div>
+            <div class="col preto betClick" data-bet="" data-numero="20">20</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="21">21</div>
+          </div>
+          <div class="row">
+            <div class="col preto betClick" data-bet="" data-numero="22">22</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="23">23</div>
+            <div class="col preto betClick" data-bet="" data-numero="24">24</div>
+          </div>
+          <div class="row">
+            <div class="col vermelho betClick" data-bet="" data-numero="25">25</div>
+            <div class="col preto betClick" data-bet="" data-numero="26">26</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="27">27</div>
+          </div>
+          <div class="row">
+            <div class="col preto betClick" data-bet="" data-numero="28">28</div>
+            <div class="col preto betClick" data-bet="" data-numero="29">29</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="30">30</div>
+          </div>
+          <div class="row">
+            <div class="col preto betClick" data-bet="" data-numero="31">31</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="32">32</div>
+            <div class="col preto betClick" data-bet="" data-numero="33">33</div>
+          </div>
+          <div class="row">
+            <div class="col vermelho betClick" data-bet="" data-numero="34">34</div>
+            <div class="col preto betClick" data-bet="" data-numero="35">35</div>
+            <div class="col vermelho betClick" data-bet="" data-numero="36">36</div>
+          </div>
+          
+          <!-- Colunas -->
+          <div class="row aposta-externa-col">
+            <div class="col coluna betClick" data-nums="1,4,7,10,13,16,19,22,25,28,31,34" data-bet="">1</div>
+            <div class="col coluna betClick" data-nums="2,5,8,11,14,17,20,23,26,29,32,35" data-bet="">2</div>
+            <div class="col coluna betClick" data-nums="3,6,9,12,15,18,21,24,27,30,33,36" data-bet="">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col d-flex flex-column align-items-end justify-content-start">
+      <button class="btn btn-danger mb-2 btnLimpar">x</button>
+      <button class="btn btn-info btnDobrar">2x</button>
+      
+      <div id="chip-area" class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+        <div class="chip" style="--chip-bg:#565656" data-value="0.1">0.1</div>
+        <div class="chip" style="--chip-bg:#888888" data-value="0.2">0.2</div>
+        <div class="chip" style="--chip-bg:#AAAAAA" data-value="0.5">0.5</div>
+        <div class="chip" style="--chip-bg:#00EEBB" data-value="1">1</div>
+        <div class="chip" style="--chip-bg:#00CC99" data-value="2.5">2.5</div>
+        <div class="chip" style="--chip-bg:#009966" data-value="5">5</div>
+        <div class="chip" style="--chip-bg:#2563eb" data-value="10">10</div>
+        <div class="chip" style="--chip-bg:#1e40af" data-value="25">25</div>
+        <div class="chip" style="--chip-bg:#16a34a" data-value="50">50</div>
+        <div class="chip" style="--chip-bg:#15803d" data-value="100">100</div>
+        <div class="chip" style="--chip-bg:#d97706" data-value="250">250</div>
+        <div class="chip" style="--chip-bg:#b45309" data-value="500">500</div>
+        <div class="chip" style="--chip-bg:#f59e0b" data-value="1000">1k</div>
+        <div class="chip" style="--chip-bg:#facc15" data-value="5000">5k</div>
+        <div class="chip" style="--chip-bg:#eab308" data-value="10000">10k</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="playerInfo row">
+    <div class="nome col">User</div>
+        <div class="saldo col">R$ 0.00</div>
+        <div class="aposta col">0.00</div>
+        <div class="lucro col">0.00</div>
+  </div>
+  
+  
+  
+  <datatemplate id="templateHistorico" style="display:none;">
+    <div class="$color" style=""><strong>$numero</strong></div>
+  </datatemplate>
+  <div class="historico">
+  </div>
+  
+  <div id="error"></div>
+  <div id="log"></div>
+  
+  
+  
+  <!-- Modal -->
+  <div class="modal fade" id="modalResult" tabindex="-1" aria-labelledby="meuModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body align-items-end justify-content-center">
+          <hr />
+          <h5 class="numero"></h5>
+          <hr />
+          <h6 class="premio"></h6>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  <script>
+    $(document).ready(function() {
+      
+      let user = carregarUser();
+      if(!user){
+        user = {nome:"user", saldo:1000};
+        salvarUser(user.nome,user.saldo);
+      }
+      
+      const $userName =$('.playerInfo .nome');
+      const $userSaldo =$('.playerInfo .saldo');
+      const $userAposta =$('.playerInfo .aposta');
+      const $userLucro =$('.playerInfo .lucro');
+      
+      $userName.text(user.nome);
+      $userSaldo.text(formatarBRL(user.saldo));
+      
+      
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalResult'));
+      const params = new URLSearchParams(window.location.search);
+      const $roomName = "Stake"; //params.get('room');
+      const url = "https://cassinoserver-production.up.railway.app";
+      const socket = io(url);
+      let gameStatus = "aguardando";
+      const $history = $('#history');
+      const $historico = $('.historico');
+      const $status = $('.status');
+      const $error = $('#error');
+      const $log = $('#log');
+      const $tempo = $('#tempo');
+      
+      
+      function log(msg) {
+        $log.append(`<div>${msg}</div>`);
+        $log.scrollTop($log[0].scrollHeight); // rola sempre pro final
+      }
+      
+      socket.on('registerBet', data => { 
+        
+        if(data.aceito)
+        {
+         log("bet aceita");
+         
+         }
+        else
+        {
+          alert(data.message);
+        }
+        
+      });
+      
+      // Recebe histórico completo da sala
+      socket.on('history', data => {
+        $history.empty();
+        $historico.empty();
+        data.forEach(r => addHistorico(r.numInfo));
+        log("📜 Histórico carregado (" + data.length + " itens)");
+      });
+      
+      // Recebe novos resultados
+      socket.on('newResult', data => {
+        
+        addHistorico(data.numInfo);
+        clearChip(); //limpa as fichas
+        
+        //$('#roulette').fadeOut('slow').hide('slow');
+        $('#roulette').fadeOut('slow').hide('slow');
+        
+        let html = `${data.numInfo.numero} ${data.numInfo.color}`;
+        $("#modalResult").find(".modal-body").css({ "width": "100%", "height": "100%" ,"min-height":"600px" });
+        $("#modalResult").find(".numero").addClass(data.numInfo.color).text(html);
+          $("#modalResult").find(".premio").text('');
+        modal.show();
+        setTimeout(function() {
+          modal.hide();
+          $("#modalResult").find(".numero").removeClass(data.numInfo.color);
+          $(".game").fadeIn('slow').css("display", "flex");
+          
+        }, 3000);
+        
+        
+        log("🎲 Novo resultado: " + data.numInfo.numero);
+      });
+      
+      socket.on('round', data =>
+      {
+        const valor = data.numero; // Array.isArray(data.data) ? data.data.join(' ') : data.data;
+        $("#roulette").data("roulette").spin(valor);
+        $("#roulette").fadeIn('slow').show();
+        $(".game").fadeOut('slow').css("display", "none");
+      });
+      
+      // Atualiza status da sala
+      socket.on('status', data => {
+        gameStatus = data;
+       // $status.text(data);
+        
+      });
+      
+      socket.on('requere-payout', data => {
+        user.saldo -= data;
+        salvarUser(user.nome,user.saldo);
+        $userSaldo.text(formatarBRL(user.saldo));
+      });
+      
+      socket.on('payout', data => {
+        user.saldo += data;
+        salvarUser(user.nome,user.saldo);
+        $userSaldo.text(formatarBRL(user.saldo));
+        
+        log("ganhou " + data);
+        $("#modalResult").find(".premio").text(`Você ganhou ${data}`);
+        
+      });
+      
+      socket.on('tempo', data => {
+        $tempo.text(data);
+        if(data==1)
+        $tempo.hide('slow');
+        else{
+          $tempo.show();
+        }
+        // log("ℹ️ Status: " + data);
+      });
+      
+      // Exibe erros
+      socket.on('error', data => {
+        $error.text(data.error || 'Erro desconhecido');
+        log("❌ Erro: " + (data.error || 'Erro desconhecido'));
+      });
+      
+      socket.on('log', data => {
+        // $error.text(data.error || 'Erro desconhecido');
+        log("😤log: " + data);
+      });
+      
+      // Eventos de conexão
+      socket.on("connect", () => {
+        $status.text("Conectado");
+        socket.emit("joinRoom", $roomName);
+        log("✅ Conectado ao servidor (ID: " + socket.id + ")");
+      });
+      
+      socket.on("connect_error", (err) => {
+        $status.text("Erro");
+        $error.text("Erro ao conectar: " + err.message);
+        log("❌ Erro de conexão: " + err.message);
+      });
+      
+      socket.on("reconnect_attempt", (attempt) => {
+        $status.text("Reconectando...");
+        log("🔄 Tentando reconectar... tentativa #" + attempt);
+      });
+      
+      socket.on("disconnect", (reason) => {
+        $status.text("Desconectado");
+        log("⚠️ Desconectado: " + reason);
+      });
+      
+      
+      
+      
+      let valorSelected = 1;
+      $('#chip-area .chip').click(function() {
+        valorSelected = parseFloat($(this).data('value'));
+        
+      });
+      
+      function addHistorico(numObj) {
+        // console.log(numObj);
+        
+        const template = $('#templateHistorico').html();
+        
+        // Substitui os placeholders pelo valor do objeto
+        const html = template
+          .replace('$numero', numObj.numero)
+          .replace('$color', numObj.color);
+        
+        // Adiciona ao histórico
+        $historico.prepend(html);
+        
+        // Mantém só os últimos 10 números
+        if ($historico.children().length > 15) {
+          $historico.children().last().remove();
+        }
+      }
+      
+      
+      $("#roulette").roulette({
+        duration: 8000,
+        wheelRotations: 6,
+        ballRotations: 12,
+        onFinish: function(num) {
+          // addHistorico(new NumInfo(num));
+          // $('.table-container').css('display','flex');
+          // $(".game").fadeIn('slow').css("display", "flex");
+          // $('#roulette').hide('slow');
+          // $("#roulette").width(100);
+          //$("#roulette").height(100);
+          //alert("Parou no número " + num);
+        }
+      });
+      
+      
+      // ===============================
+      // Variáveis globais
+      // ===============================
+      let myBet = [];
+      let tableBets = [];
+      
+      // ===============================
+      // Função para atualizar apostas
+      // ===============================
+      
+      function updateBet() {
+        let tempBets = [];
+        tableBets = [];
+        let lastBet = [];
+        // Apostas individuais
+        $('.betClick').not('[data-nums]').each((_, el) => {
+          let $el = $(el);
+          let $chip = $el.find('.chip');
+          
+          if ($chip.length > 0) {
+            let value = parseFloat($chip.text());
+            let numero = $el.data('numero');
+            tableBets.push({ numero, valor: value });
+            tempBets.push({ numero: parseInt(numero), valor: value });
+          }
+        });
+        
+        // Apostas múltiplas (splits/quadras)
+        $('.betDiv, .betClick[data-nums]').each((_, el) => {
+          let $el = $(el);
+          let $chip = $el.find('.chip');
+          
+          if ($chip.length > 0) {
+            let value = parseFloat($chip.text());
+            let nuns = $el.data('nums');
+            let numeros = nuns.split(',').map(n => parseInt(n));
+            
+            tableBets.push({ numero: nuns, valor: value });
+            
+            numeros.forEach(n => {
+              let existing = tempBets.find(b => b.numero === n);
+              let splitValue = value / numeros.length;
+              if (existing) existing.valor += splitValue;
+              else tempBets.push({ numero: n, valor: splitValue });
+            });
+          }
+        });
+        
+        let total = tempBets.reduce((sum, b) => sum + b.valor, 0);
+        myBet = { numeros: tempBets, total };
+        
+        $userAposta.text(formatarBRL(total));
+$userSaldo.text(formatarBRL(user.saldo-total));
+        if (JSON.stringify(lastBet) !== JSON.stringify(myBet))
+        {
+          lastBet = myBet;
+          
+          if(gameStatus=="apostas_aberta"){
+          socket.emit("mybet", myBet.numeros);
+          console.log(myBet.numeros);}
+        }
+        
+      }
+      
+      // ===============================
+      // Função para  chip
+      // ===============================
+      
+      function addDropEvt(div)
+      {
+        $div = $(div);
+        $div.css('z-index', 499);
+        
+        $div.droppable({
+          accept: ".chip", // só aceita os chips
+          tolerance: "intersect",
+          drop: function(event, ui) {
+            ui.helper.data("dropped", true); // marca que o chip foi solto
+            const $target = $(this);
+            
+            // pega o valor do chip
+            let value = parseFloat(ui.helper.text());
+            var lasValue = parseFloat($target.find('.chip').text()) | 0;
+            addChip($target, value + lasValue);
+            
+            // atualiza apostas
+            ui.helper.remove();
+            updateBet();
+          }
+        });
+      }
+      
+      function clearChip() {
+        $('.betClick, .betDiv').each((idx, el) => {
+          let $el = $(el);
+          let $chip = $el.find('.chip');
+          $chip.remove();
+        });
+        updateBet();
+      }
+      
+      function dobrarChip() {
+        $('.betClick, .betDiv').each((idx, el) => {
+          let $el = $(el);
+          let $chip = $el.find('.chip');
+          $chip.text(parseFloat($chip.text()) * 2);
+        });
+        updateBet();
+      }
+      
+      function addChip($target, value) {
+        $target.find('.chip').remove();
+        let zindex = 5000; //$target.css('z-index') ||500;
+        
+        const $chip = $('<div class="chip"></div>').text(value).css({
+          position: 'absolute',
+          width: '30px',
+          height: '30px',
+          'border-radius': '50%',
+          // background: 'orange',
+          color: 'black',
+          'text-align': 'center',
+          'line-height': '30px',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          'z-index': zindex,
+          cursor: 'move'
+        });
+        
+        
+        $chip.draggable({
+          helper: "clone", // clone em vez do original (livre de contexto)
+          appendTo: "body", // joga o helper direto no body
+          cursor: "move",
+          cursorAt: { top: 15, left: 15 },
+          revert: "invalid",
+          start: (e, ui) => {
+            ui.helper.css({
+              position: "fixed", // usa fixed → ignora contextos relativos
+              top: e.clientY - 15, // alinha com o mouse
+              left: e.clientX - 15,
+              "z-index": 999999, // bem acima de tudo
+              pointerEvents: "none" // não bloqueia os drops
+              // 'width':'60px',
+              //  'height':'60px'
+            });
+            $(e.target).css('display', 'none');
+          },
+          drag: (e, ui) => {
+            ui.helper.css({
+              top: e.clientY - 1,
+              left: e.clientX - 1
+            });
+          },
+          stop: (e, ui) => {
+            $(e.target).remove();
+            if (ui.helper.data("dropped")) return;
+            //if (!ui.helper.data("dropped")) {
+            ui.helper.remove();
+            updateBet();
+            
+            
+            ui.helper.data("dropped", true);
+          }
+          
+        });
+        
+        
+        if (!$target.hasClass('betDiv'))
+          $target.css('position', 'relative');
+        
+        
+        $target.append($chip);
+        
+        $('.betClick, .betDiv').each((idx, el) => {
+          let $el = $(el);
+          $el.css('z-index', zindex + 1);
+        });
+      }
+      
+      //adicionar drop 
+      $('.betClick').each((idx, el) => { addDropEvt(el); });
+      
+      
+      
+      // ===============================
+      // Função para criar splits/quadras
+      // ===============================
+      function createSplitOrQuad($cellsInput) {
+        const $container = $(".table-container");
+        
+        if (!$cellsInput || !$cellsInput.length) return null;
+        
+        // garante que seja jQuery
+        const $cells = $($cellsInput);
+        
+        const containerRect = $container[0].getBoundingClientRect();
+        
+        // agora $cells é jQuery, converte para array de DOM puros
+        const cellsArray = $cells.get(); // get() retorna array de DOM
+        
+        const offsets = cellsArray.map(el => {
+          const rect = el[0].getBoundingClientRect();
+          return {
+            left: rect.left - containerRect.left,
+            top: rect.top - containerRect.top,
+            width: rect.width,
+            height: rect.height
+          };
+        });
+        
+        const minLeft = Math.min(...offsets.map(o => o.left));
+        const minTop = Math.min(...offsets.map(o => o.top));
+        const maxRight = Math.max(...offsets.map(o => o.left + o.width));
+        const maxBottom = Math.max(...offsets.map(o => o.top + o.height));
+        
+        const centerX = (minLeft + maxRight) / 2;
+        const centerY = (minTop + maxBottom) / 2;
+        
+        const width = 40;
+        const height = 40;
+        
+        const nums = cellsArray.map(el => $(el).data("numero"));
+        
+        const $div = $(`<div class="betDiv" data-nums="${nums}"></div>`).css({
+          position: "absolute",
+          left: centerX - width / 4,
+          top: centerY - height / 4,
+          width: width / 2,
+          height: height / 2,
+          background: "transparent",
+          //border: "1px dashed orange",
+          cursor: "pointer",
+          "z-index": 20
+        });
+        
+        $container.append($div);
+        return $div;
+      }
+      
+      
+      
+      // ===============================
+      // Criação de splits e quadras
+      // ===============================
+      const splits = [
+        [1, 2],
+        [2, 3],
+        [4, 5],
+        [5, 6],
+        [7, 8],
+        [8, 9],
+        [10, 11],
+        [11, 12],
+        [13, 14],
+        [14, 15],
+        [16, 17],
+        [17, 18],
+        [19, 20],
+        [20, 21],
+        [22, 23],
+        [23, 24],
+        [25, 26],
+        [26, 27],
+        [28, 29],
+        [29, 30],
+        [31, 32],
+        [32, 33],
+        [34, 35],
+        [35, 36],
+        [1, 4],
+        [4, 7],
+        [7, 10],
+        [10, 13],
+        [13, 16],
+        [16, 19],
+        [19, 22],
+        [22, 25],
+        [25, 28],
+        [28, 31],
+        [31, 34],
+        [2, 5],
+        [5, 8],
+        [8, 11],
+        [11, 14],
+        [14, 17],
+        [17, 20],
+        [20, 23],
+        [23, 26],
+        [26, 29],
+        [29, 32],
+        [32, 35],
+        [3, 6],
+        [6, 9],
+        [9, 12],
+        [12, 15],
+        [15, 18],
+        [18, 21],
+        [21, 24],
+        [24, 27],
+        [27, 30],
+        [30, 33],
+        [33, 36]
+      ];
+      
+      const quadras = [
+        [1, 2, 4, 5],
+        [2, 3, 5, 6],
+        [4, 5, 7, 8],
+        [5, 6, 8, 9],
+        [7, 8, 10, 11],
+        [8, 9, 11, 12],
+        [10, 11, 13, 14],
+        [11, 12, 14, 15],
+        [13, 14, 16, 17],
+        [14, 15, 17, 18],
+        [16, 17, 19, 20],
+        [17, 18, 20, 21],
+        [19, 20, 22, 23],
+        [20, 21, 23, 24],
+        [22, 23, 25, 26],
+        [23, 24, 26, 27],
+        [25, 26, 28, 29],
+        [26, 27, 29, 30],
+        [28, 29, 31, 32],
+        [29, 30, 32, 33],
+        [31, 32, 34, 35],
+        [32, 33, 35, 36]
+      ];
+      
+      $(document).ready(function() {
+        
+        splits.forEach(q => {
+          createSplitOrQuad([
+            $(`.betClick[data-numero="${q[0]}"]`),
+            $(`.betClick[data-numero="${q[1]}"]`)
+          ]);
+        });
+        
+        quadras.forEach(q => {
+          createSplitOrQuad([
+            $(`.betClick[data-numero="${q[0]}"]`),
+            $(`.betClick[data-numero="${q[1]}"]`),
+            $(`.betClick[data-numero="${q[2]}"]`),
+            $(`.betClick[data-numero="${q[3]}"]`)
+          ]);
+        });
+        
+        $('.betClick').each((idx, el) => { addDropEvt(el); });
+        
+        
+      });
+      
+      // ===============================
+      // Click em apostas
+      // ===============================
+      $(document).on('click', '.betClick, .betDiv', function() {
+        const $this = $(this);
+        const nums = $this.data('numero') || $this.data('nums');
+        const valor = valorSelected;
+        
+        let existing = tableBets.find(b => b.numero === nums);
+        if (existing) existing.valor += valor;
+        else existing = { numero: nums, valor };
+        
+        addChip($this, existing.valor);
+        updateBet();
+        // console.log(tableBets);
+      });
+      
+      $('.btnLimpar').click(clearChip);
+      $('.btnDobrar').click(dobrarChip);
+      
+      
+    });
+  </script>
+  
+  
+  
+  
+</body>
+
+</html>

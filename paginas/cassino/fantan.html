@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+  
+  
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <link rel="stylesheet" href="styles/baccarat.css">
+  
+  <script src="./js/user.js"></script>
+  
+  
+  <style>
+    body {
+      background: #1b5e20;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    
+    .table-area {
+      background: #2e7d32;
+      border: 3px solid goldenrod;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .bet-cell {
+      border: 2px solid goldenrod;
+      border-radius: 8px;
+      margin: 5px;
+      padding: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .bet-cell.active {
+      background: gold;
+      color: black;
+    }
+    
+    .chips {
+      margin-top: 20px;
+    }
+    
+    .chip {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      text-align: center;
+      margin: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      background: crimson;
+    }
+    
+    .chip[data-value>="10"] {
+      background: dodgerblue;
+    }
+    
+    .chip[data-value="50"] {
+      background: orange;
+    }
+    
+    .chip[data-value>="100"] {
+      background: purple;
+    }
+    
+  </style>
+  
+  <title>Fan Tan</title>
+</head>
+
+<body>
+  
+  <div class="container mt-4">
+    <h2 class="text-center">🎲 Fan Tan</h2>
+    
+      <div id="tempo"></div>
+  
+  <div class="playerInfo row">
+    <div class="nome col">User</div>
+    <div class="saldo col">R$ 0.00</div>
+    <div class="aposta col">0.00</div>
+    <div class="lucro col">0.00</div>
+  </div>
+    
+    
+    
+    <div class="table-area mt-3">
+      <div class="row">
+        
+        <div class="col bet-cell" data-bet="small">
+          <bold>
+            Small
+          </bold>
+          <p>
+            <small>1:0.95</small>
+          </p>
+        </div>
+        
+      </div>
+      <div class="row">
+        <div class="col-3 bet-cell" data-bet="odd">ODDS</div>
+        <div class="col">
+          <div class="row">
+            <div class="col bet-cell" data-bet="1">1</div>
+            <div class="col bet-cell" data-bet="2">2</div>
+          </div>
+          <div class="row">
+            <div class="col bet-cell" data-bet="3">3</div>
+            <div class="col bet-cell" data-bet="4">4</div>
+          </div>
+        </div>
+        <div class="col-3 bet-cell" data-bet="even">EVEN</div>
+      </div>
+      <div class="row">
+        
+        <div class="col bet-cell" data-bet="big">BIG</div>
+      </div>
+    </div>
+    
+    
+    
+  <div id="chip-area" class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+    <div class="chip" style="--chip-bg:#565656" data-value="1">1</div>
+    <div class="chip" style="--chip-bg:#00EEBB" data-value="2.50">2.50</div>
+    <div class="chip" style="--chip-bg:#2563eb" data-value="10">10</div>
+    <div class="chip" style="--chip-bg:#16a34a" data-value="50">50</div>
+    <div class="chip" style="--chip-bg:#d97706" data-value="100">100</div>
+  </div>
+  
+  
+  
+    <div id="error"></div>
+  
+  
+  <div id="log"></div>
+  <ul id="history"></ul>
+  
+  
+  
+  
+  <script>
+    let selectedChip = 10;
+    let saldo = 1000;
+    let aposta = 0;
+    let bet ={um:0,dois:0,tres:0,quatro:0,total:0};
+    
+    
+    $(".chip").click(function() {
+      $(".chip").removeClass("active");
+      $(this).addClass("active");
+      selectedChip = parseInt($(this).data("value"));
+      
+    });
+    
+    $(".bet-cell").click(function() {
+      if (saldo >= selectedChip) {
+        saldo -= selectedChip;
+        aposta += selectedChip;
+        $(this).addClass("active");
+        $("#saldo").text(saldo);
+        $("#aposta").text(aposta);
+      } else {
+        alert("Saldo insuficiente!");
+      }
+    });
+  </script>
+  
+  <script>
+$(document).ready(function(){
+  
+  
+      // ================= VARIÁVEIS =================
+    let chipSelected = null;
+    const bet = { player: 0, banker: 0, draw: 0, total: 0 };
+    let apostaHistorico = [];
+    let ultimaAposta = null;
+    
+    let user = carregarUser();
+    if (!user) {
+      user = { nome: "user", saldo: 1000 };
+      salvarUser(user.nome, user.saldo);
+    }
+    
+    
+    
+    const $el = {
+      betBoxes: $("#bet_player, #bet_banker, #bet_draw"),
+      log: $("#log"),
+      history: $('#history'),
+      playerDeck: $('#player'),
+      bankerDeck: $('#banker'),
+      historico: $('#historico'),
+      tempo: $('#tempo'),
+      status: $('#status'),
+      error: $('#error'),
+      userName: $('.playerInfo .nome'),
+      userSaldo: $('.playerInfo .saldo'),
+      userAposta: $('.playerInfo .aposta'),
+      userLucro: $('.playerInfo .lucro'),
+    };
+    
+    //users
+    $el.userName.text(user.nome);
+    $el.userSaldo.text(formatarBRL(user.saldo));
+    
+    const params = new URLSearchParams(window.location.search);
+    const $roomName = params.get('room');
+    const socket = io("https://cassinoserver-production.up.railway.app");
+    const myHistorico = [];
+    
+    
+    function log(msg) { $el.log.append(`<div>${msg}</div>`);
+        $el.log.scrollTop($el.log[0].scrollHeight); }
+    
+  
+      // ================= SOCKET =================
+    socket.on('connect', () => {
+        $el.status.text("Conectado");
+        socket.emit("joinRoom", $roomName);
+        log(`✅ Conectado (ID:${socket.id})`);
+    });
+    
+    socket.on('disconnect', () => $el.status.text("Desconectado"));
+    socket.on('connect_error', err => $el.status.text(`Erro: ${err.message}`));
+    socket.on('reconnect_attempt', a => $el.status.text(`Reconectando... #${a}`));
+    
+    socket.on('history', data => {
+        myHistorico.push(...data);
+      //  atualizarHistoricoBigRoad(myHistorico.map(c => c.vencedor));
+    //$el.history.html(data.map(r => `<b>${r.vencedor}</b>`).join(''));
+        log(`📜 Histórico carregado (${data.length})`);
+    });
+    
+    socket.on('newResult', data => {
+       // addDeck(data);
+        myHistorico.push(data);
+    //    atualizarHistoricoBigRoad(myHistorico.map(c => c.vencedor));
+        setTimeout(() => { 
+          //$el.playerDeck.empty();
+          //  $el.bankerDeck.empty(); 
+          
+        }, 4000);
+      //  RoundEnd(); // salva ultima aposta e limpa fichas
+        log(`🎲 Novo resultado ${data.vencedor}`);
+    });
+    
+    socket.on('registerBet', data => { log("bet aceita"); });
+    socket.on('payout', data => { 
+        log("ganhou: " + data); 
+        user.saldo+=data;
+        salvarSaldo(user.saldo);
+        $el.userSaldo.text(formatarBRL(user.saldo));
+    });
+    
+    socket.on('requere-payout', data => {
+       log("requere"+data);
+        user.saldo -= data;
+        salvarSaldo(user.saldo);
+        $el.userSaldo.text(formatarBRL(user.saldo));
+      });
+    
+    
+    
+    
+    socket.on('round', addDeck);
+    socket.on('tempo', data => $el.tempo.text(data));
+    socket.on('status', data => $el.status.text(data));
+    socket.on('error', data => $el.error.text(data.error || data));
+    
+});
+  </script>
+  
+  
+</body>
+
+</html>

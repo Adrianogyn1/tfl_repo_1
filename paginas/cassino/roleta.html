@@ -1,0 +1,575 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roleta</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #176B44; color: #fff; }
+  h1 { text-align: center; margin: 0 0 14px; }
+  #status { text-align: center; font-weight: bold; }
+  #tempo { text-align: center; font-size: 26px; font-weight: bold; min-height: 32px; }
+
+  .game { display: flex; justify-content: center; gap: 12px; align-items: flex-start; }
+  #gameArea { position: relative; display: flex; justify-content: center; }
+
+  .ext { width: 90px; display: flex; flex-direction: column; }
+  .ext .null { height: 40px; }
+  .ext .opc, .ext .dz {
+    background: #198754; border: 1px solid #fff; color: #fff; font-weight: bold; text-align: center;
+    writing-mode: vertical-rl; text-orientation: mixed; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none; position: relative;
+  }
+  .ext .opc { height: 80px; }
+  .ext .dz { height: 160px; }
+  .ext .opc.vermelho { background: #d62828; }
+  .ext .opc.preto { background: #111; }
+
+  .nums { width: 130px; display: flex; flex-direction: column; }
+  .zero { height: 40px; line-height: 40px; background: #198754; border: 1px solid #fff; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .cell { height: 40px; line-height: 40px; border: 1px solid #fff; text-align: center; font-weight: bold; cursor: pointer; user-select: none; position: relative; }
+  .cell:hover, .ext .opc:hover, .ext .dz:hover, .zero:hover, .colBtn:hover { filter: brightness(1.25); }
+  .red { background: #d62828; color: #fff; }
+  .black { background: #111; color: #fff; }
+  .colRow { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .colBtn { height: 40px; line-height: 40px; background: #198754; border: 1px solid #fff; color: #fff; font-weight: bold; text-align: center; cursor: pointer; position: relative; user-select: none; }
+
+  .locked [data-key] { cursor: not-allowed; filter: saturate(.7); }
+
+  .chipv {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    min-width: 30px; height: 30px; padding: 0 3px; border-radius: 50%; background: #e11d48;
+    border: 3px dashed #fff; color: #fff; font-size: 11px; font-weight: bold; line-height: 24px;
+    text-align: center; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,.4);
+    writing-mode: horizontal-tb;
+  }
+  .ext .chipv { transform: translate(-50%, -50%) rotate(-90deg); }
+
+  .side { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 170px; }
+  button.ctl { border: 0; border-radius: 6px; padding: 8px 14px; font-weight: bold; color: #fff; cursor: pointer; width: 100%; }
+  button.ctl:disabled { opacity: .5; cursor: not-allowed; }
+  .btnLimpar { background: #dc3545; }
+  .btnDobrar { background: #0dcaf0; color: #000; }
+  #chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+  .chip {
+    width: 50px; height: 50px; border-radius: 50%; border: 6px dashed #fff; color: #fff; font-weight: bold; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;
+    background: var(--c); box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .chip.sel { outline: 3px solid #ffd60a; outline-offset: 2px; }
+
+  .playerInfo { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 18px 0; }
+  .playerInfo div { background: rgba(0,0,0,.25); padding: 8px 14px; border-radius: 6px; font-weight: bold; }
+
+  .historico { display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; border-radius: 8px; max-width: 420px; margin: 0 auto; }
+  .historico div { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 6px; border: 1px solid #fff; }
+  .historico .red { background: #ff4d4d; } .historico .black { background: #333; } .historico .green { background: #00cc44; }
+
+  #error { color: #ffb3b3; text-align: center; min-height: 20px; margin-top: 8px; font-weight: bold; }
+  #log { margin: 12px auto 0; padding: 10px; border: 1px solid #ccc; max-height: 180px; overflow-y: auto; font-size: 13px; background: #f9f9f9; color: #222; max-width: 600px; }
+
+  #wheelBox { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
+  #wheelBox.show { display: flex; }
+  #wheel { width: 420px; height: 420px; max-width: 100%; }
+
+  #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 999; }
+  #modal.show { display: flex; }
+  #modal .box { background: #fff; color: #111; padding: 30px 40px; border-radius: 10px; text-align: center; min-width: 280px; }
+  #modal .num { font-size: 56px; font-weight: bold; width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: #fff; }
+  #modal .premio { font-size: 18px; min-height: 24px; }
+</style>
+</head>
+<body>
+
+<h1>Roleta</h1>
+<div id="status">Desconectado</div>
+<div id="tempo"></div>
+
+<div id="gameArea">
+  <div class="game" id="game">
+    <div class="ext">
+      <div class="null"></div>
+      <div class="opc" data-key="out:1-18">1 - 18</div>
+      <div class="opc" data-key="out:impar">Ímpar</div>
+      <div class="opc preto" data-key="out:preto">Preto</div>
+      <div class="opc vermelho" data-key="out:vermelho">Vermelho</div>
+      <div class="opc" data-key="out:par">Par</div>
+      <div class="opc" data-key="out:19-36">19 - 36</div>
+    </div>
+
+    <div class="ext" style="width:50px">
+      <div class="null"></div>
+      <div class="dz" data-key="dz:1">1ª Dúzia</div>
+      <div class="dz" data-key="dz:2">2ª Dúzia</div>
+      <div class="dz" data-key="dz:3">3ª Dúzia</div>
+    </div>
+
+    <div class="nums">
+      <div class="zero" data-key="n:0">0</div>
+      <div class="grid" id="grid"></div>
+      <div class="colRow">
+        <div class="colBtn" data-key="col:1">2:1</div>
+        <div class="colBtn" data-key="col:2">2:1</div>
+        <div class="colBtn" data-key="col:3">2:1</div>
+      </div>
+    </div>
+
+    <div class="side">
+      <button class="ctl btnLimpar" id="btnLimpar">Limpar</button>
+      <button class="ctl btnDobrar" id="btnDobrar">2x</button>
+      <div id="chips"></div>
+    </div>
+  </div>
+
+  <div id="wheelBox"><canvas id="wheel" width="420" height="420"></canvas></div>
+</div>
+
+<div class="playerInfo">
+  <div id="pNome">Visitante</div>
+  <div id="pSaldo">R$ 0,00</div>
+  <div id="pAposta">R$ 0,00</div>
+  <div id="pLucro">R$ 0,00</div>
+</div>
+
+<div class="historico" id="historico"></div>
+<div id="error"></div>
+<div id="log"></div>
+
+<div id="modal">
+  <div class="box">
+    <div class="num" id="mNum"></div>
+    <div class="premio" id="mPremio"></div>
+  </div>
+</div>
+
+<!-- Servido automaticamente pelo servidor Socket.IO -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  /* ===================== Config ===================== */
+  const params = new URLSearchParams(location.search);
+  const ROOM_ID = params.get('room') || 'roullet-0';       // ids do master: roullet-0 ... roullet-9
+  const SERVER = params.get('server') || '';                // vazio = mesma origem
+  const BET_DEBOUNCE_MS = 250;                              // > cooldown do servidor (200ms)
+
+  const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+  const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+  const CHIP_COLORS = {
+    0.1:'#565656',0.2:'#888888',0.5:'#AAAAAA',1:'#00EEBB',2.5:'#00CC99',5:'#009966',10:'#2563eb',
+    25:'#1e40af',50:'#16a34a',100:'#15803d',250:'#d97706',500:'#b45309',1000:'#f59e0b',5000:'#facc15',10000:'#eab308'
+  };
+
+  /* ===================== Estado ===================== */
+  // Saldo vem do servidor (eventos 'user' / 'saldo'). Nada de saldo em localStorage.
+  let user = { nome: 'Visitante', saldo: 0 };
+  let serverBalance = false;     // true após o servidor enviar o saldo
+  let gameStatus = 'aguardando';
+  let valorSelected = 1;
+  let bets = {};                 // key -> valor
+  let committed = false;         // apostas travadas/descontadas (após requere-payout)
+  let rotation = 0;
+  let spinning = false;
+  let afterSpin = null;          // callback executado ao fim do giro
+  let lastSent = null;
+  let sendTimer = null;
+  let socket = null;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const fmt = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+  const round2 = v => Math.round(v * 100) / 100;
+  const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
+  const totalBet = () => round2(Object.values(bets).reduce((s, v) => s + v, 0));
+  const available = () => round2(committed ? user.saldo : user.saldo - totalBet());
+  const canBet = () => gameStatus === 'apostas_aberta' && !spinning && !committed;
+
+  /* ===================== UI helpers ===================== */
+  function log(msg) {
+    const d = document.createElement('div');
+    d.textContent = msg;
+    const el = $('#log');
+    el.appendChild(d);
+    while (el.children.length > 200) el.firstChild.remove();
+    el.scrollTop = el.scrollHeight;
+  }
+  const setError = msg => { $('#error').textContent = msg || ''; };
+  const setStatus = msg => { $('#status').textContent = msg; };
+
+  function renderPlayer() {
+    $('#pNome').textContent = user.nome;
+    $('#pSaldo').textContent = fmt(available());
+    $('#pAposta').textContent = fmt(totalBet());
+  }
+
+  function renderLock() {
+    const locked = !canBet();
+    $('#game').classList.toggle('locked', locked);
+    $('#btnLimpar').disabled = locked;
+    $('#btnDobrar').disabled = locked;
+  }
+
+  /* ===================== Mapa de apostas ===================== */
+  const BET_NUMS = { 'n:0': [0] };
+  for (let n = 1; n <= 36; n++) BET_NUMS['n:' + n] = [n];
+  BET_NUMS['dz:1'] = range(1, 12);
+  BET_NUMS['dz:2'] = range(13, 24);
+  BET_NUMS['dz:3'] = range(25, 36);
+  BET_NUMS['out:1-18'] = range(1, 18);
+  BET_NUMS['out:19-36'] = range(19, 36);
+  BET_NUMS['out:par'] = range(1, 36).filter(n => n % 2 === 0);
+  BET_NUMS['out:impar'] = range(1, 36).filter(n => n % 2 === 1);
+  BET_NUMS['out:vermelho'] = [...RED].sort((a, b) => a - b);
+  BET_NUMS['out:preto'] = range(1, 36).filter(n => !RED.has(n));
+  BET_NUMS['col:1'] = range(0, 11).map(i => i * 3 + 1);
+  BET_NUMS['col:2'] = range(0, 11).map(i => i * 3 + 2);
+  BET_NUMS['col:3'] = range(0, 11).map(i => i * 3 + 3);
+
+  // Grade 1..36 (linhas de 3)
+  const grid = $('#grid');
+  for (let r = 0; r < 12; r++) {
+    for (let c = 0; c < 3; c++) {
+      const n = r * 3 + c + 1;
+      const d = document.createElement('div');
+      d.className = 'cell ' + (RED.has(n) ? 'red' : 'black');
+      d.dataset.key = 'n:' + n;
+      d.textContent = n;
+      grid.appendChild(d);
+    }
+  }
+
+  // Fichas
+  const chipsEl = $('#chips');
+  Object.keys(CHIP_COLORS).map(Number).forEach(v => {
+    const c = document.createElement('div');
+    c.className = 'chip' + (v === valorSelected ? ' sel' : '');
+    c.style.setProperty('--c', CHIP_COLORS[v]);
+    c.textContent = v >= 1000 ? (v / 1000) + 'k' : v;
+    c.onclick = () => {
+      valorSelected = v;
+      $$('.chip').forEach(x => x.classList.toggle('sel', x === c));
+    };
+    chipsEl.appendChild(c);
+  });
+
+  /* ===================== Apostas ===================== */
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-key]');
+    if (!el) return;
+    if (!canBet()) return setError('Apostas fechadas');
+    if (available() < valorSelected) return setError('Saldo insuficiente');
+    const key = el.dataset.key;
+    bets[key] = round2((bets[key] || 0) + valorSelected);
+    setError('');
+    renderBets();
+  });
+
+  $('#btnLimpar').onclick = () => {
+    if (!canBet()) return;
+    bets = {};
+    renderBets();
+  };
+
+  $('#btnDobrar').onclick = () => {
+    if (!canBet()) return;
+    if (available() < totalBet()) return setError('Saldo insuficiente');
+    Object.keys(bets).forEach(k => { bets[k] = round2(bets[k] * 2); });
+    renderBets();
+  };
+
+  function renderBets() {
+    $$('[data-key]').forEach(el => {
+      const v = bets[el.dataset.key];
+      let tag = el.querySelector('.chipv');
+      if (v) {
+        if (!tag) { tag = document.createElement('span'); tag.className = 'chipv'; el.appendChild(tag); }
+        tag.textContent = v;
+      } else if (tag) tag.remove();
+    });
+    renderPlayer();
+    scheduleSend();
+  }
+
+  // Divide em centavos inteiros: o total apostado é preservado (sem perda por arredondamento)
+  function buildNumeros() {
+    const acc = {};
+    for (const [key, valor] of Object.entries(bets)) {
+      const nums = BET_NUMS[key];
+      if (!nums) continue;
+      const cents = Math.round(valor * 100);
+      const base = Math.floor(cents / nums.length);
+      let rest = cents - base * nums.length;
+      nums.forEach(n => {
+        const c = base + (rest-- > 0 ? 1 : 0);
+        if (c > 0) acc[n] = (acc[n] || 0) + c;
+      });
+    }
+    return Object.entries(acc).map(([numero, c]) => ({ numero: Number(numero), valor: c / 100 }));
+  }
+
+  function scheduleSend() {
+    clearTimeout(sendTimer);
+    sendTimer = setTimeout(sendBets, BET_DEBOUNCE_MS);
+  }
+
+  function sendBets() {
+    if (!socket || !socket.connected || !canBet()) return;
+    const numeros = buildNumeros();
+    const payload = JSON.stringify(numeros);
+    if (payload === lastSent) return;
+    lastSent = payload;
+    socket.emit('mybet', numeros, res => {
+      if (res && res.ok) return;
+      const msg = res?.message || 'Aposta recusada';
+      setError(msg);
+      lastSent = null;                                 // permite reenvio
+      if (/muitas/i.test(msg)) scheduleSend();         // rate limit: tenta de novo
+    });
+  }
+
+  /* ===================== Roleta (canvas) ===================== */
+  const canvas = $('#wheel');
+  const ctx = canvas.getContext('2d');
+  const SLICE = Math.PI * 2 / WHEEL_ORDER.length;
+  const colorOf = n => n === 0 ? '#198754' : RED.has(n) ? '#d62828' : '#111';
+
+  function drawWheel() {
+    const W = canvas.width, H = canvas.height, cx = W / 2, cy = H / 2, R = W / 2 - 6;
+    ctx.clearRect(0, 0, W, H);
+    WHEEL_ORDER.forEach((n, i) => {
+      const a = rotation + i * SLICE - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, a, a + SLICE);
+      ctx.closePath();
+      ctx.fillStyle = colorOf(n);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(a + SLICE / 2);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(n, R - 16, 4);
+      ctx.restore();
+    });
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = '#0b4a2e';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - 10, 2); ctx.lineTo(cx + 10, 2); ctx.lineTo(cx, 22); ctx.closePath();
+    ctx.fillStyle = '#ffd60a';
+    ctx.fill();
+  }
+
+  function endSpin() {
+    spinning = false;
+    rotation = rotation % (Math.PI * 2);
+    renderLock();
+    if (afterSpin) { const cb = afterSpin; afterSpin = null; cb(); }
+  }
+
+  function spinTo(numero) {
+    const idx = WHEEL_ORDER.indexOf(Number(numero));
+    if (idx < 0) return log('Número inválido: ' + numero);
+    if (spinning) return;                              // ignora 'round' duplicado
+    const target = -(idx + 0.5) * SLICE;
+    const start = rotation;
+    const delta = (((target - start) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    const end = start + Math.PI * 2 * 6 + delta;
+    const duration = 8000;
+    const t0 = performance.now();
+
+    spinning = true;
+    clearTimeout(sendTimer);
+    $('#wheelBox').classList.add('show');
+    $('#game').style.visibility = 'hidden';
+    renderLock();
+
+    (function frame(now) {
+      const t = Math.min(1, (now - t0) / duration);
+      rotation = start + (end - start) * (1 - Math.pow(1 - t, 3));
+      drawWheel();
+      if (t < 1) requestAnimationFrame(frame);
+      else { rotation = end; drawWheel(); endSpin(); }
+    })(t0);
+  }
+  drawWheel();
+
+  /* ===================== Histórico / resultado ===================== */
+  function normColor(numObj) {
+    const n = Number(numObj.numero);
+    if (n === 0) return 'green';
+    return RED.has(n) ? 'red' : 'black';
+  }
+
+  function addHistorico(numObj, append) {
+    const h = $('#historico');
+    const d = document.createElement('div');
+    d.className = normColor(numObj);
+    d.textContent = numObj.numero;
+    append ? h.appendChild(d) : h.prepend(d);
+    while (h.children.length > 15) h.lastChild.remove();
+  }
+
+  function showResult(numObj) {
+    const cls = normColor(numObj);
+    const el = $('#mNum');
+    el.textContent = numObj.numero;
+    el.style.background = cls === 'red' ? '#d62828' : cls === 'black' ? '#111' : '#198754';
+    $('#modal').classList.add('show');
+    clearTimeout(showResult.t);
+    showResult.t = setTimeout(() => $('#modal').classList.remove('show'), 3000);
+  }
+
+  function finishRound(data) {
+    const numInfo = data?.numInfo || data;
+    addHistorico(numInfo);
+    showResult(numInfo);
+    log('🎲 Resultado: ' + numInfo.numero);
+    bets = {};
+    committed = false;
+    lastSent = null;
+    $('#wheelBox').classList.remove('show');
+    $('#game').style.visibility = 'visible';
+    renderBets();
+    renderLock();
+  }
+
+  /* ===================== Socket.IO ===================== */
+  function getToken() {
+    try { return localStorage.getItem('userToken') || undefined; } catch { return undefined; }
+  }
+
+  function applyBalance(v) {
+    const n = Number(v);
+    if (Number.isNaN(n)) return;
+    user.saldo = round2(n);
+    serverBalance = true;
+    renderPlayer();
+  }
+
+  function joinRoom() {
+    socket.emit('joinRoom', { roomId: ROOM_ID }, res => {
+      if (!res || !res.ok) {
+        setStatus('Falha ao entrar na sala');
+        return setError(res?.message || 'Não foi possível entrar na sala');
+      }
+      setStatus('Sala: ' + (res.info?.nome || res.info?.name || ROOM_ID));
+      log('✅ Conectado à sala ' + ROOM_ID);
+      setError('');
+    });
+  }
+
+  const HANDLERS = {
+    // dados do jogador (enviados pelo servidor)
+    user(d) {
+      if (d?.nome) user.nome = String(d.nome);
+      if (d?.saldo !== undefined) applyBalance(d.saldo);
+      renderPlayer();
+    },
+    saldo(d) { applyBalance(d); },
+
+    registerBet(d) {
+      if (d && d.aceito) log('Aposta aceita');
+      else setError(d?.message || 'Aposta recusada');
+    },
+
+    history(d) {
+      $('#historico').innerHTML = '';
+      (d || []).forEach(r => addHistorico(r.numInfo || r, true));
+      log('📜 Histórico carregado (' + (d || []).length + ')');
+    },
+
+    round(d) {
+      $('#mPremio').textContent = '';
+      $('#pLucro').textContent = fmt(0);
+      spinTo(d && d.numero !== undefined ? d.numero : d);
+    },
+
+    newResult(d) {
+      if (spinning) afterSpin = () => finishRound(d);
+      else finishRound(d);
+    },
+
+    status(d) {
+      gameStatus = d;
+      renderLock();
+      if (d === 'apostas_aberta') { lastSent = null; sendBets(); }
+    },
+
+    tempo(d) { $('#tempo').textContent = d == 1 ? '' : d; },
+
+    // aposta efetivada: trava o tapete e desconta (se o servidor não enviar o saldo)
+    'requere-payout'(d) {
+      committed = true;
+      if (!serverBalance) user.saldo = round2(user.saldo - Number(d));
+      renderPlayer();
+      renderLock();
+    },
+
+    payout(d) {
+      if (!serverBalance) user.saldo = round2(user.saldo + Number(d));
+      $('#pLucro').textContent = 'Lucro ' + fmt(d);
+      $('#mPremio').textContent = 'Você ganhou ' + fmt(d);
+      log('🏆 Ganhou ' + fmt(d));
+      renderPlayer();
+    },
+
+    error(d) {
+      const msg = typeof d === 'string' ? d : (d?.error || d?.message || 'Erro desconhecido');
+      setError(msg);
+      log('❌ ' + msg);
+    },
+
+    log(d) { log('ℹ️ ' + d); }
+  };
+
+  function connect() {
+    if (typeof io !== 'function') {
+      setStatus('socket.io indisponível');
+      return setError('Não foi possível carregar /socket.io/socket.io.js');
+    }
+
+    socket = io(SERVER + '/cassino', {
+      auth: { token: getToken() },     // o servidor também aceita o cookie userToken
+      withCredentials: true,
+      reconnectionDelayMax: 5000
+    });
+    setStatus('Conectando...');
+
+    socket.on('connect', () => {
+      lastSent = null;
+      joinRoom();                      // reentra na sala a cada (re)conexão
+    });
+
+    socket.on('disconnect', reason => {
+      setStatus('Desconectado');
+      log('⚠️ Desconectado (' + reason + '). Reconectando...');
+    });
+
+    socket.on('connect_error', err => {
+      setStatus('Erro de conexão');
+      setError(err?.message || 'Erro de conexão com o servidor');
+    });
+
+    Object.entries(HANDLERS).forEach(([type, fn]) => {
+      socket.on(type, data => {
+        try { fn(data); } catch (err) { console.error('[roleta]', type, err); }
+      });
+    });
+  }
+
+  /* ===================== Init ===================== */
+  renderPlayer();
+  renderLock();
+  connect();
+})();
+</script>
+</body>
+</html>

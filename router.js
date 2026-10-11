@@ -26,7 +26,7 @@ router.use("/api/auth", authController.router);
 router.use("/api", socialController.router);
 
 //slots
-const slotsController = require("./controllers/game/slots/slots_controller.js");
+const slotsController = require("./controllers/game/cassino/slots/slots_controller.js");
 router.use("/slot", slotsController.router);
 
 

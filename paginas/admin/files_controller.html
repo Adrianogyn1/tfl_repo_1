@@ -19,6 +19,7 @@
 
        <!--Tailwind-->
        <script src="https://cdn.tailwindcss.com"></script>
+       <script src="/socket.io/socket.io.js"></script>
    <style>
         :root {
             --bg-app: #F3F4F1;
@@ -1705,6 +1706,9 @@
         /* ---------- Git ---------- */
         function openGit()
         {
+            const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+            const comitMessage = `Atualização (${new Date().toLocaleString()}) – ${dominio}`;
+
             openOps('Git — repositório', `
                 <div class="ops-toolbar">
                     <button class="btn-ghost-sm" id="git-refresh">Atualizar status</button>
@@ -1715,7 +1719,7 @@
 
                 <div class="ops-section-title">Commit e push</div>
                 <div class="field-row">
-                    <input type="text" id="git-msg" maxlength="200" placeholder="Mensagem do commit">
+                    <input type="text" value="${comitMessage}" id="git-msg" maxlength="200" placeholder="Mensagem do commit">
                 </div>
                 <div class="ops-toolbar">
                     <button class="btn-primary-sm" id="git-commit">Commit</button>
@@ -1822,10 +1826,12 @@
                 opsLog('Erro ao clonar: ' + err.message);
             }
         }
-        /* ===================== Terminal (xterm.js + WebSocket) ===================== */
+
+        /* ===================== Terminal (xterm.js + Socket.IO) ===================== */
 let termInstance = null;
 let termFit = null;
-let termWs = null;
+let termSocket = null;
+let termReady = false;
 
 function setTermStatus(text, cls) {
     const el = $('term-status');
@@ -1833,22 +1839,9 @@ function setTermStatus(text, cls) {
     el.className = 'term-status' + (cls ? ' ' + cls : '');
 }
 
-function termUrl() {
-    const u = new URL(API + '/terminal', location.href);
-    u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
-    return u.toString();
-}
-
 function fitTerminal() {
     if (!termFit || !termInstance) return;
     try { termFit.fit(); } catch { }
-}
-
-function sendResize() {
-    fitTerminal();
-    if (termWs && termWs.readyState === WebSocket.OPEN && termInstance) {
-        termWs.send('\x01' + JSON.stringify({ cols: termInstance.cols, rows: termInstance.rows }));
-    }
 }
 
 function ensureTerminal() {
@@ -1863,22 +1856,24 @@ function ensureTerminal() {
     termFit = new FitAddon.FitAddon();
     termInstance.loadAddon(termFit);
     termInstance.open($('term-container'));
+
     termInstance.onData((data) => {
-        if (termWs && termWs.readyState === WebSocket.OPEN) termWs.send(data);
+        if (termReady && termSocket) termSocket.emit('term:input', data);
+    });
+    termInstance.onResize(({ cols, rows }) => {
+        if (termReady && termSocket) termSocket.emit('term:resize', { cols, rows });
     });
     window.addEventListener('resize', () => {
-        if ($('term-modal').classList.contains('open')) sendResize();
+        if ($('term-modal').classList.contains('open')) fitTerminal();
     });
 }
 
 function disconnectTerminal() {
-    if (termWs) {
-        termWs.onclose = null;
-        termWs.onerror = null;
-        termWs.onmessage = null;
-        termWs.close();
-        termWs = null;
-    }
+    termReady = false;
+    if (!termSocket) return;
+    termSocket.removeAllListeners();
+    termSocket.disconnect(); // o servidor mata o shell no disconnect
+    termSocket = null;
 }
 
 function connectTerminal() {
@@ -1887,23 +1882,48 @@ function connectTerminal() {
     termInstance.reset();
     setTermStatus('conectando…');
 
-    const ws = new WebSocket(termUrl());
-    termWs = ws;
+    // Autenticação pelo cookie userToken (mesma origem). Se usar token em storage: { auth: { token } }
+    const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+    const path = `${dominio}/admin`;
+    const s = io('/admin', { withCredentials: true });
 
-    ws.onopen = () => {
-        setTermStatus('conectado', 'on');
-        sendResize();
-        termInstance.focus();
-    };
-    ws.onmessage = (e) => {
-        if (typeof e.data === 'string') termInstance.write(e.data);
-    };
-    ws.onerror = () => setTermStatus('erro', 'off');
-    ws.onclose = () => {
-        if (termWs === ws) termWs = null;
+    termSocket = s;
+
+    s.on('connect', () => {
+        termReady = false;
+        termInstance.reset(); // reconexão = shell novo
+        fitTerminal();
+        s.emit('term:open', { cols: termInstance.cols, rows: termInstance.rows }, (r) => {
+            if (!r || !r.ok) {
+                setTermStatus('erro', 'off');
+                termInstance.write(`\r\n\x1b[31m[erro] ${r?.message || 'falha ao abrir'}\x1b[0m\r\n`);
+                return;
+            }
+            termReady = true;
+            setTermStatus('conectado', 'on');
+            termInstance.focus();
+        });
+    });
+
+    s.on('term:data', (d) => { if (typeof d === 'string') termInstance.write(d); });
+
+    s.on('term:exit', () => {
+        termReady = false;
+        setTermStatus('encerrado', 'off');
+        termInstance.write('\r\n\x1b[90m[shell encerrado]\x1b[0m\r\n');
+    });
+
+    s.on('connect_error', (e) => {
+        termReady = false;
+        setTermStatus('erro', 'off');
+        termInstance.write(`\r\n\x1b[31m[conexão] ${e.message}\x1b[0m\r\n`);
+    });
+
+    s.on('disconnect', (reason) => {
+        termReady = false;
         setTermStatus('desconectado', 'off');
-        termInstance.write('\r\n\x1b[90m[conexão encerrada]\x1b[0m\r\n');
-    };
+        termInstance.write(`\r\n\x1b[90m[conexão encerrada: ${reason}]\x1b[0m\r\n`);
+    });
 }
 
 function openTerminal() {
