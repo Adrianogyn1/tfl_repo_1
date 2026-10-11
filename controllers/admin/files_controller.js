@@ -6,19 +6,12 @@ const { execFile } = require('child_process');
 const express = require('express');
 const multer = require('multer');
 require('dotenv').config();
-
+const {auth} = require('../auth');
 
 const router = express.Router();
 router.use(express.json({ limit: '100kb' }));
 
-function requireAuth(req, res, next) 
-{
-  if (req.session?.user || req.cookies?.user) return next();
-  if (req.path === '/') return res.redirect('/admin/login');
-  res.status(401).json({ ok: false, message: 'Sessão expirada. Faça login novamente.' });
-}
-
-router.use(requireAuth);
+router.use(auth);
 
 const ROOT = path.resolve(process.env.FILES_ROOT || process.cwd());
 const REPO_DIR = path.resolve(__dirname);
@@ -66,7 +59,6 @@ function sendError(res, err) {
 
 const wrap = (fn) => async (req, res) => {
   try {
-
     await fn(req, res);
   } catch (err) {
     sendError(res, err);
@@ -125,12 +117,13 @@ function run(file, args, opts = {}) {
   const { secrets = [], ...execOpts } = opts;
   return new Promise((resolve, reject) => {
     execFile(file, args, { timeout: 120000, maxBuffer: 10 * 1024 * 1024, ...execOpts }, (err, stdout, stderr) => {
+      const out = (stdout && stdout.toString().trim()) || (stderr && stderr.toString().trim()) || '';
       if (err) {
-        let msg = (stderr && stderr.toString().trim()) || 'Falha ao executar comando.';
+        let msg = (stderr && stderr.toString().trim()) || (stdout && stdout.toString().trim()) || 'Falha ao executar comando.';
         for (const s of secrets) msg = msg.split(s).join('***');
         return reject(fail(500, msg.slice(0, 500)));
       }
-      resolve(stdout.toString().trim());
+      resolve(out);
     });
   });
 }
@@ -176,7 +169,7 @@ async function saveUploads(req, res) {
   }
 }
 
-/* ===================== Rotas ===================== */
+/* ===================== Rotas de arquivos ===================== */
 
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'upload.html'));
@@ -308,15 +301,110 @@ router.post('/deleteFolder', wrap(async (req, res) => {
   sendOk(res, 'Pasta excluída com sucesso.');
 }));
 
+/* ===================== PM2 ===================== */
+
+const PM2_ACTIONS = new Set(['start', 'stop', 'restart']);
+
+async function pm2List() {
+  const raw = await run('pm2', ['jlist']);
+  let list;
+  try {
+    list = JSON.parse(raw || '[]');
+  } catch {
+    throw fail(500, 'Não foi possível ler o status do PM2.');
+  }
+  return list.map(p => ({
+    name: p.name,
+    id: p.pm_id,
+    status: (p.pm2_env && p.pm2_env.status) || 'unknown',
+    cpu: p.monit ? p.monit.cpu : 0,
+    memory: p.monit ? Math.round(p.monit.memory / 1048576) : 0,
+    restarts: (p.pm2_env && p.pm2_env.restart_time) || 0
+  }));
+}
+
+// Valida o app contra a whitelist (PM2_APPS) e contra os processos existentes
+async function assertPm2App(app) {
+  if (app === 'all') {
+    if (!ALLOWED_APPS.has('all')) throw fail(403, 'Ação em todos os apps não permitida.');
+    return app;
+  }
+  if (typeof app !== 'string' || !REPO_SEGMENT.test(app)) throw fail(400, 'App inválido.');
+  if (!ALLOWED_APPS.has('all') && !ALLOWED_APPS.has(app)) throw fail(403, 'App não permitido.');
+  const apps = await pm2List();
+  if (!apps.some(a => a.name === app)) throw fail(404, 'App não encontrado no PM2.');
+  return app;
+}
+
+router.get('/pm2/list', wrap(async (req, res) => {
+  res.json(await pm2List());
+}));
+
+router.post('/pm2/action', wrap(async (req, res) => {
+  const action = bodyStr(req.body, 'action');
+  if (!PM2_ACTIONS.has(action)) throw fail(400, 'Ação inválida.');
+  const app = await assertPm2App(bodyStr(req.body, 'app'));
+  const out = await run('pm2', [action, app]);
+  sendOk(res, out || `${app}: ${action} executado.`);
+}));
+
 router.post('/reflash', wrap(async (req, res) => {
-  const app = (req.body && req.body.app) || 'all';
-  if (!ALLOWED_APPS.has(app)) throw fail(400, 'App inválido.');
+  const app = await assertPm2App((req.body && req.body.app) || 'all');
   const out = await run('pm2', ['restart', app]);
   sendOk(res, out || 'Atualizado com sucesso!');
 }));
 
+/* ===================== Git ===================== */
+
+const GIT_ENV = { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_EDITOR: 'true', GIT_MERGE_AUTOEDIT: 'no' };
+const git = (args) => run('git', args, { cwd: REPO_DIR, env: GIT_ENV });
+
+router.get('/git/status', wrap(async (req, res) => {
+  await git(['fetch', '--quiet']).catch(() => { }); // atualiza ahead/behind
+  const [branch, status, log] = await Promise.all([
+    git(['rev-parse', '--abbrev-ref', 'HEAD']),
+    git(['status', '-sb']),
+    git(['log', '-5', '--oneline'])
+  ]);
+  res.json({ ok: true, branch, status, log });
+}));
+
+router.post('/git/pull', wrap(async (req, res) => {
+  const mode = (req.body && req.body.mode) || 'autostash';
+
+  if (mode === 'autostash') {
+    const out = await git(['pull', '--autostash', '--no-rebase']);
+    return sendOk(res, out || 'Atualizado com sucesso!');
+  }
+  if (mode === 'reset') {
+    // Descarta alterações locais em arquivos rastreados e alinha com o remoto
+    await git(['fetch']);
+    const out = await git(['reset', '--hard', '@{u}']);
+    return sendOk(res, out || 'Sincronizado com o remoto (alterações locais descartadas).');
+  }
+  throw fail(400, 'Modo inválido.');
+}));
+
+router.post('/git/commit', wrap(async (req, res) => {
+  const message = bodyStr(req.body, 'message').trim();
+  if (message.length > 200) throw fail(400, 'Mensagem muito longa (máx. 200 caracteres).');
+
+  const changes = await git(['status', '--porcelain']);
+  if (!changes) throw fail(400, 'Nada para commitar.');
+
+  await git(['add', '-A']);
+  const out = await git(['commit', '-m', message]);
+  sendOk(res, out || 'Commit criado.');
+}));
+
+router.post('/git/push', wrap(async (req, res) => {
+  const out = await git(['push']);
+  sendOk(res, out || 'Push concluído.');
+}));
+
+// Mantido por compatibilidade com a rota antiga
 router.post('/updateGit', wrap(async (req, res) => {
-  const out = await run('git', ['pull'], { cwd: REPO_DIR });
+  const out = await git(['pull', '--autostash', '--no-rebase']);
   sendOk(res, out || 'Atualizado com sucesso!');
 }));
 
@@ -348,4 +436,4 @@ router.post('/createRepository', wrap(async (req, res) => {
   sendOk(res, `Repositório "${owner}/${repo}" clonado com sucesso.`);
 }));
 
-module.exports = router;
+module.exports = {router};

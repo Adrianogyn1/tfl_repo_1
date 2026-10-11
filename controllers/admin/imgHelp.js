@@ -10,6 +10,7 @@ function gerarPlaceholder(req, res) {
   // 1. Define o tamanho (usa o parâmetro 'w' ou o padrão 200)
   const tamanho = parseInt(w, 10) || 200;
 
+
   // 2. Extrai as iniciais
   const partes = username.trim().split(/\s+/);
   const iniciais =

@@ -69,9 +69,14 @@ router.get('/assas', async (req, res) =>
 router.use("/users", async (req, res) => {
     res.sendFile(path.join(__dirname, "../../paginas/admin/users.html"));
 });
+router.use("/arquivos", async (req, res) => {
+  res.sendFile(path.join(__dirname, "../../paginas/admin/upload.html"));
+});
+const controllerFiles = require("./files_controller");
+router.use("/filemanager", controllerFiles.router);
 
-const {helps} = require("../../routers/routes.js");
-router.use("/",helps);
+//const {helps} = require("../../routers/routes.js");
+//router.use("/",helps);
 
 
 module.exports = {

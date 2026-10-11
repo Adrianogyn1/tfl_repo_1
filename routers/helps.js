@@ -12,7 +12,7 @@ router.get("/sprite", (req, res) => {
   res.sendFile(path.join(__dirname, "../paginas/helps/sprite.html"));
 });
 
-const uploadsInfo = require("../paginas/helps/upload.js");
+const uploadsInfo = require("../controllers/admin/upload.js");
 router.use("/arquivos/",uploadsInfo);
 
 

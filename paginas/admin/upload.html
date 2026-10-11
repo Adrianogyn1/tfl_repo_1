@@ -240,25 +240,6 @@
             text-align: left;
         }
 
-        .side-header.toggle {
-            cursor: pointer;
-        }
-
-        .side-header.toggle:hover {
-            color: var(--ink);
-        }
-
-        .side-header .chev {
-            width: 11px;
-            height: 11px;
-            transition: transform .15s ease;
-            flex-shrink: 0;
-        }
-
-        .side-header.open .chev {
-            transform: rotate(90deg);
-        }
-
         .tree-scroll {
             padding: 0 8px 12px;
             font-size: 13.5px;
@@ -340,36 +321,6 @@
 
         .nested.active {
             display: block;
-        }
-
-        .side-content {
-            padding: 10px 14px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .btn-line {
-            font-size: 13px;
-            padding: 7px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--bg-panel);
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .btn-line:hover {
-            border-color: var(--accent);
-            color: var(--accent-dark);
-        }
-
-        .btn-line svg {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
         }
 
         .field-row {
@@ -665,6 +616,41 @@
             font-family: var(--font-mono);
         }
 
+        /* ---------- Modal de operações (PM2 / Git) ---------- */
+        .ops-modal { width: 760px; }
+        .ops-body {
+            padding: 14px 18px; display: flex; flex-direction: column; gap: 12px;
+            max-height: 70vh; overflow-y: auto; font-size: 13.5px;
+        }
+        .ops-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+        .ops-toolbar button { white-space: nowrap; }
+        .ops-section-title { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 4px; }
+        .ops-block { max-height: 180px; margin: 0; }
+        .ops-log { max-height: 130px; margin: 0; }
+        .ops-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .ops-table th {
+            text-align: left; font-size: 11.5px; color: var(--muted);
+            padding: 6px 8px; border-bottom: 1px solid var(--border);
+        }
+        .ops-table td {
+            padding: 7px 8px; border-bottom: 1px solid var(--border);
+            font-family: var(--font-mono); font-size: 12.5px;
+        }
+        .ops-actions { display: flex; gap: 6px; justify-content: flex-end; }
+        .ops-actions button {
+            font-size: 12px; padding: 4px 8px; border-radius: 5px;
+            border: 1px solid var(--border); background: var(--bg-panel);
+        }
+        .ops-actions button:hover { border-color: var(--accent); color: var(--accent-dark); }
+        .ops-actions button.danger-btn:hover { border-color: var(--danger); color: var(--danger); }
+        .st { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+        .st-online { background: var(--accent-soft); color: var(--accent-dark); }
+        .st-stopped { background: var(--bg-sidebar-hover); color: var(--muted); }
+        .st-error { background: var(--danger-soft); color: var(--danger); }
+        .st-other { background: #F5EFD9; color: #7A5C12; }
+        .danger-txt { color: var(--danger) !important; }
+        .danger-txt:hover { border-color: var(--danger) !important; }
+
         /* ---------- Responsive ---------- */
         @media (max-width:860px) {
             .sidebar {
@@ -719,6 +705,21 @@
             <nav class="breadcrumbs" id="breadcrumbs"></nav>
             <div class="topbar-actions">
                 <input type="text" id="filter-input" class="search" placeholder="Filtrar nesta pasta...">
+                <button id="btn-pm2" class="icon-btn" title="PM2" aria-label="PM2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="6" rx="1.5" />
+                        <rect x="3" y="14" width="18" height="6" rx="1.5" />
+                        <path d="M7 7h.01M7 17h.01" />
+                    </svg>
+                </button>
+                <button id="btn-git" class="icon-btn" title="Git" aria-label="Git">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="6" cy="5" r="2" />
+                        <circle cx="6" cy="19" r="2" />
+                        <circle cx="18" cy="7" r="2" />
+                        <path d="M6 7v10M18 9a6 6 0 0 1-6 6H6" />
+                    </svg>
+                </button>
                 <button id="btn-new-folder-toggle" class="icon-btn" title="Nova pasta" aria-label="Nova pasta">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                         stroke-linejoin="round">
@@ -748,40 +749,6 @@
                 <section class="side-section">
                     <div class="side-header"><span>Pastas</span></div>
                     <div id="tree" class="tree-scroll">Carregando…</div>
-                </section>
-
-                <section class="side-section">
-                    <button class="side-header toggle" id="git-toggle">
-                        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 6l6 6-6 6" />
-                        </svg>
-                        <span>Git</span>
-                    </button>
-                    <div class="side-content" id="git-content" hidden>
-                        <button class="btn-line" id="btn-git-pull">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 12a9 9 0 1 1-3-6.7" />
-                                <path d="M21 3v6h-6" />
-                            </svg>
-                            Atualizar projeto (pull)
-                        </button>
-                        <div class="field-row">
-                            <input type="text" id="repo-name" placeholder="usuario/repositorio">
-                            <button class="icon-btn" id="btn-git-clone" title="Clonar repositório"
-                                aria-label="Clonar repositório">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="6" cy="4.5" r="2" />
-                                    <circle cx="6" cy="19.5" r="2" />
-                                    <circle cx="18" cy="8.5" r="2" />
-                                    <path d="M6 6.5v11M6 13a7.5 7.5 0 0 0 7.5-7.5" />
-                                </svg>
-                            </button>
-                        </div>
-                        <pre class="git-output" id="git-output">Aguardando ações…</pre>
-                    </div>
                 </section>
             </aside>
 
@@ -839,6 +806,17 @@
         </div>
     </div>
 
+    <!-- Modal de operações (PM2 / Git) -->
+    <div class="modal-backdrop" id="ops-modal">
+        <div class="modal ops-modal">
+            <div class="modal-header" id="ops-title">Operações</div>
+            <div class="ops-body" id="ops-body"></div>
+            <div class="modal-footer">
+                <button class="btn-ghost-sm" id="ops-close">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
@@ -855,7 +833,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
 
     <script>
-        const API = './arquivos';
+        const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+        const API = dominio + '/admin/filemanager';
         const IMAGE_EXT = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico'];
         const ARCHIVE_RE = /\.(zip|tgz|tar|tar\.gz)$/i;
 
@@ -1379,46 +1358,208 @@
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files);
         });
 
-        /* ===================== Git ===================== */
-        $('git-toggle').onclick = () => {
-            const gitContent = $('git-content');
-            gitContent.hidden = !gitContent.hidden;
-            $('git-toggle').classList.toggle('open', !gitContent.hidden);
-        };
+        /* ===================== Modal de operações (PM2 / Git) ===================== */
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-        function logGit(msg) {
-            const out = $('git-output');
-            const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        function openOps(title, html) {
+            $('ops-title').textContent = title;
+            $('ops-body').innerHTML = html;
+            $('ops-body').onclick = null;
+            $('ops-modal').classList.add('open');
+        }
+
+        function closeOps() {
+            $('ops-modal').classList.remove('open');
+        }
+
+        $('ops-close').onclick = closeOps;
+        $('ops-modal').addEventListener('click', (e) => { if (e.target === $('ops-modal')) closeOps(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOps(); });
+
+        function opsLog(msg) {
+            const out = $('ops-log');
+            if (!out) return;
+            const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             out.textContent += `\n[${time}] ${msg}`;
             out.scrollTop = out.scrollHeight;
         }
 
-        $('btn-git-pull').onclick = async () => {
-            logGit('Atualizando projeto…');
-            try {
-                const r = await postJson('/updateGit');
-                logGit(r.message);
-            } catch (err) {
-                logGit('Erro ao atualizar: ' + err.message);
-            }
-        };
+        $('btn-pm2').onclick = openPm2;
+        $('btn-git').onclick = openGit;
 
-        $('btn-git-clone').onclick = async () => {
+        /* ---------- PM2 ---------- */
+        const PM2_LABEL = { start: 'Iniciar', stop: 'Parar', restart: 'Reiniciar' };
+
+        function openPm2() {
+            openOps('PM2 — processos', `
+                <div class="ops-toolbar">
+                    <button class="btn-ghost-sm" id="pm2-refresh">Atualizar</button>
+                    <button class="btn-ghost-sm" data-app="all" data-action="restart">Reiniciar todos</button>
+                </div>
+                <table class="ops-table">
+                    <thead><tr><th>App</th><th>Status</th><th>CPU</th><th>Memória</th><th>Restarts</th><th></th></tr></thead>
+                    <tbody id="pm2-rows"><tr><td colspan="6">Carregando…</td></tr></tbody>
+                </table>
+                <pre class="git-output ops-log" id="ops-log">Pronto.</pre>`);
+
+            $('pm2-refresh').onclick = loadPm2;
+            $('ops-body').onclick = (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (btn) pm2Action(btn.dataset.app, btn.dataset.action);
+            };
+            loadPm2();
+        }
+
+        async function loadPm2() {
+            const tbody = $('pm2-rows');
+            if (!tbody) return;
+            try {
+                const apps = await getJson('/pm2/list');
+                if (apps.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">Nenhum processo encontrado.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = apps.map(a => {
+                    const stCls = ({ online: 'st-online', stopped: 'st-stopped', errored: 'st-error' })[a.status] || 'st-other';
+                    const name = esc(a.name);
+                    const mainBtn = a.status === 'online'
+                        ? `<button class="danger-btn" data-app="${name}" data-action="stop">Parar</button>`
+                        : `<button data-app="${name}" data-action="start">Iniciar</button>`;
+                    return `<tr>
+                        <td>${name}</td>
+                        <td><span class="st ${stCls}">${esc(a.status)}</span></td>
+                        <td>${a.cpu}%</td>
+                        <td>${a.memory} MB</td>
+                        <td>${a.restarts}</td>
+                        <td><div class="ops-actions">
+                            ${mainBtn}
+                            <button data-app="${name}" data-action="restart">Reiniciar</button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+            } catch (err) {
+                opsLog('Erro ao carregar PM2: ' + err.message);
+            }
+        }
+
+        async function pm2Action(app, action) {
+            const target = app === 'all' ? 'todos os processos' : app;
+            if ((action === 'stop' || app === 'all') && !confirm(`${PM2_LABEL[action]} ${target}?`)) return;
+
+            opsLog(`${PM2_LABEL[action]} ${target}…`);
+            try {
+                const r = await postJson('/pm2/action', { app, action });
+                opsLog(r.ok ? r.message : 'Erro: ' + r.message);
+                loadPm2();
+            } catch (err) {
+                opsLog('Erro: ' + err.message);
+            }
+        }
+
+        /* ---------- Git ---------- */
+        function openGit() {
+            openOps('Git — repositório', `
+                <div class="ops-toolbar">
+                    <button class="btn-ghost-sm" id="git-refresh">Atualizar status</button>
+                    <button class="btn-ghost-sm" id="git-pull">Pull (autostash)</button>
+                    <button class="btn-ghost-sm danger-txt" id="git-reset">Forçar sincronia com remoto</button>
+                </div>
+                <pre class="git-output ops-block" id="git-status">Carregando…</pre>
+
+                <div class="ops-section-title">Commit e push</div>
+                <div class="field-row">
+                    <input type="text" id="git-msg" maxlength="200" placeholder="Mensagem do commit">
+                </div>
+                <div class="ops-toolbar">
+                    <button class="btn-primary-sm" id="git-commit">Commit</button>
+                    <button class="btn-ghost-sm" id="git-push">Push</button>
+                    <button class="btn-primary-sm" id="git-commit-push">Commit + Push</button>
+                </div>
+
+                <div class="ops-section-title">Clonar repositório</div>
+                <div class="field-row">
+                    <input type="text" id="repo-name" placeholder="usuario/repositorio">
+                    <button class="btn-ghost-sm" id="git-clone">Clonar</button>
+                </div>
+
+                <pre class="git-output ops-log" id="ops-log">Pronto.</pre>`);
+
+            $('git-refresh').onclick = loadGitStatus;
+            $('git-pull').onclick = () => gitPull('autostash');
+            $('git-reset').onclick = () => {
+                if (confirm('Isso descarta TODAS as alterações locais em arquivos rastreados e alinha com o remoto. Continuar?')) {
+                    gitPull('reset');
+                }
+            };
+            $('git-commit').onclick = () => gitCommit(false);
+            $('git-commit-push').onclick = () => gitCommit(true);
+            $('git-push').onclick = () => gitPush();
+            $('git-clone').onclick = gitClone;
+
+            loadGitStatus();
+        }
+
+        async function loadGitStatus() {
+            const box = $('git-status');
+            if (!box) return;
+            try {
+                const d = await getJson('/git/status');
+                box.textContent = `Branch: ${d.branch}\n\n${d.status || 'Árvore de trabalho limpa.'}\n\nÚltimos commits:\n${d.log}`;
+            } catch (err) {
+                box.textContent = 'Erro: ' + err.message;
+            }
+        }
+
+        async function runGitAction(url, body = {}) {
+            try {
+                const r = await postJson(url, body);
+                opsLog(r.ok ? r.message : 'Erro: ' + r.message);
+                loadGitStatus();
+                return r.ok;
+            } catch (err) {
+                opsLog('Erro: ' + err.message);
+                return false;
+            }
+        }
+
+        function gitPull(mode) {
+            opsLog(mode === 'reset' ? 'Sincronizando com o remoto…' : 'Atualizando (pull)…');
+            return runGitAction('/git/pull', { mode });
+        }
+
+        async function gitCommit(andPush) {
+            const message = $('git-msg').value.trim();
+            if (!message) return alert('Digite a mensagem do commit');
+
+            opsLog('Commitando…');
+            const ok = await runGitAction('/git/commit', { message });
+            if (!ok) return;
+            $('git-msg').value = '';
+            if (andPush) await gitPush();
+        }
+
+        function gitPush() {
+            opsLog('Enviando (push)…');
+            return runGitAction('/git/push');
+        }
+
+        async function gitClone() {
             const name = $('repo-name').value.trim();
             if (!name) return alert('Digite o nome do repositório');
-            logGit(`Clonando ${name}…`);
+
+            opsLog(`Clonando ${name}…`);
             try {
                 const r = await postJson('/createRepository', { name });
-                logGit(r.message);
+                opsLog(r.message);
                 if (r.ok) {
                     $('repo-name').value = '';
                     loadFolders();
                     refresh();
                 }
             } catch (err) {
-                logGit('Erro ao clonar: ' + err.message);
+                opsLog('Erro ao clonar: ' + err.message);
             }
-        };
+        }
 
         /* ===================== Inicialização ===================== */
         renderBreadcrumbs(selectedPath);
