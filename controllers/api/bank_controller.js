@@ -44,7 +44,7 @@ const seenEvents = new Map();  // eventKey -> timestamp
 // ---------- Webhook (sem auth de sessão; valida token próprio) ----------
 //autorização de saque
 router.post('/withdraw', async (req, res) => {
-    
+    res.status(200).json({ ok: true });
 });
 
 
