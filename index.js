@@ -1,4 +1,6 @@
 const express = require("express");
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const { WebSocketServer } = require("ws");
 const http = require("http");
 const fs = require("fs");
@@ -32,6 +34,14 @@ app.use(express.json({ limit: "50mb" }));
 app.use("/files", express.static(Settings.UPLOAD_DIR));
 app.use("/static", express.static(Settings.PUBLIC_DIR));
 //app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
+
+app.use(session({
+    secret: 'sua_chave_secreta_aqui',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // true apenas se usar HTTPS
+}));
 
 // Transformada em async para esperar a resposta do banco de dados
 global.CheckLogin = async function (req, res)

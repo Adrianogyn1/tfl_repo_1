@@ -10,7 +10,7 @@ const webSite = (process.env.SERVER_URL || "localhost:5000").endsWith("/") ? pro
 const authController = require("./controllers/auth");
 const socialController = require("./controllers/social/router_controller.js");
 
-const {helps} = require("./routers/routes.js");
+
 
 router.get("/", (req, res) => { 
   res.sendFile(path.join(__dirname, "./paginas/index.html"));
@@ -29,21 +29,12 @@ router.get("/api/home/info", async (req, res) =>
     windows: { url: process.env.WINDOWS_DOWNLOAD || "", active: true },
     linux: { url: process.env.LINUX_DOWNLOAD || "", active: true },
   };
-   const { QrCodePix } = require('qrcode-pix');
-
-    const qrCodePix = QrCodePix({
-        version: '01',
-        key: 'b73e1128-b80b-4058-903a-5ec11a67e5a8', // chave Pix (CPF, CNPJ, email, telefone ou aleatória)
-        name: 'THE FANTASY LIFE',
-        city: 'GOIANIA',
-        transactionId: 'donate',   // opcional, até 25 caracteres
-        message: 'Obrigado por nos ajudar!',  // opcional
-        // value: 10.5,                  // opcional
-    });
+   const { GerarQrCode } = require('./controllers/api/bank_controller.js')
 
   // return res.json({ "status": "ok",payload: qrCodePix.payload(), image: await qrCodePix.base64() });
+  const data = await GerarQrCode('donate');
   const pix = {
-    payload: qrCodePix.payload(), image: await qrCodePix.base64()
+    payload: data.payload, image: data.encodedImage
   };
 
   const info = {
@@ -75,6 +66,7 @@ router.use("/webhook", webhookController.router);
 //api
 const api = require("./controllers/api/api_controller.js");
 router.use("/api/", api.router);
+
 const routeGameController = require("./controllers/game/routers.js");
 router.use("/game/", routeGameController.router);
 
@@ -85,67 +77,11 @@ router.use("/api/manifest", manifestController.router);
 
 //app.use(routeGameController);
 
-//Helps
+router.use('/admin', require("./controllers/admin/index.js").router);
 
-router.use("/helps",helps);
-
-
-const db = require("./repository.js");
-const sequelizeErd = require("sequelize-erd");
-
-router.use("/db", async (req, res) => {
-  try {
-    const svg = await sequelizeErd({
-      source: db.sequelize,
-      direction: "LR",
-    });
-
-    const html = '<html>' +
-      '<head>' +
-      '<style>' +
-      'body { margin: 0; background: #1a202c; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }' +
-      '.container { width: 100%; height: 100%; cursor: grab; display: flex; justify-content: center; align-items: center; }' +
-      '.container:active { cursor: grabbing; }' +
-      'svg { width: 100%; height: 100%; transform-origin: center; }' +
-      '</style>' +
-      '</head>' +
-      '<body>' +
-      '<div class="container" id="zoomContainer">' +
-      svg +
-      '</div>' +
-      '<script>' +
-      'const container = document.getElementById("zoomContainer");' +
-      'const svgEl = container.querySelector("svg");' +
-      'let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;' +
-      'container.addEventListener("mousedown", function(e) {' +
-      '  panning = true;' +
-      '  startX = e.clientX - pointX;' +
-      '  startY = e.clientY - pointY;' +
-      '});' +
-      'window.addEventListener("mouseup", function() { panning = false; });' +
-      'container.addEventListener("mousemove", function(e) {' +
-      '  if (!panning) return;' +
-      '  pointX = e.clientX - startX;' +
-      '  pointY = e.clientY - startY;' +
-      '  svgEl.style.transform = "translate(" + pointX + "px, " + pointY + "px) scale(" + scale + ")";' +
-      '});' +
-      'container.addEventListener("wheel", function(e) {' +
-      '  e.preventDefault();' +
-      '  var xs = (e.clientX - pointX) / scale, ys = (e.clientY - pointY) / scale;' +
-      '  scale = e.deltaY < 0 ? scale * 1.1 : scale / 1.1;' +
-      '  pointX = e.clientX - xs * scale;' +
-      '  pointY = e.clientY - ys * scale;' +
-      '  svgEl.style.transform = "translate(" + pointX + "px, " + pointY + "px) scale(" + scale + ")";' +
-      '});' +
-      '</script>' +
-      '</body>' +
-      '</html>';
-
-    res.send(html);
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
+//asas
+const asasController = require("./controllers/api/bank_controller.js");
+router.use("/asaas",asasController.router);
 
 //youtube
 const youtubeRouter = require("./paginas/helps/youtube.js");

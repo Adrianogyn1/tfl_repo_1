@@ -1,6 +1,9 @@
 const repo = require("../../repository.js");
 const router = require("express").Router();
 
+const auth = require("../admin/index.js");
+router.use(auth.auth);
+
 router.get("/", API);
 
 async function API(req, res) {

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,12 +23,11 @@
   table { border-collapse:collapse; width:max-content; min-width:100%; }
   th, td { border-bottom:1px solid var(--line); padding:3px 4px; text-align:left; white-space:nowrap; }
   th { position:sticky; top:0; background:var(--panel); color:var(--mut); font-weight:600; font-size:12px; z-index:2; }
-  /* primeira coluna fixa: checkbox + ações */
-  th.first, td.first { position:sticky; left:0; background:var(--panel); z-index:3; }
+  th.first, td.first { position:sticky; left:0; background:var(--panel); z-index:3; border-right:1px solid var(--line); }
   th.first { z-index:4; }
-  td.first { display:flex; gap:6px; align-items:center; border-right:1px solid var(--line); }
+  .firstbox { display:flex; gap:6px; align-items:center; }
   td input, td select { width:100%; min-width:90px; border-color:transparent; background:transparent; }
-  td.first input[type=checkbox] { width:auto; min-width:0; }
+  .firstbox input[type=checkbox] { width:auto; min-width:0; }
   td input:focus, td select:focus { border-color:var(--pri); background:#0d0f14; }
   td.ro { color:var(--mut); font-size:12px; padding:3px 8px; max-width:200px; overflow:hidden; text-overflow:ellipsis; }
   tr.dirty td:not(.first) { background:rgba(241,196,15,.10); }
@@ -41,7 +39,6 @@
   .act { display:flex; gap:4px; }
   .act button { padding:3px 8px; font-size:12px; }
 
-  /* ordenação + filtros por coluna */
   th.sortable { cursor:pointer; user-select:none; }
   th.sortable:hover { color:var(--txt); }
   th.sortable.active { color:var(--pri); }
@@ -136,17 +133,16 @@
 const DEFAULT_COLUMNS = ["id","name","addressable","materialId","path","description","thumbnail","version","data","uid","type","slot","createdAt","updatedAt"];
 const TYPES = ["RoomObject","AvatarOutfit","Otters"];
 const RO = ["id","uid","createdAt","updatedAt"];   // somente leitura
-const MODAL_ONLY = ["data"];                       // não editável inline (campo longo)
+const MODAL_ONLY = ["data"];                       // não editável inline
 const MODAL_FULL = ["description","data"];         // textarea no modal
 
-let columns = [...DEFAULT_COLUMNS];   // atualizado dinamicamente pelo header do CSV
+let columns = [...DEFAULT_COLUMNS];
 let rows = [];                        // {key, orig, cur, isNew}
 let selected = new Set();
 let tmpCounter = 0;
 let editingKey = null;
-
-let sortCol = null, sortDir = 1;      // 1 = asc, -1 = desc
-const colFilters = {};                // { coluna: texto }
+let sortCol = null, sortDir = 1;
+const colFilters = {};
 
 const $ = id => document.getElementById(id);
 
@@ -157,7 +153,8 @@ const store = {
 };
 $("apiBase").value = store.get("pa_base");
 $("token").value = store.get("pa_token");
-let hidden = new Set();   // colunas ocultas
+
+let hidden = new Set();
 try { hidden = new Set(JSON.parse(store.get("pa_hidden") || "[]")); } catch {}
 
 // ---------- CSV ----------
@@ -171,7 +168,6 @@ function toCsv(list){
   for (const r of list) lines.push(columns.map(c => escapeCsv(r[c])).join(","));
   return lines.join("\r\n");
 }
-// retorna { header, rows }
 function parseCsv(text){
   const out = []; let row = [], field = "", q = false;
   text = text.replace(/^\uFEFF/, "");
@@ -197,6 +193,8 @@ function parseCsv(text){
 }
 
 // ---------- API ----------
+const API_BASE = (document.location.origin+"/game/prefab").replace(/\/$/,"");
+
 function base(){ return $("apiBase").value.trim().replace(/\/$/,""); }
 function headers(extra={}){
   const h = {...extra};
@@ -208,6 +206,7 @@ function headers(extra={}){
 async function api(path, opts={}){
   const res = await fetch(document.location.origin + base() + path, {...opts, headers: headers(opts.headers||{})});
   const text = await res.text();
+  if (res.status === 401 || res.status === 403) throw new Error("Token inválido ou sem permissão.");
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0,400)}`);
   return text;
 }
@@ -234,17 +233,21 @@ function confirmBox(title, msg){
 }
 function isDirty(r){ return r.isNew || columns.some(c => (r.cur[c] ?? "") !== (r.orig[c] ?? "")); }
 function visibleCols(){ return columns.filter(c => !hidden.has(c)); }
+function dirtyCount(){ return rows.filter(isDirty).length; }
 
 function updateCounters(){
-  const dirty = rows.filter(isDirty).length;
+  const dirty = dirtyCount();
   $("btnSave").textContent = `Salvar alterados (${dirty})`;
   $("btnSave").disabled = dirty === 0;
   const selDel = selected.size;
   $("btnDelSel").textContent = `Excluir selecionados (${selDel})`;
   $("btnDelSel").disabled = selDel === 0;
-  const shown = filtered().length;
+  const list = filtered();
+  const shown = list.length;
   const countTxt = shown === rows.length ? `${rows.length} registro(s)` : `${shown} de ${rows.length} registro(s)`;
   $("status").textContent = `${countTxt} · ${columns.length - hidden.size}/${columns.length} coluna(s)`;
+  const chkAll = document.getElementById("chkAll");
+  if (chkAll) chkAll.checked = list.length > 0 && list.every(r => selected.has(r.key));
 }
 function typeSelect(value){
   const sel = document.createElement("select");
@@ -255,20 +258,38 @@ function typeSelect(value){
 }
 
 // ---------- Load ----------
-async function load(){
+// keepDirty: preserva linhas alteradas (por id) e linhas novas ainda não salvas
+async function load({ keepDirty = false } = {}){
   store.set("pa_base", $("apiBase").value); store.set("pa_token", $("token").value);
   $("status").textContent = "Carregando...";
   try {
-    const csv = await api("/game/prefab/csv", { method:"GET", headers:{"Content-Type":"text/csv"} });
+    const csv = await api("/game/prefab/csv", { method:"GET" });
     const parsed = parseCsv(csv);
+
+    const oldDirty = new Map();
+    let newRows = [];
+    if (keepDirty){
+      for (const r of rows){
+        if (r.isNew) newRows.push(r);
+        else if (isDirty(r)) oldDirty.set(String(r.orig.id), r);
+      }
+    }
+
     columns = parsed.header.length ? parsed.header : [...DEFAULT_COLUMNS];
     if (sortCol && !columns.includes(sortCol)) sortCol = null;
     for (const k of Object.keys(colFilters)) if (!columns.includes(k)) delete colFilters[k];
-    buildColMenu();
-    rows = parsed.rows.map(r => ({ key: "id-" + r.id, orig: {...r}, cur: {...r}, isNew: false }));
+
+    rows = [
+      ...newRows,
+      ...parsed.rows.map((r, i) => {
+        const prev = oldDirty.get(String(r.id));
+        return { key: "r-" + i, orig: {...r}, cur: prev ? {...prev.cur} : {...r}, isNew: false };
+      })
+    ];
     selected.clear();
+    buildColMenu();
     render();
-    toast(`${rows.length} prefab(s) carregado(s)`, "ok");
+    toast(`${parsed.rows.length} prefab(s) carregado(s)`, "ok");
   } catch (e) {
     $("status").textContent = "";
     toast("Erro ao carregar: " + e.message, "err");
@@ -278,7 +299,6 @@ async function load(){
 // ---------- Filtro + ordenação ----------
 function filtered(){
   const q = $("q").value.toLowerCase(), t = $("typeFilter").value;
-  // filtros de coluna só valem para colunas visíveis
   const fs = Object.entries(colFilters)
     .filter(([c,v]) => v && columns.includes(c) && !hidden.has(c))
     .map(([c,v]) => [c, v.toLowerCase()]);
@@ -292,7 +312,7 @@ function filtered(){
   if (sortCol && columns.includes(sortCol)){
     list = [...list].sort((a,b) => {
       const x = String(a.cur[sortCol] ?? ""), y = String(b.cur[sortCol] ?? "");
-      if (x === "" && y !== "") return 1;    // vazios sempre no fim
+      if (x === "" && y !== "") return 1;
       if (y === "" && x !== "") return -1;
       return sortDir * x.localeCompare(y, undefined, { numeric:true, sensitivity:"base" });
     });
@@ -308,10 +328,11 @@ function renderHead(){
   const th1 = $("thead"), th2 = $("thfilter");
   th1.innerHTML = ""; th2.innerHTML = "";
 
-  // linha 1: títulos (clicáveis para ordenar)
   const thF = document.createElement("th"); thF.className = "first";
+  const box = document.createElement("div"); box.className = "firstbox";
   const chkAll = document.createElement("input"); chkAll.type = "checkbox"; chkAll.id = "chkAll";
-  thF.append(chkAll, " ações"); th1.appendChild(thF);
+  box.append(chkAll, document.createTextNode("ações"));
+  thF.appendChild(box); th1.appendChild(thF);
 
   vis.forEach(c => {
     const th = document.createElement("th");
@@ -327,7 +348,6 @@ function renderHead(){
     th1.appendChild(th);
   });
 
-  // linha 2: filtros por coluna
   const tfF = document.createElement("th"); tfF.className = "first";
   const bClr = document.createElement("button"); bClr.textContent = "✕ filtros"; bClr.title = "Limpar filtros das colunas";
   bClr.onclick = () => { for (const k in colFilters) delete colFilters[k]; renderHead(); renderBody(); };
@@ -347,7 +367,6 @@ function renderHead(){
     renderBody();
   };
 
-  // linha de filtros gruda logo abaixo da linha de títulos
   const h = th1.getBoundingClientRect().height;
   th2.querySelectorAll("th").forEach(th => th.style.top = h + "px");
 }
@@ -361,15 +380,19 @@ function renderBody(){
     tr.className = (r.isNew ? "isnew " : isDirty(r) ? "dirty " : "") + (selected.has(r.key) ? "sel" : "");
     tr.dataset.key = r.key;
 
-    // primeira célula: toggle + ações
     const tdF = document.createElement("td"); tdF.className = "first";
+    const box = document.createElement("div"); box.className = "firstbox";
     const chk = document.createElement("input"); chk.type = "checkbox"; chk.checked = selected.has(r.key);
-    chk.onchange = () => { chk.checked ? selected.add(r.key) : selected.delete(r.key); tr.classList.toggle("sel", chk.checked); updateCounters(); };
+    chk.onchange = () => {
+      chk.checked ? selected.add(r.key) : selected.delete(r.key);
+      tr.classList.toggle("sel", chk.checked);
+      updateCounters();
+    };
     const act = document.createElement("div"); act.className = "act";
     const bE = document.createElement("button"); bE.textContent = "Editar"; bE.onclick = () => openEdit(r.key);
     const bD = document.createElement("button"); bD.textContent = "Excluir"; bD.className = "danger"; bD.onclick = () => deleteRows([r.key]);
     act.append(bE, bD);
-    tdF.append(chk, act); tr.appendChild(tdF);
+    box.append(chk, act); tdF.appendChild(box); tr.appendChild(tdF);
 
     for (const c of vis){
       const td = document.createElement("td");
@@ -379,11 +402,12 @@ function renderBody(){
         let inp;
         if (c === "type") inp = typeSelect(r.cur.type);
         else { inp = document.createElement("input"); inp.value = r.cur[c] ?? ""; }
-        inp.oninput = inp.onchange = () => {
+        const onChange = () => {
           r.cur[c] = inp.value;
           tr.classList.toggle("dirty", !r.isNew && isDirty(r));
           updateCounters();
         };
+        inp.oninput = onChange; inp.onchange = onChange;
         td.appendChild(inp);
       }
       tr.appendChild(td);
@@ -398,7 +422,7 @@ function openEdit(key){
   editingKey = key;
   const r = rows.find(x => x.key === key);
   if (!r) return;
-  $("editTitle").textContent = r.isNew ? "Novo prefab" : `Editar prefab #${r.cur.id}`;
+  $("editTitle").textContent = r.isNew ? "Novo prefab" : `Editar prefab #${r.orig.id}`;
   const g = $("editGrid"); g.innerHTML = "";
   for (const c of columns){
     const lab = document.createElement("label");
@@ -418,12 +442,15 @@ function openEdit(key){
   }
   $("editOv").classList.add("open");
 }
-$("editCancel").onclick = () => {
+function closeEdit(){
   const r = rows.find(x => x.key === editingKey);
-  if (r && r.isNew && !isDirtyBeyondBlank(r)) { rows = rows.filter(x => x !== r); render(); }
+  // linha nova nunca recebe valores do modal antes de salvar, então descartá-la é seguro
+  if (r && r.isNew) rows = rows.filter(x => x !== r);
   $("editOv").classList.remove("open");
-};
-function isDirtyBeyondBlank(r){ return !!(r.cur.name || r.cur.addressable); }
+  render();
+}
+$("editCancel").onclick = closeEdit;
+
 $("editSave").onclick = async () => {
   const r = rows.find(x => x.key === editingKey);
   if (!r) return;
@@ -434,16 +461,17 @@ $("editSave").onclick = async () => {
     const res = await postCsv(toCsv([draft]));
     toast(`Salvo (criados: ${res.created}, atualizados: ${res.updated})`, "ok");
     $("editOv").classList.remove("open");
-    await load();
+    rows = rows.filter(x => !(x.isNew && x.key === editingKey));
+    await load({ keepDirty: true });
   } catch (e) { toast("Erro ao salvar: " + e.message, "err"); }
 };
 
 // ---------- Ações ----------
 $("btnNew").onclick = () => {
   const key = "new-" + (++tmpCounter);
-  const blank = Object.fromEntries(columns.map(c => [c, ""])); blank.type = "Otters"; blank.version = "0";
+  const blank = Object.fromEntries(columns.map(c => [c, ""]));
+  blank.type = "Otters"; blank.version = "0";
   rows.unshift({ key, orig: {}, cur: blank, isNew: true });
-  // garante que a linha nova não fique escondida por filtros/ordenação
   $("q").value = ""; $("typeFilter").value = "";
   for (const k in colFilters) delete colFilters[k];
   sortCol = null;
@@ -457,41 +485,44 @@ $("btnSave").onclick = async () => {
   try {
     const res = await postCsv(toCsv(dirty.map(r => r.cur)));
     toast(`Salvo em massa (criados: ${res.created}, atualizados: ${res.updated})`, "ok");
-    await load();
+    rows = rows.filter(r => !(r.isNew && dirty.includes(r)));
+    await load({ keepDirty: true });
   } catch (e) { toast("Erro ao salvar: " + e.message, "err"); }
 };
 
 async function deleteRows(keys){
   const items = rows.filter(r => keys.includes(r.key));
   if (!items.length) return;
-  const newOnes = items.filter(r => r.isNew);
-  const persisted = items.filter(r => !r.isNew);
   const names = items.slice(0,5).map(r => r.cur.name || "(sem nome)").join(", ") + (items.length > 5 ? "…" : "");
   const ok = await confirmBox("Excluir do banco?", `${items.length} registro(s): ${names}\nEsta ação não pode ser desfeita.`);
   if (!ok) return;
+
+  const newOnes = items.filter(r => r.isNew);
+  const persisted = items.filter(r => !r.isNew);
   rows = rows.filter(r => !newOnes.includes(r));
   newOnes.forEach(r => selected.delete(r.key));
-  if (persisted.length){
-    let deleted = 0; const failed = [];
-    for (const r of persisted){
-      try {
-        await api(`/game/prefab/${encodeURIComponent(r.cur.id)}`, { method:"DELETE" });
-        deleted++;
-      } catch (e) { failed.push(`#${r.cur.id}: ${e.message}`); }
-    }
-    if (deleted) toast(`Excluídos: ${deleted}`, "ok");
-    if (failed.length) toast("Falhas:\n" + failed.join("\n"), "err");
-    await load();
-    return;
+
+  if (!persisted.length){ render(); return; }
+
+  let deleted = 0; const failed = [];
+  for (const r of persisted){
+    const id = r.orig.id;   // id original, não o editado
+    try {
+      await api(`/game/prefab/${encodeURIComponent(id)}`, { method:"DELETE" });
+      deleted++;
+    } catch (e) { failed.push(`#${id}: ${e.message}`); }
   }
-  render();
+  if (deleted) toast(`Excluídos: ${deleted}`, "ok");
+  if (failed.length) toast("Falhas:\n" + failed.join("\n"), "err");
+  await load({ keepDirty: true });
 }
 $("btnDelSel").onclick = () => deleteRows([...selected]);
 
 $("btnDownload").onclick = () => {
   const blob = new Blob(["\uFEFF" + toCsv(rows.filter(r => !r.isNew).map(r => r.orig))], { type:"text/csv;charset=utf-8" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "prefabs.csv"; a.click();
-  URL.revokeObjectURL(a.href);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "prefabs.csv"; a.click();
+  URL.revokeObjectURL(url);
 };
 
 $("btnUpload").onclick = () => $("file").click();
@@ -504,10 +535,9 @@ $("file").onchange = async e => {
   const ok = await confirmBox("Upload de CSV", `${parsed.rows.length} linha(s) em "${f.name}".\nLinhas com id existente serão atualizadas; as demais, criadas. Nada é excluído.`);
   if (!ok) return;
   try {
-    const res = await api("/game/prefab/csv", { method:"POST", headers:{"Content-Type":"text/csv"}, body:text });
-    const j = JSON.parse(res);
+    const j = JSON.parse(await api("/game/prefab/csv", { method:"POST", headers:{"Content-Type":"text/csv"}, body:text }));
     toast(`Upload OK (criados: ${j.created}, atualizados: ${j.updated})`, "ok");
-    await load();
+    await load({ keepDirty: true });
   } catch (e) { toast("Erro no upload: " + e.message, "err"); }
 };
 
@@ -531,7 +561,19 @@ function buildColMenu(){
 $("btnCols").onclick = e => { e.stopPropagation(); $("colMenu").classList.toggle("open"); };
 document.addEventListener("click", e => { if (!e.target.closest(".colwrap")) $("colMenu").classList.remove("open"); });
 
-$("btnLoad").onclick = load;
+// Esc fecha modais
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if ($("confOv").classList.contains("open")) $("confNo").click();
+  else if ($("editOv").classList.contains("open")) closeEdit();
+});
+
+// Carregar: confirma antes de descartar alterações pendentes
+$("btnLoad").onclick = async () => {
+  const dirty = dirtyCount();
+  if (dirty && !(await confirmBox("Recarregar?", `${dirty} linha(s) com alterações não salvas serão mantidas, mas as edições em andamento podem ser perdidas. Deseja continuar?`))) return;
+  load({ keepDirty: true });
+};
 $("q").oninput = renderBody;
 $("typeFilter").onchange = renderBody;
 

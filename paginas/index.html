@@ -294,8 +294,16 @@ $(document).ready(function () {
         $("#modal-download").addClass("hidden");
     });
 
-    $(".donate-trigger").click(function () {
-        $("#modal-donate").removeClass("hidden");
+    $(".donate-trigger").click(async function () {
+        const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+        $.get(dominio + "/asaas/qrcode", function (data) {
+           $("#modal-donate").removeClass("hidden");
+           // $("#donate-modal-title").text(data.title);
+           // $("#donate-modal-desc").text(data.desc);
+            $("#input-pix-key").val(data.payload);
+            $("#donate-image").attr("src", data.encodedImage);
+        })
+        
     });
 
     $("#btn-close-donate").click(function () {

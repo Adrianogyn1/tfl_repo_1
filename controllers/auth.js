@@ -85,6 +85,35 @@ async function CheckLogin(req, res, next)
   return res.status(401).json({ error: "Unauthorized" });
 }
 
+function auth(req, res, next) {
+    //pagina que esta tentando acessar
+    const pg = req.originalUrl;
+    var token =
+    req.headers?.["tfl-token"] ||
+    req.headers?.["token"] ||
+    req.body?.token ||
+    req.query?.token ||
+    req.params?.token ||
+    "";
+
+
+    if (req.session.user) {
+       return next();
+    }
+    //cookie
+    else if (req.cookies.userToken) {
+        req.params.token = req.cookies.userToken;
+      return  CheckLogin(req, res, next);
+    }
+    //token
+    else if (token) {
+       return CheckLogin(req, res, next);
+    } 
+    else {
+        res.redirect("/admin/login?pg=" + pg);
+    }
+}
+
 async function signInRandom(req, res)
 {
   const avatars = await repo.Avatar.findOne(
@@ -252,4 +281,4 @@ async function logout(req, res)
   return res.status(200).json({ success: true, data: {} });
 }
 
-module.exports = { sigin, signup, logout, forgot, CheckLogin, signInRandom, router };
+module.exports = { sigin, signup, logout, forgot, CheckLogin, auth, signInRandom, router };

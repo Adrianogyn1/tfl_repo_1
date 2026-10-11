@@ -1,319 +1,350 @@
 const fs = require('fs');
+const fsp = fs.promises;
+const os = require('os');
 const path = require('path');
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 const express = require('express');
+const multer = require('multer');
 require('dotenv').config();
+
+
 const router = express.Router();
+router.use(express.json({ limit: '100kb' }));
 
-router.get("/", (req, res) =>
-{
-  res.sendFile(path.join(__dirname, "./upload.html"));
-});
+function requireAuth(req, res, next) {
+  if (req.session?.user || req.cookies?.user) return next();
+  if (req.path === '/') return res.redirect('/admin/login');
+  res.status(401).json({ ok: false, message: 'Sessão expirada. Faça login novamente.' });
+}
 
-router.get("/getfolders", (req, res) =>
-{
-  exec('find . -type d -maxdepth 3', (err, stdout) =>
-  {
-    if (err) return res.status(500).json({ error: err.message });
-    const dirs = stdout.split('\n').filter(Boolean);
-    res.json(dirs);
-  });
-});
+router.use(requireAuth);
 
-router.get("/getfiles", (req, res) =>
-{
-  const targetDir = req.query.path;
-  if (!targetDir) return res.status(400).json({ error: 'Caminho não informado' });
+const ROOT = path.resolve(process.env.FILES_ROOT || process.cwd());
+const REPO_DIR = path.resolve(__dirname);
+const REPO_OWNER = process.env.GITHUB_OWNER || 'Adrianogyn1';
+const ALLOWED_APPS = new Set((process.env.PM2_APPS || 'all').split(',').map(s => s.trim()).filter(Boolean));
+const SKIP_DIRS = new Set(['node_modules', '.git']);
+const MAX_EDIT_BYTES = 2 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 500 * 1024 * 1024;
+const REPO_SEGMENT = /^[A-Za-z0-9._-]{1,100}$/;
 
-  fs.readdir(path.resolve(targetDir), { withFileTypes: true }, (err, items) =>
-  {
-    if (err) return res.status(500).json({ error: err.message });
-    // Retorna o nome de todos os itens (pastas e arquivos)
-    const fileNames = items.map(item => item.name);
-    res.json(fileNames);
-  });
-});
+/* ===================== Utilitários ===================== */
 
-router.get("/downloadFile", (req, res) =>
-{
-  const filePath = req.query.path;
-  if (!filePath) return res.status(400).send('Caminho não informado');
-  res.download(path.resolve(filePath));
-});
+class HttpError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
 
-router.post("/createFolder", express.json(), (req, res) =>
-{
-  const { parent, name } = req.body;
-  if (!parent || !name) return res.status(400).send('Dados inválidos');
+const fail = (status, message) => new HttpError(status, message);
 
-  const newDir = path.join(parent, name);
-  fs.mkdir(path.resolve(newDir), { recursive: true }, (err) =>
-  {
-    res.status(err ? 500 : 200).send(err ? 'Erro: ' + err.message : 'Pasta criada com sucesso');
-  });
-});
+function sendOk(res, message) {
+  res.json({ ok: true, message });
+}
 
-router.post("/renameFile", express.json(), (req, res) =>
-{
-  const { dir, oldName, newName } = req.body;
-  if (!dir || !oldName || !newName) return res.status(400).send('Dados inválidos');
+function sendError(res, err) {
+  let status = 500;
+  let message = 'Erro interno no servidor.';
 
-  const oldPath = path.resolve(dir, oldName);
-  const newPath = path.resolve(dir, newName);
-
-  fs.rename(oldPath, newPath, (err) =>
-  {
-    res.status(err ? 500 : 200).send(err ? 'Erro: ' + err.message : 'Renomeado com sucesso');
-  });
-});
-
-router.post("/extractFile", express.json(), (req, res) =>
-{
-  const { dir, fileName } = req.body;
-  if (!dir || !fileName) return res.status(400).send('Dados inválidos');
-
-  const filePath = path.resolve(dir, fileName);
-  let cmd = `tar -zxvf "${filePath}" -C "${path.resolve(dir)}"`;
-  if (fileName.endsWith('.zip'))
-  {
-    cmd = `unzip -o "${filePath}" -d "${path.resolve(dir)}"`;
+  if (err instanceof HttpError) {
+    status = err.status;
+    message = err.message;
+  } else if (err.code === 'ENOENT') {
+    status = 404;
+    message = 'Item não encontrado.';
+  } else if (err.code === 'EEXIST') {
+    status = 409;
+    message = 'Já existe um item com esse nome.';
+  } else {
+    console.error(err);
   }
 
-  exec(cmd, (err, stdout, stderr) =>
-  {
-    res.status(err ? 500 : 200).send(err ? 'Erro: ' + err.message : 'Descompactado com sucesso');
-  });
-});
+  if (!res.headersSent) res.status(status).json({ ok: false, message });
+}
 
-router.post("/uploadFile", (req, res) =>
-{
-  let body = [];
-  let destDir = '';
-  let filesToSave = [];
-  let currentFile = null;
+const wrap = (fn) => async (req, res) => {
+  try {
 
-  const boundaryMatch = req.headers['content-type']?.match(/boundary=(?:"([^"]+)"|([^\s]+))/i);
-  if (!boundaryMatch) return res.status(400).send('Boundary não encontrado');
-  const boundary = boundaryMatch[1] || boundaryMatch[2];
-  const boundaryBuf = Buffer.from('--' + boundary);
-  const endBoundaryBuf = Buffer.from('--' + boundary + '--');
+    await fn(req, res);
+  } catch (err) {
+    sendError(res, err);
+  }
+};
 
-  let bufferQueue = Buffer.alloc(0);
+// Garante que o caminho resolvido fique dentro de ROOT
+function safePath(...segments) {
+  const target = path.resolve(ROOT, ...segments);
+  if (target !== ROOT && !target.startsWith(ROOT + path.sep)) {
+    throw fail(400, 'Caminho fora da área permitida.');
+  }
+  return target;
+}
 
-  req.on('data', chunk =>
-  {
-    bufferQueue = Buffer.concat([bufferQueue, chunk]);
+// Nome de um único segmento: sem barras, sem '.' ou '..'
+function requireName(name) {
+  if (typeof name !== 'string') throw fail(400, 'Nome inválido.');
+  const n = name.trim();
+  if (!n || n.length > 255 || n === '.' || n === '..' || /[\/\\\0]/.test(n)) {
+    throw fail(400, 'Nome inválido.');
+  }
+  return n;
+}
 
-    let boundaryIdx;
-    while ((boundaryIdx = bufferQueue.indexOf(boundaryBuf)) !== -1)
-    {
-      let partBuf = bufferQueue.slice(0, boundaryIdx);
-      bufferQueue = bufferQueue.slice(boundaryIdx + boundaryBuf.length);
+function bodyStr(body, key) {
+  const v = body && body[key];
+  if (typeof v !== 'string' || !v.trim()) throw fail(400, 'Dados inválidos.');
+  return v;
+}
 
-      if (partBuf.length > 2)
-      {
-        processPart(partBuf);
+function queryPath(req, fallback) {
+  const v = req.query.path;
+  if (typeof v === 'string' && v.length) return v;
+  if (fallback !== undefined) return fallback;
+  throw fail(400, 'Caminho não informado.');
+}
+
+async function statOrFail(p, kind) {
+  let st;
+  try {
+    st = await fsp.stat(p);
+  } catch (e) {
+    if (e.code === 'ENOENT') throw fail(404, 'Item não encontrado.');
+    throw e;
+  }
+  if (kind === 'file' && !st.isFile()) throw fail(400, 'Não é um arquivo.');
+  if (kind === 'dir' && !st.isDirectory()) throw fail(400, 'Não é uma pasta.');
+  return st;
+}
+
+const exists = (p) => fsp.access(p).then(() => true, () => false);
+
+// Executa comando sem shell; remove segredos da mensagem de erro
+function run(file, args, opts = {}) {
+  const { secrets = [], ...execOpts } = opts;
+  return new Promise((resolve, reject) => {
+    execFile(file, args, { timeout: 120000, maxBuffer: 10 * 1024 * 1024, ...execOpts }, (err, stdout, stderr) => {
+      if (err) {
+        let msg = (stderr && stderr.toString().trim()) || 'Falha ao executar comando.';
+        for (const s of secrets) msg = msg.split(s).join('***');
+        return reject(fail(500, msg.slice(0, 500)));
       }
-
-      if (bufferQueue.indexOf(Buffer.from('--\r\n')) === 0 || bufferQueue.indexOf(Buffer.from('--\n')) === 0 || bufferQueue.length < 2)
-      {
-        break;
-      }
-    }
-  });
-
-  req.on('end', () =>
-  {
-    if (bufferQueue.length > 2)
-    {
-      processPart(bufferQueue);
-    }
-
-    if (!destDir || filesToSave.length === 0)
-    {
-      return res.status(400).send('Dados inválidos');
-    }
-
-    let savedCount = 0;
-    let hasError = false;
-
-    filesToSave.forEach(fileObj =>
-    {
-      let target = path.join(destDir, fileObj.fileName);
-      fs.writeFile(target, fileObj.data, (err) =>
-      {
-        if (hasError) return;
-        if (err)
-        {
-          hasError = true;
-          return res.status(500).send('Erro: ' + err.message);
-        }
-        savedCount++;
-        if (savedCount === filesToSave.length)
-        {
-          res.status(200).send(`Sucesso! ${savedCount} arquivo(s) salvo(s) em ${destDir}`);
-        }
-      });
+      resolve(stdout.toString().trim());
     });
   });
+}
 
-  function processPart(part)
-  {
-    let headerEndIdx = part.indexOf(Buffer.from('\r\n\r\n'));
-    let headerEndLen = 4;
-    if (headerEndIdx === -1)
-    {
-      headerEndIdx = part.indexOf(Buffer.from('\n\n'));
-      headerEndLen = 2;
-    }
-    if (headerEndIdx === -1) return;
-
-    let headers = part.slice(0, headerEndIdx).toString('utf8');
-    let content = part.slice(headerEndIdx + headerEndLen);
-
-    if (content.length >= 2 && content[content.length - 2] === 13 && content[content.length - 1] === 10)
-    {
-      content = content.slice(0, content.length - 2);
-    } else if (content.length >= 1 && content[content.length - 1] === 10)
-    {
-      content = content.slice(0, content.length - 1);
-    }
-
-    if (headers.includes('name="dest"'))
-    {
-      destDir = content.toString('utf8').trim();
-    } else if (headers.includes('filename="'))
-    {
-      let match = headers.match(/filename="(.+?)"/);
-      if (match)
-      {
-        filesToSave.push({
-          fileName: path.basename(match[1]),
-          data: content
-        });
-      }
-    }
+async function walkDirs(dir, rel, depth, out) {
+  if (depth === 0) return;
+  let entries;
+  try {
+    entries = await fsp.readdir(dir, { withFileTypes: true });
+  } catch {
+    return; // pasta sem permissão: ignora
   }
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  for (const e of entries) {
+    if (!e.isDirectory() || SKIP_DIRS.has(e.name)) continue;
+    const childRel = rel === '.' ? `./${e.name}` : `${rel}/${e.name}`;
+    out.push(childRel);
+    await walkDirs(path.join(dir, e.name), childRel, depth - 1, out);
+  }
+}
+
+/* ===================== Upload ===================== */
+
+const upload = multer({
+  storage: multer.diskStorage({ destination: os.tmpdir() }),
+  limits: { fileSize: MAX_UPLOAD_BYTES, files: 50 }
+}).array('file');
+
+async function saveUploads(req, res) {
+  const files = req.files || [];
+  try {
+    if (files.length === 0) throw fail(400, 'Nenhum arquivo enviado.');
+    const dest = typeof req.body.dest === 'string' && req.body.dest.trim() ? req.body.dest : '.';
+    await statOrFail(safePath(dest), 'dir');
+
+    for (const f of files) {
+      const name = requireName(path.basename(f.originalname));
+      await fsp.copyFile(f.path, safePath(dest, name));
+    }
+    res.json({ ok: true, message: `${files.length} arquivo(s) salvo(s) em ${dest}.` });
+  } finally {
+    await Promise.all(files.map(f => fsp.unlink(f.path).catch(() => { })));
+  }
+}
+
+/* ===================== Rotas ===================== */
+
+router.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'upload.html'));
 });
 
-router.get("/downloadFolder", (req, res) =>
-{
-  const targetDir = req.query.path;
-  if (!targetDir) return res.status(400).send('Caminho não informado');
+router.get('/getfolders', wrap(async (req, res) => {
+  const out = [];
+  await walkDirs(ROOT, '.', 3, out);
+  res.json(out);
+}));
 
-  const resolvedPath = path.resolve(targetDir);
-  const folderName = path.basename(resolvedPath);
-  const zipPath = path.join('/tmp', `${folderName}-${Date.now()}.zip`);
+router.get('/getfiles', wrap(async (req, res) => {
+  const dir = safePath(queryPath(req, '.'));
+  await statOrFail(dir, 'dir');
+  const items = await fsp.readdir(dir, { withFileTypes: true });
+  const list = items
+    .map(i => ({ name: i.name, isDir: i.isDirectory() }))
+    .sort((a, b) => (b.isDir - a.isDir) || a.name.localeCompare(b.name, 'pt-BR'));
+  res.json(list);
+}));
 
-  exec(`zip -r "${zipPath}" "${resolvedPath}"`, (err) =>
-  {
-    if (err) return res.status(500).send('Erro ao compactar pasta: ' + err.message);
+router.get('/downloadFile', wrap(async (req, res) => {
+  const file = safePath(queryPath(req));
+  await statOrFail(file, 'file');
+  res.download(file, (err) => {
+    if (err && !res.headersSent) res.status(500).json({ ok: false, message: 'Erro no download.' });
+  });
+}));
 
-    res.download(zipPath, `${folderName}.zip`, (err) =>
-    {
-      fs.unlink(zipPath, () => { });
-    });
+router.get('/downloadFolder', wrap(async (req, res) => {
+  const dir = safePath(queryPath(req, '.'));
+  await statOrFail(dir, 'dir');
+  const folderName = path.basename(dir) || 'raiz';
+
+  const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'zip-'));
+  const zipPath = path.join(tmpDir, `${folderName}.zip`);
+  const cleanup = () => fsp.rm(tmpDir, { recursive: true, force: true }).catch(() => { });
+
+  try {
+    await run('zip', ['-r', '-q', zipPath, '.'], { cwd: dir });
+  } catch (err) {
+    await cleanup();
+    throw err;
+  }
+  res.download(zipPath, `${folderName}.zip`, () => cleanup());
+}));
+
+router.get('/editFile', wrap(async (req, res) => {
+  const file = safePath(queryPath(req));
+  const st = await statOrFail(file, 'file');
+  if (st.size > MAX_EDIT_BYTES) throw fail(413, 'Arquivo grande demais para edição.');
+  const data = await fsp.readFile(file, 'utf8');
+  res.type('text/plain; charset=utf-8').send(data);
+}));
+
+router.post('/createFolder', wrap(async (req, res) => {
+  const parent = bodyStr(req.body, 'parent');
+  const name = requireName(bodyStr(req.body, 'name'));
+  await fsp.mkdir(safePath(parent, name));
+  sendOk(res, 'Pasta criada com sucesso.');
+}));
+
+router.post('/renameFile', wrap(async (req, res) => {
+  const dir = bodyStr(req.body, 'dir');
+  const oldName = requireName(bodyStr(req.body, 'oldName'));
+  const newName = requireName(bodyStr(req.body, 'newName'));
+  const src = safePath(dir, oldName);
+  const dst = safePath(dir, newName);
+
+  await statOrFail(src);
+  if (src !== dst && await exists(dst)) throw fail(409, 'Já existe um item com esse nome.');
+  await fsp.rename(src, dst);
+  sendOk(res, 'Renomeado com sucesso.');
+}));
+
+router.post('/extractFile', wrap(async (req, res) => {
+  const dir = bodyStr(req.body, 'dir');
+  const fileName = requireName(bodyStr(req.body, 'fileName'));
+  const file = safePath(dir, fileName);
+  const outDir = safePath(dir);
+  await statOrFail(file, 'file');
+
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith('.zip')) {
+    await run('unzip', ['-o', '-q', file, '-d', outDir]);
+  } else if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) {
+    await run('tar', ['-xzf', file, '-C', outDir]);
+  } else if (lower.endsWith('.tar')) {
+    await run('tar', ['-xf', file, '-C', outDir]);
+  } else {
+    throw fail(400, 'Formato não suportado.');
+  }
+  sendOk(res, 'Descompactado com sucesso.');
+}));
+
+router.post('/uploadFile', (req, res) => {
+  upload(req, res, (uploadErr) => {
+    if (uploadErr) {
+      const status = uploadErr.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+      return res.status(status).json({ ok: false, message: uploadErr.message });
+    }
+    wrap(saveUploads)(req, res);
   });
 });
 
-router.get("/editFile", (req, res) =>
-{
-  const filePath = req.query.path;
-  if (!filePath) return res.status(400).send('Caminho não informado');
+router.post('/saveFile', wrap(async (req, res) => {
+  const target = safePath(bodyStr(req.body, 'path'));
+  const content = req.body.content;
+  if (typeof content !== 'string') throw fail(400, 'Dados inválidos.');
+  await statOrFail(target, 'file');
+  await fsp.writeFile(target, content, 'utf8');
+  sendOk(res, 'Arquivo salvo com sucesso.');
+}));
 
-  fs.readFile(path.resolve(filePath), 'utf8', (err, data) =>
-  {
-    if (err) return res.status(500).send('Erro ao ler arquivo: ' + err.message);
-    res.send(data);
-  });
-});
+router.post('/deleteFile', wrap(async (req, res) => {
+  const dir = bodyStr(req.body, 'dir');
+  const fileName = requireName(bodyStr(req.body, 'fileName'));
+  const target = safePath(dir, fileName);
+  await statOrFail(target, 'file');
+  await fsp.unlink(target);
+  sendOk(res, 'Excluído com sucesso.');
+}));
 
-router.post("/saveFile", express.json(), (req, res) =>
-{
-  const { path: filePath, content } = req.body;
-  if (!filePath || content === undefined) return res.status(400).send('Dados inválidos');
+router.post('/deleteFolder', wrap(async (req, res) => {
+  const target = safePath(bodyStr(req.body, 'dir'));
+  if (target === ROOT) throw fail(403, 'Não é permitido excluir o diretório raiz.');
+  await statOrFail(target, 'dir');
+  await fsp.rm(target, { recursive: true, force: true });
+  sendOk(res, 'Pasta excluída com sucesso.');
+}));
 
-  fs.writeFile(path.resolve(filePath), content, 'utf8', (err) =>
-  {
-    res.status(err ? 500 : 200).send(err ? 'Erro ao salvar: ' + err.message : 'Arquivo salvo com sucesso');
-  });
-});
+router.post('/reflash', wrap(async (req, res) => {
+  const app = (req.body && req.body.app) || 'all';
+  if (!ALLOWED_APPS.has(app)) throw fail(400, 'App inválido.');
+  const out = await run('pm2', ['restart', app]);
+  sendOk(res, out || 'Atualizado com sucesso!');
+}));
 
-router.post("/deleteFile", express.json(), (req, res) =>
-{
-  const { dir, fileName } = req.body;
-  if (!dir || !fileName) return res.status(400).send('Dados inválidos');
+router.post('/updateGit', wrap(async (req, res) => {
+  const out = await run('git', ['pull'], { cwd: REPO_DIR });
+  sendOk(res, out || 'Atualizado com sucesso!');
+}));
 
-  const filePath = path.resolve(dir, fileName);
-  fs.unlink(filePath, (err) =>
-  {
-    res.status(err ? 500 : 200).send(err ? 'Erro ao excluir: ' + err.message : 'Excluído com sucesso');
-  });
-});
+router.post('/createRepository', wrap(async (req, res) => {
+  const parts = bodyStr(req.body, 'name').trim().split('/');
+  if (parts.length > 2) throw fail(400, 'Nome de repositório inválido.');
 
-
-router.post("/deleteFolder", express.json(), (req, res) =>
-{
-  const { dir } = req.body;
-  if (!dir) return res.status(400).send('Caminho não informado');
-
-  const folderPath = path.resolve(dir);
-
-  if (folderPath === path.resolve(__dirname))
-  {
-    return res.status(403).send('Não é permitido excluir o diretório raiz.');
+  const repo = parts.pop();
+  const owner = parts.pop() || REPO_OWNER;
+  if (!REPO_SEGMENT.test(owner) || !REPO_SEGMENT.test(repo) || repo.startsWith('.')) {
+    throw fail(400, 'Nome de repositório inválido.');
   }
 
-  fs.rm(folderPath, { recursive: true, force: true }, (err) =>
-  {
-    res.status(err ? 500 : 200).send(err ? 'Erro ao excluir pasta: ' + err.message : 'Pasta excluída com sucesso');
-  });
-});
-
-router.post("/reflash", (req, res) =>
-{
-  const app = req.body.app || 'all';
-
-  const cmd = `pm2 restart ${app}`;
-
-  exec(cmd, (error, stdout, stderr) =>
-  {
-    if (error) return res.status(500).send(stderr);
-    res.send(stdout || 'Atualizado com sucesso!');
-  });
-});
-
-
-router.post("/updateGit", (req, res) =>
-{
-  const rootDir = path.resolve(__dirname, './');
-  exec('git pull', { cwd: rootDir }, (error, stdout, stderr) =>
-  {
-    if (error) return res.status(500).send(stderr);
-    res.send(stdout || 'Atualizado com sucesso!');
-  });
-});
-
-router.post("/createRepository", express.json(), (req, res) =>
-{
-  return res.status(200).send('Repositório criado com sucesso!');
-  
-  const { name } = req.body;
   const token = process.env.GITHUB_TOKEN;
+  if (!token) throw fail(500, 'GITHUB_TOKEN não configurado.');
 
-  if (!name) return res.status(400).send('Informe o repositório.');
+  const target = safePath(repo);
+  if (await exists(target)) throw fail(409, 'Já existe uma pasta com esse nome.');
 
-  const repoUrl = `https://${token}@github.com/Adrianogyn1/${name}.git`;
-  const rootDir = path.resolve(__dirname, './');
+  // Token enviado por header, sem entrar na URL nem no .git/config
+  const basic = Buffer.from(`x-access-token:${token}`).toString('base64');
+  const url = `https://github.com/${owner}/${repo}.git`;
 
-  exec(`git clone ${repoUrl}`, { cwd: rootDir }, (error, stdout, stderr) =>
-  {
-    if (error) return res.status(500).send(stderr + '\n' + repoUrl);
-    res.send('Repositório clonado com sucesso na pasta raiz!  ' + repoUrl);
-  });
-});
-
-
-
+  await run(
+    'git',
+    ['-c', `http.extraheader=Authorization: Basic ${basic}`, 'clone', url, repo],
+    { cwd: ROOT, secrets: [token, basic], env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } }
+  );
+  sendOk(res, `Repositório "${owner}/${repo}" clonado com sucesso.`);
+}));
 
 module.exports = router;

@@ -1,0 +1,671 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Asaas</title>
+<style>
+  :root { --bg:#0f1115; --panel:#181b22; --line:#2a2f3a; --txt:#e6e8ee; --mut:#8b93a5; --pri:#4f8cff; --ok:#2ecc71; --warn:#f1c40f; --err:#e74c3c; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.4 system-ui,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:12px 16px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:5; }
+  header h1 { font-size:16px; margin:0; flex:1; }
+  nav { display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px; border-bottom:1px solid var(--line); }
+  input, select, textarea, button { font:inherit; color:var(--txt); background:#0d0f14; border:1px solid var(--line); border-radius:6px; padding:7px 9px; }
+  input, select, textarea { width:100%; }
+  button { cursor:pointer; background:#222734; width:auto; }
+  button:hover { border-color:var(--pri); }
+  button.tab.active { background:var(--pri); border-color:var(--pri); color:#fff; }
+  button.pri { background:var(--pri); border-color:var(--pri); color:#fff; }
+  button.ghost { background:transparent; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  main { padding:16px; max-width:1100px; margin:0 auto; }
+  section { display:none; } section.open { display:block; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; }
+  .card h2 { font-size:15px; margin:0 0 12px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+  label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--mut); }
+  .row { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin-top:10px; }
+  .row > * { width:auto; }
+  .row > label { width:auto; flex:1; min-width:200px; }
+  .big { font-size:28px; font-weight:600; }
+  .muted { color:var(--mut); font-size:12px; }
+  .wrap { overflow:auto; border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; }
+  th, td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; white-space:nowrap; }
+  th { color:var(--mut); font-size:12px; background:var(--panel); }
+  td.wrapcell { white-space:normal; max-width:280px; }
+  tr.clickable { cursor:pointer; } tr.clickable:hover td { background:#1d2130; }
+  .st { font-size:12px; padding:2px 8px; border-radius:10px; border:1px solid var(--line); }
+  .st.ok { color:var(--ok); border-color:var(--ok); }
+  .st.warn { color:var(--warn); border-color:var(--warn); }
+  .st.err { color:var(--err); border-color:var(--err); }
+  .qr img { background:#fff; padding:8px; border-radius:8px; max-width:260px; }
+  .payload { font-family:ui-monospace,monospace; font-size:12px; word-break:break-all; background:#0d0f14; padding:8px; border-radius:6px; border:1px solid var(--line); }
+  .warnbox { border-left:4px solid var(--warn); padding:8px 12px; background:rgba(241,196,15,.08); border-radius:6px; font-size:13px; margin-bottom:12px; }
+  #toast { position:fixed; bottom:16px; right:16px; max-width:420px; display:flex; flex-direction:column; gap:8px; z-index:30; }
+  .t { padding:10px 12px; border-radius:8px; background:var(--panel); border-left:4px solid var(--pri); white-space:pre-wrap; font-size:13px; }
+  .t.ok { border-color:var(--ok); } .t.err { border-color:var(--err); }
+  .hidden { display:none !important; }
+
+  /* autocomplete de cliente */
+  .ac { position:relative; }
+  .ac-list { display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:12; background:var(--panel); border:1px solid var(--line); border-radius:8px; max-height:260px; overflow:auto; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  .ac-list.open { display:block; }
+  .ac-item { padding:8px 10px; cursor:pointer; display:flex; flex-direction:column; gap:2px; }
+  .ac-item:hover, .ac-item.act { background:#222734; }
+  .ac-item small { color:var(--mut); font-size:12px; }
+  .ac-msg { padding:8px 10px; color:var(--mut); font-size:12px; }
+  .chip { display:none; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--ok); }
+  .chip.open { display:flex; }
+  .chip button { padding:2px 8px; font-size:12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Painel Asaas</h1>
+  <span class="muted" id="who"></span>
+</header>
+
+<nav>
+  <button class="tab active" data-tab="balance">Saldo</button>
+  <button class="tab" data-tab="customers">Clientes</button>
+  <button class="tab" data-tab="receivable">Pix a receber</button>
+  <button class="tab" data-tab="received">Pix recebido</button>
+  <button class="tab" data-tab="transactions">Extrato Pix</button>
+  <button class="tab" data-tab="charge">Gerar cobrança Pix</button>
+  <button class="tab" data-tab="static">Pix estático</button>
+  <button class="tab" data-tab="send">Enviar Pix</button>
+</nav>
+
+<main>
+
+  <!-- SALDO -->
+  <section id="tab-balance" class="open">
+    <div class="card">
+      <h2>Saldo disponível</h2>
+      <div class="big" id="balanceValue">—</div>
+      <div class="row"><button id="btnBalance">Atualizar</button></div>
+    </div>
+  </section>
+
+  <!-- CLIENTES -->
+  <section id="tab-customers">
+    <div class="card">
+      <h2>Clientes</h2>
+      <div class="row">
+        <label>Buscar (nome, CPF/CNPJ ou e-mail)
+          <input id="custQuery" placeholder="Ex.: Maria ou 123.456.789-00" autocomplete="off">
+        </label>
+        <button id="btnCustSearch">Buscar</button>
+        <button id="btnCustNew" class="pri">+ Novo cliente</button>
+        <span class="muted" id="custCount"></span>
+      </div>
+      <div class="row">
+        <label>Página<select id="custPage"></select></label>
+      </div>
+      <div class="wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>ID</th><th>Nome</th><th>CPF/CNPJ</th><th>E-mail</th><th>Telefone</th></tr></thead>
+          <tbody id="custBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card hidden" id="custNewCard">
+      <h2>Cadastrar cliente</h2>
+      <form id="formCust" class="grid">
+        <label>Nome *<input name="name" required maxlength="200"></label>
+        <label>CPF/CNPJ *<input name="cpfCnpj" required inputmode="numeric" maxlength="18"></label>
+        <label>E-mail<input name="email" type="email" maxlength="100"></label>
+        <label>Celular<input name="mobilePhone" inputmode="tel" maxlength="20"></label>
+        <div class="row" style="grid-column:1/-1">
+          <button class="pri" type="submit" id="btnCustSave">Salvar cliente</button>
+          <button type="button" class="ghost" id="btnCustCancel">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- PIX A RECEBER -->
+  <section id="tab-receivable">
+    <div class="card">
+      <h2>Cobranças Pix pendentes</h2>
+      <div class="row">
+        <label>Página<select id="recPage"></select></label>
+        <button id="btnReceivable">Carregar</button>
+        <span class="muted" id="recCount"></span>
+      </div>
+      <div class="wrap" style="margin-top:10px"><table><thead id="recHead"></thead><tbody id="recBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- PIX RECEBIDO -->
+  <section id="tab-received">
+    <div class="card">
+      <h2>Cobranças Pix recebidas</h2>
+      <div class="row">
+        <label>Página<select id="rcvPage"></select></label>
+        <button id="btnReceived">Carregar</button>
+        <span class="muted" id="rcvCount"></span>
+      </div>
+      <div class="wrap" style="margin-top:10px"><table><thead id="rcvHead"></thead><tbody id="rcvBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- EXTRATO -->
+  <section id="tab-transactions">
+    <div class="card">
+      <h2>Extrato Pix</h2>
+      <div class="row">
+        <label>Tipo
+          <select id="txType">
+            <option value="CREDIT">Recebidos</option>
+            <option value="DEBIT">Enviados</option>
+          </select>
+        </label>
+        <label>De<input type="date" id="txStart"></label>
+        <label>Até<input type="date" id="txEnd"></label>
+        <label>Página<select id="txPage"></select></label>
+        <button id="btnTx">Consultar</button>
+        <span class="muted" id="txCount"></span>
+      </div>
+      <div class="wrap" style="margin-top:10px"><table><thead id="txHead"></thead><tbody id="txBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- COBRANÇA DINÂMICA -->
+  <section id="tab-charge">
+    <div class="card">
+      <h2>Gerar cobrança Pix (QR dinâmico)</h2>
+      <form id="formCharge" class="grid">
+        <label style="grid-column:1/-1">Cliente *
+          <div class="ac">
+            <input id="chargeCustQuery" placeholder="Digite o nome, CPF/CNPJ ou e-mail" autocomplete="off">
+            <div class="ac-list" id="chargeCustList"></div>
+          </div>
+          <input type="hidden" name="customer">
+          <div class="chip" id="chargeCustChip"><span id="chargeCustLabel"></span><button type="button" id="chargeCustClear">Trocar</button></div>
+        </label>
+        <label>Valor (R$) *<input name="value" type="number" step="0.01" min="0.01" required></label>
+        <label>Vencimento *<input name="dueDate" type="date" required></label>
+        <label>Referência externa<input name="externalReference" maxlength="100"></label>
+        <label style="grid-column:1/-1">Descrição<input name="description" maxlength="500"></label>
+        <div class="row" style="grid-column:1/-1"><button class="pri" type="submit" id="btnCharge">Gerar Pix</button></div>
+      </form>
+      <div id="chargeResult" class="hidden" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- PIX ESTÁTICO -->
+  <section id="tab-static">
+    <div class="card">
+      <h2>Gerar Pix estático (QR reutilizável)</h2>
+      <div class="row">
+        <label style="flex:1">Chave Pix<select id="addressKeySel"></select></label>
+        <button id="btnKeys">Carregar chaves</button>
+      </div>
+      <form id="formStatic" class="grid" style="margin-top:12px">
+        <label>Valor (R$) (opcional)<input name="value" type="number" step="0.01" min="0.01"></label>
+        <label>Expira em (opcional)<input name="expirationDate" type="date"></label>
+        <label>Descrição<input name="description" maxlength="140"></label>
+        <label><span><input name="allowsMultiplePayments" type="checkbox" checked style="width:auto"> Aceitar múltiplos pagamentos</span></label>
+        <div class="row" style="grid-column:1/-1"><button class="pri" type="submit" id="btnStatic">Gerar QR estático</button></div>
+      </form>
+      <div id="staticResult" class="hidden" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ENVIAR PIX -->
+  <section id="tab-send">
+    <div class="card">
+      <h2>Enviar Pix</h2>
+      <div class="warnbox">Transferência real: confira chave e valor antes de enviar. Não é possível desfazer.</div>
+      <form id="formSend" class="grid">
+        <label>Tipo da chave *
+          <select name="pixAddressKeyType" required>
+            <option value="CPF">CPF</option>
+            <option value="CNPJ">CNPJ</option>
+            <option value="EMAIL">E-mail</option>
+            <option value="PHONE">Telefone</option>
+            <option value="EVP">Chave aleatória</option>
+          </select>
+        </label>
+        <label>Chave Pix *<input name="pixAddressKey" required></label>
+        <label>Valor (R$) *<input name="value" type="number" step="0.01" min="0.01" required></label>
+        <label>Descrição<input name="description" maxlength="140"></label>
+        <div class="row" style="grid-column:1/-1"><button class="pri" type="submit" id="btnSend">Enviar Pix</button></div>
+      </form>
+      <div id="sendResult" class="hidden" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const BRL = v => Number(v || 0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+const PAGE_SIZE = 20;
+
+// ---------- utilitários ----------
+function toast(msg, kind=""){
+  const el = document.createElement("div");
+  el.className = "t " + kind; el.textContent = msg;
+  $("toast").appendChild(el);
+  setTimeout(() => el.remove(), kind === "err" ? 9000 : 3500);
+}
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtDate(d){ return d ? new Date(d.length === 10 ? d + "T00:00:00" : d).toLocaleDateString("pt-BR") : "—"; }
+function fmtDoc(d){
+  const n = String(d || "").replace(/\D/g, "");
+  if (n.length === 11) return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  if (n.length === 14) return n.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  return d || "—";
+}
+function statusTag(s){
+  const cls = ["RECEIVED","CONFIRMED","DONE"].includes(s) ? "ok" : ["PENDING","AWAITING_RISK_ANALYSIS"].includes(s) ? "warn" : "err";
+  return `<span class="st ${cls}">${esc(s || "—")}</span>`;
+}
+
+// Chamada à API. Sessão via cookie; 401 manda para o login.
+async function api(path, { method="GET", body, query, signal } = {}){
+  let url = "/asaas" + path;
+  if (query){
+    const qs = new URLSearchParams(Object.entries(query).filter(([,v]) => v !== undefined && v !== null && v !== ""));
+    if ([...qs].length) url += "?" + qs.toString();
+  }
+  const opts = { method, credentials:"same-origin", headers:{}, signal };
+  if (body !== undefined){ opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+  const res = await fetch(url, opts);
+  if (res.status === 401){ location.href = "/admin/login"; throw new Error("Sessão expirada."); }
+  let json = null;
+  try { json = await res.json(); } catch {}
+  if (!res.ok || !json || json.ok === false){
+    const err = new Error((json && json.message) || `Erro HTTP ${res.status}`);
+    err.status = res.status; err.details = json && json.details; throw err;
+  }
+  return json;
+}
+
+// Desabilita botão e evita duplo clique durante a requisição
+async function withBusy(btn, fn){
+  if (btn.disabled) return;
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Aguarde...";
+  try { return await fn(); }
+  finally { btn.disabled = false; btn.textContent = label; }
+}
+
+// ---------- abas ----------
+document.querySelectorAll("button.tab").forEach(b => b.onclick = () => {
+  document.querySelectorAll("button.tab").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll("main > section").forEach(s => s.classList.toggle("open", s.id === "tab-" + b.dataset.tab));
+  if (b.dataset.tab === "balance") loadBalance();
+  if (b.dataset.tab === "customers" && !custLoaded) loadCustomers();
+});
+
+// ---------- paginação ----------
+function fillPages(sel, total){
+  const pages = Math.max(1, Math.ceil((total || 0) / PAGE_SIZE));
+  sel.innerHTML = "";
+  for (let i = 0; i < pages; i++) sel.add(new Option(`${i+1} de ${pages}`, i * PAGE_SIZE));
+}
+const offsetOf = sel => Number(sel.value || 0);
+
+// ---------- saldo ----------
+async function loadBalance(){
+  $("balanceValue").textContent = "…";
+  try {
+    const j = await api("/balance");
+    $("balanceValue").textContent = BRL(j.balance);
+  } catch (e) { $("balanceValue").textContent = "—"; toast("Saldo: " + e.message, "err"); }
+}
+$("btnBalance").onclick = e => withBusy(e.target, loadBalance);
+
+// ---------- clientes: listagem ----------
+let custLoaded = false;
+let custTotal = 0;
+function renderCustomers(list){
+  const tb = $("custBody");
+  if (!list || !list.length){ tb.innerHTML = `<tr><td colspan="5" class="muted">Nenhum cliente encontrado.</td></tr>`; return; }
+  tb.innerHTML = list.map(c => `
+    <tr class="clickable" data-id="${esc(c.id)}">
+      <td>${esc(c.id)}</td>
+      <td class="wrapcell">${esc(c.name)}</td>
+      <td>${esc(fmtDoc(c.cpfCnpj))}</td>
+      <td>${esc(c.email || "—")}</td>
+      <td>${esc(c.mobilePhone || c.phone || "—")}</td>
+    </tr>`).join("");
+  tb.querySelectorAll("tr[data-id]").forEach(tr => tr.onclick = () => {
+    // Clicar numa linha copia o ID para uso na cobrança
+    navigator.clipboard?.writeText(tr.dataset.id);
+    toast("ID copiado: " + tr.dataset.id, "ok");
+  });
+}
+async function loadCustomers(){
+  const q = $("custQuery").value.trim();
+  const digits = q.replace(/\D/g, "");
+  const isDoc = q && /^[\d.\-\/]+$/.test(q) && digits.length >= 3;
+  const filter = !q ? {} : isDoc ? { cpfCnpj: digits } : /@/.test(q) ? { email: q } : { name: q };
+  try {
+    const j = await api("/customers", { query:{ ...filter, offset: offsetOf($("custPage")), limit: PAGE_SIZE } });
+    custLoaded = true;
+    custTotal = j.totalCount || 0;
+    renderCustomers(j.data);
+    fillPages($("custPage"), custTotal);
+    $("custCount").textContent = `${custTotal} cliente(s)`;
+  } catch (e) { toast("Clientes: " + e.message, "err"); }
+}
+$("btnCustSearch").onclick = e => { $("custPage").value = 0; withBusy(e.target, loadCustomers); };
+$("custQuery").onkeydown = e => { if (e.key === "Enter"){ $("custPage").value = 0; loadCustomers(); } };
+$("custPage").onchange = loadCustomers;
+
+// ---------- clientes: cadastro ----------
+$("btnCustNew").onclick = () => $("custNewCard").classList.toggle("hidden");
+$("btnCustCancel").onclick = () => $("custNewCard").classList.add("hidden");
+$("formCust").onsubmit = async ev => {
+  ev.preventDefault();
+  const f = ev.target;
+  const body = {
+    name: f.name.value.trim(),
+    cpfCnpj: f.cpfCnpj.value.replace(/\D/g, ""),
+    email: f.email.value.trim() || undefined,
+    mobilePhone: f.mobilePhone.value.replace(/\D/g, "") || undefined,
+  };
+  if (![11, 14].includes(body.cpfCnpj.length)) return toast("CPF deve ter 11 dígitos ou CNPJ 14", "err");
+  await withBusy($("btnCustSave"), async () => {
+    try {
+      const j = await api("/customers", { method:"POST", body });
+      toast(`Cliente cadastrado: ${j.data?.id || ""}`, "ok");
+      f.reset();
+      $("custNewCard").classList.add("hidden");
+      $("custQuery").value = j.data?.name || "";
+      $("custPage").value = 0;
+      await loadCustomers();
+    } catch (e) { toast("Erro ao cadastrar: " + e.message, "err"); }
+  });
+};
+
+// ---------- autocomplete de cliente ----------
+// Uso: attachCustomerPicker({ input, list, hidden, chip, chipLabel, clearBtn })
+function attachCustomerPicker({ input, list, hidden, chip, chipLabel, clearBtn }){
+  let items = [], active = -1, timer = null, ctrl = null, lastQ = "";
+
+  function close(){ list.classList.remove("open"); list.innerHTML = ""; items = []; active = -1; }
+  function setMsg(msg){ list.innerHTML = `<div class="ac-msg">${esc(msg)}</div>`; list.classList.add("open"); items = []; }
+
+  function choose(c){
+    hidden.value = c.id;
+    input.value = "";
+    input.placeholder = "";
+    chipLabel.textContent = `${c.name} · ${fmtDoc(c.cpfCnpj)} · ${c.id}`;
+    chip.classList.add("open");
+    input.classList.add("hidden");
+    close();
+  }
+  function clear(){
+    hidden.value = "";
+    chip.classList.remove("open");
+    input.classList.remove("hidden");
+    input.focus();
+  }
+  clearBtn.onclick = clear;
+
+  function paint(){
+    list.innerHTML = items.map((c, i) => `
+      <div class="ac-item ${i === active ? "act" : ""}" data-i="${i}">
+        <span>${esc(c.name)}</span>
+        <small>${esc(fmtDoc(c.cpfCnpj))}${c.email ? " · " + esc(c.email) : ""}</small>
+      </div>`).join("");
+    list.querySelectorAll(".ac-item").forEach(el => {
+      el.onmousedown = e => { e.preventDefault(); choose(items[+el.dataset.i]); };
+    });
+    list.classList.add("open");
+  }
+
+  async function search(q){
+    if (q === lastQ) return;
+    lastQ = q;
+    ctrl?.abort();
+    ctrl = new AbortController();
+    setMsg("Buscando...");
+    try {
+      const j = await api("/customers/search", { query:{ q }, signal: ctrl.signal });
+      if (input.value.trim() !== q) return;   // resposta antiga
+      items = j.data || [];
+      active = items.length ? 0 : -1;
+      items.length ? paint() : setMsg("Nenhum cliente encontrado.");
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      setMsg("Erro na busca: " + e.message);
+    }
+  }
+
+  input.addEventListener("input", () => {
+    hidden.value = "";            // digitar invalida a seleção anterior
+    lastQ = "";
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2){ ctrl?.abort(); close(); return; }
+    timer = setTimeout(() => search(q), 250);
+  });
+
+  input.addEventListener("keydown", e => {
+    if (!list.classList.contains("open") || !items.length) {
+      if (e.key === "Escape") close();
+      return;
+    }
+    if (e.key === "ArrowDown"){ e.preventDefault(); active = (active + 1) % items.length; paint(); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); active = (active - 1 + items.length) % items.length; paint(); }
+    else if (e.key === "Enter"){ e.preventDefault(); choose(items[active]); }
+    else if (e.key === "Escape"){ close(); }
+  });
+
+  input.addEventListener("blur", () => setTimeout(close, 150));
+
+  return { clear, get value(){ return hidden.value; } };
+}
+
+const chargePicker = attachCustomerPicker({
+  input: $("chargeCustQuery"),
+  list: $("chargeCustList"),
+  hidden: document.querySelector('#formCharge [name="customer"]'),
+  chip: $("chargeCustChip"),
+  chipLabel: $("chargeCustLabel"),
+  clearBtn: $("chargeCustClear"),
+});
+
+// ---------- listas de cobranças ----------
+function renderPayments(bodyId, countId, list, total){
+  const tb = $(bodyId);
+  if (!list || !list.length){ tb.innerHTML = `<tr><td colspan="6" class="muted">Nenhum registro.</td></tr>`; }
+  else tb.innerHTML = list.map(p => `
+    <tr>
+      <td>${esc(p.id)}</td>
+      <td>${esc(p.customer)}</td>
+      <td class="wrapcell">${esc(p.description || p.externalReference || "")}</td>
+      <td>${BRL(p.value)}</td>
+      <td>${fmtDate(p.dueDate)}</td>
+      <td>${statusTag(p.status)}</td>
+    </tr>`).join("");
+  $(countId).textContent = `${total ?? list.length} registro(s)`;
+}
+const PAY_HEAD = `<tr><th>ID</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr>`;
+$("recHead").innerHTML = PAY_HEAD; $("rcvHead").innerHTML = PAY_HEAD;
+fillPages($("recPage"), 0); fillPages($("rcvPage"), 0); fillPages($("txPage"), 0);
+
+async function loadReceivable(){
+  try {
+    const j = await api("/pix/receivable", { query:{ offset: offsetOf($("recPage")), limit: PAGE_SIZE } });
+    renderPayments("recBody", "recCount", j.data, j.totalCount);
+    fillPages($("recPage"), j.totalCount);
+  } catch (e) { toast("Pix a receber: " + e.message, "err"); }
+}
+async function loadReceived(){
+  try {
+    const j = await api("/pix/received", { query:{ offset: offsetOf($("rcvPage")), limit: PAGE_SIZE } });
+    renderPayments("rcvBody", "rcvCount", j.data, j.totalCount);
+    fillPages($("rcvPage"), j.totalCount);
+  } catch (e) { toast("Pix recebido: " + e.message, "err"); }
+}
+$("btnReceivable").onclick = e => withBusy(e.target, loadReceivable);
+$("btnReceived").onclick = e => withBusy(e.target, loadReceived);
+$("recPage").onchange = loadReceivable;
+$("rcvPage").onchange = loadReceived;
+
+// ---------- extrato ----------
+$("txHead").innerHTML = `<tr><th>ID</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Data</th><th>Descrição</th></tr>`;
+async function loadTx(){
+  const q = { type: $("txType").value, offset: offsetOf($("txPage")), limit: PAGE_SIZE,
+              startDate: $("txStart").value, finishDate: $("txEnd").value };
+  try {
+    const j = await api("/pix/transactions", { query:q });
+    const list = j.data || [];
+    $("txBody").innerHTML = list.length ? list.map(t => `
+      <tr>
+        <td>${esc(t.id)}</td>
+        <td>${esc(t.type || $("txType").value)}</td>
+        <td>${BRL(t.value)}</td>
+        <td>${statusTag(t.status)}</td>
+        <td>${fmtDate(t.date || t.createdAt)}</td>
+        <td class="wrapcell">${esc(t.description || "")}</td>
+      </tr>`).join("") : `<tr><td colspan="6" class="muted">Nenhum registro.</td></tr>`;
+    $("txCount").textContent = `${j.totalCount ?? list.length} registro(s)`;
+    fillPages($("txPage"), j.totalCount);
+  } catch (e) { toast("Extrato: " + e.message, "err"); }
+}
+$("btnTx").onclick = e => withBusy(e.target, loadTx);
+$("txPage").onchange = loadTx;
+
+// ---------- cobrança dinâmica ----------
+$("formCharge").onsubmit = async ev => {
+  ev.preventDefault();
+  const f = ev.target;
+  if (!f.customer.value) return toast("Selecione um cliente", "err");
+  const value = Number(f.value.value);
+  if (!(value > 0)) return toast("Valor deve ser maior que zero", "err");
+  const body = {
+    customer: f.customer.value,
+    value,
+    dueDate: f.dueDate.value,
+    description: f.description.value.trim() || undefined,
+    externalReference: f.externalReference.value.trim() || undefined,
+  };
+  await withBusy($("btnCharge"), async () => {
+    try {
+      const j = await api("/pix/dynamic", { method:"POST", body });
+      const qr = j.qrCode || {};
+      const img = qr.encodedImage ? `<div class="qr"><img alt="QR Code Pix" src="data:image/png;base64,${qr.encodedImage}"></div>` : "";
+      $("chargeResult").innerHTML = `
+        <div class="card">
+          <div class="muted">Cobrança ${esc(j.payment?.id)} · ${BRL(j.payment?.value)} · vence ${fmtDate(j.payment?.dueDate)}</div>
+          ${img}
+          <p class="muted" style="margin:10px 0 4px">Pix copia e cola</p>
+          <div class="payload">${esc(qr.payload || "")}</div>
+          ${j.payment?.invoiceUrl ? `<p><a href="${esc(j.payment.invoiceUrl)}" target="_blank" rel="noopener" style="color:var(--pri)">Abrir fatura</a></p>` : ""}
+        </div>`;
+      $("chargeResult").classList.remove("hidden");
+      toast("Cobrança Pix gerada", "ok");
+    } catch (e) { toast("Erro ao gerar cobrança: " + e.message, "err"); }
+  });
+};
+
+// ---------- Pix estático ----------
+async function loadKeys(){
+  try {
+    const j = await api("/pix/addressKeys");
+    const sel = $("addressKeySel");
+    sel.innerHTML = "";
+    (j.data || []).forEach(k => sel.add(new Option(`${k.key} (${k.type || "chave"})`, k.id)));
+    if (!sel.options.length) sel.add(new Option("Nenhuma chave ativa", ""));
+  } catch (e) { toast("Chaves Pix: " + e.message, "err"); }
+}
+$("btnKeys").onclick = e => withBusy(e.target, loadKeys);
+
+$("formStatic").onsubmit = async ev => {
+  ev.preventDefault();
+  const f = ev.target;
+  const addressKeyId = $("addressKeySel").value;
+  if (!addressKeyId) return toast("Selecione uma chave Pix (carregue as chaves primeiro)", "err");
+  const v = f.value.value;
+  const value = v === "" ? undefined : Number(v);
+  if (value !== undefined && !(value > 0)) return toast("Valor deve ser maior que zero", "err");
+  const body = {
+    addressKeyId,
+    value,
+    description: f.description.value.trim() || undefined,
+    expirationDate: f.expirationDate.value || undefined,
+    allowsMultiplePayments: f.allowsMultiplePayments.checked,
+  };
+  await withBusy($("btnStatic"), async () => {
+    try {
+      const j = await api("/pix/static", { method:"POST", body });
+      const d = j.data || {};
+      const img = d.encodedImage ? `<div class="qr"><img alt="QR Code Pix" src="data:image/png;base64,${d.encodedImage}"></div>` : "";
+      $("staticResult").innerHTML = `
+        <div class="card">
+          ${img}
+          <p class="muted" style="margin:10px 0 4px">Pix copia e cola</p>
+          <div class="payload">${esc(d.payload || "")}</div>
+        </div>`;
+      $("staticResult").classList.remove("hidden");
+      toast("QR estático gerado", "ok");
+    } catch (e) { toast("Erro ao gerar QR: " + e.message, "err"); }
+  });
+};
+
+// ---------- enviar Pix ----------
+// Uma chave de idempotência por tentativa. Falha de rede: reenvie com a mesma chave.
+let sendKey = null, sendSig = null;
+function newSendKey(){ return "pix-" + crypto.randomUUID(); }
+
+$("formSend").onsubmit = async ev => {
+  ev.preventDefault();
+  const f = ev.target;
+  const value = Number(f.value.value);
+  const pixAddressKey = f.pixAddressKey.value.trim();
+  const pixAddressKeyType = f.pixAddressKeyType.value;
+  if (!(value > 0)) return toast("Valor deve ser maior que zero", "err");
+  if (!pixAddressKey) return toast("Informe a chave Pix", "err");
+
+  const sig = JSON.stringify([value, pixAddressKey, pixAddressKeyType]);
+  if (!sendKey || sig !== sendSig){ sendKey = newSendKey(); sendSig = sig; }
+
+  if (!confirm(`Enviar ${BRL(value)} para ${pixAddressKey} (${pixAddressKeyType})?`)) return;
+
+  await withBusy($("btnSend"), async () => {
+    try {
+      const j = await api("/pix/send", { method:"POST", body:{
+        value, pixAddressKey, pixAddressKeyType,
+        description: f.description.value.trim() || undefined,
+        externalReference: sendKey,
+      }});
+      const d = j.data || {};
+      $("sendResult").innerHTML = `
+        <div class="card">
+          <div>Transferência ${esc(d.id)} ${statusTag(d.status)}</div>
+          <div class="muted" style="margin-top:6px">Valor: ${BRL(d.value ?? value)} · Referência: ${esc(sendKey)}</div>
+        </div>`;
+      $("sendResult").classList.remove("hidden");
+      toast("Pix enviado", "ok");
+      sendKey = null; sendSig = null;
+      f.reset();
+    } catch (e) {
+      toast("Falha no envio: " + (e.message || "") + "\nNão clique em outra tentativa até confirmar no extrato.", "err");
+    }
+  });
+};
+
+["value","pixAddressKey","pixAddressKeyType"].forEach(n => {
+  $("formSend").querySelector(`[name="${n}"]`).addEventListener("input", () => { sendKey = null; });
+});
+
+// ---------- inicialização ----------
+loadBalance();
+</script>
+</body>
+</html>
