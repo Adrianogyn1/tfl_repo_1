@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const BASE_URL = process.env.ASAAS_API_URL || 'https://api.asaas.com/v3/';
 if (!BASE_URL) throw new Error(`ASAAS_ENV inválido:`);
-if (!(process.env.ASAAS_API_KEY || false)) throw new Error('ASAAS_API_KEY não definida');
+//if (!(process.env.ASAAS_API_KEY || false)) throw new Error('ASAAS_API_KEY não definida');
 
 async function asaas(method, path, { body, query } = {}) {
   const url = new URL(BASE_URL + path);
