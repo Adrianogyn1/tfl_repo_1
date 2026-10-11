@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { asaas } = require('./assas_client'); // confirme o nome exato do arquivo no disco
 const { auth } = require('../admin/index'); // ajuste o caminho se necessário
 const { route } = require('../../router');
+const repo = require('../../repository');
 
 const router = express.Router();
 router.use(express.json({ limit: '100kb' }));

@@ -11,7 +11,8 @@ require('dotenv').config();
 const router = express.Router();
 router.use(express.json({ limit: '100kb' }));
 
-function requireAuth(req, res, next) {
+function requireAuth(req, res, next) 
+{
   if (req.session?.user || req.cookies?.user) return next();
   if (req.path === '/') return res.redirect('/admin/login');
   res.status(401).json({ ok: false, message: 'Sessão expirada. Faça login novamente.' });
