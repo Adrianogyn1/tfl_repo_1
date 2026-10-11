@@ -1,10 +1,16 @@
 
 const router = require("express").Router();
 const repo = require("../../repository");
-const walletController = require("./currency_controllers");
-const { CheckLogin: CheckAuth } = require("../auth");
+const {walletController, CURRENCIES} = require("./currency_controllers");
+const { CheckLogin: CheckAuth, ADMIN_ROLES } = require("../auth");
 
 const sequelize = repo.sequelize; // ajuste se a instância estiver em outro lugar
+const TRANSACTION_TYPES = [
+  "Deposit", "Withdraw", "Buy", "Sell", "Bonus",
+  "Rewards", "Transfer", "Convert", "None", "All",
+];
+
+
 
 //#region [Config]
 
@@ -19,16 +25,10 @@ const FEE_PERCENT = {
 // Profile "banco" que recebe as taxas, mantém o ledger fechado.
 const SYSTEM_PROFILE_ID = process.env.SYSTEM_PROFILE_ID;
 
-const CURRENCIES = ["Coins", "Cash", "Chips"];
 const TYPES = [...CURRENCIES, "None", "All"];
-const TRANSACTION_TYPES = [
-  "Deposit", "Withdraw", "Buy", "Sell", "Bonus",
-  "Rewards", "Transfer", "Convert", "None", "All",
-];
-const ADMIN_ROLES = ["admin", "owner", "ownner"];
+
 
 // Base inteira: 1 chip = 1 unidade. 1 coin = 10 unidades, 1 cash = 250 unidades.
-
 const CONVERSION ={
   Dollar: 5.55,
   Cash: 1,//dollar -> cash, valor: 5.55
@@ -114,7 +114,7 @@ function assertSystemProfile(fee)
 }
 
 // TODO: implementar verificação real do PIN (hash) do usuário.
-async function verifyPin(userId, pin)
+async function verifyPin(ownerId, pin)
 {
   return true;
 }
@@ -199,7 +199,7 @@ async function _withdraw(req, res)
     const ownerId = req.profileId;
     const userId = req.userId;
 
-    await verifyPin(userId, pin);
+    await verifyPin(ownerId, pin);
 
     const fee = calcFee(amount, FEE_PERCENT.withdraw);
     const net = amount - fee;
@@ -327,6 +327,7 @@ async function _convert(req, res)
 }
 
 //#endregion
+
 
 //#region [Consultas]
 
@@ -461,7 +462,7 @@ async function create(req, res)
 
 //#endregion
 
-//#region [API interna (exportada)]
+//#region [API interna]
 
 // Registros são imutáveis.
 async function UpdateCurrencyRegister(registerData, userId, transaction = null)
@@ -517,7 +518,7 @@ async function CreateCurrencyRegister(registerData, userId, transaction = null)
 }
 //#endregion
 
-//auxiliar para conversao na compra
+//#region auxiliar para conversao na compra
 
 ///<param name="value">valor em moedas</param>
 ///<returns>valor em real brl</returns>
@@ -529,6 +530,52 @@ async function ConvertCoinToMoney(value) {
 async function ConvertMoneyToCoin(value) {
   return value / (CONVERSION.Dollar/CONVERSION.Coins);
 }
+//#endregion
+
+async function _createCoin(avatarID, coinsValue, description, transactionType = "Buy") {
+  const avatar = await repo.Avatar.findByPk(avatarID);
+  if(!avatar) return null;
+  
+  return await CreateCurrencyRegister({
+    ownerId: avatar.id,
+    userId: avatar.userId,
+    type: "Coins",
+    value: coinsValue,
+    description: description,
+    transactionType: transactionType
+  }, avatar.userId);
+}
+
+async function _createCash(avatarID, cashValue, description, transactionType="") {
+  const avatar = await repo.Avatar.findByPk(avatarID);
+  if(!avatar) return null;
+
+  return await CreateCurrencyRegister({
+    ownerId: avatar.id,
+    userId: avatar.userId,
+    type: "Cash",
+    value: cashValue,
+    description: description,
+    transactionType: transactionType
+  }, avatar.userId);
+}
+
+async function _createChips(avatarID, cashValue, description, transactionType="") {
+  const avatar = await repo.Avatar.findByPk(avatarID);
+  if(!avatar) return null;
+
+  return await CreateCurrencyRegister({
+    ownerId: avatar.id,
+    userId: avatar.userId,
+    type: "Chips",
+    value: cashValue,
+    description: description,
+    transactionType: transactionType
+  }, avatar.userId);
+}
+
+
+
 
 
 module.exports = {

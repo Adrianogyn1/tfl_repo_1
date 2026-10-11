@@ -19,10 +19,12 @@ const FileInfoFactory = require("./social/FileInfo");
 const GameModelsFactory = require("./game/index");
 
 //pagamento
-const PagBankFactory = require("./pagbank/pagbank");
+
+const {PaymentBankModel, PaymentWebHookModel, associatePaymentModels} = require("./bank/Payment_Bank");
 
 module.exports = (sequelize) => {
-  const PagBank = PagBankFactory(sequelize);
+  const PaymentBank = PaymentBankModel(sequelize);
+  const PaymentWebHook = PaymentWebHookModel(sequelize);
   const User = UserFactory(sequelize);
   const RoomModel = require("./game/RoomModel")(sequelize);
   const Profile = ProfileFactory(sequelize);
@@ -47,6 +49,7 @@ module.exports = (sequelize) => {
   /*=====================================
     Relacionamentos
   =======================================*/
+  associatePaymentModels(PaymentBank, PaymentWebHook);
 
   Post.hasMany(Like, { as: "likes", foreignKey: "postId", onDelete: "CASCADE", hooks: true });
   Post.hasMany(Photo, { as: "photos", foreignKey: "postId", onDelete: "CASCADE", hooks: true });
@@ -78,7 +81,8 @@ module.exports = (sequelize) => {
   chatAssociations({ Profile, ChatRoom, ChatMessage, ChatParticipant, SystemAnnouncement });
 
   return {
-    PagBank,
+    PaymentBank,
+    PaymentWebHook,
     User,
     Like,
     Post,

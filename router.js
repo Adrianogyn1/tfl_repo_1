@@ -9,45 +9,18 @@ const webSite = (process.env.SERVER_URL || "localhost:5000").endsWith("/") ? pro
 
 const authController = require("./controllers/auth");
 const socialController = require("./controllers/social/router_controller.js");
-
+const homeController = require("./controllers/home/home_controller.js");
 
 
 router.get("/", (req, res) => { 
   res.sendFile(path.join(__dirname, "./paginas/index.html"));
 });
-router.get("/api/home/info", async (req, res) =>
-{
-  const images = {
-    './static/images/galery/1.png': { active: true },
-    "./static/images/galey/2.png": { active: true },
-    "./static/images/galery/3.png": { active: true },
-     "./static/images/galery/4.png": { active: true },
-  };
-  const files = {
-    android: { url: process.env.ANDROID_DOWNLOAD || "", active: true },
-    ios: { url: process.env.IOS_DOWNLOAD || "", active: false },
-    windows: { url: process.env.WINDOWS_DOWNLOAD || "", active: true },
-    linux: { url: process.env.LINUX_DOWNLOAD || "", active: true },
-  };
-   const { GerarQrCode } = require('./controllers/api/bank_controller.js')
 
-  // return res.json({ "status": "ok",payload: qrCodePix.payload(), image: await qrCodePix.base64() });
-  const data = await GerarQrCode('donate');
-  const pix = {
-    payload: data.payload, image: data.encodedImage
-  };
-
-  const info = {
-    images,
-    files,
-    pix
-  };
-  res.json(info);
-});
+router.use("/api/home", homeController.router);
 
 
 //Auth
-router.use("/api", authController.router);
+router.use("/api/auth", authController.router);
 
 //Social
 router.use("/api", socialController.router);

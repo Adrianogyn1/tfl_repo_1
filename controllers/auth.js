@@ -1,4 +1,6 @@
 const repo = require("../repository");
+const Op = repo.Sequelize ? repo.Sequelize.Op : require("sequelize").Op;
+
 const crypto = require("crypto");
 const {
   UserDto,
@@ -6,15 +8,88 @@ const {
   RoomBaseInfo,
 } = require("../Models/dto/userDto");
 
+const ADMIN_ROLES = ["admin", "owner", "ownner"];
+
 const router = require("express").Router();
 
 /* =====================================================
    Autenticação
 ===================================================== */
-router.post("/auth/signin", (req, res) => sigin(req, res));
-router.post("/auth/signup", (req, res) => signup(req, res));
-router.post("/auth/forgot", (req, res) => forgot(req, res));
-router.get("/auth/signin/random", (req, res) => signInRandom(req, res));
+
+router.get('/', (req, res) =>
+{
+  res.json({ success: true, data: {} });
+});
+router.post("/signin", (req, res) => sigin(req, res));
+router.post("/signup", (req, res) => signup(req, res));
+router.post("/forgot", (req, res) => forgot(req, res));
+router.get("/signin/random", (req, res) => signInRandom(req, res));
+
+
+//#region Admin
+
+router.post("/admin/signin", async (req, res) =>
+{
+
+  const { username, password, page } = req.body;
+  try
+  {
+    //userName ou login
+    const user = await repo.User.findOne({
+      where: {
+        [Op.or]: [
+          { email: username },
+          { login: username }
+        ],
+        [Op.and]: [
+          { role: "admin" }
+        ]
+      }
+    });
+    if (!user)
+      throw new Error("Usuário ou senha inválidos");
+
+    if (user.password == password)
+    {
+      req.session.user = user;
+      user.token = repo.User.newToken();
+      await repo.User.update({ token: user.token }, { where: { id: user.id } });
+
+      res.cookie("userToken", user.token);
+
+      if (page && page.length > 3 && page != "login")
+        {
+          //res.redirect(page);
+          res.json({ success: true, data: user, page: page });
+        }
+      else{
+        res.json({ success: true, data: user, page: "/admin" });
+      }
+    }
+    throw new Error("Usuário ou senha inválidos");
+  }
+  catch (error)
+  {
+    res.json({ success: false, message: error.message , page: "/admin/login"});
+  }
+});
+
+router.get('/admin/signup', (req, res) =>
+{
+  req.session.destroy(() =>
+  {
+    res.clearCookie("userToken");
+    res.redirect("/admin/login");
+  });
+});
+
+
+//#endregion
+
+
+
+
+
 
 function encryptPassword(password)
 {
@@ -45,7 +120,8 @@ async function CheckLogin(req, res, next)
             selected: true
           }
         });
-        if(!avatar){
+        if (!avatar)
+        {
           avatar = await repo.Avatar.create({
             userId: usertemp.id,
             name: "Avatar Temporário",
@@ -68,13 +144,13 @@ async function CheckLogin(req, res, next)
           where: {
             userId: req.userId,
             selected: true
-          }          
+          }
         });
-        req.profileId = profile?.id??-1;
+        req.profileId = profile?.id ?? -1;
 
         return next();
       }
-      
+
     } catch (err)
     {
       console.error("Erro ao verificar login:", err);
@@ -85,10 +161,11 @@ async function CheckLogin(req, res, next)
   return res.status(401).json({ error: "Unauthorized" });
 }
 
-function auth(req, res, next) {
-    //pagina que esta tentando acessar
-    const pg = req.originalUrl;
-    var token =
+function auth(req, res, next)
+{
+  //pagina que esta tentando acessar
+  const pg = req.originalUrl;
+  var token =
     req.headers?.["tfl-token"] ||
     req.headers?.["token"] ||
     req.body?.token ||
@@ -97,21 +174,25 @@ function auth(req, res, next) {
     "";
 
 
-    if (req.session.user) {
-       return next();
-    }
-    //cookie
-    else if (req.cookies.userToken) {
-        req.params.token = req.cookies.userToken;
-      return  CheckLogin(req, res, next);
-    }
-    //token
-    else if (token) {
-       return CheckLogin(req, res, next);
-    } 
-    else {
-        res.redirect("/admin/login?pg=" + pg);
-    }
+  if (req.session.user)
+  {
+    return next();
+  }
+  //cookie
+  else if (req.cookies.userToken)
+  {
+    req.params.token = req.cookies.userToken;
+    return CheckLogin(req, res, next);
+  }
+  //token
+  else if (token)
+  {
+    return CheckLogin(req, res, next);
+  }
+  else
+  {
+    res.redirect("/admin/login?pg=" + pg);
+  }
 }
 
 async function signInRandom(req, res)
@@ -281,4 +362,6 @@ async function logout(req, res)
   return res.status(200).json({ success: true, data: {} });
 }
 
-module.exports = { sigin, signup, logout, forgot, CheckLogin, auth, signInRandom, router };
+
+
+module.exports = { ADMIN_ROLES, CheckLogin, auth, signInRandom, router };

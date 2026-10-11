@@ -101,12 +101,14 @@
 <body>
 
     <div class="login-card">
+
         <div class="login-header">
             <h1>Painel Administrativo</h1>
             <p>Entre com suas credenciais para acessar</p>
+            <p id="message" class="hidden text-red-800"></p>
         </div>
 
-        <form action="/admin/login" method="POST">
+        <form action="#" method="POST">
             <input type="hidden" id="page" name="page" value="login">
             <div class="form-group">
                 <label for="email">E-mail ou Usuário</label>
@@ -118,19 +120,46 @@
                 <input type="password" id="password" name="password" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn-submit">Entrar</button>
+            <button id="btnLogin" type="button" class="btn-submit">Entrar</button>
         </form>
     </div>
 
 </body>
 <script>
     $(document).ready(function () {
+
+        const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
        //pega a pagina de direcionamento
        var url = window.location.href;
        var page = url.split("?pg=")[1];
        if (page) {
         $("#page").val(page);
        }
+
+
+       function setMessage(message, isError = true) {
+        if(isError)
+           $('#message').removeClass('hidden').removeClass('text-green-800').addClass('text-red-800');
+        else
+           $('#message').removeClass('hidden').removeClass('text-red-800').addClass('text-green-800');
+
+           $('#message').text(message);
+           setTimeout(() => {
+               $('#message').addClass('hidden');
+           }, 5000);
+       }
+
+       $('#btnLogin').on('click', function () {
+           var form = $('form').serialize();
+
+           $.post(`${dominio}/api/auth/admin/signin`, form, function (data) {
+               if (data.success) {
+                   window.location.href = data.page;
+               } else {                
+                   setMessage(data.message, true);
+               }
+           });
+       });
     });
 </script>
 </html>

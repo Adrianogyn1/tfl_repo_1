@@ -157,9 +157,9 @@
           const formData = new FormData();
           formData.append("file", fileInput.files[0]); // O nome do campo deve ser estritamente 'file'
           formData.append("description", description.val());
-
+          const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
           $.ajax({
-            url: "/api/cdn/upload", // Mude para a rota exata definida no seu router.js
+            url: `${dominio}/api/cdn/upload` , // Mude para a rota exata definida no seu router.js
             method: "POST",
             data: formData,
             processData: false,

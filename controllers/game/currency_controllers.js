@@ -5,8 +5,7 @@
 
 const repo = require("../../repository");
 const router = require("express").Router();//por hora nao usamos
-
-
+const CURRENCIES = ["Coins", "Cash", "Chips"];
 
 function checkData(currencyData)
 {
@@ -22,7 +21,7 @@ function checkData(currencyData)
       throw new Error("O valor da moeda é obrigatório.");
 
     if (!currencyData.userId) throw new Error("O userId é obrigatório.");
-    if(!currencyData.ownerId) throw new Error("O ownerId é obrigatório.");
+    if (!currencyData.ownerId) throw new Error("O ownerId é obrigatório.");
   } catch (e)
   {
     error = e.message;
@@ -195,10 +194,12 @@ async function _update(wallet, walletId)
 
 }
 //retorna a wallet pela id
-async function _getById(walletId) {
+async function _getById(walletId)
+{
   return await repo.Currency.findByPk(walletId);
 }
-async function _getByOwnerId(avatarID) {
+async function _getByOwnerId(avatarID)
+{
   return await repo.Currency.findOne({
     where: {
       ownerId: avatarID,
@@ -235,6 +236,7 @@ async function SumBalance(avatarID)
         userId: avatarID,
       }
     });
+
     if (!wallet)
       throw new Error("Wallet not found");
 
@@ -252,11 +254,33 @@ async function SumBalance(avatarID)
   }
 }
 
+async function Hasvalue(value, type)
+{
+  const wallet = await repo.Currency.findOne({
+    where: {
+      userId: avatarID,
+    }
+  });
+
+  if (!wallet)
+    throw new Error("Wallet not found");
+  if (type == 'Coins')
+    return wallet.coins >= value;
+  if (type == 'Cash')
+    return wallet.cash >= value;
+  if (type == 'Chips')
+    return wallet.chips >= value;
+
+  return false;
+}
+
 module.exports = {
+  CURRENCIES,
   _create,
   _update,
   _getById,
   _getByOwnerId,
   SumBalance,
+  Hasvalue,
   router,
 };
