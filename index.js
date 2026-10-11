@@ -248,6 +248,8 @@ const { spawn } = require("child_process");
 //require('./controllers/placeHolder.js');
 
 
+const { attachTerminal } = require("./controllers/admin/files_controller.js");
+attachTerminal(server);
 
 server.listen(Settings.PORT, "0.0.0.0", () =>
   console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`),

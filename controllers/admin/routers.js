@@ -73,7 +73,7 @@ router.use("/arquivos", async (req, res) => {
   res.sendFile(path.join(__dirname, "../../paginas/admin/upload.html"));
 });
 const controllerFiles = require("./files_controller");
-router.use("/filemanager", controllerFiles.router);
+router.use("/filemanager", controllerFiles);
 
 //const {helps} = require("../../routers/routes.js");
 //router.use("/",helps);

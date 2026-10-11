@@ -14,7 +14,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
-    <style>
+   
+       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
+
+       <!--Tailwind-->
+       <script src="https://cdn.tailwindcss.com"></script>
+   <style>
         :root {
             --bg-app: #F3F4F1;
             --bg-panel: #FFFFFF;
@@ -617,39 +622,168 @@
         }
 
         /* ---------- Modal de operações (PM2 / Git) ---------- */
-        .ops-modal { width: 760px; }
+        .ops-modal {
+            width: 760px;
+        }
+
         .ops-body {
-            padding: 14px 18px; display: flex; flex-direction: column; gap: 12px;
-            max-height: 70vh; overflow-y: auto; font-size: 13.5px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 70vh;
+            overflow-y: auto;
+            font-size: 13.5px;
         }
-        .ops-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
-        .ops-toolbar button { white-space: nowrap; }
-        .ops-section-title { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 4px; }
-        .ops-block { max-height: 180px; margin: 0; }
-        .ops-log { max-height: 130px; margin: 0; }
-        .ops-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        .ops-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .ops-toolbar button {
+            white-space: nowrap;
+        }
+
+        .ops-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .ops-block {
+            max-height: 180px;
+            margin: 0;
+        }
+
+        .ops-log {
+            max-height: 130px;
+            margin: 0;
+        }
+
+        .ops-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
         .ops-table th {
-            text-align: left; font-size: 11.5px; color: var(--muted);
-            padding: 6px 8px; border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 11.5px;
+            color: var(--muted);
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
         }
+
         .ops-table td {
-            padding: 7px 8px; border-bottom: 1px solid var(--border);
-            font-family: var(--font-mono); font-size: 12.5px;
+            padding: 7px 8px;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 12.5px;
         }
-        .ops-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+        .ops-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
         .ops-actions button {
-            font-size: 12px; padding: 4px 8px; border-radius: 5px;
-            border: 1px solid var(--border); background: var(--bg-panel);
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
         }
-        .ops-actions button:hover { border-color: var(--accent); color: var(--accent-dark); }
-        .ops-actions button.danger-btn:hover { border-color: var(--danger); color: var(--danger); }
-        .st { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
-        .st-online { background: var(--accent-soft); color: var(--accent-dark); }
-        .st-stopped { background: var(--bg-sidebar-hover); color: var(--muted); }
-        .st-error { background: var(--danger-soft); color: var(--danger); }
-        .st-other { background: #F5EFD9; color: #7A5C12; }
-        .danger-txt { color: var(--danger) !important; }
-        .danger-txt:hover { border-color: var(--danger) !important; }
+
+        .ops-actions button:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .ops-actions button.danger-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .st {
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .st-online {
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+        }
+
+        .st-stopped {
+            background: var(--bg-sidebar-hover);
+            color: var(--muted);
+        }
+
+        .st-error {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .st-other {
+            background: #F5EFD9;
+            color: #7A5C12;
+        }
+
+        .danger-txt {
+            color: var(--danger) !important;
+        }
+
+        .danger-txt:hover {
+            border-color: var(--danger) !important;
+        }
+
+        /* ---------- Terminal ---------- */
+        .term-modal {
+            width: 960px;
+        }
+
+        .term-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .term-status {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .term-status.on {
+            color: var(--accent-dark);
+        }
+
+        .term-status.off {
+            color: var(--danger);
+        }
+
+        .term-wrap {
+            background: #1C201D;
+            padding: 8px;
+            height: min(60vh, 520px);
+        }
+
+        #term-container {
+            height: 100%;
+        }
+
+        .term-wrap .xterm {
+            height: 100%;
+        }
 
         /* ---------- Responsive ---------- */
         @media (max-width:860px) {
@@ -706,14 +840,16 @@
             <div class="topbar-actions">
                 <input type="text" id="filter-input" class="search" placeholder="Filtrar nesta pasta...">
                 <button id="btn-pm2" class="icon-btn" title="PM2" aria-label="PM2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="6" rx="1.5" />
                         <rect x="3" y="14" width="18" height="6" rx="1.5" />
                         <path d="M7 7h.01M7 17h.01" />
                     </svg>
                 </button>
                 <button id="btn-git" class="icon-btn" title="Git" aria-label="Git">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <circle cx="6" cy="5" r="2" />
                         <circle cx="6" cy="19" r="2" />
                         <circle cx="18" cy="7" r="2" />
@@ -739,6 +875,14 @@
                         stroke-linejoin="round">
                         <path d="M12 4v10M7 10l5 5 5-5" />
                         <path d="M4 19h16" />
+                    </svg>
+                </button>
+
+                <button id="btn-terminal" class="icon-btn" title="Terminal" aria-label="Terminal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="16" rx="2" />
+                        <path d="M7 9l3 3-3 3M13 15h4" />
                     </svg>
                 </button>
             </div>
@@ -817,6 +961,22 @@
         </div>
     </div>
 
+    <div class="modal-backdrop" id="term-modal">
+    <div class="modal term-modal">
+        <div class="modal-header term-header">
+            <span>Terminal</span>
+            <span class="term-status" id="term-status">desconectado</span>
+        </div>
+        <div class="term-wrap">
+            <div id="term-container"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost-sm" id="term-reconnect">Reconectar</button>
+            <button class="btn-ghost-sm" id="term-close">Fechar</button>
+        </div>
+    </div>
+</div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
@@ -831,6 +991,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
+
 
     <script>
         const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
@@ -847,7 +1010,8 @@
         const $ = (id) => document.getElementById(id);
 
         /* ===================== Helpers de rede ===================== */
-        async function readResult(res) {
+        async function readResult(res)
+        {
             const data = await res.json().catch(() => null);
             return {
                 ok: res.ok && !!data && data.ok === true,
@@ -855,7 +1019,8 @@
             };
         }
 
-        async function postJson(url, body = {}) {
+        async function postJson(url, body = {})
+        {
             const res = await fetch(API + url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -864,13 +1029,15 @@
             return readResult(res);
         }
 
-        async function getJson(url) {
+        async function getJson(url)
+        {
             const res = await fetch(API + url);
             if (!res.ok) throw new Error((await readResult(res)).message);
             return res.json();
         }
 
-        function setStatus(msg) {
+        function setStatus(msg)
+        {
             $('status').textContent = msg;
         }
 
@@ -878,7 +1045,8 @@
         const joinPath = (dir, name) => (dir === './.' || dir === '.') ? './' + name : dir + '/' + name;
         const isRoot = (p) => p === './.' || p === '.';
 
-        function cssEscape(str) {
+        function cssEscape(str)
+        {
             return window.CSS && CSS.escape ? CSS.escape(str) : str.replace(/["\\]/g, '\\$&');
         }
 
@@ -894,11 +1062,13 @@
                 'Ctrl-S': () => saveFileContent()
             }
         });
-        codeEditor.on('inputRead', (cm, change) => {
+        codeEditor.on('inputRead', (cm, change) =>
+        {
             if (change.text[0].match(/\w/)) cm.showHint({ completeSingle: false });
         });
 
-        function getEditorMode(filename) {
+        function getEditorMode(filename)
+        {
             const ext = filename.split('.').pop().toLowerCase();
             if (['js', 'mjs', 'cjs', 'json', 'xml'].includes(ext)) return 'javascript';
             if (['html', 'htm'].includes(ext)) return 'htmlmixed';
@@ -910,9 +1080,11 @@
             return 'javascript';
         }
 
-        async function openEditModal(filePath) {
+        async function openEditModal(filePath)
+        {
             currentEditingPath = filePath;
-            try {
+            try
+            {
                 const res = await fetch(`${API}/editFile?path=${encodeURIComponent(filePath)}`);
                 if (!res.ok) return alert((await readResult(res)).message);
                 const content = await res.text();
@@ -921,38 +1093,47 @@
                 codeEditor.setValue(content);
                 $('modal').classList.add('open');
                 setTimeout(() => codeEditor.refresh(), 10);
-            } catch (err) {
+            } catch (err)
+            {
                 alert('Erro ao abrir o arquivo: ' + err.message);
             }
         }
 
-        function closeModal() {
+        function closeModal()
+        {
             $('modal').classList.remove('open');
         }
 
-        async function saveFileContent() {
+        async function saveFileContent()
+        {
             const r = await postJson('/saveFile', { path: currentEditingPath, content: codeEditor.getValue() });
             alert(r.message);
             if (r.ok) closeModal();
         }
 
         /* ===================== Árvore de pastas ===================== */
-        async function loadFolders() {
-            try {
+        async function loadFolders()
+        {
+            try
+            {
                 const dirs = await getJson('/getfolders');
                 const tree = $('tree');
                 tree.innerHTML = '';
                 tree.appendChild(renderTree(buildTree(dirs), '.'));
-            } catch (err) {
+            } catch (err)
+            {
                 $('tree').textContent = 'Erro ao carregar pastas: ' + err.message;
             }
         }
 
-        function buildTree(paths) {
+        function buildTree(paths)
+        {
             const root = {};
-            paths.forEach(p => {
+            paths.forEach(p =>
+            {
                 let current = root;
-                p.split('/').filter(s => s && s !== '.').forEach(part => {
+                p.split('/').filter(s => s && s !== '.').forEach(part =>
+                {
                     if (!current[part]) current[part] = {};
                     current = current[part];
                 });
@@ -960,11 +1141,13 @@
             return root;
         }
 
-        function renderTree(node, currentPath) {
+        function renderTree(node, currentPath)
+        {
             const ul = document.createElement('ul');
             ul.className = 'tree';
 
-            Object.keys(node).forEach(key => {
+            Object.keys(node).forEach(key =>
+            {
                 const li = document.createElement('li');
                 const fullPath = currentPath === '.' ? './' + key : currentPath + '/' + key;
                 const hasChildren = Object.keys(node[key]).length > 0;
@@ -977,11 +1160,14 @@
                 const caret = document.createElement('span');
                 caret.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
                 caret.className = 'caret' + (hasChildren ? '' : ' spacer');
-                if (hasChildren) {
-                    caret.onclick = (e) => {
+                if (hasChildren)
+                {
+                    caret.onclick = (e) =>
+                    {
                         e.stopPropagation();
                         const nested = li.querySelector(':scope > .nested');
-                        if (nested) {
+                        if (nested)
+                        {
                             nested.classList.toggle('active');
                             caret.classList.toggle('open', nested.classList.contains('active'));
                         }
@@ -1002,11 +1188,13 @@
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'file-actions';
                 actionsDiv.style.marginLeft = 'auto';
-                actionsDiv.appendChild(iconButton('Renomear pasta', 'M20.5 12.6 12 21l-9-9V4h8l9.5 9.5a2 2 0 0 1 0 3.1Z', (e) => {
+                actionsDiv.appendChild(iconButton('Renomear pasta', 'M20.5 12.6 12 21l-9-9V4h8l9.5 9.5a2 2 0 0 1 0 3.1Z', (e) =>
+                {
                     e.stopPropagation();
                     renameItem(currentPath, key, true);
                 }));
-                actionsDiv.appendChild(iconButton('Excluir pasta', 'M4 7h16|M9 7V4h6v3|M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13', (e) => {
+                actionsDiv.appendChild(iconButton('Excluir pasta', 'M4 7h16|M9 7V4h6v3|M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13', (e) =>
+                {
                     e.stopPropagation();
                     deleteFolder(fullPath);
                 }, true));
@@ -1015,7 +1203,8 @@
                 div.onclick = () => selectFolder(fullPath);
                 li.appendChild(div);
 
-                if (hasChildren) {
+                if (hasChildren)
+                {
                     const nestedUl = renderTree(node[key], fullPath);
                     nestedUl.className = 'nested';
                     li.appendChild(nestedUl);
@@ -1026,19 +1215,23 @@
         }
 
         /* ===================== Navegação / breadcrumbs ===================== */
-        function renderBreadcrumbs(path) {
+        function renderBreadcrumbs(path)
+        {
             const bar = $('breadcrumbs');
             bar.innerHTML = '';
             const parts = path.split('/').filter(p => p !== '' && p !== '.');
             const crumbs = [{ label: 'Raiz', path: './.' }];
             let acc = '.';
-            parts.forEach(p => {
+            parts.forEach(p =>
+            {
                 acc = acc + '/' + p;
                 crumbs.push({ label: p, path: acc });
             });
 
-            crumbs.forEach((c, i) => {
-                if (i > 0) {
+            crumbs.forEach((c, i) =>
+            {
+                if (i > 0)
+                {
                     const sep = document.createElement('span');
                     sep.className = 'sep';
                     sep.textContent = '/';
@@ -1052,7 +1245,8 @@
             });
         }
 
-        function selectFolder(fullPath) {
+        function selectFolder(fullPath)
+        {
             selectedPath = fullPath;
             document.querySelectorAll('.folder-row').forEach(f => f.classList.remove('selected'));
             const node = document.querySelector(`.folder-row[data-path="${cssEscape(fullPath)}"]`);
@@ -1064,29 +1258,35 @@
             loadFiles(fullPath);
         }
 
-        function refresh() {
+        function refresh()
+        {
             return loadFiles(selectedPath);
         }
 
         /* ===================== Lista de arquivos ===================== */
-        async function loadFiles(dir) {
-            try {
+        async function loadFiles(dir)
+        {
+            try
+            {
                 lastFiles = await getJson('/getfiles?path=' + encodeURIComponent(dir));
-            } catch (err) {
+            } catch (err)
+            {
                 lastFiles = [];
                 setStatus('Erro: ' + err.message);
             }
             renderFileList(lastFiles, dir);
         }
 
-        function makeBadge(text) {
+        function makeBadge(text)
+        {
             const badge = document.createElement('div');
             badge.className = 'file-badge';
             badge.textContent = text || '—';
             return badge;
         }
 
-        function renderFileList(items, dir) {
+        function renderFileList(items, dir)
+        {
             const term = $('filter-input').value.trim().toLowerCase();
             const visible = term ? items.filter(f => f.name.toLowerCase().includes(term)) : items;
 
@@ -1096,7 +1296,8 @@
             $('file-table').style.display = visible.length === 0 ? 'none' : 'table';
             $('status-count').textContent = `${items.length} ${items.length === 1 ? 'item' : 'itens'}`;
 
-            visible.forEach(item => {
+            visible.forEach(item =>
+            {
                 const name = item.name;
                 const isFolder = item.isDir;
                 const filePath = joinPath(dir, name);
@@ -1107,7 +1308,8 @@
                 const downloadUrl = `${API}/downloadFile?path=${encodeURIComponent(filePath)}`;
 
                 const tr = document.createElement('tr');
-                tr.ondblclick = () => {
+                tr.ondblclick = () =>
+                {
                     if (isFolder) return selectFolder(filePath);
                     if (isImage) return window.open(downloadUrl, '_blank');
                     openEditModal(filePath);
@@ -1116,13 +1318,15 @@
                 // Ícone
                 const tdIcon = document.createElement('td');
                 tdIcon.className = 'file-icon-col';
-                if (isFolder) {
+                if (isFolder)
+                {
                     const badge = document.createElement('div');
                     badge.className = 'file-badge';
                     badge.style.color = 'var(--folder)';
                     badge.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h5l2 2h8A1.5 1.5 0 0 1 21 7.5v11A1.5 1.5 0 0 1 19.5 20h-15A1.5 1.5 0 0 1 3 18.5v-13Z"/></svg>';
                     tdIcon.appendChild(badge);
-                } else if (isImage) {
+                } else if (isImage)
+                {
                     const img = document.createElement('img');
                     img.className = 'file-thumb';
                     img.loading = 'lazy';
@@ -1130,7 +1334,8 @@
                     img.src = downloadUrl;
                     img.onerror = () => img.replaceWith(makeBadge(ext));
                     tdIcon.appendChild(img);
-                } else {
+                } else
+                {
                     tdIcon.appendChild(makeBadge(ext));
                 }
                 tr.appendChild(tdIcon);
@@ -1152,10 +1357,13 @@
                 const actions = document.createElement('div');
                 actions.className = 'file-actions';
 
-                if (!isFolder) {
-                    if (isImage) {
+                if (!isFolder)
+                {
+                    if (isImage)
+                    {
                         actions.appendChild(iconButton('Visualizar', 'M12 4v12|M7 11l5 5 5-5|M4 20h16', () => window.open(downloadUrl, '_blank')));
-                    } else {
+                    } else
+                    {
                         actions.appendChild(iconButton('Editar', 'M12 20h9|M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z', () => openEditModal(filePath)));
                     }
                     actions.appendChild(iconButton('Baixar', 'M12 4v12|M7 11l5 5 5-5|M4 20h16', () => { window.location.href = downloadUrl; }));
@@ -1163,7 +1371,8 @@
 
                 actions.appendChild(iconButton('Renomear', 'M20.5 12.6 12 21l-9-9V4h8l9.5 9.5a2 2 0 0 1 0 3.1Z', () => renameItem(dir, name, isFolder)));
 
-                if (isArchive) {
+                if (isArchive)
+                {
                     actions.appendChild(iconButton('Descompactar', 'm21 8-9-5-9 5 9 5 9-5Z|M3 8v8l9 5 9-5V8|M12 13v8', () => extractFile(dir, name)));
                 }
 
@@ -1175,7 +1384,8 @@
             });
         }
 
-        function iconButton(title, pathsPiped, onClick, danger) {
+        function iconButton(title, pathsPiped, onClick, danger)
+        {
             const btn = document.createElement('button');
             btn.className = 'icon-btn' + (danger ? ' danger' : '');
             btn.title = title;
@@ -1189,7 +1399,8 @@
         $('filter-input').addEventListener('input', () => renderFileList(lastFiles, selectedPath));
 
         /* ===================== Ações de arquivo / pasta ===================== */
-        async function renameItem(dir, oldName, isFolder) {
+        async function renameItem(dir, oldName, isFolder)
+        {
             const newName = prompt(isFolder ? 'Novo nome para a pasta:' : 'Novo nome:', oldName);
             if (!newName || !newName.trim() || newName.trim() === oldName) return;
 
@@ -1197,9 +1408,11 @@
             alert(r.message);
             if (!r.ok) return;
 
-            if (isFolder) {
+            if (isFolder)
+            {
                 const oldPath = joinPath(dir, oldName);
-                if (selectedPath === oldPath || selectedPath.startsWith(oldPath + '/')) {
+                if (selectedPath === oldPath || selectedPath.startsWith(oldPath + '/'))
+                {
                     selectedPath = joinPath(dir, newName.trim()) + selectedPath.slice(oldPath.length);
                 }
                 loadFolders();
@@ -1208,7 +1421,8 @@
             refresh();
         }
 
-        async function extractFile(dir, fileName) {
+        async function extractFile(dir, fileName)
+        {
             if (!confirm(`Deseja descompactar ${fileName}?`)) return;
             const r = await postJson('/extractFile', { dir, fileName });
             alert(r.message);
@@ -1216,7 +1430,8 @@
             refresh();
         }
 
-        async function deleteItem(dir, name, isFolder) {
+        async function deleteItem(dir, name, isFolder)
+        {
             if (isFolder) return deleteFolder(joinPath(dir, name));
             if (!confirm(`Deseja realmente excluir ${name}?`)) return;
             const r = await postJson('/deleteFile', { dir, fileName: name });
@@ -1224,37 +1439,43 @@
             refresh();
         }
 
-        async function deleteFolder(folderPath) {
+        async function deleteFolder(folderPath)
+        {
             if (!confirm(`Deseja realmente excluir a pasta ${folderPath} e todo o seu conteúdo?`)) return;
             const r = await postJson('/deleteFolder', { dir: folderPath });
             alert(r.message);
             if (!r.ok) return;
 
-            if (selectedPath === folderPath || selectedPath.startsWith(folderPath + '/')) {
+            if (selectedPath === folderPath || selectedPath.startsWith(folderPath + '/'))
+            {
                 selectedPath = './.';
             }
             loadFolders();
             selectFolder(selectedPath);
         }
 
-        $('btn-download-folder').onclick = () => {
+        $('btn-download-folder').onclick = () =>
+        {
             window.location.href = `${API}/downloadFolder?path=${encodeURIComponent(selectedPath)}`;
         };
 
         /* ===================== Nova pasta ===================== */
-        $('btn-new-folder-toggle').onclick = () => {
+        $('btn-new-folder-toggle').onclick = () =>
+        {
             const row = $('new-folder-row');
             row.hidden = !row.hidden;
             if (!row.hidden) $('new-folder-name').focus();
         };
-        $('btn-cancel-folder').onclick = () => {
+        $('btn-cancel-folder').onclick = () =>
+        {
             $('new-folder-row').hidden = true;
             $('new-folder-name').value = '';
         };
         $('btn-create-folder').onclick = createFolder;
         $('new-folder-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') createFolder(); });
 
-        async function createFolder() {
+        async function createFolder()
+        {
             const name = $('new-folder-name').value.trim();
             if (!name) return alert('Digite o nome da pasta');
             const r = await postJson('/createFolder', { parent: selectedPath, name });
@@ -1269,13 +1490,16 @@
         /* ===================== Upload ===================== */
         const fileInput = $('file');
         $('btn-upload-toggle').onclick = () => fileInput.click();
-        fileInput.onchange = () => {
+        fileInput.onchange = () =>
+        {
             if (fileInput.files && fileInput.files.length > 0) uploadFiles(fileInput.files);
         };
 
-        function scheduleHideProgress(ms) {
+        function scheduleHideProgress(ms)
+        {
             if (hideProgressTimeout) clearTimeout(hideProgressTimeout);
-            hideProgressTimeout = setTimeout(() => {
+            hideProgressTimeout = setTimeout(() =>
+            {
                 $('progress-container').hidden = true;
                 $('progress-bar').style.width = '0%';
                 $('progress-bar').classList.remove('error');
@@ -1283,7 +1507,8 @@
             }, ms);
         }
 
-        function uploadFiles(fileList) {
+        function uploadFiles(fileList)
+        {
             const fd = new FormData();
             for (let i = 0; i < fileList.length; i++) fd.append('file', fileList[i]);
             fd.append('dest', selectedPath);
@@ -1306,16 +1531,20 @@
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${API}/uploadFile`, true);
 
-            xhr.upload.onprogress = (e) => {
+            xhr.upload.onprogress = (e) =>
+            {
                 if (e.lengthComputable) progressBar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
             };
 
-            xhr.onload = () => {
+            xhr.onload = () =>
+            {
                 uploadBtn.disabled = false;
                 let msg;
-                try {
+                try
+                {
                     msg = JSON.parse(xhr.responseText).message;
-                } catch {
+                } catch
+                {
                     msg = xhr.responseText || 'Resposta inválida do servidor.';
                 }
                 const ok = xhr.status >= 200 && xhr.status < 300;
@@ -1326,7 +1555,8 @@
                 scheduleHideProgress(2000);
             };
 
-            xhr.onerror = () => {
+            xhr.onerror = () =>
+            {
                 uploadBtn.disabled = false;
                 setStatus('Erro de rede ao enviar os arquivos.');
                 progressBar.classList.add('error');
@@ -1339,19 +1569,22 @@
         /* Área de conteúdo aceita arrastar e soltar */
         const contentArea = $('content-area');
         let dragCounter = 0;
-        contentArea.addEventListener('dragenter', (e) => {
+        contentArea.addEventListener('dragenter', (e) =>
+        {
             e.preventDefault();
             dragCounter++;
             contentArea.classList.add('dragging');
             $('drop-overlay-path').textContent = selectedPath;
         });
         contentArea.addEventListener('dragover', (e) => e.preventDefault());
-        contentArea.addEventListener('dragleave', (e) => {
+        contentArea.addEventListener('dragleave', (e) =>
+        {
             e.preventDefault();
             dragCounter = Math.max(0, dragCounter - 1);
             if (dragCounter === 0) contentArea.classList.remove('dragging');
         });
-        contentArea.addEventListener('drop', (e) => {
+        contentArea.addEventListener('drop', (e) =>
+        {
             e.preventDefault();
             dragCounter = 0;
             contentArea.classList.remove('dragging');
@@ -1361,14 +1594,16 @@
         /* ===================== Modal de operações (PM2 / Git) ===================== */
         const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-        function openOps(title, html) {
+        function openOps(title, html)
+        {
             $('ops-title').textContent = title;
             $('ops-body').innerHTML = html;
             $('ops-body').onclick = null;
             $('ops-modal').classList.add('open');
         }
 
-        function closeOps() {
+        function closeOps()
+        {
             $('ops-modal').classList.remove('open');
         }
 
@@ -1376,7 +1611,8 @@
         $('ops-modal').addEventListener('click', (e) => { if (e.target === $('ops-modal')) closeOps(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOps(); });
 
-        function opsLog(msg) {
+        function opsLog(msg)
+        {
             const out = $('ops-log');
             if (!out) return;
             const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1390,7 +1626,8 @@
         /* ---------- PM2 ---------- */
         const PM2_LABEL = { start: 'Iniciar', stop: 'Parar', restart: 'Reiniciar' };
 
-        function openPm2() {
+        function openPm2()
+        {
             openOps('PM2 — processos', `
                 <div class="ops-toolbar">
                     <button class="btn-ghost-sm" id="pm2-refresh">Atualizar</button>
@@ -1403,23 +1640,28 @@
                 <pre class="git-output ops-log" id="ops-log">Pronto.</pre>`);
 
             $('pm2-refresh').onclick = loadPm2;
-            $('ops-body').onclick = (e) => {
+            $('ops-body').onclick = (e) =>
+            {
                 const btn = e.target.closest('button[data-action]');
                 if (btn) pm2Action(btn.dataset.app, btn.dataset.action);
             };
             loadPm2();
         }
 
-        async function loadPm2() {
+        async function loadPm2()
+        {
             const tbody = $('pm2-rows');
             if (!tbody) return;
-            try {
+            try
+            {
                 const apps = await getJson('/pm2/list');
-                if (apps.length === 0) {
+                if (apps.length === 0)
+                {
                     tbody.innerHTML = '<tr><td colspan="6">Nenhum processo encontrado.</td></tr>';
                     return;
                 }
-                tbody.innerHTML = apps.map(a => {
+                tbody.innerHTML = apps.map(a =>
+                {
                     const stCls = ({ online: 'st-online', stopped: 'st-stopped', errored: 'st-error' })[a.status] || 'st-other';
                     const name = esc(a.name);
                     const mainBtn = a.status === 'online'
@@ -1437,27 +1679,32 @@
                         </div></td>
                     </tr>`;
                 }).join('');
-            } catch (err) {
+            } catch (err)
+            {
                 opsLog('Erro ao carregar PM2: ' + err.message);
             }
         }
 
-        async function pm2Action(app, action) {
+        async function pm2Action(app, action)
+        {
             const target = app === 'all' ? 'todos os processos' : app;
             if ((action === 'stop' || app === 'all') && !confirm(`${PM2_LABEL[action]} ${target}?`)) return;
 
             opsLog(`${PM2_LABEL[action]} ${target}…`);
-            try {
+            try
+            {
                 const r = await postJson('/pm2/action', { app, action });
                 opsLog(r.ok ? r.message : 'Erro: ' + r.message);
                 loadPm2();
-            } catch (err) {
+            } catch (err)
+            {
                 opsLog('Erro: ' + err.message);
             }
         }
 
         /* ---------- Git ---------- */
-        function openGit() {
+        function openGit()
+        {
             openOps('Git — repositório', `
                 <div class="ops-toolbar">
                     <button class="btn-ghost-sm" id="git-refresh">Atualizar status</button>
@@ -1486,8 +1733,10 @@
 
             $('git-refresh').onclick = loadGitStatus;
             $('git-pull').onclick = () => gitPull('autostash');
-            $('git-reset').onclick = () => {
-                if (confirm('Isso descarta TODAS as alterações locais em arquivos rastreados e alinha com o remoto. Continuar?')) {
+            $('git-reset').onclick = () =>
+            {
+                if (confirm('Isso descarta TODAS as alterações locais em arquivos rastreados e alinha com o remoto. Continuar?'))
+                {
                     gitPull('reset');
                 }
             };
@@ -1499,35 +1748,43 @@
             loadGitStatus();
         }
 
-        async function loadGitStatus() {
+        async function loadGitStatus()
+        {
             const box = $('git-status');
             if (!box) return;
-            try {
+            try
+            {
                 const d = await getJson('/git/status');
                 box.textContent = `Branch: ${d.branch}\n\n${d.status || 'Árvore de trabalho limpa.'}\n\nÚltimos commits:\n${d.log}`;
-            } catch (err) {
+            } catch (err)
+            {
                 box.textContent = 'Erro: ' + err.message;
             }
         }
 
-        async function runGitAction(url, body = {}) {
-            try {
+        async function runGitAction(url, body = {})
+        {
+            try
+            {
                 const r = await postJson(url, body);
                 opsLog(r.ok ? r.message : 'Erro: ' + r.message);
                 loadGitStatus();
                 return r.ok;
-            } catch (err) {
+            } catch (err)
+            {
                 opsLog('Erro: ' + err.message);
                 return false;
             }
         }
 
-        function gitPull(mode) {
+        function gitPull(mode)
+        {
             opsLog(mode === 'reset' ? 'Sincronizando com o remoto…' : 'Atualizando (pull)…');
             return runGitAction('/git/pull', { mode });
         }
 
-        async function gitCommit(andPush) {
+        async function gitCommit(andPush)
+        {
             const message = $('git-msg').value.trim();
             if (!message) return alert('Digite a mensagem do commit');
 
@@ -1538,28 +1795,138 @@
             if (andPush) await gitPush();
         }
 
-        function gitPush() {
+        function gitPush()
+        {
             opsLog('Enviando (push)…');
             return runGitAction('/git/push');
         }
 
-        async function gitClone() {
+        async function gitClone()
+        {
             const name = $('repo-name').value.trim();
             if (!name) return alert('Digite o nome do repositório');
 
             opsLog(`Clonando ${name}…`);
-            try {
+            try
+            {
                 const r = await postJson('/createRepository', { name });
                 opsLog(r.message);
-                if (r.ok) {
+                if (r.ok)
+                {
                     $('repo-name').value = '';
                     loadFolders();
                     refresh();
                 }
-            } catch (err) {
+            } catch (err)
+            {
                 opsLog('Erro ao clonar: ' + err.message);
             }
         }
+        /* ===================== Terminal (xterm.js + WebSocket) ===================== */
+let termInstance = null;
+let termFit = null;
+let termWs = null;
+
+function setTermStatus(text, cls) {
+    const el = $('term-status');
+    el.textContent = text;
+    el.className = 'term-status' + (cls ? ' ' + cls : '');
+}
+
+function termUrl() {
+    const u = new URL(API + '/terminal', location.href);
+    u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
+    return u.toString();
+}
+
+function fitTerminal() {
+    if (!termFit || !termInstance) return;
+    try { termFit.fit(); } catch { }
+}
+
+function sendResize() {
+    fitTerminal();
+    if (termWs && termWs.readyState === WebSocket.OPEN && termInstance) {
+        termWs.send('\x01' + JSON.stringify({ cols: termInstance.cols, rows: termInstance.rows }));
+    }
+}
+
+function ensureTerminal() {
+    if (termInstance) return;
+    termInstance = new Terminal({
+        cursorBlink: true,
+        fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+        fontSize: 13,
+        scrollback: 5000,
+        theme: { background: '#1C201D', foreground: '#E6E8E4', cursor: '#E6E8E4' }
+    });
+    termFit = new FitAddon.FitAddon();
+    termInstance.loadAddon(termFit);
+    termInstance.open($('term-container'));
+    termInstance.onData((data) => {
+        if (termWs && termWs.readyState === WebSocket.OPEN) termWs.send(data);
+    });
+    window.addEventListener('resize', () => {
+        if ($('term-modal').classList.contains('open')) sendResize();
+    });
+}
+
+function disconnectTerminal() {
+    if (termWs) {
+        termWs.onclose = null;
+        termWs.onerror = null;
+        termWs.onmessage = null;
+        termWs.close();
+        termWs = null;
+    }
+}
+
+function connectTerminal() {
+    if (!termInstance) return;
+    disconnectTerminal();
+    termInstance.reset();
+    setTermStatus('conectando…');
+
+    const ws = new WebSocket(termUrl());
+    termWs = ws;
+
+    ws.onopen = () => {
+        setTermStatus('conectado', 'on');
+        sendResize();
+        termInstance.focus();
+    };
+    ws.onmessage = (e) => {
+        if (typeof e.data === 'string') termInstance.write(e.data);
+    };
+    ws.onerror = () => setTermStatus('erro', 'off');
+    ws.onclose = () => {
+        if (termWs === ws) termWs = null;
+        setTermStatus('desconectado', 'off');
+        termInstance.write('\r\n\x1b[90m[conexão encerrada]\x1b[0m\r\n');
+    };
+}
+
+function openTerminal() {
+    $('term-modal').classList.add('open');
+    ensureTerminal();
+    requestAnimationFrame(() => {
+        fitTerminal();
+        connectTerminal();
+    });
+}
+
+function closeTerminal() {
+    disconnectTerminal();
+    $('term-modal').classList.remove('open');
+    setTermStatus('desconectado', 'off');
+}
+
+$('btn-terminal').onclick = openTerminal;
+$('term-close').onclick = closeTerminal;
+$('term-reconnect').onclick = () => {
+    fitTerminal();
+    connectTerminal();
+};
 
         /* ===================== Inicialização ===================== */
         renderBreadcrumbs(selectedPath);

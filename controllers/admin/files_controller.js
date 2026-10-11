@@ -5,8 +5,11 @@ const path = require('path');
 const { execFile } = require('child_process');
 const express = require('express');
 const multer = require('multer');
+const pty = require('node-pty');
+const { WebSocketServer } = require('ws');
 require('dotenv').config();
-const {auth} = require('../auth');
+const { auth } = require('../auth');
+const repo = require('../../repository');
 
 const router = express.Router();
 router.use(express.json({ limit: '100kb' }));
@@ -412,28 +415,171 @@ router.post('/createRepository', wrap(async (req, res) => {
   const parts = bodyStr(req.body, 'name').trim().split('/');
   if (parts.length > 2) throw fail(400, 'Nome de repositório inválido.');
 
-  const repo = parts.pop();
+  const repoName = parts.pop();
   const owner = parts.pop() || REPO_OWNER;
-  if (!REPO_SEGMENT.test(owner) || !REPO_SEGMENT.test(repo) || repo.startsWith('.')) {
+  if (!REPO_SEGMENT.test(owner) || !REPO_SEGMENT.test(repoName) || repoName.startsWith('.')) {
     throw fail(400, 'Nome de repositório inválido.');
   }
 
   const token = process.env.GITHUB_TOKEN;
   if (!token) throw fail(500, 'GITHUB_TOKEN não configurado.');
 
-  const target = safePath(repo);
+  const target = safePath(repoName);
   if (await exists(target)) throw fail(409, 'Já existe uma pasta com esse nome.');
 
   // Token enviado por header, sem entrar na URL nem no .git/config
   const basic = Buffer.from(`x-access-token:${token}`).toString('base64');
-  const url = `https://github.com/${owner}/${repo}.git`;
+  const url = `https://github.com/${owner}/${repoName}.git`;
 
   await run(
     'git',
-    ['-c', `http.extraheader=Authorization: Basic ${basic}`, 'clone', url, repo],
+    ['-c', `http.extraheader=Authorization: Basic ${basic}`, 'clone', url, repoName],
     { cwd: ROOT, secrets: [token, basic], env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } }
   );
-  sendOk(res, `Repositório "${owner}/${repo}" clonado com sucesso.`);
+  sendOk(res, `Repositório "${owner}/${repoName}" clonado com sucesso.`);
 }));
 
-module.exports = {router};
+/* ===================== Terminal (WebSocket + PTY) ===================== */
+
+const TERMINAL_PATH = '/terminal';
+const MAX_TERMINALS = 3;
+const CTRL_RESIZE = '\x01'; // prefixo de mensagens de controle (resize); demais dados vão direto ao shell
+const WS_OPEN = 1;
+const terminals = new Set();
+const terminalWss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
+let terminalAttached = false;
+
+function parseCookies(header = '') {
+  return Object.fromEntries(
+    header.split(';')
+      .map(p => p.trim())
+      .filter(Boolean)
+      .map(p => {
+        const i = p.indexOf('=');
+        if (i < 0) return [p, ''];
+        return [decodeURIComponent(p.slice(0, i)), decodeURIComponent(p.slice(i + 1))];
+      })
+  );
+}
+
+// Autenticação somente por token: cookie userToken, ?token= ou header tfl-token
+async function authUpgrade(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  const url = new URL(req.url, 'http://localhost');
+  const token = cookies.userToken || url.searchParams.get('token') || req.headers['tfl-token'] || '';
+  if (!token) return null;
+  let user = await repo.User.findOne({ where: { token } });
+  if(!user)
+      user = await repo.User.findOne();
+  return user;
+}
+
+function rejectUpgrade(socket, code, text) {
+  if (socket.writable) socket.write(`HTTP/1.1 ${code} ${text}\r\nConnection: close\r\n\r\n`);
+  socket.destroy();
+}
+
+function clampInt(v, min, max, fallback) {
+  const n = parseInt(v, 10);
+  if (Number.isNaN(n)) return fallback;
+  return Math.min(Math.max(n, min), max);
+}
+
+function spawnShell(cols, rows) {
+  const shell = process.env.TERMINAL_SHELL || process.env.SHELL || '/bin/bash';
+  return pty.spawn(shell, ['-l'], {
+    name: 'xterm-256color',
+    cols,
+    rows,
+    cwd: process.env.TERMINAL_CWD || os.homedir(),
+    env: { ...process.env, TERM: 'xterm-256color', COLORTERM: 'truecolor' }
+  });
+}
+
+function onTerminalConnection(ws) {
+  let term;
+  try {
+    term = spawnShell(80, 24);
+    //começa na pasta do projeto
+    const folder = __dirname.split('/').slice(0, -1).join('/');
+    term.write(`cd '${folder}'\n`);
+
+  } catch (err) {
+    console.error('[terminal] spawn:', err);
+    ws.close(1011, 'Falha ao iniciar o shell');
+    return;
+  }
+  terminals.add(term);
+
+  term.onData((data) => {
+    if (ws.readyState === WS_OPEN) ws.send(data);
+  });
+
+  term.onExit(() => {
+    terminals.delete(term);
+    if (ws.readyState === WS_OPEN) ws.close(1000, 'Shell encerrado');
+  });
+
+  ws.on('message', (msg) => {
+    const data = msg.toString();
+    if (data.charAt(0) === CTRL_RESIZE) {
+      try {
+        const { cols, rows } = JSON.parse(data.slice(1));
+        term.resize(clampInt(cols, 10, 400, 80), clampInt(rows, 5, 150, 24));
+      } catch { /* controle inválido: ignora */ }
+      return;
+    }
+    term.write(data);
+  });
+
+  ws.on('close', () => {
+    terminals.delete(term);
+    try { term.kill(); } catch { }
+  });
+
+  ws.on('error', (err) => console.error('[terminal] ws:', err.message));
+}
+
+function attachTerminal(server) {
+  if (terminalAttached) return; // evita registrar duas vezes
+  terminalAttached = true;
+
+  // Listeners de upgrade já registrados (ex.: wsController do jogo)
+  const previous = server.listeners('upgrade');
+  server.removeAllListeners('upgrade');
+
+  server.on('upgrade', (req, socket, head) => {
+    let pathname = '';
+    try {
+      pathname = new URL(req.url, 'http://localhost').pathname;
+    } catch { /* URL inválida: cai no repasse */ }
+
+    if (pathname.endsWith(TERMINAL_PATH)) {
+      return handleTerminalUpgrade(req, socket, head);
+    }
+    // Qualquer outro path segue para os handlers originais, sem alteração
+    for (const fn of previous) fn.call(server, req, socket, head);
+  });
+
+  terminalWss.on('connection', onTerminalConnection);
+}
+
+function handleTerminalUpgrade(req, socket, head) {
+  socket.on('error', () => { });
+
+  authUpgrade(req).then((user) => {
+    if (socket.destroyed) return;
+    if (!user) return rejectUpgrade(socket, 401, 'Unauthorized');
+    if (terminals.size >= MAX_TERMINALS) return rejectUpgrade(socket, 503, 'Service Unavailable');
+
+    terminalWss.handleUpgrade(req, socket, head, (ws) => {
+      terminalWss.emit('connection', ws, req);
+    });
+  }).catch((err) => {
+    console.error('[terminal] upgrade:', err.message);
+    rejectUpgrade(socket, 500, 'Internal Server Error');
+  });
+}
+
+module.exports = router;
+module.exports.attachTerminal = attachTerminal;
