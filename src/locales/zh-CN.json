@@ -1,0 +1,163 @@
+{
+    "common": {
+        "home": "首页",
+        "cancel": "取消",
+        "close": "关闭",
+        "back": "返回",
+        "required": "必填项",
+        "showPassword": "显示密码",
+        "hidePassword": "隐藏密码",
+        "emailRequired": "请输入电子邮箱",
+        "emailInvalid": "请输入有效的电子邮箱",
+        "passwordRequired": "请输入密码",
+        "passwordTooShort": "密码长度至少需要 {{min}} 个字符",
+        "passwordTooWeak": "密码必须包含字母和数字",
+        "passwordMismatch": "两次输入的密码不一致",
+        "tooManyAttempts": "尝试次数过多，请在 {{minutes}} 分钟后重试",
+        "serverError": "服务器错误，请稍后重试",
+        "unknownError": "未知错误，请稍后重试",
+        "errors": {
+            "tokenInvalid": "此链接无效",
+            "tokenExpired": "此链接已过期，请重新申请",
+            "invalidCredentials": "凭证无效",
+            "emailNotFound": "未找到与此邮箱关联的账户",
+            "unauthorized": "您没有执行此操作的权限！"
+        },
+        "success": "成功！"
+    },
+    "home": {
+        "nav": {
+            "play": "开始游戏",
+            "explore": "探索",
+            "support": "支持我们",
+            "login": "登录"
+        },
+        "hero": {
+            "title": "谱写你的故事。体验全新世界。",
+            "subtitle": "在 The Fantasy Life，自由是核心所在。这是一个开放世界，献给想要融入真实社区并建立真诚连接的你。"
+        },
+        "gallery": {
+            "tag": "画廊",
+            "title": "探索世界",
+            "scroll": "横向滑动以查看更多 →"
+        },
+        "vibe": {
+            "title": "没有标签的自由。",
+            "desc": "我们打造了一个数字与舒适相融的空间。在这里，最重要的是你的体验以及你与环境互动的方式。",
+            "item1Title": "动态环境：",
+            "item1Desc": "由社区创造、为社区服务的精彩活动。",
+            "item2Title": "体验一切：",
+            "item2Desc": "从彻底的放松到帝国的建立，一切由你做主。",
+            "cardTitle": "快来体验",
+            "cardDesc": "加入正在塑造这个全新世界的玩家。立即获取你的专属访问权限。",
+            "cardButton": "加入我们的社区"
+        },
+        "support": {
+            "tag": "赞助支持",
+            "title": "让梦想延续",
+            "desc": "The Fantasy Life 是一个独立项目。任何支持都能帮助我们维持服务器稳定，让团队专注于打造全新体验。",
+            "coffeeTitle": "一杯咖啡",
+            "coffeeDesc": "一份象征性的支持，为我们注入额外活力。支持我们！"
+        },
+        "footer": {
+            "slogan": "在这里，你的想象化为数字现实。",
+            "rights": "版权所有。"
+        },
+        "modal": {
+            "downloadTitle": "下载 The Fantasy Life",
+            "donateTitle": "支持该项目",
+            "donateDesc": "感谢你帮助维持 The Fantasy Life 的持续运营！",
+            "pixKey": "Pix 密钥 / 复制粘贴",
+            "pixImage": "Pix 二维码",
+            "copy": "复制",
+            "copied": "已复制！"
+        }
+    },
+    "login": {
+        "title": "登录到你的账户",
+        "subtitle": "请输入你的凭证以进行访问",
+        "emailLabel": "电子邮箱",
+        "emailPlaceholder": "youremail@example.com",
+        "passwordLabel": "密码",
+        "passwordPlaceholder": "请输入你的密码",
+        "rememberMe": "记住我",
+        "forgotPassword": "忘记密码？",
+        "submit": "登录",
+        "submitting": "登录中...",
+        "noAccount": "还没有账户？",
+        "signUp": "注册账户",
+        "errors": {
+            "alreadyLoggedIn": "用户已登录。",
+            "invalidCredentials": "邮箱或密码错误"
+        },
+        "success": "登录成功！"
+    },
+    "register": {
+        "title": "创建你的账户",
+        "subtitle": "填写以下信息即可开始",
+        "nameLabel": "全名",
+        "namePlaceholder": "请输入你的全名",
+        "emailLabel": "电子邮箱",
+        "emailPlaceholder": "youremail@example.com",
+        "passwordLabel": "密码",
+        "passwordPlaceholder": "请设置一个密码",
+        "confirmPasswordLabel": "确认密码",
+        "confirmPasswordPlaceholder": "请再次输入密码",
+        "passwordHint": "至少使用 {{min}} 个字符",
+        "terms": "我已阅读并接受 <terms>使用条款</terms> 和 <privacy>隐私政策</privacy>",
+        "submit": "创建账户",
+        "submitting": "正在创建账户...",
+        "haveAccount": "已有账户？",
+        "signIn": "直接登录",
+        "errors": {
+            "registered": "该邮箱或用户名已被注册",
+            "ageRestriction": "您必须达到法定年龄才能注册账户",
+            "loginRequired": "登录名不能为空",
+            "nameRequired": "姓名不能为空",
+            "nameTooShort": "姓名长度至少需要 {{min}} 个字符",
+            "emailAlreadyRegistered": "此邮箱已注册",
+            "termsRequired": "您必须同意使用条款"
+        },
+        "success": "账户创建成功！"
+    },
+    "forgotPassword": {
+        "title": "忘记密码？",
+        "subtitle": "输入你的电子邮箱，我们将发送重置链接",
+        "emailLabel": "电子邮箱",
+        "emailPlaceholder": "youremail@example.com",
+        "submit": "发送重置链接",
+        "submitting": "发送中...",
+        "backToLogin": "返回登录",
+        "errors": {
+            "emailNotFound": "未找到与此邮箱关联的账户"
+        },
+        "success": "如果该邮箱已注册，你将很快收到重置密码链接"
+    },
+    "resetPassword": {
+        "title": "重置密码",
+        "subtitle": "为你的账户设置一个新密码",
+        "newPasswordLabel": "新密码",
+        "newPasswordPlaceholder": "请输入新密码",
+        "confirmPasswordLabel": "确认新密码",
+        "confirmPasswordPlaceholder": "请再次输入新密码",
+        "submit": "重置密码",
+        "submitting": "正在重置...",
+        "backToLogin": "返回登录",
+        "errors": {
+            "tokenInvalid": "此链接无效",
+            "tokenExpired": "此链接已过期，请重新申请"
+        },
+        "success": "密码重置成功！"
+    },
+    "verifyEmail": {
+        "title": "验证你的电子邮箱",
+        "subtitle": "我们已向 {{email}} 发送了确认链接",
+        "resend": "重新发送邮件",
+        "resendCooldown": "{{seconds}} 秒后可重新发送",
+        "success": "邮箱验证成功！",
+        "errors": {
+            "tokenInvalid": "此验证链接无效",
+            "tokenExpired": "此链接已过期，请请求新的验证邮件"
+        }
+    }
+}

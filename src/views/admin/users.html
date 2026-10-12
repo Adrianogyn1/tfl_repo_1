@@ -1,0 +1,480 @@
+<div class="p-4">
+    <div class="flex justify-between items-center mb-4">
+        <h5 class="text-xl font-bold">Users</h5>
+        <button id="btn-new" type="button" class="px-3 py-1 rounded bg-[#00adb5] hover:bg-[#008c94] text-white font-bold">+</button>
+    </div>
+
+    <div class="mb-4">
+        <label class="block">
+            Pesquisar
+            <input type="text" id="search"
+                class="w-full p-2 rounded bg-[#18191a] border border-[#3a3b3c] text-white focus:outline-none focus:border-[#00adb5]">
+        </label>
+    </div>
+
+    <div id="users-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+
+    <div id="pagination" class="flex items-center gap-2 mt-4"></div>
+</div>
+
+<style>
+    .ef-val { cursor: pointer; border-bottom: 1px dashed transparent; border-radius: 2px; transition: border-color .15s, background-color .15s; }
+    .ef-val:hover { border-bottom-color: #00adb5; background: rgba(0,173,181,.08); }
+    .ef-val.ef-ro { cursor: default; opacity: .75; }
+    .ef-val.ef-ro:hover { border-bottom-color: transparent; background: none; }
+    .ef-input { background: transparent; color: #fff; border: 0; border-bottom: 1px solid #00adb5; outline: none; width: 100%; padding: 0 2px; font-size: inherit; }
+    .ef-input option { background: #242526; color: #fff; }
+    .ef-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .5rem 0; border-bottom: 1px solid rgba(71,85,105,.6); }
+    .ef-label { color: #94a3b8; font-size: .875rem; flex-shrink: 0; }
+    .ef-val, .ef-input { min-width: 0; max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+</style>
+
+<script>
+(() => {
+    const PAGE_SIZE = 20;
+    let page = 1;
+    let hasNext = false;
+    let searchTimer = null;
+    let editing = { id: null, isNew: false, original: {}, draft: {}, changes: {} };
+
+    const escapeHtml = (value) => $('<div>').text(value ?? '').html();
+    const sanitizeTerm = (term) => term.replace(/[\[\],]/g, '').trim();
+    const inputClass = 'w-full p-2 rounded bg-[#18191a] border border-[#3a3b3c] text-white focus:outline-none focus:border-[#00adb5]';
+
+    const GENDER = { 0: 'Feminino', 1: 'Masculino' };
+    const GENDER_OPTS = [{ v: 0, l: 'Feminino' }, { v: 1, l: 'Masculino' }];
+    const GENDER_THEME = {
+        0: 'linear-gradient(160deg, hsl(330 90% 65%), hsl(320 75% 35%))',
+        1: 'linear-gradient(160deg, hsl(210 95% 58%), hsl(225 80% 28%))'
+    };
+    const DEFAULT_THEME = 'linear-gradient(160deg, hsl(260 15% 45%), hsl(260 15% 20%))';
+
+    // Helpers de caminho aninhado (ex.: 'wallet.coins')
+    const getPath = (obj, path) => path.split('.').reduce((o, k) => o?.[k], obj);
+    const setPath = (obj, path, val) => {
+        const keys = path.split('.');
+        const last = keys.pop();
+        const target = keys.reduce((o, k) => (o[k] ??= {}), obj);
+        target[last] = val;
+    };
+    const clone = (o) => JSON.parse(JSON.stringify(o));
+
+    const SECTIONS = [
+        { title: 'Conta', fields: [
+            { key: 'userName', label: 'Nome', readonly:false },
+            { key: 'login', label: 'Login', readonly:false },
+            { key: 'email', label: 'Email', inputType: 'email', readonly:false },
+            { key: 'password', label: 'Senha', secret: true, inputType: 'password', readonly:true },
+            { key: 'role', label: 'Role', type: 'select', options: ['admin', 'player'] },
+            { key: 'online', label: 'Online', type: 'bool', readonly:true }
+        ], buttons: [
+            { label: 'Alterar senha', action: 'changePassword' },
+            { label: 'Salvar', action: 'saveConta' }
+        ]},
+        { title: 'Dados pessoais', fields: [
+            { key: 'age', label: 'Idade', inputType: 'number', readonly:true },
+            { key: 'birdDay', label: 'Nascimento', placeholder: 'DD/MM/AAAA', readonly:false, type: 'date' },
+            { key: 'gender', label: 'Gênero', type: 'select', options: GENDER_OPTS, readonly:false },
+            { key: 'cpf', label: 'CPF', readonly:false },
+            { key: 'phone', label: 'Telefone', inputType: 'tel', readonly:false },
+        ],buttons: [
+            { label: 'Atualizar dados pessoais', action: 'updatePersonalData' }
+        ]},
+        { title: 'Vínculos', fields: [
+            { key: 'avatarId', label: 'Avatar ID', inputType: 'number', num: true },
+            { key: 'roomId', label: 'Room ID' },
+            { key: 'currencyId', label: 'Currency ID' }
+        ]},
+        { title: 'Avatar', fields: [
+            { key: 'avatar.name', label: 'Nome do avatar' },
+            { key: 'avatar.bio', label: 'Bio' },
+            { key: 'avatar.gender', label: 'Gênero do avatar', type: 'select', options: GENDER_OPTS },
+            { key: 'avatar.online', label: 'Online (avatar)', type: 'bool', readonly: true },
+            { key: 'avatar.selected', label: 'Selecionado', type: 'bool', readonly: false },
+            { key: 'avatar.vip', label: 'VIP', type: 'bool', readonly: true },
+            { key: 'avatar.vipExpiresAt', label: 'VIP expira em', type: 'date', readonly: false },
+            { key: 'avatar.lastSeen', label: 'Visto por último', type: 'date', readonly: false },
+        ], buttons: [
+            { label: 'Salvar avatar', action: 'saveAvatar' },
+            { label: 'Deletar avatar', action: 'deleteAvatar' }
+        ]},
+        { title: 'Carteira', fields: [
+            { key: 'wallet.coins', label: 'Coins', inputType: 'number', num: true, readonly: true },
+            { key: 'wallet.chips', label: 'Chips', inputType: 'number', num: true, readonly: true },
+            { key: 'wallet.cash', label: 'Cash', inputType: 'number', num: true, readonly: true },
+        ], buttons: [
+            { label: 'Converter cash para coins', action: 'convertCashToCoins' },
+            { label: 'Converter coins para cash', action: 'convertCoinsToCash' },
+            { label: 'Converter coins para chips', action: 'convertCoinsToChips' },
+            { label: 'Converter chips para coins', action: 'convertChipsToCoins' }
+        ]},
+        { title: 'Social', readonlySection: true, fields: [
+            { key: '_friends', label: 'Amigos', calc: d => Object.keys(getPath(d, 'avatar.friends') || {}).length },
+            { key: '_followers', label: 'Seguidores', calc: d => getPath(d, 'avatar.followersCount') ?? 0 },
+            { key: '_following', label: 'Seguindo', calc: d => getPath(d, 'avatar.followingCount') ?? 0 },
+            { key: '_requests', label: 'Pedidos recebidos', calc: d => Object.keys(getPath(d, 'avatar.friendRequestsReceived') || {}).length },
+            { key: '_sent', label: 'Pedidos enviados', calc: d => Object.keys(getPath(d, 'avatar.friendRequestsSent') || {}).length },
+            { key: '_registers', label: 'Registros de carteira', calc: d => (getPath(d, 'wallet.registers') || []).length }
+        ]},
+        { title: 'Sistema', readonlySection: true, fields: [
+            { key: 'id', label: 'ID', readonly: true },
+            { key: 'uid', label: 'UID', readonly: true },
+            { key: 'avatar.uid', label: 'UID avatar', readonly: true },
+            { key: 'avatar.userId', label: 'User ID (avatar)', readonly: true },
+            { key: 'token', label: 'Token', readonly: true, secret: true },
+            { key: 'createdAt', label: 'Criado em', type: 'date', readonly: true },
+            { key: 'updatedAt', label: 'Atualizado em', type: 'date', readonly: true },
+            { key: 'avatar.createdAt', label: 'Avatar criado em', type: 'date', readonly: true },
+            { key: 'avatar.updatedAt', label: 'Avatar atualizado em', type: 'date', readonly: true }
+        ]}
+    ];
+    const FIELD_MAP = Object.fromEntries(SECTIONS.flatMap(s => s.fields).map(f => [f.key, f]));
+    const optionsOf = (f) => (f.options || []).map(o => typeof o === 'object' ? o : { v: o, l: o });
+
+    // Submodal no body
+    const $modal = $(`
+        <div id="submodal" class="fixed inset-0 z-[1000] bg-black/60 items-center justify-center p-4" style="display:none;">
+            <div class="w-full max-w-lg bg-[#242526] text-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="modal-header flex items-center gap-3 p-5 border-b border-slate-700"></div>
+                <div class="modal-body px-5 py-3 overflow-y-auto flex-1"></div>
+                <div class="modal-footer flex justify-end gap-2 p-4 border-t border-slate-700">
+                    <button type="button" id="btn-cancel" class="px-4 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold">Fechar</button>
+                    <button type="button" id="btn-save" class="px-4 py-1.5 rounded-lg bg-[#00adb5] hover:bg-[#008c94] text-white font-bold">Salvar</button>
+                </div>
+            </div>
+        </div>
+    `).appendTo('body');
+
+    const $modalHeader = $modal.find('.modal-header');
+    const $modalBody = $modal.find('.modal-body');
+
+    function openModal() { $modal.css('display', 'flex'); }
+    function closeModal() {
+        $modal.css('display', 'none');
+        editing = { id: null, isNew: false, original: {}, draft: {}, changes: {} };
+    }
+
+    // Utilitários
+    function formatDate(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d) || d.getFullYear() < 1970) return '—';
+        return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function accountAge(iso) {
+        if (!iso) return '—';
+        const created = new Date(iso);
+        if (isNaN(created)) return '—';
+        const days = Math.floor((Date.now() - created) / 86400000);
+        if (days < 1) return 'Hoje';
+        if (days < 30) return `${days} dia${days > 1 ? 's' : ''}`;
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months} ${months > 1 ? 'meses' : 'mês'}`;
+        const years = Math.floor(months / 12);
+        const restMonths = months % 12;
+        let text = `${years} ano${years > 1 ? 's' : ''}`;
+        if (restMonths) text += ` e ${restMonths} ${restMonths > 1 ? 'meses' : 'mês'}`;
+        return text;
+    }
+
+    function valueOrDash(v) {
+        return v === null || v === undefined || v === '' ? '—' : escapeHtml(v);
+    }
+
+    function initials(name = '') {
+        return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '?';
+    }
+
+    // Imagem: GetUser traz photo/avatar objeto; ListUsers traz avatar como URL
+    function imgUrl(u) {
+        return u.photo || u.avatarUrl || (typeof u.avatar === 'string' ? u.avatar : '') || '';
+    }
+
+    function avatarHtml(u, size = 'w-24 h-24') {
+        const url = imgUrl(u);
+        const inner = url
+            ? `<img src="${escapeHtml(url)}" alt="" class="w-full h-full object-cover">`
+            : `<span class="w-full h-full flex items-center justify-center bg-black/30 text-white text-2xl font-bold">${escapeHtml(initials(u.userName))}</span>`;
+        return `<div class="${size} rounded-full border-4 border-white/80 shadow-lg overflow-hidden shrink-0">${inner}</div>`;
+    }
+
+    // Lista
+    function renderUsers(result) {
+        const users = Array.isArray(result?.data) ? result.data : [];
+        hasNext = users.length === PAGE_SIZE;
+
+        if (users.length === 0) {
+            $('#users-grid').html('<div class="col-span-full p-2 text-slate-400">Nenhum usuário encontrado.</div>');
+        } else {
+            $('#users-grid').html(users.map(u => `
+                <div class="flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-white/10 shadow-xl text-white"
+                     style="background: ${GENDER_THEME[u.gender] ?? DEFAULT_THEME};">
+                    ${avatarHtml(u)}
+                    <div class="min-w-0 w-full">
+                        <div class="text-lg font-bold truncate">${escapeHtml(u.userName)}</div>
+                        <div class="text-sm opacity-90 truncate">${valueOrDash(u.email)}</div>
+                        <div class="text-sm opacity-90 truncate">${valueOrDash(u.role)} · ${valueOrDash(u.age)} anos · ${valueOrDash(GENDER[u.gender])}</div>
+                        <div class="text-xs opacity-75 mt-1 truncate">Criado em ${escapeHtml(formatDate(u.createdAt))} · ${escapeHtml(accountAge(u.createdAt))}</div>
+                    </div>
+                    <button type="button" class="btn-ver mt-auto px-4 py-1.5 rounded-lg bg-black/30 hover:bg-black/50 text-white text-sm font-bold" data-id="${escapeHtml(u.id)}">Ver</button>
+                </div>`).join(''));
+        }
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const $p = $('#pagination').empty();
+        const $prev = $('<button type="button" class="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-40">Anterior</button>')
+            .prop('disabled', page <= 1)
+            .on('click', () => { page--; loadUsers(); });
+        const $next = $('<button type="button" class="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-40">Próxima</button>')
+            .prop('disabled', !hasNext)
+            .on('click', () => { page++; loadUsers(); });
+        $p.append($prev, $(`<span class="px-2 text-slate-400">Página ${page}</span>`), $next);
+    }
+
+    async function loadUsers() {
+        const term = sanitizeTerm($('#search').val());
+        const params = { page, limit: PAGE_SIZE };
+        if (term) params.q = `[userName,≃,${term}]`;
+
+        try {
+            renderUsers(await ListUsers(params));
+        } catch (err) {
+            console.error('Erro ao listar usuários:', err);
+            $('#users-grid').html('<div class="col-span-full p-2">Erro ao carregar usuários.</div>');
+            renderPagination();
+        }
+    }
+
+    // Submodal: valores e edição
+    function current(key) {
+        return key in editing.changes ? editing.changes[key] : getPath(editing.draft, key);
+    }
+
+    function displayValue(key) {
+        const f = FIELD_MAP[key];
+        if (f.calc) return String(f.calc(editing.draft));
+
+        const v = current(key);
+
+        if (f.secret) {
+            if (key in editing.changes) return editing.changes[key] ? '•••••• (alterada)' : '—';
+            return v ? '••••••' : '—';
+        }
+        if (f.type === 'select') {
+            const found = optionsOf(f).find(o => String(o.v) === String(v));
+            return found ? found.l : valueOrDash(v);
+        }
+        if (f.type === 'bool') return v ? 'Sim' : 'Não';
+        if (f.type === 'date') return formatDate(v);
+        return valueOrDash(v);
+    }
+
+    function renderValue(key) {
+        const f = FIELD_MAP[key];
+        const $span = $('<span class="ef-val"></span>').attr('data-key', key).html(displayValue(key));
+        if (f.readonly || f.calc || f.type === 'date') $span.addClass('ef-ro');
+        return $span;
+    }
+
+    function setValue(key, val) {
+        const f = FIELD_MAP[key];
+
+        if (f.secret) {
+            if (val === '') delete editing.changes[key];
+            else editing.changes[key] = val;
+            return;
+        }
+
+        if (f.num && val !== '') val = Number(val);
+        setPath(editing.draft, key, val);
+
+        const original = getPath(editing.original, key);
+        if (String(val ?? '') === String(original ?? '')) delete editing.changes[key];
+        else editing.changes[key] = val;
+    }
+
+    function startEdit($span) {
+        const key = $span.attr('data-key');
+        const f = FIELD_MAP[key];
+        if (!f || f.readonly || f.calc || f.type === 'date') return;
+
+        const initial = f.secret ? '' : (current(key) ?? '');
+        let $el;
+
+        if (f.type === 'select') {
+            const opts = optionsOf(f);
+            $el = $('<select class="ef-input"></select>');
+            opts.forEach(o => $el.append($('<option></option>').val(o.v).text(o.l)));
+            $el.val(String(initial));
+        } else {
+            $el = $('<input class="ef-input">').attr('type', f.inputType || 'text').val(initial);
+            if (f.placeholder) $el.attr('placeholder', f.placeholder);
+            if (f.secret) $el.attr('placeholder', 'Nova senha (vazio mantém)').attr('autocomplete', 'new-password');
+        }
+
+        let done = false;
+        const finish = (commit) => {
+            if (done) return;
+            done = true;
+            if (commit) {
+                let val = $el.val();
+                if (f.type === 'select') {
+                    const sample = optionsOf(f)[0]?.v;
+                    if (typeof sample === 'number') val = Number(val);
+                }
+                setValue(key, val);
+            }
+            $el.replaceWith(renderValue(key));
+            refreshHeader();
+        };
+
+        $span.replaceWith($el);
+        $el.focus();
+        if ($el.is('input')) $el[0].select();
+
+        $el.on('blur', () => finish(true));
+        $el.on('keydown', (e) => {
+            if (e.key === 'Enter' && $el.is('input')) { e.preventDefault(); finish(true); }
+            if (e.key === 'Escape') { e.stopPropagation(); finish(false); }
+        });
+        if (f.type === 'select') $el.on('change', () => finish(true));
+    }
+
+    function refreshHeader() {
+        if (editing.isNew) {
+            $modalHeader.find('.js-title').text('Novo usuário');
+            $modalHeader.find('.js-sub').text('');
+            return;
+        }
+        $modalHeader.find('.js-title').text(current('userName') || 'Sem nome');
+        $modalHeader.find('.js-sub').text(`@${current('login') || '—'} · conta ${accountAge(getPath(editing.draft, 'createdAt'))}`);
+    }
+
+    function renderSection(section) {
+        const $wrap = $('<div class="mb-5"></div>');
+        $wrap.append($('<div class="text-xs uppercase tracking-wider text-slate-500 mb-1"></div>').text(section.title));
+
+        section.fields.forEach(f => {
+            if (editing.isNew && (f.readonly || f.calc)) return;
+            const $row = $('<div class="ef-row"></div>');
+            $row.append($('<span class="ef-label"></span>').text(f.label), renderValue(f.key));
+            $wrap.append($row);
+        });
+        return $wrap;
+    }
+
+    function renderListBlock(title, items, fmt) {
+        const $wrap = $('<div class="mb-5"></div>');
+        $wrap.append($('<div class="text-xs uppercase tracking-wider text-slate-500 mb-1"></div>').text(title));
+        if (!items.length) {
+            $wrap.append('<div class="text-sm text-slate-500 py-2">Nenhum item.</div>');
+        } else {
+            items.forEach(it => $wrap.append($('<div class="py-2 border-b border-slate-700 text-sm"></div>').html(fmt(it))));
+        }
+        return $wrap;
+    }
+
+    function normalize(user) {
+        const d = clone(user);
+        if (d.avatar === null || typeof d.avatar !== 'object') {
+            d.avatarUrl = d.avatar || '';
+            d.avatar = {};
+        }
+        d.wallet ??= {};
+        return d;
+    }
+
+    function renderUserForm(user = {}, isNew = false) {
+        const draft = isNew
+            ? {
+                role: 'player', gender: 1, online: false, login: '', password: '',
+                avatar: { gender: 1, online: false, selected: false, vip: false, name: '', bio: '' },
+                wallet: { coins: 0, chips: 0, cash: 0 }
+            }
+            : normalize(user);
+
+        editing = { id: isNew ? null : draft.id, isNew, original: clone(draft), draft, changes: {} };
+
+        $modalHeader.empty().append(
+            $(isNew ? '' : avatarHtml(draft, 'w-16 h-16')),
+            $('<div class="min-w-0 flex-1"></div>').append(
+                $('<div class="js-title font-bold text-lg truncate"></div>'),
+                $('<div class="js-sub text-xs text-slate-400 truncate"></div>')
+            )
+        );
+
+        $modalBody.empty();
+        SECTIONS.forEach(s => {
+            if (editing.isNew && s.readonlySection) return;
+            $modalBody.append(renderSection(s));
+        });
+
+        if (!isNew) {
+            $modalBody.append(renderListBlock(
+                'Salas do avatar',
+                getPath(draft, 'avatar.rooms') || [],
+                r => `<b>${escapeHtml(r.name)}</b> <span class="text-slate-400">· ${escapeHtml(r.scene)} · ${r.playersCount}/${r.maxPlayers} · ${r.visits} visitas${r.isPrivate ? ' · privada' : ''}</span>`
+            ));
+        }
+
+        refreshHeader();
+        openModal();
+    }
+
+    async function openUser(id) {
+        try {
+            const res = await GetUser(id);
+            renderUserForm(res?.data ?? {}, false);
+        } catch (err) {
+            console.error('Erro ao carregar usuário:', err);
+            alert('Erro ao carregar o usuário.');
+        }
+    }
+
+    // Eventos
+    $('#search').on('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => { page = 1; loadUsers(); }, 300);
+    });
+
+    $('#btn-new').on('click', () => renderUserForm({}, true));
+
+    $('#users-grid').on('click', '.btn-ver', function () {
+        openUser($(this).data('id'));
+    });
+
+    $modalBody.on('click', '.ef-val:not(.ef-ro)', function () {
+        const $span = $(this);
+        const key = $span.attr('data-key');
+        const f = FIELD_MAP[key];
+
+        if (f.type === 'bool') {
+            setValue(key, !current(key));
+            $span.replaceWith(renderValue(key));
+            refreshHeader();
+            return;
+        }
+        startEdit($span);
+    });
+
+    $('#btn-cancel').on('click', closeModal);
+    $modal.on('click', (e) => { if (e.target === $modal[0]) closeModal(); });
+    $(document).on('keydown', (e) => {
+        if (e.key === 'Escape' && $modal.is(':visible') && !$modalBody.find('.ef-input').length) closeModal();
+    });
+
+    $('#btn-save').on('click', () => {
+        const changes = { ...editing.changes };
+        if (Object.keys(changes).length === 0) return closeModal();
+
+        // TODO: endpoint de salvar. Ex.: editing.isNew ? POST /api/users : PUT /api/user/:id
+        console.log('Salvar:', { id: editing.id, isNew: editing.isNew, changes });
+    });
+
+    loadUsers();
+})();
+</script>

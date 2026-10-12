@@ -1,0 +1,86 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+    <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-md text-slate-100">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-white mb-2"><%= t('register.title') %></h1>
+            <p class="text-sm text-slate-400"><%= t('register.subtitle') %></p>
+            <p id="message" class="hidden text-red-400 mt-2 text-sm"></p>
+        </div>
+
+        <form action="#" method="POST">
+            <input type="hidden" id="page" name="page" value="register">
+            
+            <div class="mb-5">
+                <label for="name" class="block text-sm font-medium mb-2 text-slate-300"><%= t('register.nameLabel') %></label>
+                <input type="text" id="name" name="name" placeholder="<%= t('register.namePlaceholder') %>" required
+                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+
+            <div class="mb-5">
+                <label for="email" class="block text-sm font-medium mb-2 text-slate-300"><%= t('register.emailLabel') %></label>
+                <input type="email" id="email" name="email" placeholder="<%= t('register.emailPlaceholder') %>" required
+                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+
+            <div class="mb-5">
+                <label for="password" class="block text-sm font-medium mb-2 text-slate-300"><%= t('register.passwordLabel') %></label>
+                <input type="password" id="password" name="password" placeholder="<%= t('register.passwordPlaceholder') %>" required
+                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+
+            <div class="mb-5">
+                <label for="confirmPassword" class="block text-sm font-medium mb-2 text-slate-300"><%= t('register.confirmPasswordLabel') %></label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="<%= t('register.confirmPasswordPlaceholder') %>" required
+                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+
+            <button id="btnRegister" type="button" 
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-colors mt-2">
+                <%= t('register.submit') %>
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-sm text-slate-400">
+                <%= t('register.haveAccount') %> 
+                <a href="/login" class="text-blue-400 hover:underline font-medium"><%= t('register.signIn') %></a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+
+        function setMessage(message, isError = true) {
+            if (isError)
+                $('#message').removeClass('hidden text-green-400').addClass('text-red-400');
+            else
+                $('#message').removeClass('hidden text-red-400').addClass('text-green-400');
+
+            $('#message').text(message);
+            setTimeout(() => {
+                $('#message').addClass('hidden');
+            }, 5000);
+        }
+
+        $('#btnRegister').on('click', function () {
+            var form = $('form').serialize();
+
+            $.post(`${dominio}/api/auth/register`, form, function (data) {
+                if (data.success) {
+                    window.location.href = '/login';
+                } else {                
+                    setMessage(data.message, true);
+                }
+            }).fail(function (jqXHR) {
+                var errorMsg = jqXHR.responseJSON && jqXHR.responseJSON.message ? jqXHR.responseJSON.message : "<%= t('common.serverError') %>";
+                setMessage(errorMsg, true);
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

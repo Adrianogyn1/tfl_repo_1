@@ -1,0 +1,163 @@
+{
+    "common": {
+        "home": "Home",
+        "cancel": "Annuleren",
+        "close": "Sluiten",
+        "back": "Terug",
+        "required": "Verplicht veld",
+        "showPassword": "Wachtwoord tonen",
+        "hidePassword": "Wachtwoord verbergen",
+        "emailRequired": "E-mailadres is verplicht",
+        "emailInvalid": "Voer een geldig e-mailadres in",
+        "passwordRequired": "Wachtwoord is verplicht",
+        "passwordTooShort": "Wachtwoord moet minimaal {{min}} tekens bevatten",
+        "passwordTooWeak": "Wachtwoord moet letters en cijfers bevatten",
+        "passwordMismatch": "Wachtwoorden komen niet overeen",
+        "tooManyAttempts": "Te veel pogingen. Probeer het over {{minutes}} minuten opnieuw",
+        "serverError": "Serverfout. Probeer het later opnieuw",
+        "unknownError": "Onbekende fout. Probeer het later opnieuw",
+        "errors": {
+            "tokenInvalid": "Deze link is ongeldig",
+            "tokenExpired": "Deze link is verlopen. Vraag een nieuwe aan",
+            "invalidCredentials": "Ongeldige inloggegevens",
+            "emailNotFound": "Geen account gevonden met dit e-mailadres",
+            "unauthorized": "Je hebt geen toestemming om dit te doen!"
+        },
+        "success": "Succes!"
+    },
+    "home": {
+        "nav": {
+            "play": "Spelen",
+            "explore": "Ontdekken",
+            "support": "Steunen",
+            "login": "Inloggen"
+        },
+        "hero": {
+            "title": "Bouw je eigen verhaal. Ervaar het nieuwe.",
+            "subtitle": "In The Fantasy Life staat vrijheid centraal. Een open wereld voor wie deel wil uitmaken van iets authentieks en echte connecties wil opbouwen."
+        },
+        "gallery": {
+            "tag": "Galerij",
+            "title": "Verken de Wereld",
+            "scroll": "Scroll horizontaal om meer te zien →"
+        },
+        "vibe": {
+            "title": "Vrijheid zonder labels.",
+            "desc": "We hebben een plek gecreëerd waar digitaal en comfort samenkomen. Hier staat jouw ervaring en de interactie met de omgeving voorop.",
+            "item1Title": "Dynamische Omgeving:",
+            "item1Desc": "Evenementen gemaakt door en voor de community.",
+            "item2Title": "Ervaar Alles:",
+            "item2Desc": "Van totale ontspanning tot het bouwen van rijken, jij beslist.",
+            "cardTitle": "Kom het ervaren",
+            "cardDesc": "Sluit je aan bij spelers die deze nieuwe wereld al vormgeven. Verzeker je toegang.",
+            "cardButton": "Word lid van onze community"
+        },
+        "support": {
+            "tag": "Bijdragen",
+            "title": "Houd de Droom Levend",
+            "desc": "The Fantasy Life is een onafhankelijk project. Elke steun helpt onze servers stabiel te houden en stelt het team in staat nieuwe ervaringen te creëren.",
+            "coffeeTitle": "Een Koffie",
+            "coffeeDesc": "Symbolische steun voor extra energie. Steun ons!"
+        },
+        "footer": {
+            "slogan": "Waar jouw verbeelding een digitale vorm aanneemt.",
+            "rights": "Alle rechten voorbehouden."
+        },
+        "modal": {
+            "downloadTitle": "Download The Fantasy Life",
+            "donateTitle": "Steun het Project",
+            "donateDesc": "Bedankt voor je hulp om The Fantasy Life draaiende te houden!",
+            "pixKey": "Pix-sleutel / Kopiëren en plakken",
+            "pixImage": "Pix QR-code",
+            "copy": "Kopiëren",
+            "copied": "Gekopieerd!"
+        }
+    },
+    "login": {
+        "title": "Inloggen op je account",
+        "subtitle": "Voer je inloggegevens in om toegang te krijgen",
+        "emailLabel": "E-mailadres",
+        "emailPlaceholder": "jouwemail@voorbeeld.com",
+        "passwordLabel": "Wachtwoord",
+        "passwordPlaceholder": "Voer je wachtwoord in",
+        "rememberMe": "Onthoud mij",
+        "forgotPassword": "Wachtwoord vergeten?",
+        "submit": "Inloggen",
+        "submitting": "Bezig met inloggen...",
+        "noAccount": "Nog geen account?",
+        "signUp": "Account aanmaken",
+        "errors": {
+            "alreadyLoggedIn": "Gebruiker is al ingelogd.",
+            "invalidCredentials": "E-mailadres of wachtwoord is onjuist"
+        },
+        "success": "Succesvol ingelogd!"
+    },
+    "register": {
+        "title": "Account aanmaken",
+        "subtitle": "Vul onderstaande gegevens in om aan de slag te gaan",
+        "nameLabel": "Volledige naam",
+        "namePlaceholder": "Voer je volledige naam in",
+        "emailLabel": "E-mailadres",
+        "emailPlaceholder": "jouwemail@voorbeeld.com",
+        "passwordLabel": "Wachtwoord",
+        "passwordPlaceholder": "Kies een wachtwoord",
+        "confirmPasswordLabel": "Bevestig wachtwoord",
+        "confirmPasswordPlaceholder": "Voer het wachtwoord nogmaals in",
+        "passwordHint": "Gebruik minimaal {{min}} tekens",
+        "terms": "Ik heb de <terms>Gebruiksvoorwaarden</terms> en het <privacy>Privacybeleid</privacy> gelezen en ga akkoord",
+        "submit": "Account aanmaken",
+        "submitting": "Account wordt aangemaakt...",
+        "haveAccount": "Heb je al een account?",
+        "signIn": "Inloggen",
+        "errors": {
+            "registered": "Er bestaat al een account met dit e-mailadres of deze gebruikersnaam",
+            "ageRestriction": "Je moet meerderjarig zijn om een account aan te maken",
+            "loginRequired": "Gebruikersnaam is verplicht",
+            "nameRequired": "Naam is verplicht",
+            "nameTooShort": "Naam moet minimaal {{min}} tekens bevatten",
+            "emailAlreadyRegistered": "Dit e-mailadres is al geregistreerd",
+            "termsRequired": "Je moet akkoord gaan met de gebruiksvoorwaarden"
+        },
+        "success": "Account succesvol aangemaakt!"
+    },
+    "forgotPassword": {
+        "title": "Wachtwoord vergeten?",
+        "subtitle": "Voer je e-mailadres in en we sturen je een link om het te herstellen",
+        "emailLabel": "E-mailadres",
+        "emailPlaceholder": "jouwemail@voorbeeld.com",
+        "submit": "Herstellink versturen",
+        "submitting": "Versturen...",
+        "backToLogin": "Terug naar inloggen",
+        "errors": {
+            "emailNotFound": "We konden geen account vinden met dit e-mailadres"
+        },
+        "success": "Als het e-mailadres geregistreerd is, ontvang je spoedig een herstellink"
+    },
+    "resetPassword": {
+        "title": "Wachtwoord opnieuw instellen",
+        "subtitle": "Kies een nieuw wachtwoord voor je account",
+        "newPasswordLabel": "Nieuw wachtwoord",
+        "newPasswordPlaceholder": "Voer nieuw wachtwoord in",
+        "confirmPasswordLabel": "Bevestig nieuw wachtwoord",
+        "confirmPasswordPlaceholder": "Voer nieuw wachtwoord nogmaals in",
+        "submit": "Wachtwoord opnieuw instellen",
+        "submitting": "Opnieuw instellen...",
+        "backToLogin": "Terug naar inloggen",
+        "errors": {
+            "tokenInvalid": "Deze link is ongeldig",
+            "tokenExpired": "Deze link is verlopen. Vraag een nieuwe aan"
+        },
+        "success": "Wachtwoord succesvol opnieuw ingesteld!"
+    },
+    "verifyEmail": {
+        "title": "Verifieer je e-mailadres",
+        "subtitle": "We hebben een bevestigingslink gestuurd naar {{email}}",
+        "resend": "E-mail opnieuw verzenden",
+        "resendCooldown": "Opnieuw verzenden over {{seconds}}s",
+        "success": "E-mailadres succesvol geverifieerd!",
+        "errors": {
+            "tokenInvalid": "Deze bevestigingslink is ongeldig",
+            "tokenExpired": "Deze link is verlopen. Vraag een nieuwe bevestigingsmail aan"
+        }
+    }
+}

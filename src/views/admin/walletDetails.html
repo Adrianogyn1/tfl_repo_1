@@ -1,0 +1,95 @@
+
+<h2>Detalhes da carteira</h2>
+<hr/>
+
+<div class="card">
+    <input type="text" readonly id="dollar" value="R$ 5.55" data-value="5.55">
+    <h2>Cash disponível</h2>
+    <div class="big" id="balanceCash">—</div>
+    <button class="btn btn-primary" onclick="convertCashToCoins();">cash para coins</button>
+</div>
+
+<div class="card">
+    <h2>coins disponível</h2>
+    <div class="big" id="balanceCoins">—</div>
+    <button class="btn btn-primary" onclick="convertCoinsToCash();">coins para cash</button>
+    <button class="btn btn-secondary" onclick="convertCoinsToChips();">coins para chips</button>
+</div>
+
+<div class="card">
+    <h2>Chips disponível</h2>
+    <div class="big" id="balanceChips">—</div>
+    <button class="btn btn-primary" onclick="convertChipsToCoins();">chips para coins</button>
+</div>
+
+<!--Registro-->
+<div>
+    <h6>Registros</h6>
+    <!--filtros de data-->
+    <div>
+        <label for="dataInicio">Data Inicial:</label>
+        <input type="date" id="dataInicio" name="dataInicio" required>
+        <label for="dataFim">Data Final:</label>
+        <input type="date" id="dataFim" name="dataFim" required>
+        <button id="btn-filter">Filtrar</button>
+    </div>
+
+    <div id="registers"></div>
+    <div id="pagination" class="flex gap-2 mt-4"></div>
+</di>
+
+<script>
+    const walletID = document.getElementById("id").value;
+    const dollar = document.getElementById("dollar").value;
+  
+
+    function convertChipsToCoins(){
+        var value = prompt("Quantos chips deseja converter?");
+    };
+    function convertCoinsToChips(){
+        var value = prompt("Quantos coins deseja converter?");
+    };
+    function convertCoinsToCash(){
+        var value = prompt("Quantos coins deseja converter?");
+    };
+    function convertCashToCoins(){
+        var value = prompt("Quantos cash deseja converter?");
+    };
+
+
+    async function _loadWallet() {
+          const result = await GetWallet(walletID);
+          const wallet = result.data;
+          document.getElementById("balanceCash").innerHTML = wallet.cash;
+          document.getElementById("balanceCoins").innerHTML = wallet.coins;
+          document.getElementById("balanceChips").innerHTML = wallet.chips;
+    }
+
+    function renderRegisters(Registros) {
+        for (let i = 0; i < Registros.length; i++) {
+            renderRegister(Registros[i]);
+        }
+    }
+    function renderRegister(register) {
+        var isNegative =(value)=> value < 0 ? "text-danger" : "text-success";
+
+        $(`<div class="card mb-2 ${isNegative(register.value)}"></div>`)
+            .html(`
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-6">${register.date}</div>
+                        <div class="col-6">${register.type}</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">${register.value}</div>
+                        <hr/>
+                        <div class="col-6">${register.description}</div>
+                    </div>
+                </div>
+            `)
+            .appendTo('#registros');
+    }
+    _loadWallet();
+</script>

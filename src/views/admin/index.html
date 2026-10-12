@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!--font awesome-->
+    <script src="https://kit.fontawesome.com/7b9b1b3b8b.js" crossorigin="anonymous"></script>
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #334155;
+            color: #fff;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: 70px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .user-info { font-size: 0.9rem; color: #cbd5e1; }
+
+        .btn-logout {
+            background: #ef4444;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .btn-logout:hover { background: #dc2626; }
+
+        .content-body {
+            padding: 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .welcome-card {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+        }
+        .welcome-card h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .welcome-card p { color: #94a3b8; font-size: 0.95rem; }
+
+        /* Cards de atalho */
+        .link-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .link-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .link-card:hover { background: #334155; transform: translateY(-2px); }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-backdrop.hidden { display: none; }
+        .modal {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            width: min(720px, 92vw);
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .modal-header { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; }
+        .modal-footer { margin-top: 1.5rem; text-align: right; }
+        .modal-footer button {
+            background: #334155;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">Painel Admin</div>
+        <nav class="sidebar-nav"></nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar">
+            <div class="user-info">Bem-vindo ao sistema</div>
+            <!-- AJUSTE a rota de logout conforme seu backend -->
+            <a href="/api/auth/admin/signup" class="btn-logout">Sair</a>
+        </header>
+
+        <main class="content-body" id="contentBody">
+            <div class="welcome-card">
+                <h2>Dashboard Principal</h2>
+                <p>Você está autenticado e com a sessão ativa com sucesso!</p>
+            </div>
+
+            <div id="link-cards" class="link-cards">
+                <button type="button" class="link-card" data-path="/admin/users">👤 Usuários</button>
+                <button type="button" class="link-card" data-path="/admin/avatars">🧑‍🎤 Avatares</button>
+                <button type="button" class="link-card" data-path="/admin/rooms">🚪 Rooms</button>
+                <button type="button" class="link-card" data-path="/admin/servers">🖥️ Servers</button>
+                <button type="button" class="link-card" data-path="/admin/Wallets"> 🪙 Wallet</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-backdrop hidden" id="modal">
+        <div class="modal"></div>
+    </div>
+
+    <script>
+        const pages = {
+            home:   { url: '/admin/home',    title: 'Home',   innerBody: true,  isHome: true },
+            assas:  { url: '/admin/assas',   title: 'Assas',  innerBody: false },
+            prefab: { url: '/admin/prefab',  title: 'Prefab', innerBody: false },
+            db:     { url: '/admin/db',      title: 'DB',     innerBody: false },
+            api:    { url: '/api',           title: 'API',    innerBody: false },
+            sprite: { url: '/admin/sprite',  title: 'Sprite', innerBody: false },
+            folder: { url: '/admin/arquivos',title: 'Folder', innerBody: false },
+        };
+
+        const $content = $('#contentBody');
+        const $modal = $('#modal');
+        const homeHTML = $content.html(); // guarda o dashboard inicial
+
+        // Sidebar
+        $(() => {
+            const $nav = $('.sidebar-nav');
+            Object.values(pages).forEach(page => {
+                const $a = $('<a href="#"></a>').text(page.title);
+                if (page.isHome) $a.addClass('active');
+
+                $a.on('click', e => {
+                    e.preventDefault();
+                    if (page.innerBody) loadContent(page, $a);
+                    else window.open(page.url, '_blank');
+                });
+                $nav.append($a);
+            });
+        });
+
+        // Cards -> modal (delegação: sobrevive à troca de innerHTML)
+        $(document).on('click', '#link-cards [data-path]', function () {
+            loadModal($(this).data('path'), $(this).text().trim());
+        });
+
+        // Fechar modal: botão no footer, clique fora, ESC
+        $modal.on('click', e => { if (e.target === e.currentTarget) closeModal(); });
+        $modal.on('click', '.modal-footer button', closeModal);
+        $(document).on('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        function closeModal() { $modal.addClass('hidden'); }
+
+        function loadModal(url, title) {
+            const $box = $modal.find('.modal').html('<p>Carregando...</p>');
+            $modal.removeClass('hidden');
+
+            $box.load(url, (_res, status) => {
+                if (status === 'error') {
+                    $box.html('<div class="modal-header">Erro</div><p>Não foi possível carregar o conteúdo.</p><div class="modal-footer"><button type="button">Fechar</button></div>');
+                    return;
+                }
+                if (title) $box.find('.modal-header').text(title);
+            });
+        }
+
+        function loadContent(page, $link) {
+            $('.sidebar-nav a').removeClass('active');
+            $link.addClass('active');
+
+            if (page.isHome) {
+                $content.html(homeHTML);
+                return;
+            }
+
+            $.get(page.url)
+                .done(html => $content.html(html))
+                .fail(() => $content.html('<div class="welcome-card"><h2>Erro</h2><p>Não foi possível carregar o conteúdo.</p></div>'));
+        }
+    </script>
+    <script src="static/scripts/apihelps.js"></script>
+</body>
+</html>

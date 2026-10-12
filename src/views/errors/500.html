@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Erro 500 - Erro interno do servidor</title>
+<!--jquery-->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh; font-family: "Segoe UI", Arial, sans-serif; color: #2d1b4e;
+    display: flex; align-items: center; justify-content: center; padding: 24px; overflow: hidden;
+  }
+  body.tug, body.tug * { cursor: none !important; }
+  #bg { position: fixed; inset: 0; z-index: -1; background-color: #8338ec; transition: background-color 1.4s ease; }
+  .card {
+    background: #fff; border-radius: 24px; padding: 36px 28px;
+    max-width: 520px; width: 100%; text-align: center; box-shadow: 0 20px 50px #0004;
+  }
+  .code {
+    display: inline-block; font-size: clamp(64px, 14vw, 104px); font-weight: 900; line-height: 1;
+    background: linear-gradient(90deg, #ff006e, #fb5607, #ffbe0b);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    cursor: pointer; user-select: none;
+  }
+  .code:hover { animation: bounce .6s cubic-bezier(.3,.7,.4,1.4) infinite; }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-22px) scale(1.06); }
+    55% { transform: translateY(0) scale(.96, 1.04); }
+    75% { transform: translateY(-6px); }
+  }
+
+  .stage { position: relative; width: 220px; margin: 4px auto 0; }
+  .dog { width: 220px; height: auto; display: block; transition: transform .4s cubic-bezier(.3,.7,.4,1); transform-origin: 50% 100%; }
+  .dog.tug { transform: rotate(-7deg) translateX(-6px); }
+  .dog.tug .body { animation: shake .09s linear infinite alternate; }
+  @keyframes shake { from { transform: translateX(-2px); } to { transform: translateX(2px); } }
+  .head { transform-box: view-box; transform-origin: 100px 90px; transition: transform .3s; }
+  .dog.tug .head { transform: rotate(-10deg); }
+  .ear { transform-box: view-box; transform-origin: 50% 0%; transition: transform .3s; }
+  .dog.tug .earL { transform: rotate(-18deg); }
+  .dog.tug .earR { transform: rotate(18deg); }
+  .tongue { transition: transform .3s; transform-box: fill-box; transform-origin: top center; transform: scaleY(0); }
+  .dog.tug .tongue { transform: scaleY(1); }
+  .typing { transition: opacity .3s; }
+  .typing.hit { animation: hit .3s ease-out; }
+  @keyframes hit { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+  .key { transition: fill .15s; }
+  .key.lit { fill: #ffbe0b; }
+  .pupil { transition: transform .08s linear; }
+  .dog.tug .typing { opacity: 0; }
+
+  .bubble {
+    position: absolute; top: 0; right: -10px; background: #fff; border: 3px solid #2d1b4e;
+    border-radius: 14px; padding: 4px 10px; font-weight: bold; font-size: 14px;
+    opacity: 0; transform: scale(.5); transition: all .3s; pointer-events: none;
+  }
+  .dog.tug ~ .bubble { opacity: 1; transform: scale(1); }
+
+  h1 { font-size: 24px; margin: 12px 0 8px; }
+  #phrase {
+    font-size: 16px; line-height: 1.5; color: #5b4a7a; min-height: 48px; margin-bottom: 18px;
+    animation: fade .4s ease-out;
+  }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .id { margin-top: 10px; font-size: 12px; color: #9a8ab8; font-family: monospace; }
+
+  #rope { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: none; }
+  #mouseIcon {
+    position: fixed; z-index: 11; font-size: 34px; pointer-events: none; display: none;
+    transform: translate(-50%, -50%); filter: drop-shadow(2px 3px 0 #0005);
+  }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<main class="card">
+  <div class="code" id="code">500</div>
+
+  <div class="stage">
+    <svg class="dog" id="dog" viewBox="0 0 200 170" aria-hidden="true">
+      <!-- teclado -->
+      <rect x="28" y="146" width="144" height="20" rx="5" fill="#2d1b4e"/>
+      <g fill="#8338ec">
+        <rect class="key" x="36" y="150" width="12" height="7" rx="2"/><rect class="key" x="52" y="150" width="12" height="7" rx="2"/>
+        <rect class="key" x="68" y="150" width="12" height="7" rx="2"/><rect class="key" x="84" y="150" width="12" height="7" rx="2"/>
+        <rect class="key" x="100" y="150" width="12" height="7" rx="2"/><rect class="key" x="116" y="150" width="12" height="7" rx="2"/>
+        <rect class="key" x="132" y="150" width="12" height="7" rx="2"/><rect class="key" x="148" y="150" width="12" height="7" rx="2"/>
+      </g>
+
+      <g class="body">
+        <!-- corpo -->
+        <path d="M58 150 Q52 100 70 88 Q100 78 130 88 Q148 100 142 150 Z" fill="#e9a23b" stroke="#2d1b4e" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M80 110 Q100 124 120 110" stroke="#c77d1e" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- patas digitando -->
+        <ellipse class="typing" id="pawL" cx="82" cy="142" rx="14" ry="8" fill="#f5c26b" stroke="#2d1b4e" stroke-width="2.5"/>
+        <ellipse class="typing" id="pawR" cx="118" cy="142" rx="14" ry="8" fill="#f5c26b" stroke="#2d1b4e" stroke-width="2.5"/>
+      </g>
+
+      <g class="head">
+        <!-- orelhas -->
+        <g class="ear earL"><path d="M62 52 Q38 48 36 82 Q40 98 62 92 Z" fill="#8a4b1f" stroke="#2d1b4e" stroke-width="3" stroke-linejoin="round"/></g>
+        <g class="ear earR"><path d="M138 52 Q162 48 164 82 Q160 98 138 92 Z" fill="#8a4b1f" stroke="#2d1b4e" stroke-width="3" stroke-linejoin="round"/></g>
+        <!-- cabeça -->
+        <ellipse cx="100" cy="66" rx="42" ry="38" fill="#e9a23b" stroke="#2d1b4e" stroke-width="3"/>
+        <!-- manchinha na testa -->
+        <path d="M92 36 Q100 30 108 36 Q104 44 100 44 Q96 44 92 36 Z" fill="#fff4e0" opacity=".9"/>
+        <!-- olhos -->
+        <circle cx="82" cy="60" r="9" fill="#fff" stroke="#2d1b4e" stroke-width="2"/>
+        <circle cx="118" cy="60" r="9" fill="#fff" stroke="#2d1b4e" stroke-width="2"/>
+        <circle class="pupil" id="pupilL" cx="82" cy="60" r="4.5" fill="#2d1b4e"/>
+        <circle class="pupil" id="pupilR" cx="118" cy="60" r="4.5" fill="#2d1b4e"/>
+        <circle cx="84" cy="58" r="1.6" fill="#fff"/>
+        <circle cx="120" cy="58" r="1.6" fill="#fff"/>
+        <!-- sobrancelhas -->
+        <path d="M72 48 Q82 43 92 48" stroke="#2d1b4e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M108 48 Q118 43 128 48" stroke="#2d1b4e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- focinho -->
+        <ellipse cx="100" cy="82" rx="20" ry="15" fill="#fff4e0" stroke="#2d1b4e" stroke-width="2.5"/>
+        <!-- nariz -->
+        <ellipse cx="100" cy="76" rx="7" ry="5" fill="#2d1b4e"/>
+        <ellipse cx="98" cy="75" rx="2" ry="1.2" fill="#fff" opacity=".7"/>
+        <!-- bochechas -->
+        <ellipse cx="68" cy="78" rx="6" ry="4" fill="#ff6b8a" opacity=".5"/>
+        <ellipse cx="132" cy="78" rx="6" ry="4" fill="#ff6b8a" opacity=".5"/>
+        <!-- boca -->
+        <path d="M100 82 L100 88 M92 88 Q100 96 108 88" stroke="#2d1b4e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- língua (aparece quando puxa) -->
+        <path class="tongue" d="M96 92 Q100 108 104 92 Z" fill="#ff6b8a" stroke="#2d1b4e" stroke-width="2" stroke-linejoin="round"/>
+      </g>
+    </svg>
+    <div class="bubble">Me dá isso! 🖱️</div>
+  </div>
+
+  <h1>Algo quebrou no servidor</h1>
+  <p id="phrase"></p>
+  <div class="id" id="errId"></div>
+</main>
+
+<svg id="rope"><path id="ropePath" d="" stroke="#8a4b1f" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+<div id="mouseIcon">🖱️</div>
+
+<script>
+  const lastPage = window.origin;
+
+  const PHRASES = [
+    'O servidor tropeçou no próprio cabo. Já estamos de olho nisso.',
+    'Nosso cachorro estava digitando e apertou a tecla errada. Sem querer, juro!',
+    'Erro 500: o servidor pediu uma pausa para o café.',
+    'Não foi você, foi a gente. Tenta de novo que dessa vez vai!',
+    'Um bug entrou no sistema sem pedir licença. Estamos expulsando ele.',
+    'O código funcionava na minha máquina. Na sua, parece que não.',
+    'O servidor deu um "bom dia" de 500 km/h e bateu na parede.',
+    'Estamos resolvendo isso com muita dedicação e pouca cafeína.',
+    'Se o cachorro escrever "sudo", a gente pede para ele parar.',
+    'Quebrou? Calma, até os melhores servidores têm dias ruins.',
+    'Nosso cachorro achou o mouse e não quer devolver.',
+    'Isso não é um erro, é uma funcionalidade em fase beta.'
+  ];
+  const COLORS = ['#8338ec', '#ff006e', '#3a86ff', '#06d6a0', '#fb5607', '#ffbe0b', '#ff4d8d', '#00b4d8'];
+
+  let last = -1, lastColor = '#8338ec', tugging = false;
+  const dog = document.getElementById('dog');
+  const code = document.getElementById('code');
+  const bg = document.getElementById('bg');
+  const pupils = [document.getElementById('pupilL'), document.getElementById('pupilR')];
+  const pawL = document.getElementById('pawL');
+  const pawR = document.getElementById('pawR');
+  const keys = [...document.querySelectorAll('.key')];
+  const rope = document.getElementById('rope');
+  const ropePath = document.getElementById('ropePath');
+  const mouseIcon = document.getElementById('mouseIcon');
+
+  const mouse = { x: innerWidth / 2, y: innerHeight / 2 };
+  const obj = { x: mouse.x, y: mouse.y };
+
+  function nextPhrase() {
+    let i;
+    do { i = Math.floor(Math.random() * PHRASES.length); } while (i === last);
+    last = i;
+    const p = document.getElementById('phrase');
+    p.textContent = PHRASES[i];
+    p.style.animation = 'none'; void p.offsetWidth; p.style.animation = '';
+  }
+  setInterval(nextPhrase, 4500);
+  nextPhrase();
+
+  // Digitação: pata bate, tecla acende e o fundo muda de cor
+  function typeStroke() {
+    if (tugging) return;
+    const paw = Math.random() < 0.5 ? pawL : pawR;
+    paw.classList.remove('hit'); void paw.getBoundingClientRect(); paw.classList.add('hit');
+    keys.forEach(k => k.classList.remove('lit'));
+    keys[Math.floor(Math.random() * keys.length)].classList.add('lit');
+    let c;
+    do { c = COLORS[Math.floor(Math.random() * COLORS.length)]; } while (c === lastColor);
+    lastColor = c;
+    bg.style.backgroundColor = c;
+  }
+  setInterval(typeStroke, 900);
+  bg.style.backgroundColor = lastColor;
+
+  function mouthPoint() {
+    const r = dog.getBoundingClientRect();
+    const s = r.width / 200;
+    return { x: r.left + 100 * s, y: r.top + 92 * s };
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX; mouse.y = e.clientY;
+
+    // olhos seguem o mouse
+    const s = dog.getBoundingClientRect().width / 200;
+    pupils.forEach(p => {
+      const r = p.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      const d = Math.hypot(dx, dy) || 1;
+      const k = Math.min(d, 400) / d;
+      const tx = Math.max(-3, Math.min(3, (dx * k) / s / 12));
+      const ty = Math.max(-3, Math.min(3, (dy * k) / s / 12));
+      p.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px)`;
+    });
+
+    // entra em modo puxar quando o mouse está perto do 500 (histerese evita piscar)
+    const c = code.getBoundingClientRect();
+    const dist = Math.hypot(e.clientX - (c.left + c.width / 2), e.clientY - (c.top + c.height / 2));
+    if (!tugging && dist < 170) {
+      tugging = true;
+      obj.x = e.clientX; obj.y = e.clientY;
+      dog.classList.add('tug');
+      document.body.classList.add('tug');
+      document.querySelector('.bubble').textContent = pick(['Me dá isso! 🖱️', 'É MEU! 🐶', 'Solta, solta!']);
+      rope.style.display = 'block';
+      mouseIcon.style.display = 'block';
+    } else if (tugging && dist > 280) {
+      tugging = false;
+      dog.classList.remove('tug');
+      document.body.classList.remove('tug');
+      rope.style.display = 'none';
+      mouseIcon.style.display = 'none';
+    }
+  });
+
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+  // Loop: o cachorro puxa o cursor (cursor "escorregando" em direção a ele), com resistência do mouse
+  let t = 0;
+  function frame() {
+    t += 0.1;
+    if (tugging) {
+      const m = mouthPoint();
+      // mouse resiste (segue o cursor real), cachorro puxa devagar em direção à boca
+      obj.x += (mouse.x - obj.x) * 0.12 + (m.x - obj.x) * 0.03 + Math.sin(t * 9) * 1.5;
+      obj.y += (mouse.y - obj.y) * 0.12 + (m.y - obj.y) * 0.03 + Math.cos(t * 11) * 1.5;
+      mouseIcon.style.left = obj.x + 'px';
+      mouseIcon.style.top = obj.y + 'px';
+      const mx = (m.x + obj.x) / 2, my = (m.y + obj.y) / 2 + 40;
+      ropePath.setAttribute('d', `M${m.x} ${m.y} Q${mx} ${my} ${obj.x} ${obj.y}`);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const id = 'ERR-' + Date.now().toString(36).toUpperCase().slice(-8);
+  document.getElementById('errId').textContent = 'Código do erro: ' + id;
+  $(document).ready(() => {
+    $("#code").click(() => {
+        //vai para a origem
+        window.location.href = '/';
+    });
+  });
+</script>
+</body>
+</html>
+

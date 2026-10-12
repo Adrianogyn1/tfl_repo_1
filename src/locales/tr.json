@@ -1,0 +1,163 @@
+{
+    "common": {
+        "home": "Ana Sayfa",
+        "cancel": "İptal",
+        "close": "Kapat",
+        "back": "Geri",
+        "required": "Zorunlu alan",
+        "showPassword": "Şifreyi göster",
+        "hidePassword": "Şifreyi gizle",
+        "emailRequired": "E-posta adresi zorunludur",
+        "emailInvalid": "Geçerli bir e-posta adresi girin",
+        "passwordRequired": "Şifre zorunludur",
+        "passwordTooShort": "Şifre en az {{min}} karakter olmalıdır",
+        "passwordTooWeak": "Şifre harf ve rakam içermelidir",
+        "passwordMismatch": "Şifreler eşleşmiyor",
+        "tooManyAttempts": "Çok fazla deneme yapıldı. Lütfen {{minutes}} dakika sonra tekrar deneyin",
+        "serverError": "Sunucu hatası. Lütfen daha sonra tekrar deneyin",
+        "unknownError": "Bilinmeyen hata. Lütfen daha sonra tekrar deneyin",
+        "errors": {
+            "tokenInvalid": "Bu bağlantı geçersiz",
+            "tokenExpired": "Bu bağlantının süresi dolmuş. Lütfen yenisini talep edin",
+            "invalidCredentials": "Geçersiz kimlik bilgileri",
+            "emailNotFound": "Bu e-posta adresine ait hesap bulunamadı",
+            "unauthorized": "Bunu yapmak için izniniz yok!"
+        },
+        "success": "Başarılı!"
+    },
+    "home": {
+        "nav": {
+            "play": "Oyna",
+            "explore": "Keşfet",
+            "support": "Destek Ol",
+            "login": "Giriş Yap"
+        },
+        "hero": {
+            "title": "Hikayeni yaz. Yeniliği deneyimle.",
+            "subtitle": "The Fantasy Life'ta odak noktası özgürlüktür. Özgün bir topluluğun parçası olmak ve gerçek bağlar kurmak isteyenler için açık bir dünya."
+        },
+        "gallery": {
+            "tag": "Galeri",
+            "title": "Dünyayı Keşfet",
+            "scroll": "Daha fazlasını görmek için yana kaydırın →"
+        },
+        "vibe": {
+            "title": "Etiketlerden uzak özgürlük.",
+            "desc": "Dijitalin konforla buluştuğu bir alan yarattık. Burada öncelik sizin deneyiminiz ve çevreyle olan etkileşiminizdir.",
+            "item1Title": "Dinamik Çevre:",
+            "item1Desc": "Topluluk tarafından ve topluluk için düzenlenen etkinlikler.",
+            "item2Title": "Her Şeyi Deneyimleyin:",
+            "item2Desc": "Tamamen rahatlamaktan imparatorluklar kurmaya kadar, karar sizin.",
+            "cardTitle": "Gelin ve Deneyimleyin",
+            "cardDesc": "Bu yeni dünyaya şimdiden yön veren oyunculara katılın. Erişiminizi hemen güvenceye alın.",
+            "cardButton": "Topluluğumuza Katılın"
+        },
+        "support": {
+            "tag": "Destek Ol",
+            "title": "Hayali Canlı Tutun",
+            "desc": "The Fantasy Life bağımsız bir projedir. Her destek, sunucularımızın istikrarlı kalmasına ve ekibin yeni deneyimler geliştirmeye odaklanmasına yardımcı olur.",
+            "coffeeTitle": "Bir Kahve",
+            "coffeeDesc": "Bize ekstra enerji veren sembolik bir destek. Bize destek olun!"
+        },
+        "footer": {
+            "slogan": "Hayal gücünüzün dijital form kazandığı yer.",
+            "rights": "Tüm hakları saklıdır."
+        },
+        "modal": {
+            "downloadTitle": "The Fantasy Life'ı İndir",
+            "donateTitle": "Projeye Destek Ol",
+            "donateDesc": "The Fantasy Life'ın devamlılığına yardımcı olduğunuz için teşekkür ederiz!",
+            "pixKey": "Pix Anahtarı / Kopyala ve Yapıştır",
+            "pixImage": "Pix QR Kodu",
+            "copy": "Kopyala",
+            "copied": "Kopyalandı!"
+        }
+    },
+    "login": {
+        "title": "Hesabınıza Giriş Yapın",
+        "subtitle": "Erişim sağlamak için bilgilerinizi girin",
+        "emailLabel": "E-posta",
+        "emailPlaceholder": "epostaniz@ornek.com",
+        "passwordLabel": "Şifre",
+        "passwordPlaceholder": "Şifrenizi girin",
+        "rememberMe": "Beni hatırla",
+        "forgotPassword": "Şifremi unuttum",
+        "submit": "Giriş Yap",
+        "submitting": "Giriş yapılıyor...",
+        "noAccount": "Hesabınız yok mu?",
+        "signUp": "Hesap Oluştur",
+        "errors": {
+            "alreadyLoggedIn": "Kullanıcı zaten giriş yapmış durumda.",
+            "invalidCredentials": "Geçersiz e-posta veya şifre"
+        },
+        "success": "Giriş başarılı!"
+    },
+    "register": {
+        "title": "Hesabınızı Oluşturun",
+        "subtitle": "Başlamak için aşağıdaki bilgileri doldurun",
+        "nameLabel": "Tam Ad",
+        "namePlaceholder": "Tam adınızı girin",
+        "emailLabel": "E-posta",
+        "emailPlaceholder": "epostaniz@ornek.com",
+        "passwordLabel": "Şifre",
+        "passwordPlaceholder": "Bir şifre belirleyin",
+        "confirmPasswordLabel": "Şifreyi Onayla",
+        "confirmPasswordPlaceholder": "Şifreyi tekrar girin",
+        "passwordHint": "En az {{min}} karakter kullanın",
+        "terms": "<terms>Kullanım Şartları</terms>'nı ve <privacy>Gizlilik Politikası</privacy>'nı okudum ve kabul ediyorum",
+        "submit": "Hesap Oluştur",
+        "submitting": "Hesap oluşturuluyor...",
+        "haveAccount": "Zaten bir hesabınız var mı?",
+        "signIn": "Giriş Yap",
+        "errors": {
+            "registered": "Bu e-posta veya kullanıcı adı ile bir hesap zaten mevcut",
+            "ageRestriction": "Hesap oluşturmak için reşit olmalısınız",
+            "loginRequired": "Kullanıcı adı alanı zorunludur",
+            "nameRequired": "Ad alanı zorunludur",
+            "nameTooShort": "Ad en az {{min}} karakter olmalıdır",
+            "emailAlreadyRegistered": "Bu e-posta adresi zaten kayıtlı",
+            "termsRequired": "Kullanım şartlarını kabul etmelisiniz"
+        },
+        "success": "Hesap başarıyla oluşturuldu!"
+    },
+    "forgotPassword": {
+        "title": "Şifrenizi mi unuttunuz?",
+        "subtitle": "E-posta adresinizi girin, sıfırlama bağlantısı gönderelim",
+        "emailLabel": "E-posta",
+        "emailPlaceholder": "epostaniz@ornek.com",
+        "submit": "Sıfırlama Bağlantısı Gönder",
+        "submitting": "Gönderiliyor...",
+        "backToLogin": "Girişe Dön",
+        "errors": {
+            "emailNotFound": "Bu e-posta ile ilişkili bir hesap bulunamadı"
+        },
+        "success": "E-posta kayıtlıysa, kısa süre içinde bir sıfırlama bağlantısı alacaksınız"
+    },
+    "resetPassword": {
+        "title": "Şifreyi Sıfırla",
+        "subtitle": "Hesabınız için yeni bir şifre oluşturun",
+        "newPasswordLabel": "Yeni Şifre",
+        "newPasswordPlaceholder": "Yeni şifreyi girin",
+        "confirmPasswordLabel": "Yeni Şifreyi Onayla",
+        "confirmPasswordPlaceholder": "Yeni şifreyi tekrar girin",
+        "submit": "Şifreyi Sıfırla",
+        "submitting": "Sıfırlanıyor...",
+        "backToLogin": "Girişe Dön",
+        "errors": {
+            "tokenInvalid": "Bu bağlantı geçersiz",
+            "tokenExpired": "Bu bağlantının süresi dolmuş. Lütfen yenisini talep edin"
+        },
+        "success": "Şifre başarıyla sıfırlandı!"
+    },
+    "verifyEmail": {
+        "title": "E-posta Adresinizi Doğrulayın",
+        "subtitle": "{{email}} adresine bir onay bağlantısı gönderdik",
+        "resend": "E-postayı Tekrar Gönder",
+        "resendCooldown": "{{seconds}}s sonra tekrar gönderebilirsiniz",
+        "success": "E-posta başarıyla doğrulandı!",
+        "errors": {
+            "tokenInvalid": "Bu onay bağlantısı geçersiz",
+            "tokenExpired": "Bu bağlantının süresi dolmuş. Yeni bir e-posta talep edin"
+        }
+    }
+}

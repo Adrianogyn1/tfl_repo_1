@@ -1,0 +1,221 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-8">
+    <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-md text-slate-100 relative overflow-hidden">
+        
+        <!-- Mascote Bonito e Fofo -->
+        <div class="flex flex-col items-center mb-6">
+            <div class="relative w-24 h-24 bg-gradient-to-b from-blue-600/20 to-slate-900 rounded-2xl border border-blue-500/30 shadow-lg flex items-center justify-center overflow-hidden transition-all duration-500 p-2" id="mascot-container">
+                <svg id="mascot" viewBox="0 0 100 100" class="w-20 h-20 drop-shadow-md transition-transform duration-300">
+                    <!-- Fone / Antena Fofa -->
+                    <path d="M 35 25 Q 50 15 65 25" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" fill="none" />
+                    <circle cx="35" cy="25" r="4" fill="#60a5fa" />
+                    <circle cx="65" cy="25" r="4" fill="#60a5fa" />
+
+                    <!-- Cabeça Arredondada -->
+                    <rect x="20" y="25" width="60" height="55" rx="26" fill="#1e293b" stroke="#3b82f6" stroke-width="3" />
+
+                    <!-- Visor / Tela do Rosto -->
+                    <rect x="27" y="35" width="46" height="32" rx="12" fill="#0f172a" />
+
+                    <!-- OLHOS NORMAIS / ALEGRES -->
+                    <g id="eyes-open">
+                        <circle cx="41" cy="48" r="4.5" fill="#38bdf8" class="animate-pulse" />
+                        <circle cx="59" cy="48" r="4.5" fill="#38bdf8" class="animate-pulse" />
+                        <circle cx="42.5" cy="46.5" r="1.5" fill="#ffffff" />
+                        <circle cx="60.5" cy="46.5" r="1.5" fill="#ffffff" />
+                    </g>
+
+                    <!-- OLHOS: FINGINDO DE BOBO -->
+                    <g id="eyes-dummy" class="hidden">
+                        <circle cx="39" cy="48" r="4" fill="#fbbf24" />
+                        <circle cx="61" cy="48" r="4" fill="#fbbf24" />
+                        <path d="M 36 40 Q 41 43 46 40" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                        <path d="M 54 40 Q 59 43 64 40" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                    </g>
+
+                    <!-- OLHOS: CHORANDO -->
+                    <g id="eyes-crying" class="hidden">
+                        <path d="M 37 52 Q 41 46 45 52" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                        <path d="M 55 52 Q 59 46 63 52" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                        <ellipse cx="41" cy="58" rx="2" ry="3.5" fill="#38bdf8" class="animate-bounce" />
+                        <ellipse cx="59" cy="58" rx="2" ry="3.5" fill="#38bdf8" class="animate-bounce" />
+                    </g>
+
+                    <!-- BOCA / EXPRESSÃO -->
+                    <path id="mouth" d="M 44 60 Q 50 66 56 60" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" fill="none" class="transition-all duration-300" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-white mb-2">
+                <%= t('login.title') %>
+            </h1>
+            <p class="text-sm text-slate-400">
+                <%= t('login.subtitle', {}, 'login.subtitle' ) || 'Entre com suas credenciais para acessar' %>
+            </p>
+            <p id="message" class="hidden text-red-400 mt-2 text-sm"></p>
+        </div>
+
+        <form action="#" method="POST">
+            <input type="hidden" id="page" name="page" value="login">
+
+            <div class="mb-5">
+                <label for="email" class="block text-sm font-medium mb-2 text-slate-300">
+                    <%= t('login.emailLabel') %>
+                </label>
+                <input type="text" id="email" name="username" placeholder="<%= t('login.emailPlaceholder') %>"
+                    required
+                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+
+            <div class="mb-5">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="password" class="text-sm font-medium text-slate-300">
+                        <%= t('login.passwordLabel') %>
+                    </label>
+                    <a id="btnForgot" href="/forgot-password" class="text-xs text-blue-400 hover:underline">
+                        <%= t('login.forgotPassword') %>
+                    </a>
+                </div>
+                <input type="password" id="password" name="password"
+                    placeholder="<%= t('login.passwordPlaceholder') %>" required
+                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+            </div>
+
+            <button id="btnLogin" type="button"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all active:scale-95 mt-2">
+                <%= t('login.submit') %>
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-sm text-slate-400">
+                <%= t('login.noAccount') %>
+                <a id="btnRegister" href="/register" class="text-blue-400 hover:underline font-medium">
+                    <%= t('login.signUp') %>
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+
+        var url = window.location.href;
+        var page = url.split("?pg=")[1];
+        if (page) {
+            $("#page").val(page);
+        }
+
+        let isPasswordFocus = false;
+
+        // Movimento suave dos olhos seguindo o cursor
+        $(document).on('mousemove', function (e) {
+            if (isPasswordFocus) return;
+
+            const mascot = $('#mascot');
+            const offset = mascot.offset();
+            if (!offset) return;
+            const centerX = offset.left + mascot.width() / 2;
+            const centerY = offset.top + mascot.height() / 2;
+
+            const angle = Math.atan2(e.pageY - centerY, e.pageX - centerX);
+            const distance = Math.min(1.5, Math.hypot(e.pageX - centerX, e.pageY - centerY) / 50);
+
+            const eyes = $('#eyes-open');
+            eyes.css('transform', `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`);
+        });
+
+        // Digitando a senha: Fingindo de bobo
+        $('#password').on('focus', function () {
+            isPasswordFocus = true;
+            $('#eyes-open, #eyes-crying').addClass('hidden');
+            $('#eyes-dummy').removeClass('hidden');
+            $('#mouth').attr('d', 'M 44 62 Q 50 58 56 62');
+            $('#mascot').addClass('scale-105');
+        }).on('blur', function () {
+            isPasswordFocus = false;
+            $('#eyes-dummy, #eyes-crying').addClass('hidden');
+            $('#eyes-open').removeClass('hidden');
+            $('#mouth').attr('d', 'M 44 60 Q 50 66 56 60');
+            $('#mascot').removeClass('scale-105');
+        });
+
+        // Esqueceu a senha: Triste chorando
+        $('#btnForgot').on('mouseenter click', function () {
+            $('#eyes-open, #eyes-dummy').addClass('hidden');
+            $('#eyes-crying').removeClass('hidden');
+            $('#mouth').attr('d', 'M 44 63 Q 50 56 56 63');
+        }).on('mouseleave', function () {
+            if (!isPasswordFocus) {
+                $('#eyes-crying').addClass('hidden');
+                $('#eyes-open').removeClass('hidden');
+                $('#mouth').attr('d', 'M 44 60 Q 50 66 56 60');
+            }
+        });
+
+        // Hover do Login: Alegre
+        $('#btnLogin').on('mouseenter', function () {
+            if (!isPasswordFocus) {
+                $('#mouth').attr('d', 'M 43 59 Q 50 70 57 59');
+            }
+        }).on('mouseleave', function () {
+            if (!isPasswordFocus) {
+                $('#mouth').attr('d', 'M 44 60 Q 50 66 56 60');
+            }
+        });
+
+        // Hover do Registro: Muito alegre / super feliz
+        $('#btnRegister').on('mouseenter', function () {
+            if (!isPasswordFocus) {
+                $('#mouth').attr('d', 'M 42 56 Q 50 75 58 56');
+                $('#mascot').addClass('animate-bounce');
+            }
+        }).on('mouseleave', function () {
+            if (!isPasswordFocus) {
+                $('#mouth').attr('d', 'M 44 60 Q 50 66 56 60');
+                $('#mascot').removeClass('animate-bounce');
+            }
+        });
+
+        $('#btnLogin').on('click', function () {
+            var form = $('form').serialize();$('#mouth').attr('d', 'M 43 59 Q 50 70 57 59');
+            $('#mascot').addClass('animate-pulse');
+
+            $.post(`${dominio}/api/auth/signin`, form, function (data) {
+                if (data.success) {
+                    setTimeout(() => {
+                        window.location.href = '/profile';
+                    }, 600);
+                } else {
+                    setMessage(data.message, true);
+                }
+            }).fail(function (jqXHR) {
+                var errorMsg = jqXHR.responseJSON && jqXHR.responseJSON.message ? jqXHR.responseJSON.message : "<%= t('common.serverError') %>";
+                setMessage(errorMsg, true);
+            });
+        });
+
+        function setMessage(message, isError = true) {
+            $('#mascot').removeClass('animate-pulse');
+            if (isError) {
+                $('#message').removeClass('hidden text-green-400').addClass('text-red-400');
+                $('#mouth').attr('d', 'M 44 63 Q 50 56 56 63');
+            } else {
+                $('#message').removeClass('hidden text-red-400').addClass('text-green-400');
+            }
+
+            $('#message').text(message);
+            setTimeout(() => {
+                $('#message').addClass('hidden');
+                $('#mouth').attr('d', 'M 44 60 Q 50 66 56 60');
+            }, 5000);
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %>

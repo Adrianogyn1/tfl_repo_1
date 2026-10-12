@@ -1,0 +1,163 @@
+{
+    "common": {
+        "home": "Accueil",
+        "cancel": "Annuler",
+        "close": "Fermer",
+        "back": "Retour",
+        "required": "Champ obligatoire",
+        "showPassword": "Afficher le mot de passe",
+        "hidePassword": "Masquer le mot de passe",
+        "emailRequired": "L'e-mail est obligatoire",
+        "emailInvalid": "Saisissez une adresse e-mail valide",
+        "passwordRequired": "Le mot de passe est obligatoire",
+        "passwordTooShort": "Le mot de passe doit contenir au moins {{min}} caractères",
+        "passwordTooWeak": "Le mot de passe doit contenir des lettres et des chiffres",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "tooManyAttempts": "Trop de tentatives. Réessayez dans {{minutes}} minutes",
+        "serverError": "Erreur du serveur. Veuillez réessayer plus tard",
+        "unknownError": "Erreur inconnue. Veuillez réessayer plus tard",
+        "errors": {
+            "tokenInvalid": "Ce lien n'est pas valide",
+            "tokenExpired": "Ce lien a expiré. Demandez-en un nouveau",
+            "invalidCredentials": "Identifiants invalides",
+            "emailNotFound": "Aucun compte n'est associé à cette adresse e-mail",
+            "unauthorized": "Vous n'avez pas la permission de faire cela !"
+        },
+        "success": "Succès !"
+    },
+    "home": {
+        "nav": {
+            "play": "Jouer",
+            "explore": "Explorer",
+            "support": "Soutenir",
+            "login": "Se connecter"
+        },
+        "hero": {
+            "title": "Construis ton histoire. Découvre le nouveau.",
+            "subtitle": "Dans The Fantasy Life, la liberté est au cœur de tout. Un monde ouvert pour ceux qui veulent faire partie de quelque chose d'authentique et créer de vrais liens."
+        },
+        "gallery": {
+            "tag": "Galerie",
+            "title": "Explore le monde",
+            "scroll": "Fais défiler horizontalement pour en voir plus →"
+        },
+        "vibe": {
+            "title": "Liberté sans étiquettes.",
+            "desc": "Nous avons créé un espace où le numérique rencontre le confort. Ici, la priorité est ton expérience et la manière dont tu interagis avec le monde qui t'entoure.",
+            "item1Title": "Environnement dynamique :",
+            "item1Desc": "Des événements créés par la communauté et pour la communauté.",
+            "item2Title": "Tout essayer :",
+            "item2Desc": "De la détente totale à la construction d'empires, c'est toi qui décides.",
+            "cardTitle": "Viens essayer",
+            "cardDesc": "Rejoins les joueurs qui façonnent déjà ce nouveau monde. Assure ton accès.",
+            "cardButton": "Rejoins notre communauté"
+        },
+        "support": {
+            "tag": "Contribuer",
+            "title": "Fais vivre le rêve",
+            "desc": "The Fantasy Life est un projet indépendant. Tout soutien aide à maintenir nos serveurs stables et l'équipe concentrée sur la création de nouvelles expériences.",
+            "coffeeTitle": "Un café",
+            "coffeeDesc": "Un soutien symbolique pour une énergie supplémentaire. Soutiens-nous !"
+        },
+        "footer": {
+            "slogan": "Là où ton imagination prend forme numérique.",
+            "rights": "Tous droits réservés."
+        },
+        "modal": {
+            "downloadTitle": "Télécharge The Fantasy Life",
+            "donateTitle": "Soutenir le projet",
+            "donateDesc": "Merci d'aider à faire vivre The Fantasy Life !",
+            "pixKey": "Clé Pix / Copier-coller",
+            "pixImage": "Image Pix",
+            "copy": "Copier",
+            "copied": "Copié !"
+        }
+    },
+    "login": {
+        "title": "Connexion à votre compte",
+        "subtitle": "Saisissez vos identifiants pour accéder",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "votreemail@exemple.com",
+        "passwordLabel": "Mot de passe",
+        "passwordPlaceholder": "Saisissez votre mot de passe",
+        "rememberMe": "Se souvenir de moi",
+        "forgotPassword": "Mot de passe oublié",
+        "submit": "Se connecter",
+        "submitting": "Connexion en cours...",
+        "noAccount": "Vous n'avez pas de compte ?",
+        "signUp": "Créer un compte",
+        "errors": {
+            "alreadyLoggedIn": "Utilisateur déjà connecté.",
+            "invalidCredentials": "E-mail ou mot de passe invalide"
+        },
+        "success": "Connexion réussie !"
+    },
+    "register": {
+        "title": "Créez votre compte",
+        "subtitle": "Remplissez les informations ci-dessous pour commencer",
+        "nameLabel": "Nom complet",
+        "namePlaceholder": "Saisissez votre nom complet",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "votreemail@exemple.com",
+        "passwordLabel": "Mot de passe",
+        "passwordPlaceholder": "Créez un mot de passe",
+        "confirmPasswordLabel": "Confirmer le mot de passe",
+        "confirmPasswordPlaceholder": "Saisissez à nouveau le mot de passe",
+        "passwordHint": "Utilisez au moins {{min}} caractères",
+        "terms": "J'ai lu et j'accepte les <terms>Conditions d'utilisation</terms> ainsi que la <privacy>Politique de confidentialité</privacy>",
+        "submit": "Créer le compte",
+        "submitting": "Création du compte...",
+        "haveAccount": "Vous avez déjà un compte ?",
+        "signIn": "Se connecter",
+        "errors": {
+            "registered": "Un compte existe déjà avec cet e-mail ou cet identifiant",
+            "ageRestriction": "Vous devez être majeur pour créer un compte",
+            "loginRequired": "Le champ identifiant est obligatoire",
+            "nameRequired": "Le nom est obligatoire",
+            "nameTooShort": "Le nom doit contenir au moins {{min}} caractères",
+            "emailAlreadyRegistered": "Cette adresse e-mail est déjà enregistrée",
+            "termsRequired": "Vous devez accepter les conditions d'utilisation"
+        },
+        "success": "Compte créé avec succès !"
+    },
+    "forgotPassword": {
+        "title": "Mot de passe oublié ?",
+        "subtitle": "Saisissez votre e-mail et nous vous enverrons un lien pour le réinitialiser",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "votreemail@exemple.com",
+        "submit": "Envoyer le lien de réinitialisation",
+        "submitting": "Envoi en cours...",
+        "backToLogin": "Retour à la connexion",
+        "errors": {
+            "emailNotFound": "Nous n'avons trouvé aucun compte avec cette adresse e-mail"
+        },
+        "success": "Si l'adresse e-mail est enregistrée, vous recevrez un lien de réinitialisation sous peu"
+    },
+    "resetPassword": {
+        "title": "Réinitialiser le mot de passe",
+        "subtitle": "Créez un nouveau mot de passe pour votre compte",
+        "newPasswordLabel": "Nouveau mot de passe",
+        "newPasswordPlaceholder": "Saisissez le nouveau mot de passe",
+        "confirmPasswordLabel": "Confirmer le nouveau mot de passe",
+        "confirmPasswordPlaceholder": "Saisissez à nouveau le nouveau mot de passe",
+        "submit": "Réinitialiser le mot de passe",
+        "submitting": "Réinitialisation...",
+        "backToLogin": "Retour à la connexion",
+        "errors": {
+            "tokenInvalid": "Ce lien n'est pas valide",
+            "tokenExpired": "Ce lien a expiré. Demandez-en un nouveau"
+        },
+        "success": "Mot de passe réinitialisé avec succès !"
+    },
+    "verifyEmail": {
+        "title": "Vérifiez votre e-mail",
+        "subtitle": "Nous avons envoyé un lien de confirmation à {{email}}",
+        "resend": "Renvoyer l'e-mail",
+        "resendCooldown": "Renvoyer dans {{seconds}}s",
+        "success": "E-mail confirmé avec succès !",
+        "errors": {
+            "tokenInvalid": "Ce lien de confirmation n'est pas valide",
+            "tokenExpired": "Ce lien a expiré. Demandez un nouvel e-mail"
+        }
+    }
+}

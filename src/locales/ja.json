@@ -1,0 +1,163 @@
+{
+    "common": {
+        "home": "ホーム",
+        "cancel": "キャンセル",
+        "close": "閉じる",
+        "back": "戻る",
+        "required": "必須項目",
+        "showPassword": "パスワードを表示",
+        "hidePassword": "パスワードを非表示",
+        "emailRequired": "メールアドレスは必須です",
+        "emailInvalid": "有効なメールアドレスを入力してください",
+        "passwordRequired": "パスワードは必須です",
+        "passwordTooShort": "パスワードは{{min}}文字以上で入力してください",
+        "passwordTooWeak": "パスワードには英字と数字を含めてください",
+        "passwordMismatch": "パスワードが一致しません",
+        "tooManyAttempts": "試行回数が多すぎます。{{minutes}}分後にもう一度お試しください",
+        "serverError": "サーバーエラーが発生しました。しばらくしてから再度お試しください",
+        "unknownError": "不明なエラーが発生しました。しばらくしてから再度お試しください",
+        "errors": {
+            "tokenInvalid": "このリンクは無効です",
+            "tokenExpired": "このリンクは期限切れです。新しいリンクをリクエストしてください",
+            "invalidCredentials": "認証情報が無効です",
+            "emailNotFound": "このメールアドレスのアカウントは見つかりません",
+            "unauthorized": "その操作を行う権限がありません！"
+        },
+        "success": "成功！"
+    },
+    "home": {
+        "nav": {
+            "play": "プレイ",
+            "explore": "探索",
+            "support": "支援",
+            "login": "ログイン"
+        },
+        "hero": {
+            "title": "物語を築こう。新しさを体験しよう。",
+            "subtitle": "The Fantasy Lifeは自由を大切にしています。本物の繋がりを築き、何かの一部になりたい人のためのオープンワールドです。"
+        },
+        "gallery": {
+            "tag": "ギャラリー",
+            "title": "世界を探索しよう",
+            "scroll": "横にスクロールしてもっと見る →"
+        },
+        "vibe": {
+            "title": "ラベルのない自由。",
+            "desc": "デジタルと心地よさが出会う空間を作りました。ここで大切なのは、あなたの体験と、世界との関わり方です。",
+            "item1Title": "ダイナミックな環境：",
+            "item1Desc": "コミュニティによって、コミュニティのために作られたイベント。",
+            "item2Title": "何でも体験しよう：",
+            "item2Desc": "完全なリラックスから帝国の建設まで、選ぶのはあなたです。",
+            "cardTitle": "体験しに来て",
+            "cardDesc": "すでにこの新しい世界を形作っているプレイヤーに加わろう。アクセスを確保しましょう。",
+            "cardButton": "コミュニティに参加"
+        },
+        "support": {
+            "tag": "貢献",
+            "title": "夢を生かし続けよう",
+            "desc": "The Fantasy Lifeは独立したプロジェクトです。どんな支援も、サーバーの安定稼働と、新しい体験を作るチームの活動を支えます。",
+            "coffeeTitle": "コーヒー一杯",
+            "coffeeDesc": "エネルギー補給の象徴的な支援。応援してください！"
+        },
+        "footer": {
+            "slogan": "あなたの想像力がデジタルな形になる場所。",
+            "rights": "全著作権所有。"
+        },
+        "modal": {
+            "downloadTitle": "The Fantasy Lifeをダウンロード",
+            "donateTitle": "プロジェクトを支援",
+            "donateDesc": "The Fantasy Lifeの運営にご協力いただきありがとうございます！",
+            "pixKey": "Pixキー / コピー＆ペースト",
+            "pixImage": "Pix画像",
+            "copy": "コピー",
+            "copied": "コピーしました！"
+        }
+    },
+    "login": {
+        "title": "アカウントにログイン",
+        "subtitle": "認証情報を入力してアクセスしてください",
+        "emailLabel": "メールアドレス",
+        "emailPlaceholder": "youremail@example.com",
+        "passwordLabel": "パスワード",
+        "passwordPlaceholder": "パスワードを入力",
+        "rememberMe": "ログイン状態を保持",
+        "forgotPassword": "パスワードを忘れた場合",
+        "submit": "ログイン",
+        "submitting": "ログイン中...",
+        "noAccount": "アカウントをお持ちではありませんか？",
+        "signUp": "アカウント作成",
+        "errors": {
+            "alreadyLoggedIn": "すでにログインしています。",
+            "invalidCredentials": "メールアドレスまたはパスワードが無効です"
+        },
+        "success": "ログインに成功しました！"
+    },
+    "register": {
+        "title": "アカウントを作成",
+        "subtitle": "以下の情報を入力して始めましょう",
+        "nameLabel": "氏名",
+        "namePlaceholder": "氏名を入力",
+        "emailLabel": "メールアドレス",
+        "emailPlaceholder": "youremail@example.com",
+        "passwordLabel": "パスワード",
+        "passwordPlaceholder": "パスワードを作成",
+        "confirmPasswordLabel": "パスワード（確認）",
+        "confirmPasswordPlaceholder": "パスワードをもう一度入力",
+        "passwordHint": "{{min}}文字以上で入力してください",
+        "terms": "<terms>利用規約</terms>および<privacy>プライバシーポリシー</privacy>を読み、同意します",
+        "submit": "アカウントを作成",
+        "submitting": "アカウントを作成中...",
+        "haveAccount": "すでにアカウントをお持ちですか？",
+        "signIn": "ログイン",
+        "errors": {
+            "registered": "このメールアドレスまたはログインIDのアカウントはすでに存在します",
+            "ageRestriction": "アカウントを作成するには成人である必要があります",
+            "loginRequired": "ログインIDは必須です",
+            "nameRequired": "氏名は必須です",
+            "nameTooShort": "氏名は{{min}}文字以上で入力してください",
+            "emailAlreadyRegistered": "このメールアドレスはすでに登録されています",
+            "termsRequired": "利用規約に同意する必要があります"
+        },
+        "success": "アカウントを作成しました！"
+    },
+    "forgotPassword": {
+        "title": "パスワードを忘れましたか？",
+        "subtitle": "メールアドレスを入力すると、パスワード再設定用のリンクを送信します",
+        "emailLabel": "メールアドレス",
+        "emailPlaceholder": "youremail@example.com",
+        "submit": "再設定リンクを送信",
+        "submitting": "送信中...",
+        "backToLogin": "ログインに戻る",
+        "errors": {
+            "emailNotFound": "このメールアドレスのアカウントが見つかりません"
+        },
+        "success": "メールアドレスが登録されている場合、まもなく再設定リンクが届きます"
+    },
+    "resetPassword": {
+        "title": "パスワードを再設定",
+        "subtitle": "アカウントの新しいパスワードを作成してください",
+        "newPasswordLabel": "新しいパスワード",
+        "newPasswordPlaceholder": "新しいパスワードを入力",
+        "confirmPasswordLabel": "新しいパスワード（確認）",
+        "confirmPasswordPlaceholder": "新しいパスワードをもう一度入力",
+        "submit": "パスワードを再設定",
+        "submitting": "再設定中...",
+        "backToLogin": "ログインに戻る",
+        "errors": {
+            "tokenInvalid": "このリンクは無効です",
+            "tokenExpired": "このリンクは期限切れです。新しいリンクをリクエストしてください"
+        },
+        "success": "パスワードを再設定しました！"
+    },
+    "verifyEmail": {
+        "title": "メールアドレスを確認",
+        "subtitle": "{{email}}に確認用リンクを送信しました",
+        "resend": "メールを再送信",
+        "resendCooldown": "{{seconds}}秒後に再送信",
+        "success": "メールアドレスの確認が完了しました！",
+        "errors": {
+            "tokenInvalid": "この確認リンクは無効です",
+            "tokenExpired": "このリンクは期限切れです。新しいメールをリクエストしてください"
+        }
+    }
+}

@@ -1,0 +1,561 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: "Segoe UI", Arial, sans-serif; overflow: hidden; position: relative; }
+  #sky { position: absolute; inset: 0; transition: background .8s; }
+  h1 {
+    position: absolute; top: 12px; width: 100%; text-align: center; z-index: 5;
+    color: #3b2a6b; font-size: clamp(20px, 4vw, 38px); text-shadow: 3px 3px 0 #fff;
+    animation: wobble 2s ease-in-out infinite;
+  }
+  @keyframes wobble { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+  #envName {
+    position: absolute; top: 66px; width: 100%; text-align: center; z-index: 5;
+    font-weight: bold; color: #fff; text-shadow: 2px 2px 0 #0006; font-size: 16px;
+  }
+  #ground { position: absolute; bottom: 0; left: 0; right: 0; height: 14%; border-top: 6px solid #fff4; transition: background .8s; }
+
+  #world { position: absolute; left: 0; right: 0; bottom: 14%; height: 60%; overflow: hidden; }
+  .deco { position: absolute; bottom: 0; user-select: none; animation: sway 4s ease-in-out infinite; }
+  @keyframes sway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+
+  .sign {
+    position: absolute; bottom: 150px; width: 150px; text-align: center; z-index: 2; cursor: pointer;
+    background: #fff; border: 4px solid #5a3e1b; border-radius: 12px; padding: 8px;
+    font-weight: bold; color: #3b2a6b; font-size: 14px; box-shadow: 4px 4px 0 #0003;
+    transform-origin: bottom center; user-select: none;
+  }
+  .sign:hover { filter: brightness(1.08); }
+  .sign:active { box-shadow: 1px 1px 0 #0003; }
+  .sign::after {
+    content: ""; position: absolute; bottom: -50px; left: 50%; width: 8px; height: 50px;
+    background: #5a3e1b; transform: translateX(-50%);
+  }
+  .sign.a { left: 8%; animation: sway1 3s ease-in-out infinite; }
+  .sign.b { left: 40%; animation: sway2 2.4s ease-in-out infinite; }
+  .sign.c { left: 70%; animation: sway1 3.6s ease-in-out infinite reverse; }
+  @keyframes sway1 { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  @keyframes sway2 { 0%,100% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }
+
+  #door {
+    position: absolute; right: 3%; bottom: 0; width: 90px; height: 130px; z-index: 1; cursor: pointer;
+    background: repeating-linear-gradient(45deg, #ffd43b 0 10px, #222 10px 20px); border: 6px solid #222; border-radius: 45px 45px 0 0; text-shadow: 2px 2px 0 #000;
+    display: flex; align-items: center; justify-content: center; font-size: 30px;
+  }
+  #door:hover { filter: brightness(1.1); }
+  #doorLabel {
+    position: absolute; right: 2%; bottom: 150px; z-index: 2; font-weight: bold; color: #fff;
+    background: #e5484d; padding: 4px 10px; border-radius: 8px; font-size: 13px;
+    animation: blink .8s steps(2) infinite; pointer-events: none;
+  }
+  @keyframes blink { 50% { opacity: .2; } }
+
+  #hero { position: absolute; bottom: 0; left: 0; width: 90px; height: 120px; z-index: 3; cursor: pointer; }
+  #dir { width: 100%; height: 100%; transition: transform .2s; }
+  #dir.flip { transform: scaleX(-1); }
+  #dir .body { width: 100%; height: 100%; transform-origin: bottom center; animation: breathe 1.6s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.04) translateY(-2px); } }
+  #hero.walking .body { animation: bob .35s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
+  #hero.spin { animation: spinAll .9s linear infinite; }
+  @keyframes spinAll { to { transform: rotate(360deg); } }
+  #hero.jump { transition: bottom .3s ease-out; }
+  #hero.happy .body { animation: hop .5s ease-in-out infinite; }
+  @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+
+  /* membros: giram em torno do ombro/quadril */
+  .limb { transform-box: view-box; }
+  .legL { transform-origin: 40px 90px; }
+  .legR { transform-origin: 50px 90px; }
+  .armL { transform-origin: 33px 64px; }
+  .armR { transform-origin: 57px 64px; }
+  #hero.walking .legL { animation: legSwing .35s ease-in-out infinite alternate; }
+  #hero.walking .legR { animation: legSwing .35s ease-in-out infinite alternate-reverse; }
+  #hero.walking .armL { animation: armSwing .35s ease-in-out infinite alternate-reverse; }
+  #hero.walking .armR { animation: armSwing .35s ease-in-out infinite alternate; }
+  #hero:not(.walking) .armL { animation: idleArm 2s ease-in-out infinite alternate; }
+  #hero:not(.walking) .armR { animation: idleArm 2s ease-in-out infinite alternate-reverse; }
+  #hero.wave .armR { animation: wave .4s ease-in-out infinite alternate; }
+  @keyframes legSwing { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+  @keyframes armSwing { from { transform: rotate(-30deg); } to { transform: rotate(30deg); } }
+  @keyframes idleArm { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+  @keyframes wave { from { transform: rotate(-35deg); } to { transform: rotate(35deg); } }
+
+  .eye { transform-box: fill-box; transform-origin: center; animation: blinkEye 4s infinite; }
+  @keyframes blinkEye { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+  #hero.surprised .eye { transform: scale(1.3); animation: none; }
+
+  .bubble {
+    position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); z-index: 6;
+    background: #fff; border: 3px solid #333; border-radius: 16px; padding: 4px 10px;
+    font-size: 20px; font-weight: bold; white-space: nowrap; animation: pop .4s ease-out;
+  }
+  .bubble::after {
+    content: ""; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+    border: 8px solid transparent; border-top-color: #333;
+  }
+  @keyframes pop { from { transform: translateX(-50%) scale(0); } to { transform: translateX(-50%) scale(1); } }
+
+  .heart {
+    position: absolute; font-size: 20px; pointer-events: none; z-index: 7;
+    animation: float 1s ease-out forwards;
+  }
+  @keyframes float { to { transform: translate(var(--dx), -70px); opacity: 0; } }
+
+  .dust {
+    position: absolute; width: 10px; height: 10px; background: #fff9; border-radius: 50%;
+    animation: puff .6s ease-out forwards; pointer-events: none; z-index: 2;
+  }
+  @keyframes puff { to { transform: translate(var(--dx), -20px) scale(2.5); opacity: 0; } }
+
+  #panel { position: absolute; top: 100px; left: 16px; z-index: 5; display: flex; flex-direction: column; gap: 10px; }
+  .card {
+    background: #fff; border: 4px solid #3b2a6b; border-radius: 12px; padding: 8px 12px;
+    color: #3b2a6b; font-weight: bold; box-shadow: 4px 4px 0 #0003;
+  }
+  #compass {
+    position: absolute; top: 100px; right: 16px; width: 100px; height: 100px; z-index: 5;
+    border: 6px solid #3b2a6b; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .needle {
+    width: 6px; height: 74px; background: linear-gradient(#e5484d 50%, #333 50%);
+    border-radius: 3px; animation: spinNeedle 1.3s linear infinite;
+  }
+  @keyframes spinNeedle { to { transform: rotate(-720deg); } }
+
+  #msg {
+    position: absolute; bottom: 6%; width: 100%; text-align: center; z-index: 5;
+    font-size: clamp(16px, 2.4vw, 22px); font-weight: bold; color: #3b2a6b;
+    text-shadow: 2px 2px 0 #fff; min-height: 30px; padding: 0 20px;
+  }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<div id="ground"></div>
+<h1>404 · Página não encontrada</h1>
+<div id="envName"></div>
+
+<div id="panel">
+  <div class="card">Voltas perdidas: <span id="count">0</span></div>
+  <div class="card">Abraços dados: <span id="hugs">0</span></div>
+</div>
+<div id="compass"><div class="needle"></div></div>
+
+<div id="world">
+  <div class="sign a" id="signA" data-side="left"></div>
+  <div class="sign b" id="signB" data-side="up"></div>
+  <div class="sign c" id="signC" data-side="right"></div>
+  <div id="door" title="Voltar ao início" style="font-weight:bold;color:#fff;font-size:22px;">404</div>
+  <div id="doorLabel">INÍCIO</div>
+  <div id="hero">
+    <div class="dir" id="dir"></div>
+  </div>
+</div>
+
+<div id="msg">Estou procurando o destino...</div>
+
+<script>
+  const ENVS = [
+    { name: 'Cidade', sky: 'linear-gradient(#ffb88c,#ffd6a5 60%)', ground: '#6b6b78', items: ['🏢','🌳','🚕','🏬','🚦'], signs: ['⬅️ CENTRO','🔀 TROCAR','➡️ SAÍDA'] },
+    { name: 'Floresta', sky: 'linear-gradient(#a8e6cf,#dcedc1 60%)', ground: '#3e8e41', items: ['🌲','🍄','🌳','🦋','🌸'], signs: ['⬅️ TRILHA','🔀 TROCAR','➡️ RIO'] },
+    { name: 'Deserto', sky: 'linear-gradient(#ffd98e,#ffb347 60%)', ground: '#e0b070', items: ['🌵','🐪','🪨','🦂','☀️'], signs: ['⬅️ OÁSIS?','🔀 TROCAR','➡️ OÁSIS!'] },
+    { name: 'Neve', sky: 'linear-gradient(#cfe8ff,#ffffff 65%)', ground: '#f4fbff', items: ['⛄','🌲','❄️','🏔️','⛷️'], signs: ['⬅️ IGLU','🔀 TROCAR','➡️ CHALÉ'] },
+    { name: 'Espaço', sky: 'linear-gradient(#0b0f2e,#2a1a5e)', ground: '#4a4a5a', items: ['⭐','🪐','🛸','☄️','👽'], signs: ['⬅️ NAVE','🔀 TROCAR','➡️ ESTAÇÃO'] },
+    { name: 'Praia', sky: 'linear-gradient(#7fdcff,#c8f3ff 60%)', ground: '#f2d28b', items: ['🌴','🐚','🦀','⛵','🏖️'], signs: ['⬅️ MAR','🔀 TROCAR','➡️ BAR DO COCO'] }
+  ];
+  const MOUTHS = {
+    happy: 'M37 42 Q45 52 53 42',
+    sad: 'M37 47 Q45 38 53 47',
+    surprised: 'M42 40 a3 4 0 1 0 6 0 a3 4 0 1 0 -6 0',
+    confused: 'M37 44 Q41 39 45 44 T53 44',
+    excited: 'M36 41 Q45 56 54 41 Z'
+  };
+  const LINES = {
+    walk: ['Estou procurando o destino...', 'Esse caminho parece familiar!', 'Oi, árvore! Você sabe onde fica a saída?', 'Acho que já passei por aqui...'],
+    bounce: ['Ops! Parede chata!', 'Ei, quem pôs isso aqui?!', 'Tudo bem, eu sou teimoso!'],
+    confused: ['A placa aponta pros dois lados... que confuso!', 'Tá tudo girando, mas eu sigo firme!'],
+    jump: ['Vou pular pra ver melhor!', 'Hmm, só mais placas...'],
+    click: ['Ei! Que carinho! Obrigado!', 'Você é um amigo de verdade!', 'Gostei da roupa nova!']
+  };
+  const BUBBLES = ['❓','🤔','😵','💫','❗','🌀'];
+  const SKIN = ['#ffd8a8','#f1c27d','#c68642','#8d5524'];
+  const HAIR = ['#3b2a1a','#f5d36b','#b04a1f','#222222','#7b3fa0','#e8e8e8'];
+  const SHIRTS = ['#4dabf7','#ff6b6b','#51cf66','#ffa94d','#b197fc','#ffffff','#20c997'];
+  const PANTS = ['#3b5b8c','#333a4a','#8d6e4b','#5a5a5a'];
+  const DRESSES = ['#f06595','#ffd43b','#74c0fc','#63e6be','#9775fa'];
+
+  let lastEnv = -1;
+  let envIndex = pickEnv();
+  let decos = [];
+  let scroll = 0, scrollAnim = null;
+  let x = 0, dir = 1, speed = 2.2, lost = 0, hugs = 0, busy = false, alive = true, timers = [], raf = null;
+  let look = {};
+  let mouth = null;
+  const hero = document.getElementById('hero');
+  const heroDir = document.getElementById('dir');
+  const world = document.getElementById('world');
+  const msg = document.getElementById('msg');
+
+  function pickEnv() {
+    let i;
+    do { i = Math.floor(Math.random() * ENVS.length); } while (ENVS.length > 1 && i === lastEnv);
+    lastEnv = i;
+    return i;
+  }
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+  function later(fn, ms) { const t = setTimeout(() => alive && fn(), ms); timers.push(t); return t; }
+  function clearAll() {
+    timers.forEach(clearTimeout); timers = [];
+    if (raf) cancelAnimationFrame(raf);
+    if (scrollAnim) cancelAnimationFrame(scrollAnim);
+  }
+  function restartLoop() { later(loop, 2500); }
+
+  // ---------- personagem ----------
+  function newLook(keepGender) {
+    if (!keepGender) look.female = Math.random() < 0.5;
+    look.skin = pick(SKIN);
+    look.hair = pick(HAIR);
+    look.shirt = pick(SHIRTS);
+    look.pants = pick(PANTS);
+    look.dress = pick(DRESSES);
+    look.hat = Math.random() < 0.5;
+    renderHero();
+  }
+
+  function heroSVG(l) {
+    const hairBack = l.female
+      ? `<path d="M21 30 Q20 2 45 3 Q70 2 69 30 L73 76 Q45 84 17 76 Z" fill="${l.hair}" stroke="#333" stroke-width="3"/>`
+      : '';
+    const hairFront = l.female
+      ? `<path d="M22 26 Q30 8 45 8 Q62 8 68 26 Q55 16 45 17 Q32 16 22 26 Z" fill="${l.hair}" stroke="#333" stroke-width="2"/>`
+      : `<path d="M22 24 Q24 6 45 6 Q66 6 68 24 Q56 14 45 15 Q34 14 22 24 Z" fill="${l.hair}" stroke="#333" stroke-width="2"/>`;
+    const hat = l.hat
+      ? `<path d="M20 22 Q45 -4 70 22 Z" fill="#c98b4a" stroke="#333" stroke-width="3"/>
+         <rect x="18" y="20" width="54" height="7" rx="3" fill="#8a5a2b" stroke="#333" stroke-width="2"/>`
+      : '';
+    const bow = (l.female && !l.hat)
+      ? `<circle cx="66" cy="14" r="5" fill="#e5484d" stroke="#333" stroke-width="2"/>`
+      : '';
+    const legColor = l.female ? l.skin : l.pants;
+    const legL = `<g class="limb legL">
+        <line x1="40" y1="90" x2="32" y2="110" stroke="#333" stroke-width="7" stroke-linecap="round"/>
+        <line x1="40" y1="90" x2="32" y2="110" stroke="${legColor}" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="29" cy="111" rx="7" ry="3.5" fill="#333"/>
+      </g>`;
+    const legR = `<g class="limb legR">
+        <line x1="50" y1="90" x2="58" y2="110" stroke="#333" stroke-width="7" stroke-linecap="round"/>
+        <line x1="50" y1="90" x2="58" y2="110" stroke="${legColor}" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="61" cy="111" rx="7" ry="3.5" fill="#333"/>
+      </g>`;
+    const armL = `<g class="limb armL">
+        <line x1="33" y1="64" x2="14" y2="82" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+        <line x1="33" y1="64" x2="14" y2="82" stroke="${l.shirt}" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="14" cy="83" r="4" fill="${l.skin}" stroke="#333" stroke-width="1.5"/>
+      </g>`;
+    const armR = `<g class="limb armR">
+        <line x1="57" y1="64" x2="76" y2="82" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+        <line x1="57" y1="64" x2="76" y2="82" stroke="${l.shirt}" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="76" cy="83" r="4" fill="${l.skin}" stroke="#333" stroke-width="1.5"/>
+      </g>`;
+    const dress = l.female
+      ? `<path d="M31 80 L59 80 L67 108 L23 108 Z" fill="${l.dress}" stroke="#333" stroke-width="3" stroke-linejoin="round"/>`
+      : '';
+    const torso = `<rect x="33" y="54" width="24" height="36" rx="9" fill="${l.shirt}" stroke="#333" stroke-width="3"/>
+      <rect x="40" y="58" width="10" height="8" rx="2" fill="#ffe066" stroke="#333" stroke-width="2"/>`;
+    return `<svg viewBox="0 0 90 120" width="90" height="120">
+      <ellipse cx="45" cy="115" rx="24" ry="5" fill="#0003"/>
+      ${hairBack}
+      ${legL}${legR}
+      ${torso}
+      ${dress}
+      ${armL}${armR}
+      <circle cx="45" cy="30" r="24" fill="${l.skin}" stroke="#333" stroke-width="3"/>
+      ${hairFront}
+      ${hat}
+      ${bow}
+      <ellipse class="eye" cx="36" cy="32" rx="5" ry="6.5" fill="#333"/>
+      <ellipse class="eye" cx="54" cy="32" rx="5" ry="6.5" fill="#333"/>
+      <circle cx="38" cy="29.5" r="2" fill="#fff"/>
+      <circle cx="56" cy="29.5" r="2" fill="#fff"/>
+      <ellipse cx="28" cy="40" rx="5" ry="3" fill="#ff8fa3" opacity=".7"/>
+      <ellipse cx="62" cy="40" rx="5" ry="3" fill="#ff8fa3" opacity=".7"/>
+      <path id="mouth" d="M37 42 Q45 50 53 42" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  function renderHero() {
+    heroDir.innerHTML = `<div class="body">${heroSVG(look)}</div>`;
+    mouth = document.getElementById('mouth');
+  }
+
+  // ---------- cenário ----------
+  function applyEnv() {
+    const env = ENVS[envIndex];
+    document.getElementById('sky').style.background = env.sky;
+    document.getElementById('ground').style.background = env.ground;
+    document.getElementById('envName').textContent = 'Cenário: ' + env.name;
+    decos.forEach(d => d.el.remove());
+    decos = [];
+    for (let i = 0; i < 12; i++) {
+      const el = document.createElement('div');
+      el.className = 'deco';
+      el.textContent = pick(env.items);
+      el.style.bottom = Math.random() * 20 + '%';
+      el.style.fontSize = (34 + Math.random() * 26) + 'px';
+      el.style.animationDelay = (-Math.random() * 4) + 's';
+      world.insertBefore(el, world.firstChild);
+      decos.push({ el, f: Math.random() });
+    }
+    const s = env.signs;
+    document.getElementById('signA').textContent = s[0];
+    document.getElementById('signB').textContent = s[1];
+    document.getElementById('signC').textContent = s[2];
+    renderDecos();
+  }
+
+  function renderDecos() {
+    const W = world.clientWidth || 600;
+    for (const d of decos) {
+      const px = (((d.f * W + scroll) % W) + W) % W;
+      d.el.style.left = px + 'px';
+    }
+  }
+
+  function scrollScenery(delta, done) {
+    if (scrollAnim) cancelAnimationFrame(scrollAnim);
+    const start = scroll, t0 = performance.now(), dur = 900;
+    const tick = (now) => {
+      const k = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3);
+      scroll = start + delta * e;
+      renderDecos();
+      if (k < 1) scrollAnim = requestAnimationFrame(tick);
+      else { scrollAnim = null; done && done(); }
+    };
+    scrollAnim = requestAnimationFrame(tick);
+  }
+
+  // ---------- humor e fala ----------
+  function setMood(m) {
+    if (!mouth) return;
+    mouth.setAttribute('d', MOUTHS[m]);
+    mouth.setAttribute('fill', m === 'excited' ? '#333' : 'none');
+    hero.classList.toggle('surprised', m === 'surprised');
+  }
+  function say(text, m = 'happy') { msg.textContent = text; setMood(m); }
+  function setPos() { hero.style.left = x + 'px'; }
+  function maxX() { return world.clientWidth - 90; }
+  function setFacing() { heroDir.classList.toggle('flip', dir < 0); }
+
+  function bubble(symbol) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = symbol;
+    hero.appendChild(b);
+    later(() => b.remove(), 1100);
+  }
+  function hearts() {
+    for (let i = 0; i < 4; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = '💖';
+      h.style.left = (x + 20 + Math.random() * 50) + 'px';
+      h.style.bottom = '90px';
+      h.style.setProperty('--dx', (i - 2) * 18 + 'px');
+      world.appendChild(h);
+      later(() => h.remove(), 1000);
+    }
+  }
+  function dust() {
+    for (let i = 0; i < 3; i++) {
+      const d = document.createElement('div');
+      d.className = 'dust';
+      d.style.left = (x + 20 + i * 15) + 'px';
+      d.style.bottom = '0px';
+      d.style.setProperty('--dx', (i - 1) * 25 + 'px');
+      world.appendChild(d);
+      later(() => d.remove(), 700);
+    }
+  }
+
+  // ---------- movimento ----------
+  function walk() {
+    if (!alive || busy) return;
+    hero.classList.add('walking');
+    setMood('happy');
+    const step = () => {
+      if (!alive || busy) { hero.classList.remove('walking'); return; }
+      x += speed * dir;
+      if (x <= 0 || x >= maxX()) {
+        x = Math.max(0, Math.min(x, maxX()));
+        setPos();
+        hero.classList.remove('walking');
+        return bounce();
+      }
+      setPos();
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  function moveTo(tx, done) {
+    if (raf) cancelAnimationFrame(raf);
+    dir = tx < x ? -1 : 1; setFacing();
+    hero.classList.add('walking');
+    const step = () => {
+      const d = tx - x;
+      if (Math.abs(d) <= speed * 1.8) {
+        x = tx; setPos();
+        hero.classList.remove('walking');
+        return done && done();
+      }
+      x += Math.sign(d) * speed * 1.8;
+      setPos();
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  function bounce() {
+    busy = true;
+    dir *= -1; setFacing(); dust();
+    lost++; document.getElementById('count').textContent = lost;
+    setMood('surprised');
+    bubble(pick(BUBBLES));
+    say(pick(LINES.bounce), 'surprised');
+    later(() => { busy = false; setMood('happy'); walk(); }, 1000);
+  }
+
+  function confused() {
+    busy = true;
+    hero.classList.add('spin');
+    say(pick(LINES.confused), 'confused');
+    bubble('💫');
+    later(() => {
+      hero.classList.remove('spin');
+      setMood('confused');
+      bubble('🤔');
+      say('Essa placa aponta pros dois lados... deixa eu ver de novo', 'confused');
+      later(() => {
+        dir = Math.random() < 0.5 ? -1 : 1; setFacing();
+        busy = false; setMood('happy'); walk();
+      }, 1600);
+    }, 1100);
+  }
+
+  function jump() {
+    busy = true;
+    say(pick(LINES.jump), 'excited');
+    hero.classList.add('jump');
+    hero.style.bottom = '70px';
+    bubble('❗');
+    later(() => {
+      hero.style.bottom = '0px';
+      later(() => { hero.classList.remove('jump'); say('Não vejo nada... só mais placas.', 'sad'); busy = false; walk(); }, 300);
+    }, 600);
+  }
+
+  function dance() {
+    busy = true;
+    hero.classList.add('happy', 'wave');
+    say('Acho que eu achei! Não, espera... era outra placa. 💃', 'excited');
+    bubble('🎶');
+    later(() => {
+      hero.classList.remove('happy', 'wave');
+      busy = false; setMood('happy'); walk();
+    }, 2200);
+  }
+
+  function loop() {
+    if (!alive) return;
+    if (!busy) {
+      const r = Math.random();
+      if (r < 0.3) confused();
+      else if (r < 0.5) jump();
+      else if (r < 0.65) dance();
+      else walk();
+    }
+    later(loop, 3800 + Math.random() * 2000);
+  }
+
+  // ---------- interações ----------
+  function signClick(side) {
+    clearAll();
+    busy = true;
+    if (side === 'up') {
+      envIndex = pickEnv();
+      applyEnv();
+      say('Mudei de lugar! Será que é por aqui?', 'surprised');
+      later(() => { busy = false; setMood('happy'); walk(); restartLoop(); }, 1400);
+      return;
+    }
+    dir = side === 'left' ? -1 : 1; setFacing();
+    hero.classList.add('walking');
+    say(side === 'left' ? 'Vou pra esquerda... acho!' : 'Agora pra direita!', 'happy');
+    scrollScenery(side === 'left' ? 300 : -300, () => {
+      hero.classList.remove('walking');
+      later(() => { busy = false; setMood('happy'); walk(); restartLoop(); }, 500);
+    });
+  }
+
+  document.getElementById('signA').onclick = () => signClick('left');
+  document.getElementById('signB').onclick = () => signClick('up');
+  document.getElementById('signC').onclick = () => signClick('right');
+
+  document.getElementById('door').onclick = () => {
+    clearAll();
+    busy = true;
+    hero.classList.remove('spin', 'happy', 'wave');
+    say('Voltando pro início...', 'happy');
+    moveTo(0, () => {
+      dir = 1; setFacing();
+      lost = 0; document.getElementById('count').textContent = '0';
+      say('Cheguei em casa! Será que essa é a porta certa?', 'confused');
+      bubble('🏠');
+      later(() => { busy = false; setMood('happy'); walk(); restartLoop(); }, 1500);
+    });
+  };
+
+  hero.addEventListener('click', () => {
+    hugs++; document.getElementById('hugs').textContent = hugs;
+    hearts();
+    clearAll();
+    busy = true;
+    hero.classList.add('happy');
+    newLook(true);
+    say(pick(LINES.click), 'excited');
+    later(() => {
+      hero.classList.remove('happy');
+      busy = false; setMood('happy'); walk(); restartLoop();
+    }, 1600);
+  });
+
+  window.addEventListener('resize', () => {
+    if (x > maxX()) { x = maxX(); setPos(); }
+    renderDecos();
+  });
+  $('#door').click(e=>{
+    e.stopPropagation();
+    window.location.href = '/';
+  });
+
+  // ---------- início ----------
+  newLook(false);
+  applyEnv();
+  setPos();
+  later(() => { say(pick(LINES.walk), 'happy'); loop(); walk(); }, 600);
+</script>
+</body>
+</html>

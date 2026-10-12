@@ -1,0 +1,25 @@
+<div id="content">
+</div>
+
+<script>
+    const paginas = {
+        prefab: {path: "/admin/prefab", title: "Prefab", icon: "cog", description: "Gerenciador de Prefab", innerBody: false},
+        users: {path: "/admin/users", title: "Users", icon: "users", description: "Gerenciador de Usuários", innerBody: true},
+    }
+    $(document).ready(() => {
+       for(const [key, value] of Object.entries(paginas)) {
+           const $a = $('<a></a>')
+               .attr('href', '#')
+               .text(value.title)
+               .on('click', (e) => {
+                   e.preventDefault();
+                   if (value.innerBody) {
+                       loadContent(value.path, $a);
+                   } else {
+                       window.open(value.path, '_blank');
+                   }
+               });
+           $('#content').append($a);
+       } 
+    });
+</script>

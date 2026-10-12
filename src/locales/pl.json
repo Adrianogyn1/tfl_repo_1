@@ -1,0 +1,163 @@
+{
+    "common": {
+        "home": "Strona główna",
+        "cancel": "Anuluj",
+        "close": "Zamknij",
+        "back": "Wstecz",
+        "required": "Pole wymagane",
+        "showPassword": "Pokaż hasło",
+        "hidePassword": "Ukryj hasło",
+        "emailRequired": "Adres e-mail jest wymagany",
+        "emailInvalid": "Wprowadź prawidłowy adres e-mail",
+        "passwordRequired": "Hasło jest wymagane",
+        "passwordTooShort": "Hasło musi mieć co najmniej {{min}} znaków",
+        "passwordTooWeak": "Hasło musi zawierać litery i cyfry",
+        "passwordMismatch": "Hasła nie są identyczne",
+        "tooManyAttempts": "Zbyt wiele prób. Spróbuj ponownie za {{minutes}} minut",
+        "serverError": "Błąd serwera. Spróbuj ponownie później",
+        "unknownError": "Nieznany błąd. Spróbuj ponownie później",
+        "errors": {
+            "tokenInvalid": "Ten link jest nieprawidłowy",
+            "tokenExpired": "Ten link wygasł. Poproś o nowy",
+            "invalidCredentials": "Nieprawidłowe dane logowania",
+            "emailNotFound": "Nie znaleziono konta z tym adresem e-mail",
+            "unauthorized": "Nie masz uprawnień do wykonania tej operacji!"
+        },
+        "success": "Sukces!"
+    },
+    "home": {
+        "nav": {
+            "play": "Graj",
+            "explore": "Odkrywaj",
+            "support": "Wsparcie",
+            "login": "Zaloguj się"
+        },
+        "hero": {
+            "title": "Napisz swoją historię. Doświadcz nowego.",
+            "subtitle": "W The Fantasy Life najważniejsza jest wolność. Otwarty świat dla tych, którzy chcą być częścią autentycznej społeczności i budować prawdziwe więzi."
+        },
+        "gallery": {
+            "tag": "Galeria",
+            "title": "Odkrywaj Świat",
+            "scroll": "Przewiń w bok, aby zobaczyć więcej →"
+        },
+        "vibe": {
+            "title": "Wolność bez ograniczeń.",
+            "desc": "Stworzyliśmy przestrzeń, w której cyfrowy świat łączy się z komfortem. Tutaj priorytetem są Twoje doświadczenia i sposób, w jaki wchodzisz w interakcje z otoczeniem.",
+            "item1Title": "Dynamiczne Środowisko:",
+            "item1Desc": "Wydarzenia tworzone przez społeczność i dla społeczności.",
+            "item2Title": "Doświadcz Wszystkiego:",
+            "item2Desc": "Od całkowitego relaksu po budowanie imperiów – wybór należy do Ciebie.",
+            "cardTitle": "Przyjdź i sprawdź",
+            "cardDesc": "Dołącz do graczy, którzy już kształtują ten nowy świat. Zapewnij sobie dostęp.",
+            "cardButton": "Dołącz do naszej społeczności"
+        },
+        "support": {
+            "tag": "Wesprzyj nas",
+            "title": "Utrzymaj Marzenie Przy Życiu",
+            "desc": "The Fantasy Life to niezależny projekt. Każde wsparcie pomaga utrzymać stabilność naszych serwerów i pozwala zespołowi skupić się na tworzeniu nowych doświadczeń.",
+            "coffeeTitle": "Kawa",
+            "coffeeDesc": "Symboliczne wsparcie dające nam dodatkową energię. Wesprzyj nas!"
+        },
+        "footer": {
+            "slogan": "Gdzie Twoja wyobraźnia nabiera cyfrowego kształtu.",
+            "rights": "Wszelkie prawa zastrzeżone."
+        },
+        "modal": {
+            "downloadTitle": "Pobierz The Fantasy Life",
+            "donateTitle": "Wesprzyj Projekt",
+            "donateDesc": "Dziękujemy za pomoc w utrzymaniu The Fantasy Life!",
+            "pixKey": "Klucz Pix / Kopiuj i wklej",
+            "pixImage": "Kod QR Pix",
+            "copy": "Kopiuj",
+            "copied": "Skopiowano!"
+        }
+    },
+    "login": {
+        "title": "Zaloguj się na swoje konto",
+        "subtitle": "Wprowadź swoje dane uwierzytelniające, aby uzyskać dostęp",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "twojemail@przyklad.com",
+        "passwordLabel": "Hasło",
+        "passwordPlaceholder": "Wprowadź hasło",
+        "rememberMe": "Zapamiętaj mnie",
+        "forgotPassword": "Nie pamiętasz hasła?",
+        "submit": "Zaloguj się",
+        "submitting": "Logowanie...",
+        "noAccount": "Nie masz jeszcze konta?",
+        "signUp": "Utwórz konto",
+        "errors": {
+            "alreadyLoggedIn": "Użytkownik jest już zalogowany.",
+            "invalidCredentials": "Nieprawidłowy e-mail lub hasło"
+        },
+        "success": "Zalogowano pomyślnie!"
+    },
+    "register": {
+        "title": "Utwórz konto",
+        "subtitle": "Wypełnij poniższe dane, aby rozpocząć",
+        "nameLabel": "Imię i nazwisko",
+        "namePlaceholder": "Wprowadź imię i nazwisko",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "twojemail@przyklad.com",
+        "passwordLabel": "Hasło",
+        "passwordPlaceholder": "Utwórz hasło",
+        "confirmPasswordLabel": "Potwierdź hasło",
+        "confirmPasswordPlaceholder": "Wprowadź hasło ponownie",
+        "passwordHint": "Użyj co najmniej {{min}} znaków",
+        "terms": "Przeczytałem(-am) i akceptuję <terms>Regulamin</terms> oraz <privacy>Politykę Prywatności</privacy>",
+        "submit": "Utwórz konto",
+        "submitting": "Tworzenie konta...",
+        "haveAccount": "Masz już konto?",
+        "signIn": "Zaloguj się",
+        "errors": {
+            "registered": "Konto z tym adresem e-mail lub loginem już istnieje",
+            "ageRestriction": "Musisz być pełnoletni(-a), aby utworzyć konto",
+            "loginRequired": "Login jest wymagany",
+            "nameRequired": "Imię i nazwisko jest wymagane",
+            "nameTooShort": "Imię musi mieć co najmniej {{min}} znaków",
+            "emailAlreadyRegistered": "Ten adres e-mail jest już zarejestrowany",
+            "termsRequired": "Musisz zaakceptować regulamin"
+        },
+        "success": "Konto zostało pomyślnie utworzone!"
+    },
+    "forgotPassword": {
+        "title": "Zapomniałeś(-aś) hasła?",
+        "subtitle": "Wpisz swój adres e-mail, a wyślemy Ci link do zresetowania hasła",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "twojemail@przyklad.com",
+        "submit": "Wyślij link do resetowania",
+        "submitting": "Wysyłanie...",
+        "backToLogin": "Powrót do logowania",
+        "errors": {
+            "emailNotFound": "Nie znaleziono konta z tym adresem e-mail"
+        },
+        "success": "Jeśli e-mail jest zarejestrowany, wkrótce otrzymasz link do resetowania hasła"
+    },
+    "resetPassword": {
+        "title": "Zresetuj hasło",
+        "subtitle": "Wprowadź nowe hasło do swojego konta",
+        "newPasswordLabel": "Nowe hasło",
+        "newPasswordPlaceholder": "Wprowadź nowe hasło",
+        "confirmPasswordLabel": "Potwierdź nowe hasło",
+        "confirmPasswordPlaceholder": "Wprowadź nowe hasło ponownie",
+        "submit": "Zresetuj hasło",
+        "submitting": "Resetowanie...",
+        "backToLogin": "Powrót do logowania",
+        "errors": {
+            "tokenInvalid": "Ten link jest nieprawidłowy",
+            "tokenExpired": "Ten link wygasł. Poproś o nowy"
+        },
+        "success": "Hasło zostało pomyślnie zresetowane!"
+    },
+    "verifyEmail": {
+        "title": "Zweryfikuj swój adres e-mail",
+        "subtitle": "Wysłaliśmy link potwierdzający na adres {{email}}",
+        "resend": "Wyślij e-mail ponownie",
+        "resendCooldown": "Wyślij ponownie za {{seconds}}s",
+        "success": "Adres e-mail został pomyślnie zweryfikowany!",
+        "errors": {
+            "tokenInvalid": "Ten link potwierdzający jest nieprawidłowy",
+            "tokenExpired": "Ten link wygasł. Poproś o nową wiadomość e-mail"
+        }
+    }
+}

@@ -1,0 +1,112 @@
+<div>
+    <h5 class="text-xl font-bold mb-4">Servers</h5>
+        <div>
+        <button class="bg-blue-800 space-between">+</button>
+    </div>
+    <div class="">
+        <label>Pesquisar<input type="text" id="search"
+                class="w-full p-2 rounded bg-[#18191a] border border-[#3a3b3c] text-white focus:outline-none focus:border-[#00adb5]"></label>
+    </div>
+    <table class="w-full text-left text-sm">
+        <thead class="text-slate-400 border-b border-slate-700">
+            <tr>
+                <th class="p-2">ID</th>
+                <th class="p-2">Nome</th>
+                <th class="p-2">Players</th>
+                <th class="p-2">action</th>
+            </tr>
+        </thead>
+        <tbody id="users-body"></tbody>
+    </table>
+</div>
+
+<div id="pagination" class="flex gap-2 mt-4"></div>
+
+<script>
+    (() =>
+    {
+        const PAGE_SIZE = 20;
+        let page = 1;
+        
+        $('#search').on('input', filterData);
+
+        function getData()
+        {
+            filterData();
+        }
+
+        function renderData(result)
+        {
+            var user = result.data;
+            var modal = $('#modal');
+            modal.find('.modal-header').text('Editar usuário');
+            modal.find('.modal-body').html(`
+            <div class="mb-4">
+                <label for="name">Nome</label>
+                <input type="text" id="name" value="${user.name ?? ''}" class="w-full p-2 rounded bg-[#18191a] border border-[#3a3b3c] text-white focus:outline-none focus:border-[#00adb5]">
+            </div>
+            <div class="mb-4">
+                <label for="email">Email</label>
+                <input type="email" id="email" value="${user.email ?? ''}" class="w-full p-2 rounded bg-[#18191a] border border-[#3a3b3c] text-white focus:outline-none focus:border-[#00adb5]">
+            </div>    
+            <div class="mb-4">
+                <label for="password">Senha</label>
+                <input type="password" id="password" class="w-full p-2 rounded bg-[#18191a] border border-[#3a3b3c] text-white focus:outline-none focus:border-[#00adb5]">
+            </div>
+        `);
+            modal.find('.modal-footer').html(`
+            <button type="button" class="px-4 py-1.5 rounded-lg bg-[#00adb5] hover:bg-[#008c94] text-white font-bold transition-colors">Salvar</button>
+            <button type="button" class="px-4 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition-colors">Cancelar</button>
+        `);
+            modal.modal('show');
+        }
+
+       async function filterData()
+        {
+            const q = `[name,≃,${$('#search').val()}]`;
+            const result = await ListServers({ q, page, limit: PAGE_SIZE });
+            if(!result){
+                $('#users-body').html('<tr><td colspan="3" class="p-2">Erro ao carregar servidores.</td></tr>');
+                return;
+            }
+            renderData(result);
+        }
+
+        function renderData(result)
+        {
+            console.log('salas carregados:', result);
+            const data = result.data;
+            // ajuste conforme o formato real da resposta: array ou { users, total }
+            const rooms = Array.isArray(data) ? data : [];
+            const total = Array.isArray(data) ? data.count : 0;
+            const isOnline = data.isOnline;
+
+            //criar um card e nao table
+            $('#users-body').html(rooms.map(u => `
+            <tr class="border-b border-slate-800">
+                <td class="p-2 ">${u.id ?? ''}</td>
+                <td class="p-2">${$('<div>').text(u.name ?? '').html()}</td>
+                <td class="p-2">${$('<div>').text(`${u.playersCount}/${u.maxPlayers}` ?? '').html()}</td>
+                    <td class="p-2">${u.id ? '<p class="px-3 py-1 rounded bg-slate-500"><i class="fa-solid fa-pen-to-square"></i></button>' : '<button class="px-3 py-1 rounded bg-slate-500">Criar</p>'}</td>
+            </tr>`).join(''));
+
+            renderPagination(total);
+        }
+
+        function renderPagination(total)
+        {
+            const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+            const $p = $('#pagination').empty();
+            for (let i = 1; i <= pages; i++)
+            {
+                $('<button type="button"></button>')
+                    .text(i)
+                    .addClass(`px-3 py-1 rounded ${i === page ? 'bg-slate-500' : 'bg-slate-700'}`)
+                    .on('click', () => { page = i; getData(); })
+                    .appendTo($p);
+            }
+        }
+
+        getData();
+    })();
+</script>
