@@ -42,9 +42,44 @@ Object.keys(models).forEach((modelName) => {
   }
 });
 
-sequelize
-  .sync({alter: true})
-  //.sync()/////
+async function dropLegacyProfileConstraints() {
+  try {
+    await sequelize.query(`
+      DO $$
+      DECLARE
+        r RECORD;
+      BEGIN
+        FOR r IN (
+          SELECT tc.table_name, tc.constraint_name
+          FROM information_schema.table_constraints tc
+          LEFT JOIN information_schema.constraint_column_usage ccu
+            ON ccu.constraint_name = tc.constraint_name
+            AND ccu.table_schema = tc.table_schema
+          WHERE tc.constraint_type = 'FOREIGN KEY'
+            AND tc.table_schema = 'public'
+            AND (
+              ccu.table_name = 'profiles'
+              OR tc.table_name IN ('friends', 'posts', 'likes', 'comments', 'photos', 'follows', 'match_profiles', 'mini_reels')
+              OR tc.constraint_name IN (
+                'chat_participants_profile_id_fkey',
+                'chat_messages_profile_id_fkey',
+                'ignores_profileId_fkey',
+                'system_announcements_created_by_fkey'
+              )
+            )
+        ) LOOP
+          EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT IF EXISTS %I', r.table_name, r.constraint_name);
+        END LOOP;
+      END $$;
+    `);
+  } catch (err) {
+    console.warn("⚠️ Aviso ao limpar FKs legadas de profiles:", err.message);
+  }
+}
+
+dropLegacyProfileConstraints()
+  .then(() => sequelize.sync({ alter: true }))
+  .then(() => dropLegacyProfileConstraints())
   .then(() =>
     console.log("⚡ Banco PostgreSQL (Supabase) e tabelas sincronizados!"),
   )

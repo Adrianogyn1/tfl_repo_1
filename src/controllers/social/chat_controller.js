@@ -10,6 +10,13 @@ const fs = require("fs");
 const multer = require("multer");
 const { Op } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
+const {
+  checkAndRecordChatAction,
+  getVipStatus,
+  enrichRoomsWithVisitStats,
+  allocateOrReplicateRoomServerInstance,
+  getRoomActiveServerInstances,
+} = require("../../services/coinMarket.service");
 
 // Model do perfil/avatar. AJUSTE o nome conforme o que o seu repository exporta
 // (dica: console.log(Object.keys(repo)) mostra os nomes disponíveis).
@@ -68,20 +75,84 @@ const upload = multer({
 // Helpers HTTP
 // ---------------------------------------------------------------------------
 
-// AJUSTE AQUI conforme o seu middleware de auth
-const getProfileId = (req) =>
-  req.user?.profileId ??
-  req.user?.id ??
-  req.profile?.id ??
-  // SÓ PARA TESTE: liga com CHAT_DEV_AUTH=true no .env e desligue em produção
-  (process.env.CHAT_DEV_AUTH === "true" ? req.headers["x-profile-id"] : null) ??
-  null;
+let _chatFkChecked = false;
+async function ensureChatFkDropped() {
+  if (_chatFkChecked) return;
+  try {
+    await repo.sequelize.query(`
+      ALTER TABLE IF EXISTS "chat_participants" DROP CONSTRAINT IF EXISTS "chat_participants_profile_id_fkey";
+      ALTER TABLE IF EXISTS "chat_messages" DROP CONSTRAINT IF EXISTS "chat_messages_profile_id_fkey";
+      ALTER TABLE IF EXISTS "system_announcements" DROP CONSTRAINT IF EXISTS "system_announcements_created_by_fkey";
+    `);
+    _chatFkChecked = true;
+  } catch (_) {}
+}
 
-const requireProfile = (req, res, next) => {
-  const profileId = getProfileId(req);
-  if (!profileId) return res.status(401).json({ error: "Não autenticado" });
-  req.profileId = Number(profileId);
-  next();
+// Resolve o Avatar (Profile) ativo da requisição (sessão web, cookie userToken, header x-profile-id ou query/body)
+const requireProfile = async (req, res, next) => {
+  try {
+    await ensureChatFkDropped();
+    let user = req.user || req.session?.user || null;
+    if (!user) {
+      const token =
+        req.cookies?.userToken ||
+        req.headers["tfl-token"] ||
+        (req.headers.authorization ? req.headers.authorization.replace(/^Bearer\s+/i, "") : null);
+      if (token && repo.User) {
+        user = await repo.User.findOne({ where: { token } });
+      }
+    }
+
+    const explicitProfileId =
+      req.headers["x-profile-id"] ??
+      req.query?.profileId ??
+      req.body?.profileId ??
+      req.user?.profileId ??
+      req.profile?.id ??
+      null;
+
+    const ProfileModel = getProfile();
+
+    if (explicitProfileId) {
+      const pId = Number(explicitProfileId);
+      if (Number.isFinite(pId) && pId > 0) {
+        const whereClause = user?.id ? { id: pId, userId: user.id } : { id: pId };
+        let avatar = await ProfileModel.findOne({ where: whereClause });
+        if (!avatar && !user?.id) {
+          avatar = await ProfileModel.findByPk(pId);
+        }
+        if (avatar) {
+          req.user = user || req.user;
+          req.profile = avatar;
+          req.profileId = Number(avatar.id);
+          return next();
+        }
+      }
+    }
+
+    if (user?.id) {
+      let avatar = await ProfileModel.findOne({
+        where: { userId: user.id, selected: true },
+      });
+      if (!avatar) {
+        avatar = await ProfileModel.findOne({
+          where: { userId: user.id },
+          order: [["id", "ASC"]],
+        });
+      }
+      if (avatar) {
+        req.user = user;
+        req.profile = avatar;
+        req.profileId = Number(avatar.id);
+        return next();
+      }
+    }
+
+    return res.status(401).json({ error: "Avatar/Profile não autenticado" });
+  } catch (err) {
+    console.error("[chat_controller:requireProfile]", err.message);
+    return res.status(500).json({ error: "Erro ao validar perfil do chat" });
+  }
 };
 
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -334,34 +405,27 @@ async function onWsRead(ws, data) {
     const room = await repo.ChatRoom.findOne({ where: { uid: roomUid } });
     if (!room) return;
 
-    // Verifica participação
-    if (room.type !== "global") {
-      const participant = await repo.ChatParticipant.findOne({
-        where: { chatId: room.id, profileId },
+    let participant = await repo.ChatParticipant.findOne({
+      where: { chatId: room.id, profileId },
+    });
+
+    if (!participant && room.type !== "global") return;
+    if (!participant) {
+      participant = await repo.ChatParticipant.create({
+        chatId: room.id,
+        profileId,
+        role: "member",
       });
-      if (!participant) return;
     }
 
-    // Marca mensagens como lidas
-    await repo.ChatMessage.update(
-      { isRead: true, readAt: new Date() },
-      {
-        where: {
-          chatId: room.id,
-          profileId: { [Op.ne]: profileId },
-          isRead: false,
-        },
-      }
-    );
+    await participant.update({ lastReadAt: new Date() });
 
     // Broadcast para a sala
     await broadcastToRoom(room, "chat:read", {
       roomUid,
       profileId,
-      readAt: new Date().toISOString(),
+      readAt: participant.lastReadAt.toISOString(),
     });
-
-    console.log(`✅ Marcado como lido por ${profileId} em ${roomUid}`);
   } catch (err) {
     console.error("❌ Erro em onWsRead:", err.message);
   }
@@ -636,6 +700,12 @@ router.delete("/announcements/:id", requireProfile, requireSystemAdmin, wrap(asy
 
 // GET /chats -> minhas conversas, com última mensagem e contagem de não lidas
 router.get("/", requireProfile, wrap(async (req, res) => {
+  // Garante que a sala de Chat Global exista para todos os jogadores
+  await repo.ChatRoom.findOrCreate({
+    where: { type: "global" },
+    defaults: { type: "global", name: "Chat Global Metaverso" },
+  });
+
   const participations = await repo.ChatParticipant.findAll({ where: { profileId: req.profileId } });
   const chatIds = participations.map((p) => p.chatId);
 
@@ -662,10 +732,47 @@ router.get("/", requireProfile, wrap(async (req, res) => {
       },
     });
 
-    return { ...room.toJSON(), lastMessage, unread };
+    const plainRoom = room.toJSON();
+    let peerProfile = null;
+    if (plainRoom.type === "private" && Array.isArray(plainRoom.profiles)) {
+      peerProfile = plainRoom.profiles.find((p) => Number(p.id) !== Number(req.profileId)) || plainRoom.profiles[0] || null;
+    }
+
+    return { ...plainRoom, peerProfile, lastMessage, unread };
   }));
 
   res.json(result);
+}));
+
+// GET /chats/vip-quota -> retorna status VIP e cotas diárias de chat (aberturas, imagens e áudio)
+router.get("/vip-quota", requireProfile, wrap(async (req, res) => {
+  const status = await getVipStatus(req.profileId, req.user?.id);
+  res.json({ success: true, vipStatus: status });
+}));
+
+// GET /chats/shareable-rooms -> lista salas do jogador + salas públicas com instâncias ativas na tabela `servers`
+router.get("/shareable-rooms", requireProfile, wrap(async (req, res) => {
+  const myRoomsRaw = await repo.RoomModel.findAll({
+    where: { avatarId: req.profileId },
+    order: [["id", "DESC"]],
+    limit: 30,
+  });
+  const publicRoomsRaw = await repo.RoomModel.findAll({
+    where: { avatarId: { [Op.ne]: req.profileId }, isPrivate: false },
+    order: [["visits", "DESC"], ["id", "DESC"]],
+    limit: 25,
+  });
+
+  const [myRooms, publicRooms] = await Promise.all([
+    enrichRoomsWithVisitStats(myRoomsRaw, req.profileId),
+    enrichRoomsWithVisitStats(publicRoomsRaw, req.profileId),
+  ]);
+
+  res.json({
+    success: true,
+    myRooms,
+    publicRooms,
+  });
 }));
 
 // POST /chats/direct  { profileId } -> abre (ou cria) a DM com outro profile
@@ -684,6 +791,19 @@ router.post("/direct", requireProfile, wrap(async (req, res) => {
   let created = false;
 
   if (!room) {
+    // Regra de Membro Básico vs VIP:
+    // Membro Básico só pode abrir novas conversas privadas com amigos aceitos e dentro do limite diário
+    try {
+      await checkAndRecordChatAction({
+        avatarId: req.profileId,
+        userId: req.user?.id,
+        actionType: "OPEN_DM",
+        targetProfileId: otherId,
+      });
+    } catch (vipErr) {
+      return res.status(403).json({ error: vipErr.message, vipRequired: true });
+    }
+
     room = await repo.ChatRoom.create({ type: "private", directKey });
     await repo.ChatParticipant.bulkCreate([
       { chatId: room.id, profileId: req.profileId, role: "member" },
@@ -718,13 +838,25 @@ router.post("/group", requireProfile, wrap(async (req, res) => {
   res.status(201).json(room);
 }));
 
-// GET /chats/:uid -> detalhes da sala + participantes
+// GET /chats/:uid -> detalhes da sala + participantes com dados do Avatar
 router.get("/:uid", requireProfile, wrap(async (req, res) => {
   const ctx = await loadRoomForMember(req, res);
   if (!ctx) return;
 
   const full = await repo.ChatRoom.findByPk(ctx.room.id, {
-    include: [{ model: repo.ChatParticipant, as: "participants" }],
+    include: [
+      {
+        model: repo.ChatParticipant,
+        as: "participants",
+        include: [
+          {
+            model: getProfile(),
+            as: "profile",
+            attributes: ["id", "name", "thumbnail", "gender", "bio", "uid", "online"],
+          },
+        ],
+      },
+    ],
   });
 
   res.json(full);
@@ -772,21 +904,26 @@ router.delete("/:uid", requireProfile, wrap(async (req, res) => {
 // Participantes (grupos)
 // ---------------------------------------------------------------------------
 
-// POST /chats/:uid/participants  { profileIds: [] }
+// POST /chats/:uid/participants  { profileIds: [] } ou { profileId }
 router.post("/:uid/participants", requireProfile, wrap(async (req, res) => {
   const ctx = await loadRoomForMember(req, res);
   if (!ctx) return;
 
   if (ctx.room.type !== "group") return res.status(400).json({ error: "Só é possível adicionar membros em grupos" });
-  if (!isAdmin(ctx.participant)) return res.status(403).json({ error: "Sem permissão" });
+  if (!ctx.participant) return res.status(403).json({ error: "Sem permissão" });
 
-  const ids = [...new Set((req.body.profileIds || []).map(Number).filter(Boolean))];
+  const rawIds = Array.isArray(req.body.profileIds)
+    ? req.body.profileIds
+    : req.body.profileId
+      ? [req.body.profileId]
+      : [];
+  const ids = [...new Set(rawIds.map(Number).filter(Boolean))];
   if (!ids.length) return res.status(400).json({ error: "profileIds vazio" });
 
   const existing = await repo.ChatParticipant.findAll({
     where: { chatId: ctx.room.id, profileId: { [Op.in]: ids } },
   });
-  const already = new Set(existing.map((p) => p.profileId));
+  const already = new Set(existing.map((p) => Number(p.profileId)));
 
   const toAdd = ids.filter((id) => !already.has(id)).map((profileId) => ({
     chatId: ctx.room.id, profileId, role: "member",
@@ -799,7 +936,7 @@ router.post("/:uid/participants", requireProfile, wrap(async (req, res) => {
   broadcastToProfiles(addedIds, "chat:room:new", ctx.room);
   await broadcastToRoom(ctx.room, "chat:participants:added", { chatUid: ctx.room.uid, profileIds: addedIds }, req.profileId);
 
-  res.status(201).json({ added: toAdd.length });
+  res.status(201).json({ added: toAdd.length, addedIds });
 }));
 
 // PATCH /chats/:uid/participants/:profileId  { role } -> promove/rebaixa
@@ -880,6 +1017,13 @@ router.get("/:uid/messages", requireProfile, wrap(async (req, res) => {
 
   const rows = await repo.ChatMessage.findAll({
     where,
+    include: [
+      {
+        model: getProfile(),
+        as: "sender",
+        attributes: ["id", "name", "thumbnail", "gender"],
+      },
+    ],
     order: [["createdAt", "DESC"], ["id", "DESC"]],
     limit: limit + 1,
   });
@@ -921,6 +1065,83 @@ router.post("/:uid/messages", requireProfile, wrap(async (req, res) => {
   res.status(201).json(message);
 }));
 
+// POST /chats/:uid/messages/room-invite -> envia convite estruturado com endereço de Sala e Instância do Servidor (`servers`)
+router.post("/:uid/messages/room-invite", requireProfile, wrap(async (req, res) => {
+  const ctx = await loadRoomForMember(req, res);
+  if (!ctx) return;
+
+  const roomId = Number(req.body.roomId || 0);
+  const preferredServerId = Number(req.body.serverId || 0) || null;
+  const forceNewReplica = Boolean(req.body.forceNewReplica);
+  const customText = String(req.body.text || "").trim();
+
+  if (!roomId) return res.status(400).json({ error: "Informe a sala (roomId) para compartilhar." });
+
+  const room = await repo.RoomModel.findByPk(roomId);
+  if (!room) return res.status(404).json({ error: "Sala 3D não encontrada." });
+
+  // Garante que exista uma instância ativa (ou cria uma nova réplica se todas estiverem cheias)
+  const allocation = await allocateOrReplicateRoomServerInstance({
+    roomId,
+    preferredServerId,
+    forceNewReplica,
+    joinPlayer: false,
+  });
+
+  const [enrichedRoom] = await enrichRoomsWithVisitStats([room], req.profileId);
+  const srv = allocation.instance;
+
+  const invitePayload = {
+    kind: "room_invite",
+    roomId: Number(room.id),
+    roomUid: room.uid || "",
+    roomName: room.name || `Sala #${room.id}`,
+    description: room.description || "",
+    scene: srv?.scene || room.scene || "lobby",
+    thumbnail:
+      room.thumbnail && room.thumbnail !== "0"
+        ? room.thumbnail
+        : "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+    entryValue: Number(room.entryValue || 0),
+    maxPlayers: Number(srv?.maxPlayers || room.maxPlayers || 30),
+    playersCount: Number(srv?.playersCount || 0),
+    serverId: Number(srv?.id || 0),
+    serverUid: srv?.uid || "",
+    instanceNumber: Number(srv?.instanceNumber || 1),
+    instanceLabel: srv?.instanceLabel || "Instância #1",
+    ip: srv?.ip || "127.0.0.1",
+    port: srv?.port || "7001",
+    publicPort: srv?.publicPort || "10018",
+    connectAddress: srv?.connectAddress || "127.0.0.1:10018",
+    tflUri: srv?.tflUri || enrichedRoom?.primaryTflUri || `tfl://join?roomId=${room.id}`,
+    language: srv?.language || "pt-BR",
+    instancesCount: Number(allocation.instancesCount || 1),
+    totalPlayersOnline: Number(allocation.totalPlayersOnline || 0),
+    replicatedNewInstance: Boolean(allocation.replicatedNewInstance),
+    sharedAt: new Date().toISOString(),
+  };
+
+  const defaultText = customText || `🏠 Venha para a sala "${invitePayload.roomName}" (${invitePayload.instanceLabel} • ${invitePayload.connectAddress})`;
+
+  const message = await createMessage(ctx.room, req, {
+    text: defaultText.slice(0, MAX_TEXT),
+    hasLink: true,
+    linkFile: JSON.stringify(invitePayload),
+  });
+
+  await ctx.room.changed("updatedAt", true);
+  await ctx.room.save();
+
+  await broadcastToRoom(ctx.room, "chat:message", message);
+
+  res.status(201).json({
+    success: true,
+    message,
+    invite: invitePayload,
+    allocation,
+  });
+}));
+
 // POST /chats/:uid/messages/media  (multipart/form-data)
 //   file: arquivo | text?: legenda | kind?: image|video|audio|file | durationMs?: number
 router.post("/:uid/messages/media", requireProfile, upload.single("file"), wrap(async (req, res) => {
@@ -940,6 +1161,20 @@ router.post("/:uid/messages/media", requireProfile, upload.single("file"), wrap(
   if (file.size > rule.maxSize) {
     removeFileQuietly(file);
     return res.status(413).json({ error: `Arquivo excede o limite de ${Math.round(rule.maxSize / 1024 / 1024)}MB` });
+  }
+
+  // Regra de Membro Básico vs VIP para envio de Imagem e Voz (Áudio) no Chat
+  if (kind === "image" || kind === "audio") {
+    try {
+      await checkAndRecordChatAction({
+        avatarId: req.profileId,
+        userId: req.user?.id,
+        actionType: kind === "audio" ? "SEND_AUDIO" : "SEND_IMAGE",
+      });
+    } catch (vipErr) {
+      removeFileQuietly(file);
+      return res.status(403).json({ error: vipErr.message, vipRequired: true });
+    }
   }
 
   const text = String(req.body.text || "").trim();

@@ -5,13 +5,34 @@ require("dotenv").config();
 const { repo } = require("../repositories/repository.js");
 const webSite = (process.env.SERVER_URL || "localhost:5000").endsWith("/") ? process.env.SERVER_URL : `${process.env.SERVER_URL}/`;
 const t = require("../locales/i18n");
+const { recordSiteVisit } = require("../services/stats.service");
 const adminRouter = require('./admin.router.js');
 const apiRouters = require('./api.routers.js');
 const userRouter = require('./user.router.js');
 
+// Beacon JS para enriquecer estatísticas de visita e região (fuso horário / idioma do navegador)
+router.post("/api/visit-beacon", (req, res) => {
+  recordSiteVisit(req, {
+    path: req.body?.path || "/",
+    timezone: req.body?.timezone || "",
+    language: req.body?.language || "",
+    region: req.body?.region || "",
+  });
+  return res.json({ success: true });
+});
 
-router.get("/", (req, res) => { 
- res.render('home', { title: 'Home', t: req.translate });
+router.get("/", (req, res) => {
+  recordSiteVisit(req, { path: "/" });
+  res.render('home', { title: 'Home', t: req.translate });
+});
+router.get("/tutorial", (req, res) => {
+  recordSiteVisit(req, { path: "/tutorial" });
+  res.render('tutorial', { title: 'Tutorial Oficial — The Fantasy Life', t: req.translate });
+});
+router.get("/locale/:lang", (req, res) => {
+  const lang = t.normalizeLocale(req.params.lang || 'pt-BR');
+  res.cookie('lang', lang, { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
+  return res.redirect(req.get('Referer') || '/');
 });
 router.use("/register", (req, res) => {
     res.redirect("/profile/register");
@@ -38,7 +59,7 @@ const webhookController = require("../api/v1/old/api_webhock.js");
 router.use("/webhook", webhookController.router);
 //asas
 const asasController = require("../api/v1/old/bank_controller.js");
-router.use("/asaas",asasController.router);
+router.use(["/asaas", "/assas"], asasController.router);
 //youtube
 const youtubeRouter = require('../controllers/youtube.js'); //require("../../paginas/helps/youtube.js");
 router.use(youtubeRouter);

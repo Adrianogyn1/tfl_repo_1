@@ -1,0 +1,252 @@
+<%- include('./partials/header', { title: t('profile.tutorial.title', {}, 'Tutorial & Guia de Uso — The Fantasy Life') }) %>
+
+<main class="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <!-- Cabeçalho do Guia -->
+    <div class="bg-gradient-to-r from-slate-900 via-blue-950/40 to-purple-950/30 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                    <span class="material-symbols-outlined text-[32px]">help</span>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black uppercase italic text-white">
+                        <%= t('profile.tutorial.title', {}, 'Como Usar o The Fantasy Life') %>
+                    </h1>
+                    <p class="text-xs sm:text-sm text-zinc-400 mt-1">
+                        <%= t('profile.tutorial.subtitle', {}, 'Guia prático passo a passo de todas as ferramentas sociais, perfil, salas, bate-papo e carteira digital.') %>
+                    </p>
+                </div>
+            </div>
+            <a href="/profile" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider transition flex items-center gap-2 shadow-lg shadow-blue-600/25">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                <span>Ir para Meu Perfil</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Índice Rápido por Categorias -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <a href="#sec-avatares" class="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-purple-500/40 transition flex items-center gap-2.5 text-zinc-200 font-bold">
+            <span class="material-symbols-outlined text-purple-400">theater_comedy</span>
+            <span>1. Avatares & Perfil</span>
+        </a>
+        <a href="#sec-social" class="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-blue-500/40 transition flex items-center gap-2.5 text-zinc-200 font-bold">
+            <span class="material-symbols-outlined text-blue-400">dynamic_feed</span>
+            <span>2. Feed, Fotos & Reels</span>
+        </a>
+        <a href="#sec-conexoes" class="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-pink-500/40 transition flex items-center gap-2.5 text-zinc-200 font-bold">
+            <span class="material-symbols-outlined text-pink-400">favorite</span>
+            <span>3. Amigos, Match & Chat</span>
+        </a>
+        <a href="#sec-carteira" class="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-amber-500/40 transition flex items-center gap-2.5 text-zinc-200 font-bold">
+            <span class="material-symbols-outlined text-amber-400">account_balance_wallet</span>
+            <span>4. Carteira, Bolsa & Salas</span>
+        </a>
+    </div>
+
+    <!-- SEÇÃO 1: CONTA, AVATARES, CAPA & PRIVACIDADE -->
+    <div id="sec-avatares" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 sm:p-7 space-y-5 shadow-xl">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+            <span class="material-symbols-outlined text-[26px] text-purple-400">theater_comedy</span>
+            <div>
+                <h2 class="text-base sm:text-lg font-black uppercase italic text-white">1. Conta, Avatares, Capa e Privacidade</h2>
+                <p class="text-xs text-zinc-400">Como gerenciar seus personagens e personalizar sua identidade visual.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-zinc-300 leading-relaxed">
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-white uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px] text-purple-400">switch_account</span>
+                    Múltiplos Avatares na Mesma Conta
+                </h3>
+                <p class="text-zinc-400">
+                    Na aba <strong>Avatares</strong> do menu lateral, você pode criar quantos personagens desejar. Cada avatar possui seu próprio nome, biografia, foto, amigos, mural de publicações e carteira. Clique no botão de seleção (<span class="material-symbols-outlined text-[14px] text-emerald-400">check_circle</span>) para escolher qual avatar está ativo no momento.
+                </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-white uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px] text-sky-400">wallpaper</span>
+                    Foto de Perfil e Fundo / Capa Personalizável
+                </h3>
+                <p class="text-zinc-400">
+                    Ao abrir seu <strong>Perfil</strong> (clicando na sua foto no topo da barra lateral ou do feed), você pode alterar tanto a sua <strong>Foto de Perfil</strong> quanto o <strong>Fundo (Capa)</strong> exibido acima da sua foto enviando uma imagem do seu dispositivo ou escolhendo um estilo.
+                </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2 md:col-span-2">
+                <h3 class="font-black text-white uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px] text-emerald-400">shield_lock</span>
+                    Controle de Privacidade Onde Você Precisa
+                </h3>
+                <p class="text-zinc-400">
+                    Você decide quem pode ver cada parte do seu perfil! Os seletores de privacidade ficam localizados diretamente dentro de cada seção correspondente:
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 text-[11px]">
+                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 text-center">
+                        <span class="material-symbols-outlined text-blue-400 block mb-1">article</span>
+                        <strong class="text-white block">Publicações</strong>
+                        <span class="text-zinc-500">No topo do Feed</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 text-center">
+                        <span class="material-symbols-outlined text-amber-400 block mb-1">photo_library</span>
+                        <strong class="text-white block">Fotos</strong>
+                        <span class="text-zinc-500">Na Galeria de Fotos</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 text-center">
+                        <span class="material-symbols-outlined text-indigo-400 block mb-1">meeting_room</span>
+                        <strong class="text-white block">Salas</strong>
+                        <span class="text-zinc-500">Na aba Salas</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 text-center">
+                        <span class="material-symbols-outlined text-emerald-400 block mb-1">group</span>
+                        <strong class="text-white block">Amigos</strong>
+                        <span class="text-zinc-500">Na aba Amigos</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 text-center col-span-2 sm:col-span-1">
+                        <span class="material-symbols-outlined text-sky-400 block mb-1">person_check</span>
+                        <strong class="text-white block">Seguidores</strong>
+                        <span class="text-zinc-500">Na aba Seguidores</span>
+                    </div>
+                </div>
+                <p class="text-[11px] text-zinc-500 pt-1">
+                    Em qualquer uma delas, basta escolher entre <strong>🌐 Público</strong> (todos veem), <strong>👥 Amigos</strong> (somente amigos aceitos veem) ou <strong>🔒 Privado</strong> (somente você vê).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 2: REDE SOCIAL, MINI REELS 24H, SENTIMENTOS 6H, GALERIA E COMENTÁRIOS -->
+    <div id="sec-social" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 sm:p-7 space-y-5 shadow-xl">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+            <span class="material-symbols-outlined text-[26px] text-blue-400">dynamic_feed</span>
+            <div>
+                <h2 class="text-base sm:text-lg font-black uppercase italic text-white">2. Rede Social, Mini Reels, Sentimentos e Galeria de Fotos</h2>
+                <p class="text-xs text-zinc-400">Compartilhe momentos, expresse como está se sentindo e interaja com a comunidade.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-zinc-300 leading-relaxed">
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-pink-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">amp_stories</span>
+                    Mini Reels (24h) & Sentimentos (6h)
+                </h3>
+                <p class="text-zinc-400">
+                    No topo da rede social você encontra a barra de <strong>Mini Reels</strong> (focada apenas em fotos, textos estilizados e sentimentos — sem vídeos pesados):
+                </p>
+                <ul class="space-y-1 text-zinc-400 list-disc list-inside">
+                    <li><strong>Foto ou Texto (24 horas)</strong>: Fica visível no topo da rede social por 24h.</li>
+                    <li><strong>Sentimento do Momento (6 horas)</strong>: Escolha um emoji e como você está se sentindo agora (duração rápida de 6h).</li>
+                </ul>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-amber-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">photo_library</span>
+                    Galeria de Fotos & Publicações
+                </h3>
+                <p class="text-zinc-400">
+                    Você pode publicar no mural escrevendo um texto, enviando uma foto ou anexando uma <strong>Sala</strong> para convidar a galera.
+                </p>
+                <p class="text-zinc-400">
+                    Na aba <strong>Galeria</strong>, todas as fotos ficam organizadas em álbum. Clicando em qualquer foto, ela abre em tela cheia com suas próprias curtidas e comentários!
+                </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-sky-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">forum</span>
+                    Reações & Comentários Recursivos
+                </h3>
+                <p class="text-zinc-400">
+                    Passe o mouse ou toque no botão de curtir para escolher entre 7 reações (👍 ❤️ 🥰 😂 😮 😢 😡). Você pode reagir a <strong>posts, fotos, comentários, perfis, salas e mini reels</strong>!
+                </p>
+                <p class="text-zinc-400">
+                    Nos comentários, clique em <strong>Responder</strong> em qualquer comentário para criar conversas aninhadas (respostas dentro de respostas).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 3: AMIGOS, SEGUIDORES, MATCH & CHAT AO VIVO -->
+    <div id="sec-conexoes" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 sm:p-7 space-y-5 shadow-xl">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+            <span class="material-symbols-outlined text-[26px] text-pink-400">favorite</span>
+            <div>
+                <h2 class="text-base sm:text-lg font-black uppercase italic text-white">3. Amigos, Seguidores, Match 💘 e Chat em Tempo Real</h2>
+                <p class="text-xs text-zinc-400">Conecte-se com outros jogadores, dê Match e converse no Chat Global ou Privado.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-zinc-300 leading-relaxed">
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-emerald-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">group_add</span>
+                    Amizades & Seguidores
+                </h3>
+                <p class="text-zinc-400">
+                    Na aba <strong>Amigos</strong> ou clicando sobre a foto de qualquer pessoa no feed, você pode <strong>Seguir</strong> o perfil para acompanhar as novidades públicas ou enviar um <strong>Pedido de Amizade</strong>. Quando aceito, uma conversa direta é liberada entre vocês!
+                </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-pink-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+                    Sistema de Match / Crush 💘
+                </h3>
+                <p class="text-zinc-400">
+                    Gostou do perfil de alguém? Clique no botão de <strong>Match (🔥)</strong> no perfil dessa pessoa para enviar um interesse. Se a outra pessoa também clicar em Match no seu perfil, acontece um <strong>Match Mútuo 💘</strong> e uma sala de chat privada é criada automaticamente para vocês conversarem!
+                </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-sky-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">chat</span>
+                    Chat Global, DM e Grupos
+                </h3>
+                <p class="text-zinc-400">
+                    Na aba <strong>Chat</strong>, todos os usuários têm acesso imediato ao <strong>Chat Global</strong> para conversar ao vivo com quem está online. Você também pode abrir conversas privadas (DM) com seus amigos, criar <strong>Grupos</strong> e enviar fotos, áudios ou arquivos.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 4: SALAS E CARTEIRA DIGITAL / BOLSA DE MOEDAS -->
+    <div id="sec-carteira" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 sm:p-7 space-y-5 shadow-xl">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+            <span class="material-symbols-outlined text-[26px] text-amber-400">account_balance_wallet</span>
+            <div>
+                <h2 class="text-base sm:text-lg font-black uppercase italic text-white">4. Salas Virtuais, Carteira Digital e Bolsa de Moedas</h2>
+                <p class="text-xs text-zinc-400">Gerencie seus espaços e utilize as moedas da plataforma com segurança.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-zinc-300 leading-relaxed">
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-indigo-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">deployed_code</span>
+                    Criando e Divulgando Suas Salas
+                </h3>
+                <p class="text-zinc-400">
+                    Na aba <strong>Salas</strong>, clique em <strong>Nova Sala</strong> para criar seu próprio ambiente. Você pode escolher o nome, a descrição, a lotação máxima de visitantes e definir se a sala é <strong>Pública (🌐)</strong> ou <strong>Privada com Senha (🔒)</strong>. Você também pode curtir salas de outros usuários e anexar sua sala em uma publicação do feed!
+                </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-2">
+                <h3 class="font-black text-amber-400 uppercase flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">currency_exchange</span>
+                    Entenda as 3 Moedas (Cash, Coins e Chips)
+                </h3>
+                <ul class="space-y-1.5 text-zinc-400">
+                    <li><strong class="text-emerald-400">💵 Cash ($ USD)</strong>: Moeda principal da carteira. Pode ser adquirida e sacada via <strong>Pix</strong> na aba <strong>Carteira</strong>.</li>
+                    <li><strong class="text-yellow-400">🪙 Coins</strong>: Moeda de circulação do universo. Você pode comprar ou vender lotes de Coins para outros usuários na <strong>Bolsa de Moedas</strong> ou converter no <strong>Conversor Rápido</strong>.</li>
+                    <li><strong class="text-blue-400">🎰 Chips</strong>: Fichas de diversão usadas nas mesas de jogos e entretenimento. Podem ser convertidas para Coins e vice-versa a qualquer momento.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('./partials/footer') %>

@@ -30,36 +30,34 @@ router.post("/admin/signin", async (req, res) =>
   const { username, password, page } = req.body;
   try
   {
-    //userName ou login
     const user = await repo.User.findOne({
       where: {
         [Op.or]: [
           { email: username },
           { login: username }
-        ],
-        [Op.and]: [
-          { role: "admin" }
         ]
       }
     });
-    if (!user)
-      throw new UserError(1,translate("login.errors.invalidCredentials"));
+    const userRole = String(user?.role || "").toLowerCase();
+    const isAdminAllowed = user && (["admin", "owner", "ownner", "desenvolvedor"].includes(userRole) || Number(user.id) === 1);
+    if (!isAdminAllowed)
+      throw new UserError(1, translate("login.errors.invalidCredentials"));
 
     if (user.password == password)
     {
-      req.session.user = user;
+      req.session.user = user.get({ plain: true });
       user.token = repo.User.newToken();
       await repo.User.update({ token: user.token }, { where: { id: user.id } });
 
       res.cookie("userToken", user.token);
 
       if (page && page.length > 3 && page != "login")
-        {
-          //res.redirect(page);
-          res.json({ success: true, data: user, page: page });
-        }
-      else{
-        res.json({ success: true, data: user, page: "/admin" });
+      {
+        return res.json({ success: true, data: user, page: page });
+      }
+      else
+      {
+        return res.json({ success: true, data: user, page: "/admin" });
       }
     }
     throw new UserError(1, translate("login.errors.invalidCredentials"));

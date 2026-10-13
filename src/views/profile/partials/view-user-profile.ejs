@@ -1,0 +1,113 @@
+<!-- ================= VIEW 1.5: PERFIL SOCIAL PÚBLICO DO USUÁRIO / AVATAR (ICON-FIRST & I18N) ================= -->
+<section id="view-user-profile" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-5">
+    <!-- Barra Superior: Voltar -->
+    <div class="flex items-center justify-between">
+        <button type="button" id="btnBackFromUserProfile" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition" title="<%= t('common.back', {}, 'Voltar') %>">
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span><%= t('common.back', {}, 'Voltar') %></span>
+        </button>
+        <span id="userProfileIdBadge" class="px-3 py-1 rounded-full bg-slate-900 border border-white/10 text-[11px] font-mono text-zinc-400">#0</span>
+    </div>
+
+    <!-- Cabeçalho & Capa do Perfil -->
+    <div class="bg-slate-900/90 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+        <div id="userProfileCoverBanner" class="h-36 sm:h-44 bg-gradient-to-r from-blue-900/60 via-indigo-900/50 to-sky-900/60 relative overflow-hidden group">
+            <img id="userProfileCoverImg" src="" alt="Capa" class="hidden w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+            
+            <input type="file" id="fileProfileCoverDirect" accept="image/*" class="hidden">
+            <div id="userProfileEditCoverBox" class="hidden absolute top-3 right-3 flex items-center gap-2 z-10">
+                <button type="button" id="btnTriggerDirectCoverUpload" class="px-3 py-1.5 rounded-xl bg-black/75 hover:bg-blue-600 text-white text-xs font-bold backdrop-blur-md border border-white/15 flex items-center gap-1.5 transition shadow-lg" title="<%= t('profile.social.editCover', {}, 'Capa') %>">
+                    <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+                    <span id="labelDirectCoverUpload"><%= t('profile.social.editCover', {}, 'Capa') %></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="px-5 pb-5 relative">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 -mt-14 mb-4">
+                <div class="flex flex-col sm:flex-row sm:items-end gap-3.5">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden border-4 border-slate-900 bg-slate-950 shadow-2xl flex-shrink-0 relative">
+                        <img id="userProfileAvatarImg" src="" alt="Avatar" class="w-full h-full object-cover">
+                    </div>
+                    <div class="pt-1 sm:pb-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h2 id="userProfileName" class="text-lg sm:text-xl font-black uppercase italic text-white">...</h2>
+                            <span id="userProfileGenderBadge" class="px-2 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase"></span>
+                            <span id="userProfileMatchBadge" class="hidden px-2 py-0.5 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-[10px] font-black uppercase">💘 Match</span>
+                            <span id="userProfileFeelingBadge" class="hidden px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-bold"></span>
+                        </div>
+                        <p id="userProfileBio" class="text-xs text-zinc-400 mt-1 max-w-xl line-clamp-2"></p>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação no Perfil do Usuário -->
+                <div id="userProfileActionsContainer" class="flex flex-wrap items-center gap-2"></div>
+            </div>
+
+            <!-- Estatísticas Compactas com Ícones -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-3 border-t border-white/10">
+                <div class="p-2 rounded-2xl bg-slate-950/80 border border-white/5 text-center" title="<%= t('profile.social.posts', {}, 'Posts') %>">
+                    <span class="material-symbols-outlined text-[15px] text-zinc-400">article</span>
+                    <div id="userProfileStatPosts" class="text-sm font-black text-white">0</div>
+                </div>
+                <div class="p-2 rounded-2xl bg-slate-950/80 border border-white/5 text-center" title="<%= t('profile.social.photos', {}, 'Fotos') %>">
+                    <span class="material-symbols-outlined text-[15px] text-amber-400">photo_library</span>
+                    <div id="userProfileStatPhotos" class="text-sm font-black text-amber-400">0</div>
+                </div>
+                <div class="p-2 rounded-2xl bg-slate-950/80 border border-white/5 text-center" title="<%= t('profile.social.friends', {}, 'Amigos') %>">
+                    <span class="material-symbols-outlined text-[15px] text-emerald-400">group</span>
+                    <div id="userProfileStatFriends" class="text-sm font-black text-emerald-400">0</div>
+                </div>
+                <div class="p-2 rounded-2xl bg-slate-950/80 border border-white/5 text-center" title="<%= t('profile.social.followers', {}, 'Seguidores') %>">
+                    <span class="material-symbols-outlined text-[15px] text-sky-400">person_add</span>
+                    <div id="userProfileStatFollowers" class="text-sm font-black text-sky-400">0</div>
+                </div>
+                <div class="p-2 rounded-2xl bg-slate-950/80 border border-white/5 text-center" title="<%= t('profile.social.rooms', {}, 'Salas') %>">
+                    <span class="material-symbols-outlined text-[15px] text-purple-400">deployed_code</span>
+                    <div id="userProfileStatRooms" class="text-sm font-black text-purple-400">0</div>
+                </div>
+                <div class="p-2 rounded-2xl bg-slate-950/80 border border-white/5 text-center" title="<%= t('profile.social.likes', {}, 'Curtidas') %>">
+                    <span class="material-symbols-outlined text-[15px] text-rose-400">favorite</span>
+                    <div id="userProfileStatLikes" class="text-sm font-black text-rose-400">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abas Internas do Perfil do Usuário -->
+    <div class="flex flex-wrap items-center gap-1.5 border-b border-white/10 pb-2.5">
+        <button type="button" class="btn-user-profile-tab px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-blue-600 text-white transition flex items-center gap-1.5" data-tab="tabUserProfilePosts">
+            <span class="material-symbols-outlined text-[16px]">article</span>
+            <span><%= t('profile.social.posts', {}, 'Posts') %></span>
+        </button>
+        <button type="button" class="btn-user-profile-tab px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition flex items-center gap-1.5" data-tab="tabUserProfilePhotos">
+            <span class="material-symbols-outlined text-[16px]">photo_library</span>
+            <span><%= t('profile.social.photos', {}, 'Fotos') %></span>
+        </button>
+        <button type="button" class="btn-user-profile-tab px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition flex items-center gap-1.5" data-tab="tabUserProfileRooms">
+            <span class="material-symbols-outlined text-[16px]">deployed_code</span>
+            <span><%= t('profile.social.rooms', {}, 'Salas') %></span>
+        </button>
+        <button type="button" class="btn-user-profile-tab px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition flex items-center gap-1.5" data-tab="tabUserProfileFriends">
+            <span class="material-symbols-outlined text-[16px]">group</span>
+            <span><%= t('profile.social.friends', {}, 'Amigos') %></span>
+        </button>
+        <button type="button" class="btn-user-profile-tab px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition flex items-center gap-1.5" data-tab="tabUserProfileFollowers">
+            <span class="material-symbols-outlined text-[16px]">stars</span>
+            <span><%= t('profile.social.followers', {}, 'Seguidores') %></span>
+        </button>
+        <button type="button" class="btn-user-profile-tab px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition flex items-center gap-1.5" data-tab="tabUserProfileMatches">
+            <span class="material-symbols-outlined text-[16px] text-pink-400">local_fire_department</span>
+            <span><%= t('profile.social.matches', {}, 'Matches') %></span>
+        </button>
+    </div>
+
+    <!-- Conteúdo das Abas do Perfil -->
+    <div id="tabUserProfilePosts" class="user-profile-tab-panel space-y-4"></div>
+    <div id="tabUserProfilePhotos" class="user-profile-tab-panel hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+    <div id="tabUserProfileRooms" class="user-profile-tab-panel hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="tabUserProfileFriends" class="user-profile-tab-panel hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="tabUserProfileFollowers" class="user-profile-tab-panel hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="tabUserProfileMatches" class="user-profile-tab-panel hidden space-y-5"></div>
+</section>

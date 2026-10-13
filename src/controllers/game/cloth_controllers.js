@@ -1,58 +1,40 @@
 const repo = require("../../repositories/repository");
-
-function checkData(clothData) {
-  let error = "";
-  try {
-    if (!clothData) throw new Error("Dados da roupa são obrigatórios.");
-
-    if (!clothData.name) throw new Error("O nome da roupa é obrigatório.");
-
-    if (!clothData.objectId)
-      throw new Error("O objectId da roupa é obrigatório.");
-
-    if (!clothData.path) throw new Error("O path da roupa é obrigatório.");
-  } catch (e) {
-    error = e.message;
-  }
-  return error;
-}
+const {
+  listShopCatalog,
+  saveShopCatalogItem,
+  deleteShopCatalogItem,
+} = require("../../services/shop3d.service");
 
 async function getAll(req, res) {
-  const limit = parseInt(req.query?.limit || req.body?.limit) || 50;
-  const offset =
-    parseInt(
-      req.query?.offset || req.body?.take || req.body?.skip || req.body?.offset,
-    ) || 0;
-
   try {
-    const clothes = await repo.Cloth.findAndCountAll({
-      limit: limit,
-      offset: offset,
+    const result = await listShopCatalog({
+      slot: req.query?.slot || "",
+      gender: req.query?.gender || "",
+      currencyType: req.query?.currencyType || "",
+      rarity: req.query?.rarity || "",
+      search: req.query?.q || "",
+      viewerAvatarId: Number(req.query?.avatarId || req.headers?.["x-profile-id"] || 0),
     });
-
     return res.json({
       success: true,
-      data: clothes?.rows || [],
-      count: clothes?.count || 0,
-      skip: offset,
-      limit: limit,
-      nextPage:
-        clothes?.count <= 0 ? 0 : Math.ceil((offset + limit) / limit) + 1,
+      data: result.items,
+      rules: result.rules,
+      count: result.items.length,
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, data: [], error: err.message });
+    return res.status(500).json({ success: false, data: [], error: err.message });
   }
 }
 
 async function getById(req, res) {
   try {
-    const cloth = await repo.Cloth.findByPk(req.params.id);
-    if (!cloth) {
-      return res.status(404).json({ error: "Cloth not found", success: false });
+    const item = await repo.ShopContainer.findByPk(req.params.id, {
+      include: [{ model: repo.ShopItem, as: "items" }],
+    });
+    if (!item) {
+      return res.status(404).json({ error: "Item 3D não encontrado", success: false });
     }
-    return res.json({ success: true, data: cloth });
+    return res.json({ success: true, data: item });
   } catch (err) {
     return res.status(500).json({ error: err.message, success: false });
   }
@@ -60,16 +42,8 @@ async function getById(req, res) {
 
 async function create(req, res) {
   try {
-    const clothData = req.body;
-    const error = checkData(clothData);
-
-    if (error) {
-      return res.status(400).json({ error: error, success: false });
-    }
-
-    delete clothData.uid;
-    const cloth = await repo.Cloth.create(clothData);
-    return res.json({ success: true, data: cloth });
+    const created = await saveShopCatalogItem(req.body);
+    return res.json({ success: true, data: created });
   } catch (err) {
     return res.status(500).json({ error: err.message, success: false });
   }
@@ -77,20 +51,8 @@ async function create(req, res) {
 
 async function update(req, res) {
   try {
-    const error = checkData(req.body);
-    if (error) {
-      return res.status(400).json({ error: error, success: false });
-    }
-
-    const clothExists = await repo.Cloth.findByPk(req.params.id);
-    if (!clothExists) {
-      return res.status(404).json({ error: "Cloth not found", success: false });
-    }
-
-    await repo.Cloth.update(req.body, { where: { id: req.params.id } });
-    const updatedCloth = await repo.Cloth.findByPk(req.params.id);
-
-    return res.json({ success: true, data: updatedCloth });
+    const updated = await saveShopCatalogItem({ ...req.body, id: req.params.id });
+    return res.json({ success: true, data: updated });
   } catch (err) {
     return res.status(500).json({ error: err.message, success: false });
   }
@@ -98,13 +60,8 @@ async function update(req, res) {
 
 async function remove(req, res) {
   try {
-    const cloth = await repo.Cloth.findByPk(req.params.id);
-    if (!cloth) {
-      return res.status(404).json({ error: "Cloth not found", success: false });
-    }
-
-    await repo.Cloth.destroy({ where: { id: req.params.id } });
-    return res.json({ success: true, message: "Cloth deleted successfully" });
+    await deleteShopCatalogItem(req.params.id);
+    return res.json({ success: true, message: "Item removido com sucesso" });
   } catch (err) {
     return res.status(500).json({ error: err.message, success: false });
   }

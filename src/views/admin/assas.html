@@ -1,129 +1,285 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Painel Asaas</title>
+<title>Central Financeira Asaas & Banco TFL — Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-  :root { --bg:#0f1115; --panel:#181b22; --line:#2a2f3a; --txt:#e6e8ee; --mut:#8b93a5; --pri:#4f8cff; --ok:#2ecc71; --warn:#f1c40f; --err:#e74c3c; }
+  :root {
+    --bg:#090d16;
+    --panel:#111827;
+    --panel2:#1e293b;
+    --line:#1f2937;
+    --txt:#f3f4f6;
+    --mut:#9ca3af;
+    --pri:#3b82f6;
+    --ok:#10b981;
+    --warn:#f59e0b;
+    --err:#ef4444;
+    --purp:#8b5cf6;
+  }
   * { box-sizing:border-box; }
-  body { margin:0; font:14px/1.4 system-ui,sans-serif; background:var(--bg); color:var(--txt); }
-  header { padding:12px 16px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:5; }
-  header h1 { font-size:16px; margin:0; flex:1; }
-  nav { display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px; border-bottom:1px solid var(--line); }
-  input, select, textarea, button { font:inherit; color:var(--txt); background:#0d0f14; border:1px solid var(--line); border-radius:6px; padding:7px 9px; }
+  body { margin:0; font:13.5px/1.45 system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--txt); }
+  header {
+    padding:12px 20px; background:rgba(17,24,39,.95); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:15; backdrop-filter:blur(12px);
+  }
+  header h1 { font-size:16px; margin:0; display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px; }
+  header .spacer { flex:1; }
+  .badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; border:1px solid var(--line); background:#0b1120; }
+  .badge.ok { color:var(--ok); border-color:rgba(16,185,129,.4); background:rgba(16,185,129,.1); }
+  .badge.warn { color:var(--warn); border-color:rgba(245,158,11,.4); background:rgba(245,158,11,.1); }
+  .badge.err { color:var(--err); border-color:rgba(239,68,68,.4); background:rgba(239,68,68,.1); }
+
+  nav {
+    display:flex; flex-wrap:wrap; gap:6px; padding:10px 20px; background:#0d1322; border-bottom:1px solid var(--line);
+    position:sticky; top:53px; z-index:14;
+  }
+  input, select, textarea, button {
+    font:inherit; color:var(--txt); background:#0b0f19; border:1px solid #283548; border-radius:8px; padding:7px 10px;
+  }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--pri); }
   input, select, textarea { width:100%; }
-  button { cursor:pointer; background:#222734; width:auto; }
-  button:hover { border-color:var(--pri); }
-  button:disabled { opacity:.4; cursor:not-allowed; }
-  button.tab.active, button.pri { background:var(--pri); border-color:var(--pri); color:#fff; }
-  button.ok { background:var(--ok); border-color:var(--ok); color:#06130b; }
-  button.danger { background:transparent; border-color:var(--err); color:var(--err); }
+  button { cursor:pointer; background:#1e293b; width:auto; font-weight:600; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
+  button:hover { border-color:var(--pri); color:#fff; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button.tab { font-size:12.5px; padding:7px 12px; border-radius:8px; background:#111827; color:var(--mut); }
+  button.tab.active { background:var(--pri); border-color:var(--pri); color:#fff; box-shadow:0 4px 14px rgba(59,130,246,.3); }
+  button.pri { background:var(--pri); border-color:var(--pri); color:#fff; }
+  button.ok { background:var(--ok); border-color:var(--ok); color:#04130c; font-weight:700; }
+  button.warn { background:var(--warn); border-color:var(--warn); color:#1a1200; font-weight:700; }
+  button.danger { background:rgba(239,68,68,.12); border-color:var(--err); color:var(--err); }
   button.ghost { background:transparent; }
-  button.sm { padding:3px 8px; font-size:12px; }
-  main { padding:16px; max-width:1100px; margin:0 auto; }
+  button.sm { padding:4px 8px; font-size:11.5px; border-radius:6px; }
+
+  main { padding:18px 20px; max-width:1320px; margin:0 auto; }
   section { display:none; } section.open { display:block; }
-  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; }
-  .card h2 { font-size:15px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .card h2 { font-size:14.5px; margin:0 0 12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .card h2 .sp { flex:1; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
-  label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--mut); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:16px; }
+  .kpi { background:#0b1120; border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .kpi .lbl { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--mut); font-weight:700; }
+  .kpi .val { font-size:22px; font-weight:800; margin-top:4px; }
+  .kpi .sub { font-size:11px; color:var(--mut); margin-top:4px; }
+
+  label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--mut); font-weight:600; }
   .row { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin-top:10px; }
   .row > * { width:auto; }
-  .row > label { flex:1; min-width:180px; }
-  .big { font-size:28px; font-weight:600; }
-  .balance-meta { font-size:12px; color:var(--mut); margin-top:4px; }
+  .row > label { flex:1; min-width:170px; }
   .muted { color:var(--mut); font-size:12px; }
-  .wrap { overflow:auto; border:1px solid var(--line); border-radius:8px; }
+  .wrap { overflow:auto; border:1px solid var(--line); border-radius:10px; background:#0b0f19; }
   table { border-collapse:collapse; width:100%; }
-  th, td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; white-space:nowrap; }
-  th { color:var(--mut); font-size:12px; background:var(--panel); }
+  th, td { border-bottom:1px solid var(--line); padding:8px 10px; text-align:left; white-space:nowrap; font-size:12.5px; }
+  th { color:var(--mut); font-size:11px; text-transform:uppercase; letter-spacing:.5px; background:#111827; }
   td.wrapcell { white-space:normal; max-width:280px; }
-  tbody tr[data-i] { cursor:pointer; } tbody tr[data-i]:hover td { background:#1d2130; }
-  .actions { display:flex; gap:6px; }
-  .pager { display:flex; justify-content:center; gap:4px; flex-wrap:wrap; margin-top:10px; }
-  .pager button { min-width:32px; padding:4px 8px; }
+  tbody tr[data-i] { cursor:pointer; }
+  tbody tr:hover td { background:#161f30; }
+  .actions { display:flex; gap:5px; flex-wrap:wrap; }
+  .pager { display:flex; justify-content:center; gap:4px; flex-wrap:wrap; margin-top:12px; }
+  .pager button { min-width:32px; padding:4px 8px; justify-content:center; }
   .pager button.act { background:var(--pri); border-color:var(--pri); color:#fff; }
-  .st { font-size:12px; padding:2px 8px; border-radius:10px; border:1px solid var(--line); }
-  .st.ok { color:var(--ok); border-color:var(--ok); }
-  .st.warn { color:var(--warn); border-color:var(--warn); }
-  .st.err { color:var(--err); border-color:var(--err); }
-  .qr img { background:#fff; padding:8px; border-radius:8px; max-width:260px; }
-  .payload { font-family:ui-monospace,monospace; font-size:12px; word-break:break-all; background:#0d0f14; padding:8px; border-radius:6px; border:1px solid var(--line); }
-  .warnbox { border-left:4px solid var(--warn); padding:8px 12px; background:rgba(241,196,15,.08); border-radius:6px; font-size:13px; margin-bottom:12px; }
+  .st { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; border:1px solid var(--line); display:inline-block; }
+  .st.ok { color:var(--ok); border-color:rgba(16,185,129,.45); background:rgba(16,185,129,.1); }
+  .st.warn { color:var(--warn); border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.1); }
+  .st.err { color:var(--err); border-color:rgba(239,68,68,.45); background:rgba(239,68,68,.1); }
+  .qr img { background:#fff; padding:10px; border-radius:10px; max-width:240px; display:block; }
+  .payload { font-family:ui-monospace,monospace; font-size:12px; word-break:break-all; background:#070a12; padding:10px; border-radius:8px; border:1px solid var(--line); }
+  .warnbox { border-left:4px solid var(--warn); padding:10px 12px; background:rgba(245,158,11,.1); border-radius:8px; font-size:12.5px; margin-bottom:12px; }
+  .errbox { border-left:4px solid var(--err); padding:10px 12px; background:rgba(239,68,68,.1); border-radius:8px; font-size:12.5px; margin-bottom:12px; }
+  .okbox { border-left:4px solid var(--ok); padding:10px 12px; background:rgba(16,185,129,.1); border-radius:8px; font-size:12.5px; margin-bottom:12px; }
   .hidden { display:none !important; }
-  #toast { position:fixed; bottom:16px; right:16px; max-width:420px; display:flex; flex-direction:column; gap:8px; z-index:40; }
-  .t { padding:10px 12px; border-radius:8px; background:var(--panel); border-left:4px solid var(--pri); white-space:pre-wrap; font-size:13px; }
-  .t.ok { border-color:var(--ok); } .t.err { border-color:var(--err); }
+
+  #toast { position:fixed; top:16px; right:16px; max-width:420px; display:flex; flex-direction:column; gap:8px; z-index:60; }
+  .t { padding:11px 14px; border-radius:10px; background:#111827; border:1px solid var(--line); border-left:4px solid var(--pri); white-space:pre-wrap; font-size:12.5px; box-shadow:0 10px 25px rgba(0,0,0,.5); }
+  .t.ok { border-left-color:var(--ok); } .t.err { border-left-color:var(--err); }
 
   /* modal */
-  #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:20; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
+  #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:45; align-items:flex-start; justify-content:center; padding:36px 16px; overflow:auto; backdrop-filter:blur(4px); }
   #modal.open { display:flex; }
-  .modal-box { background:var(--panel); border:1px solid var(--line); border-radius:10px; width:100%; max-width:620px; padding:16px; }
-  .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .modal-box { background:var(--panel); border:1px solid #2e3c51; border-radius:14px; width:100%; max-width:680px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.6); }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--line); }
   .modal-head h2 { font-size:15px; margin:0; }
-  .modal-foot { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap; }
-  .kv { display:grid; grid-template-columns:140px 1fr; gap:6px 10px; font-size:13px; margin-bottom:12px; }
-  .kv div:nth-child(odd) { color:var(--mut); }
+  .modal-foot { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--line); }
+  .kv { display:grid; grid-template-columns:150px 1fr; gap:6px 12px; font-size:12.5px; margin-bottom:14px; background:#0b1120; padding:12px; border-radius:10px; border:1px solid var(--line); }
+  .kv div:nth-child(odd) { color:var(--mut); font-weight:600; }
 
   /* autocomplete */
   .ac { position:relative; }
-  .ac-list { display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:12; background:var(--panel); border:1px solid var(--line); border-radius:8px; max-height:260px; overflow:auto; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  .ac-list { display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:25; background:var(--panel); border:1px solid #2e3c51; border-radius:8px; max-height:260px; overflow:auto; box-shadow:0 8px 24px rgba(0,0,0,.5); }
   .ac-list.open { display:block; }
-  .ac-item { padding:8px 10px; cursor:pointer; display:flex; flex-direction:column; gap:2px; }
-  .ac-item:hover, .ac-item.act { background:#222734; }
-  .ac-item small { color:var(--mut); font-size:12px; }
+  .ac-item { padding:8px 10px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-bottom:1px solid var(--line); }
+  .ac-item:hover, .ac-item.act { background:#1e293b; }
+  .ac-item small { color:var(--mut); font-size:11.5px; }
   .ac-msg { padding:8px 10px; color:var(--mut); font-size:12px; }
-  .chip { display:none; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--ok); }
+  .chip { display:none; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--ok); background:rgba(16,185,129,.1); padding:6px 10px; border-radius:8px; border:1px solid rgba(16,185,129,.3); }
   .chip.open { display:flex; }
-  .chip button { padding:2px 8px; font-size:12px; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Painel Asaas</h1>
-  <span class="muted">Saldo: <b id="balanceValue">—</b></span>
+  <a href="/admin" style="text-decoration:none">
+    <button type="button" class="sm"><i class="fa-solid fa-arrow-left"></i> Voltar ao /admin</button>
+  </a>
+  <h1><i class="fa-solid fa-building-columns" style="color:var(--ok)"></i> Central Financeira Asaas & Banco TFL</h1>
+  <span id="envBadge" class="badge warn">Verificando...</span>
+  <span id="keyBadge" class="badge">API Key: —</span>
+  <div class="spacer"></div>
+  <span class="muted">Saldo Asaas: <b id="balanceValue" style="color:var(--ok);font-size:15px">—</b></span>
   <span class="muted" id="balanceAt"></span>
+  <button type="button" class="sm" id="btnRefreshAll"><i class="fa-solid fa-rotate"></i> Atualizar</button>
 </header>
 
 <nav>
-  <button class="tab active" data-tab="balance">Saldo</button>
-  <button class="tab" data-tab="customers">Clientes</button>
-  <button class="tab" data-tab="receivable">Pix a receber</button>
-  <button class="tab" data-tab="received">Pix recebido</button>
-  <button class="tab" data-tab="transactions">Extrato Pix</button>
-  <button class="tab" data-tab="charge">Gerar cobrança</button>
-  <button class="tab" data-tab="static">Pix estático</button>
-  <button class="tab" data-tab="send">Enviar Pix</button>
-  <button class="tab" data-tab="db">Banco local</button>
+  <button class="tab active" data-tab="overview"><i class="fa-solid fa-gauge-high"></i> Visão Geral</button>
+  <button class="tab" data-tab="db"><i class="fa-solid fa-database"></i> Banco Local & Fila TFL</button>
+  <button class="tab" data-tab="customers"><i class="fa-solid fa-users"></i> Clientes & Jogadores</button>
+  <button class="tab" data-tab="receivable"><i class="fa-solid fa-file-invoice-dollar"></i> Cobranças / A Receber</button>
+  <button class="tab" data-tab="received"><i class="fa-solid fa-circle-check"></i> Pix Recebidos</button>
+  <button class="tab" data-tab="charge"><i class="fa-solid fa-qrcode"></i> Gerar Cobrança Pix</button>
+  <button class="tab" data-tab="static"><i class="fa-solid fa-key"></i> Chaves Pix & QR Estático</button>
+  <button class="tab" data-tab="send"><i class="fa-solid fa-paper-plane"></i> Enviar Pix & Pagar QR</button>
+  <button class="tab" data-tab="transactions"><i class="fa-solid fa-list-check"></i> Extratos</button>
+  <button class="tab" data-tab="webhooks"><i class="fa-solid fa-satellite-dish"></i> Webhooks</button>
 </nav>
 
 <main>
 
-  <!-- SALDO -->
-  <section id="tab-balance" class="open">
-    <div class="card">
-      <h2>Saldo disponível</h2>
-      <div class="big" id="balanceBig">—</div>
-      <div class="balance-meta" id="balanceMeta">Atualiza a cada 30 segundos</div>
+  <!-- 1. VISÃO GERAL & DIAGNÓSTICO -->
+  <section id="tab-overview" class="open">
+    <div id="apiAlertBox" class="hidden"></div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="lbl">Saldo Disponível (Asaas)</div>
+        <div class="val" id="balanceBig" style="color:var(--ok)">—</div>
+        <div class="sub" id="balanceMeta">Atualização automática a cada 30s</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Transações no Banco Local</div>
+        <div class="val" id="kpiLocalTotal">0</div>
+        <div class="sub">Compras, Saques e Depósitos TFL</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Pendentes / Fila de Aprovação</div>
+        <div class="val" id="kpiLocalPending" style="color:var(--warn)">0</div>
+        <div class="sub">Aguardando revisão ou liquidação</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Webhooks Processados</div>
+        <div class="val" id="kpiWebhooks" style="color:var(--pri)">0</div>
+        <div class="sub">Eventos recebidos do Asaas</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2><i class="fa-solid fa-plug-circle-check"></i> Diagnóstico da Integração Asaas</h2>
+        <div class="kv" id="diagKv">
+          <div>Ambiente</div><div id="diagEnv">—</div>
+          <div>Endpoint Base</div><div id="diagUrl">—</div>
+          <div>Chave API (.env)</div><div id="diagKey">—</div>
+          <div>Token Webhook</div><div id="diagWhToken">—</div>
+          <div>Titular Comercial</div><div id="diagAccount">—</div>
+        </div>
+        <div class="actions">
+          <button class="pri sm" onclick="switchTab('charge')"><i class="fa-solid fa-plus"></i> Nova Cobrança Pix</button>
+          <button class="ok sm" onclick="switchTab('send')"><i class="fa-solid fa-paper-plane"></i> Enviar Pix</button>
+          <button class="warn sm" onclick="switchTab('db')"><i class="fa-solid fa-gavel"></i> Revisar Fila TFL</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Últimas Operações no Banco TFL <span class="sp"></span>
+          <button class="sm" onclick="switchTab('db')">Ver todas</button>
+        </h2>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>#ID</th><th>Tipo</th><th>Avatar/User</th><th>Valor</th><th>Cash</th><th>Status</th></tr></thead>
+            <tbody id="overviewRecentBody"><tr><td colspan="6" class="muted">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- CLIENTES -->
+  <!-- 2. BANCO LOCAL TFL & CONCILIAÇÃO -->
+  <section id="tab-db">
+    <div class="card">
+      <h2>
+        <i class="fa-solid fa-database"></i> Compras, Saques e Conciliação TFL
+        <span class="sp"></span>
+        <button class="ok sm" id="btnManualCredit"><i class="fa-solid fa-coins"></i> + Lançamento Manual / Creditar Cash</button>
+        <button class="sm" onclick="resetAndLoad(DBP)"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+      </h2>
+      <div class="row" style="margin-bottom:10px">
+        <label>Tipo de Operação
+          <select id="dbType">
+            <option value="">Todos (Compras, Saques e Depósitos)</option>
+            <option value="Buy">Compras (Buy)</option>
+            <option value="Withdraw">Saques (Withdraw)</option>
+            <option value="Deposit">Depósitos (Deposit)</option>
+          </select>
+        </label>
+        <label>Status
+          <select id="dbStatus">
+            <option value="">Todos os Status</option>
+            <option value="WAITING_APPROVAL">WAITING_APPROVAL (Aguardando Admin)</option>
+            <option value="PENDING">PENDING (Pendente)</option>
+            <option value="APPROVED_AUTO">APPROVED_AUTO</option>
+            <option value="CONFIRMED">CONFIRMED / RECEIVED</option>
+            <option value="DONE">DONE</option>
+            <option value="REJECTED">REJECTED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </label>
+        <label>Filtrar Avatar #ID
+          <input id="dbAvatarId" type="number" placeholder="Ex: 1">
+        </label>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#ID</th>
+              <th>Tipo</th>
+              <th>User / Avatar</th>
+              <th>Valor (R$)</th>
+              <th>Cash ($)</th>
+              <th>Status</th>
+              <th>Chave Pix / Payment ID</th>
+              <th>Criado em</th>
+              <th>Ações Administrativas</th>
+            </tr>
+          </thead>
+          <tbody id="dbPayBody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="dbPayPager"></div>
+    </div>
+  </section>
+
+  <!-- 3. CLIENTES ASAAS & SINCRONIZAÇÃO COM JOGADORES TFL -->
   <section id="tab-customers">
     <div class="card">
-      <h2>Clientes <span class="sp"></span><button class="pri" id="btnCustNew">+ Novo cliente</button></h2>
+      <h2>
+        <i class="fa-solid fa-users"></i> Clientes Cadastrados no Asaas
+        <span class="sp"></span>
+        <button class="ok sm" id="btnSyncTflUser"><i class="fa-solid fa-user-check"></i> Importar Jogador TFL para Asaas</button>
+        <button class="pri sm" id="btnCustNew"><i class="fa-solid fa-user-plus"></i> + Novo Cliente Asaas</button>
+      </h2>
       <div class="row">
-        <label style="flex:2">Buscar (nome, CPF/CNPJ ou e-mail)
+        <label style="flex:2">Buscar no Asaas (nome, CPF/CNPJ ou e-mail)
           <input id="custQuery" placeholder="Ex.: Maria ou 123.456.789-00" autocomplete="off">
         </label>
         <span class="muted" id="custCount"></span>
       </div>
       <div class="wrap" style="margin-top:10px">
         <table>
-          <thead><tr><th>ID</th><th>Nome</th><th>CPF/CNPJ</th><th>E-mail</th><th>Telefone</th></tr></thead>
+          <thead><tr><th>ID Asaas</th><th>Nome</th><th>CPF/CNPJ</th><th>E-mail</th><th>Telefone</th><th>Ações</th></tr></thead>
           <tbody id="custBody"></tbody>
         </table>
       </div>
@@ -131,96 +287,211 @@
     </div>
   </section>
 
-  <!-- PIX A RECEBER -->
+  <!-- 4. COBRANÇAS / PIX A RECEBER -->
   <section id="tab-receivable">
     <div class="card">
-      <h2>Cobranças Pix pendentes <span class="sp"></span><span class="muted" id="recCount"></span></h2>
-      <div class="wrap"><table><thead><tr><th>ID</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr></thead><tbody id="recBody"></tbody></table></div>
+      <h2>
+        <i class="fa-solid fa-file-invoice-dollar"></i> Gerenciador de Cobranças Asaas
+        <span class="sp"></span>
+        <span class="muted" id="recCount"></span>
+        <button class="sm" onclick="resetAndLoad(REC)"><i class="fa-solid fa-rotate"></i></button>
+      </h2>
+      <div class="row" style="margin-bottom:10px">
+        <label>Status
+          <select id="recStatusFilter">
+            <option value="PENDING">PENDING (Aguardando pagamento)</option>
+            <option value="OVERDUE">OVERDUE (Vencidas)</option>
+            <option value="RECEIVED_IN_CASH">RECEIVED_IN_CASH (Recebidas em mãos)</option>
+            <option value="REFUNDED">REFUNDED (Estornadas)</option>
+            <option value="ALL">Todas</option>
+          </select>
+        </label>
+        <label>Forma de Pagamento
+          <select id="recBillingFilter">
+            <option value="PIX">PIX</option>
+            <option value="BOLETO">BOLETO</option>
+            <option value="ALL">Todas</option>
+          </select>
+        </label>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>ID Cobrança</th><th>Cliente</th><th>Tipo</th><th>Descrição / Ref</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="recBody"></tbody>
+        </table>
+      </div>
       <div class="pager" id="recPager"></div>
     </div>
   </section>
 
-  <!-- PIX RECEBIDO -->
+  <!-- 5. PIX RECEBIDOS -->
   <section id="tab-received">
     <div class="card">
-      <h2>Cobranças Pix recebidas <span class="sp"></span><span class="muted" id="rcvCount"></span></h2>
-      <div class="wrap"><table><thead><tr><th>ID</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr></thead><tbody id="rcvBody"></tbody></table></div>
+      <h2>
+        <i class="fa-solid fa-circle-check" style="color:var(--ok)"></i> Cobranças Pagas / Recebidas
+        <span class="sp"></span>
+        <span class="muted" id="rcvCount"></span>
+        <button class="sm" onclick="resetAndLoad(RCV)"><i class="fa-solid fa-rotate"></i></button>
+      </h2>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>ID Cobrança</th><th>Cliente</th><th>Tipo</th><th>Descrição / Ref</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="rcvBody"></tbody>
+        </table>
+      </div>
       <div class="pager" id="rcvPager"></div>
     </div>
   </section>
 
-  <!-- EXTRATO -->
-  <section id="tab-transactions">
-    <div class="card">
-      <h2>Extrato Pix <span class="sp"></span><span class="muted" id="txCount"></span></h2>
-      <div class="row">
-        <label>Tipo
-          <select id="txType">
-            <option value="CREDIT">Recebidos</option>
-            <option value="DEBIT">Enviados</option>
-          </select>
-        </label>
-        <label>De<input type="date" id="txStart"></label>
-        <label>Até<input type="date" id="txEnd"></label>
-      </div>
-      <div class="wrap" style="margin-top:10px">
-        <table>
-          <thead><tr><th>ID</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Data</th><th>Descrição</th></tr></thead>
-          <tbody id="txBody"></tbody>
-        </table>
-      </div>
-      <div class="pager" id="txPager"></div>
-    </div>
-  </section>
-
-  <!-- COBRANÇA DINÂMICA -->
+  <!-- 6. GERAR COBRANÇA PIX DINÂMICA / BOLETO -->
   <section id="tab-charge">
     <div class="card">
-      <h2>Gerar cobrança Pix (QR dinâmico)</h2>
+      <h2><i class="fa-solid fa-qrcode"></i> Gerar Nova Cobrança (Pix Dinâmico ou Boleto)</h2>
       <form id="formCharge" class="grid">
-        <label style="grid-column:1/-1">Cliente *
+        <label style="grid-column:1/-1">Cliente Asaas *
           <div class="ac">
-            <input id="chargeCustQuery" placeholder="Digite o nome, CPF/CNPJ ou e-mail" autocomplete="off">
+            <input id="chargeCustQuery" placeholder="Digite nome, CPF/CNPJ ou e-mail do cliente no Asaas..." autocomplete="off">
             <div class="ac-list" id="chargeCustList"></div>
           </div>
           <input type="hidden" name="customer">
-          <div class="chip" id="chargeCustChip"><span id="chargeCustLabel"></span><button type="button" id="chargeCustClear">Trocar</button></div>
+          <div class="chip" id="chargeCustChip"><span id="chargeCustLabel"></span><button type="button" class="sm" id="chargeCustClear">Trocar</button></div>
         </label>
-        <label>Valor (R$) *<input name="value" type="number" step="0.01" min="0.01" required></label>
-        <label>Vencimento *<input name="dueDate" type="date" required></label>
-        <label>Referência externa<input name="externalReference" maxlength="100"></label>
-        <label style="grid-column:1/-1">Descrição<input name="description" maxlength="500"></label>
-        <div class="row" style="grid-column:1/-1"><button class="pri" type="submit" id="btnCharge">Gerar Pix</button></div>
+
+        <label>Forma de Cobrança
+          <select name="billingType">
+            <option value="PIX">PIX (QR Code Dinâmico)</option>
+            <option value="BOLETO">Boleto Bancário</option>
+            <option value="UNDEFINED">Perguntar ao Cliente (Pix/Boleto/Cartão)</option>
+          </select>
+        </label>
+        <label>Valor (R$) *
+          <input name="value" id="chargeValueInput" type="number" step="0.01" min="0.01" placeholder="Ex: 25.00" required>
+        </label>
+        <label>Cash Equivalente ($ TFL)
+          <input name="cashAmount" id="chargeCashInput" type="number" step="0.01" min="0" placeholder="Calculado automático (R$/5)">
+        </label>
+        <label>Vencimento *
+          <input name="dueDate" id="chargeDueDate" type="date" required>
+        </label>
+        <label>Vincular ao Avatar TFL #ID (Opcional)
+          <input name="avatarId" type="number" placeholder="Ex: 1 (credita Cash ao pagar)">
+        </label>
+        <label>Vincular ao User TFL #ID (Opcional)
+          <input name="userId" type="number" placeholder="Ex: 1">
+        </label>
+        <label>Referência Externa
+          <input name="externalReference" maxlength="100" placeholder="Ex: COMPRA-VIP-01">
+        </label>
+        <label style="grid-column:1/-1">Descrição da Cobrança
+          <input name="description" maxlength="500" placeholder="Ex: Pacote de Cash The Fantasy Life">
+        </label>
+        <div class="row" style="grid-column:1/-1">
+          <button class="pri" type="submit" id="btnCharge"><i class="fa-solid fa-bolt"></i> Gerar Cobrança Agora</button>
+        </div>
       </form>
       <div id="chargeResult" class="hidden" style="margin-top:14px"></div>
     </div>
   </section>
 
-  <!-- PIX ESTÁTICO -->
+  <!-- 7. CHAVES PIX & PIX ESTÁTICO -->
   <section id="tab-static">
-    <div class="card">
-      <h2>Gerar Pix estático (QR reutilizável)</h2>
-      <div class="row">
-        <label style="flex:1">Chave Pix<select id="addressKeySel"></select></label>
+    <div class="grid">
+      <div class="card">
+        <h2>
+          <i class="fa-solid fa-key"></i> Chaves Pix da Conta Asaas
+          <span class="sp"></span>
+          <button class="ok sm" id="btnCreateEvpKey"><i class="fa-solid fa-plus"></i> Criar Chave Aleatória (EVP)</button>
+          <button class="sm" onclick="loadKeys()"><i class="fa-solid fa-rotate"></i></button>
+        </h2>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Chave Pix</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="keysTableBody"><tr><td colspan="5" class="muted">Carregando...</td></tr></tbody>
+          </table>
+        </div>
       </div>
-      <form id="formStatic" class="grid" style="margin-top:12px">
-        <label>Valor (R$) (opcional)<input name="value" type="number" step="0.01" min="0.01"></label>
-        <label>Expira em (opcional)<input name="expirationDate" type="date"></label>
-        <label>Descrição<input name="description" maxlength="140"></label>
-        <label><span><input name="allowsMultiplePayments" type="checkbox" checked style="width:auto"> Aceitar múltiplos pagamentos</span></label>
-        <div class="row" style="grid-column:1/-1"><button class="pri" type="submit" id="btnStatic">Gerar QR estático</button></div>
-      </form>
-      <div id="staticResult" class="hidden" style="margin-top:14px"></div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-qrcode"></i> Gerar QR Code Pix Estático (Reutilizável)</h2>
+        <div class="row">
+          <label style="flex:1">Chave Pix Ativa<select id="addressKeySel"></select></label>
+        </div>
+        <form id="formStatic" class="grid" style="margin-top:12px">
+          <label>Valor Fixo (R$) (opcional)<input name="value" type="number" step="0.01" min="0.01" placeholder="Deixe vazio para valor livre"></label>
+          <label>Expira em (opcional)<input name="expirationDate" type="date"></label>
+          <label style="grid-column:1/-1">Descrição (até 140 caracteres)<input name="description" maxlength="140"></label>
+          <label style="grid-column:1/-1"><span><input name="allowsMultiplePayments" type="checkbox" checked style="width:auto"> Permitir múltiplos pagamentos com este mesmo QR</span></label>
+          <div class="row" style="grid-column:1/-1"><button class="pri" type="submit" id="btnStatic"><i class="fa-solid fa-qrcode"></i> Gerar QR Estático</button></div>
+        </form>
+        <div id="staticResult" class="hidden" style="margin-top:14px"></div>
+      </div>
     </div>
   </section>
 
-  <!-- ENVIAR PIX -->
+  <!-- 8. ENVIAR PIX & PAGAR QR CODE -->
   <section id="tab-send">
+    <div class="grid">
+      <div class="card">
+        <h2><i class="fa-solid fa-paper-plane"></i> Enviar Transferência Pix por Chave</h2>
+        <div class="warnbox">Transferência Pix real via Asaas. Confira a chave e o valor antes de confirmar.</div>
+        <form id="formInlineSendPix" class="grid">
+          <label>Tipo da Chave *
+            <select name="pixAddressKeyType" required>
+              <option value="EVP">Chave Aleatória (EVP)</option>
+              <option value="CPF">CPF</option>
+              <option value="CNPJ">CNPJ</option>
+              <option value="EMAIL">E-mail</option>
+              <option value="PHONE">Telefone (+55...)</option>
+            </select>
+          </label>
+          <label>Chave Pix Destino *
+            <input name="pixAddressKey" required placeholder="Informe a chave Pix">
+          </label>
+          <label>Valor (R$) *
+            <input name="value" type="number" step="0.01" min="0.01" required placeholder="Ex: 10.00">
+          </label>
+          <label>Descrição
+            <input name="description" maxlength="140" placeholder="Ex: Pagamento / Saque TFL">
+          </label>
+          <div class="row" style="grid-column:1/-1">
+            <button class="ok" type="submit" id="btnInlineSendPix"><i class="fa-solid fa-paper-plane"></i> Enviar Pix Agora</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-barcode"></i> Decodificar & Pagar QR Code Pix (Copia e Cola)</h2>
+        <form id="formDecodePayQr" class="grid">
+          <label style="grid-column:1/-1">Código Pix Copia e Cola (Payload) *
+            <textarea id="qrPayloadInput" rows="3" placeholder="00020126580014br.gov.bcb.pix..." required></textarea>
+          </label>
+          <div class="row" style="grid-column:1/-1">
+            <button type="button" id="btnDecodeQr"><i class="fa-solid fa-magnifying-glass"></i> 1. Ler Dados do QR Code</button>
+            <button type="button" class="ok" id="btnPayQr"><i class="fa-solid fa-check-double"></i> 2. Pagar QR Code</button>
+          </div>
+        </form>
+        <div id="decodedQrBox" class="hidden" style="margin-top:12px"></div>
+      </div>
+    </div>
+
     <div class="card">
-      <h2>Pix aguardando aprovação <span class="sp"></span><span class="muted" id="pendCount"></span><button class="pri" id="btnNewSend">+ Enviar Pix</button></h2>
+      <h2>
+        <i class="fa-solid fa-money-bill-transfer"></i> Histórico e Fila de Transferências Pix (Asaas)
+        <span class="sp"></span>
+        <select id="transferStatusFilter" style="width:auto">
+          <option value="PENDING">Pendentes (PENDING)</option>
+          <option value="">Todas as Transferências</option>
+          <option value="DONE">Concluídas (DONE)</option>
+          <option value="BANK_PROCESSING">Em Processamento</option>
+          <option value="CANCELLED">Canceladas</option>
+          <option value="FAILED">Com Falha</option>
+        </select>
+        <span class="muted" id="pendCount"></span>
+        <button class="sm" onclick="resetAndLoad(PEND)"><i class="fa-solid fa-rotate"></i></button>
+      </h2>
       <div class="wrap">
         <table>
-          <thead><tr><th>ID</th><th>Valor</th><th>Chave</th><th>Tipo</th><th>Descrição</th><th>Criado em</th><th>Ações</th></tr></thead>
+          <thead><tr><th>ID Transferência</th><th>Valor</th><th>Chave / Destino</th><th>Tipo</th><th>Status</th><th>Descrição</th><th>Data</th><th>Ações</th></tr></thead>
           <tbody id="pendBody"></tbody>
         </table>
       </div>
@@ -228,29 +499,68 @@
     </div>
   </section>
 
-  <!-- BANCO LOCAL -->
-  <section id="tab-db">
+  <!-- 9. EXTRATOS PIX & FINANCEIRO -->
+  <section id="tab-transactions">
     <div class="card">
-      <h2>Compras e saques (banco local) <span class="sp"></span>
-        <select id="dbType" style="width:auto">
-          <option value="">Todos</option>
-          <option value="Buy">Compras</option>
-          <option value="Withdraw">Saques</option>
-        </select>
+      <h2>
+        <i class="fa-solid fa-list-check"></i> Extrato de Movimentações
+        <span class="sp"></span>
+        <span class="muted" id="txCount"></span>
+        <button class="sm" onclick="resetAndLoad(TX)"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+      </h2>
+      <div class="row">
+        <label>Origem do Extrato
+          <select id="txSource">
+            <option value="pix">Extrato de Transações Pix (/pix/transactions)</option>
+            <option value="finance">Extrato Financeiro Geral (/financialTransactions)</option>
+          </select>
+        </label>
+        <label>Tipo (para Pix)
+          <select id="txType">
+            <option value="CREDIT">Créditos (Recebidos)</option>
+            <option value="DEBIT">Débitos (Enviados)</option>
+            <option value="ALL">Todos</option>
+          </select>
+        </label>
+        <label>Data Inicial<input type="date" id="txStart"></label>
+        <label>Data Final<input type="date" id="txEnd"></label>
+      </div>
+      <div class="wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>ID</th><th>Tipo</th><th>Valor</th><th>Saldo / Status</th><th>Data</th><th>Descrição</th></tr></thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="txPager"></div>
+    </div>
+  </section>
+
+  <!-- 10. WEBHOOKS ASAAS & LOG DE EVENTOS -->
+  <section id="tab-webhooks">
+    <div class="card">
+      <h2>
+        <i class="fa-solid fa-satellite-dish"></i> Webhooks Configurados na Conta Asaas
+        <span class="sp"></span>
+        <button class="ok sm" id="btnRegisterWebhook"><i class="fa-solid fa-wand-magic-sparkles"></i> Registrar/Atualizar Webhook Oficial TFL</button>
+        <button class="sm" onclick="loadAsaasWebhooksConfig()"><i class="fa-solid fa-rotate"></i></button>
       </h2>
       <div class="wrap">
         <table>
-          <thead><tr><th>ID</th><th>Tipo</th><th>Provedor</th><th>Valor</th><th>Status</th><th>Payment ID</th><th>Referência</th><th>Customer</th><th>Criado em</th></tr></thead>
-          <tbody id="dbPayBody"></tbody>
+          <thead><tr><th>ID</th><th>Nome</th><th>URL Destino</th><th>Ativo</th><th>Interrompido</th><th>E-mail Alerta</th></tr></thead>
+          <tbody id="asaasWhConfigBody"><tr><td colspan="6" class="muted">Carregando...</td></tr></tbody>
         </table>
       </div>
-      <div class="pager" id="dbPayPager"></div>
     </div>
+
     <div class="card">
-      <h2>Webhooks recebidos</h2>
+      <h2>
+        <i class="fa-solid fa-bolt"></i> Eventos de Webhook Recebidos no Servidor TFL (`bank_webhook`)
+        <span class="sp"></span>
+        <button class="sm" onclick="resetAndLoad(DBW)"><i class="fa-solid fa-rotate"></i></button>
+      </h2>
       <div class="wrap">
         <table>
-          <thead><tr><th>ID</th><th>Evento</th><th>Event key</th><th>Payment ID</th><th>Vinculado a</th><th>Recebido em</th></tr></thead>
+          <thead><tr><th>#ID</th><th>Evento</th><th>Event Key</th><th>Payment / Transfer ID</th><th>Registro Local</th><th>Recebido em</th></tr></thead>
           <tbody id="dbWhBody"></tbody>
         </table>
       </div>
@@ -276,18 +586,32 @@
 <script>
 const $ = id => document.getElementById(id);
 const BRL = v => Number(v || 0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+const USD = v => "$" + Number(v || 0).toFixed(2);
 const PAGE = 20;
 const BALANCE_EVERY = 30000;
+
+// Inicializa data padrão de vencimento para amanhã
+(() => {
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  if ($("chargeDueDate")) $("chargeDueDate").value = tomorrow;
+})();
+
+// Calcula Cash automático ao digitar R$ na geração de cobrança
+$("chargeValueInput")?.addEventListener("input", e => {
+  const v = Number(e.target.value || 0);
+  if (v > 0) $("chargeCashInput").value = (v / 5.0).toFixed(2);
+});
 
 // ---------- utilitários ----------
 function toast(msg, kind=""){
   const el = document.createElement("div");
-  el.className = "t " + kind; el.textContent = msg;
+  el.className = "t " + kind;
+  el.textContent = msg;
   $("toast").appendChild(el);
-  setTimeout(() => el.remove(), kind === "err" ? 9000 : 3500);
+  setTimeout(() => el.remove(), kind === "err" ? 8000 : 3800);
 }
 function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-function fmtDate(d){ return d ? new Date(d.length === 10 ? d + "T00:00:00" : d).toLocaleDateString("pt-BR") : "—"; }
+function fmtDate(d){ return d ? new Date(String(d).length === 10 ? d + "T00:00:00" : d).toLocaleDateString("pt-BR") : "—"; }
 function fmtDateTime(d){ return d ? new Date(d).toLocaleString("pt-BR") : "—"; }
 function fmtDoc(d){
   const n = String(d || "").replace(/\D/g, "");
@@ -296,9 +620,12 @@ function fmtDoc(d){
   return d || "—";
 }
 function statusTag(s){
-  const cls = ["RECEIVED","CONFIRMED","DONE"].includes(s) ? "ok"
-    : ["PENDING","AWAITING_RISK_ANALYSIS","REQUESTED","BANK_PROCESSING"].includes(s) ? "warn" : "err";
+  const cls = ["RECEIVED","CONFIRMED","RECEIVED_IN_CASH","DONE","APPROVED_ADMIN","APPROVED_AUTO","ACTIVE"].includes(s) ? "ok"
+    : ["PENDING","WAITING_APPROVAL","AWAITING_RISK_ANALYSIS","REQUESTED","BANK_PROCESSING"].includes(s) ? "warn" : "err";
   return `<span class="st ${cls}">${esc(s || "—")}</span>`;
+}
+function copyText(txt){
+  navigator.clipboard?.writeText(txt).then(() => toast("Copiado para a área de transferência!", "ok"));
 }
 
 async function api(path, { method="GET", body, query, signal } = {}){
@@ -307,14 +634,14 @@ async function api(path, { method="GET", body, query, signal } = {}){
     const qs = new URLSearchParams(Object.entries(query).filter(([,v]) => v !== undefined && v !== null && v !== ""));
     if ([...qs].length) url += "?" + qs.toString();
   }
-  const opts = { method, credentials:"same-origin", headers:{}, signal };
+  const opts = { method, credentials:"same-origin", headers:{ "Accept": "application/json" }, signal };
   if (body !== undefined){ opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
   const res = await fetch(url, opts);
-  if (res.status === 401){ location.href = "/admin/login"; throw new Error("Sessão expirada."); }
+  if (res.status === 401){ location.href = "/admin/login?pg=/admin/assas"; throw new Error("Sessão expirada."); }
   let json = null;
   try { json = await res.json(); } catch {}
   if (!res.ok || !json || json.ok === false){
-    const err = new Error((json && json.message) || `Erro HTTP ${res.status}`);
+    const err = new Error((json && (json.message || json.error)) || `Erro HTTP ${res.status}`);
     err.status = res.status; err.details = json && json.details; throw err;
   }
   return json;
@@ -322,14 +649,15 @@ async function api(path, { method="GET", body, query, signal } = {}){
 
 async function withBusy(btn, fn){
   if (!btn || btn.disabled) return fn();
-  const label = btn.textContent;
-  btn.disabled = true; btn.textContent = "Aguarde...";
+  const html = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Aguarde...`;
   try { return await fn(); }
-  finally { btn.disabled = false; btn.textContent = label; }
+  finally { btn.disabled = false; btn.innerHTML = html; }
 }
 
-// ---------- paginação (rodapé) ----------
+// ---------- paginação ----------
 function pager(el, total, offset, limit, go){
+  if (!el) return;
   const pages = Math.max(1, Math.ceil((total || 0) / limit));
   const cur = Math.floor(offset / limit) + 1;
   if (pages <= 1 && !total){ el.innerHTML = ""; return; }
@@ -353,42 +681,248 @@ $("modalX").onclick = closeModal;
 $("modal").addEventListener("mousedown", e => { if (e.target.id === "modal") closeModal(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
-// ---------- listas genéricas com paginação no rodapé ----------
+// ---------- listas genéricas ----------
 const STATE = {};
 async function fetchList(c){
   const s = (STATE[c.key] ||= { offset: 0 });
   const tb = $(c.body);
   tb.innerHTML = `<tr><td colspan="${c.cols}" class="muted">Carregando...</td></tr>`;
   try {
-    const j = await api(c.path, { query: { ...(c.query ? c.query() : {}), offset: s.offset, limit: PAGE } });
+    const p = typeof c.path === "function" ? c.path() : c.path;
+    const j = await api(p, { query: { ...(c.query ? c.query() : {}), offset: s.offset, limit: PAGE } });
     const data = j.data || [];
     const total = j.totalCount ?? data.length;
     tb.innerHTML = data.length
       ? data.map((x, i) => c.row(x, i)).join("")
-      : `<tr><td colspan="${c.cols}" class="muted">Nenhum registro.</td></tr>`;
-    if (c.click) tb.querySelectorAll("tr[data-i]").forEach(tr => tr.onclick = () => c.click(data[+tr.dataset.i]));
-    if (c.count) $(c.count).textContent = `${total} registro(s)`;
+      : `<tr><td colspan="${c.cols}" class="muted">Nenhum registro encontrado.</td></tr>`;
+    if (c.click) tb.querySelectorAll("tr[data-i]").forEach(tr => tr.onclick = ev => {
+      if (ev.target.closest("button, a")) return;
+      c.click(data[+tr.dataset.i]);
+    });
+    if (c.count && $(c.count)) $(c.count).textContent = `${total} registro(s)`;
     pager($(c.pager), total, s.offset, PAGE, off => { s.offset = off; fetchList(c); });
     c.onData?.(data, total);
-  } catch (e) { tb.innerHTML = ""; toast(`${c.label}: ${e.message}`, "err"); }
+  } catch (e) {
+    tb.innerHTML = `<tr><td colspan="${c.cols}" class="muted" style="color:var(--err)">${esc(e.message)}</td></tr>`;
+    toast(`${c.label}: ${e.message}`, "err");
+  }
 }
 const resetAndLoad = c => { (STATE[c.key] ||= {}).offset = 0; return fetchList(c); };
 
-// ---------- saldo (auto-refresh) ----------
-async function loadBalance(){
+// ---------- 1. VISÃO GERAL & STATUS ----------
+async function loadOverviewAndBalance(){
   try {
-    const j = await api("/balance");
-    $("balanceValue").textContent = BRL(j.balance);
-    $("balanceBig").textContent = BRL(j.balance);
-    $("balanceAt").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
-    $("balanceMeta").textContent = "Atualiza a cada 30 segundos · última: " + new Date().toLocaleTimeString("pt-BR");
-  } catch (e) { $("balanceBig").textContent = "—"; }
-}
-setInterval(loadBalance, BALANCE_EVERY);
+    const j = await api("/status");
+    const cfg = j.config || {};
+    $("envBadge").textContent = cfg.environment === "SANDBOX" ? "AMBIENTE: SANDBOX" : "AMBIENTE: PRODUÇÃO";
+    $("envBadge").className = "badge " + (cfg.environment === "SANDBOX" ? "warn" : "ok");
+    $("keyBadge").textContent = cfg.configured ? `API Key: ${cfg.maskedKey}` : "API Key: Ausente";
+    $("keyBadge").className = "badge " + (cfg.configured ? "ok" : "err");
 
-// ---------- clientes ----------
+    $("diagEnv").innerHTML = statusTag(cfg.environment || "—");
+    $("diagUrl").textContent = cfg.baseUrl || "—";
+    $("diagKey").textContent = cfg.configured ? `Configurada (${cfg.maskedKey})` : "Não definida no .env";
+    $("diagWhToken").textContent = cfg.webhookTokenConfigured ? "Configurado ✔" : "Não definido (ASAAS_WEBHOOK_TOKEN)";
+    $("diagAccount").textContent = j.accountInfo?.companyName || j.accountInfo?.name || (cfg.configured ? "Conta Conectada" : "—");
+
+    if (j.balance !== null && j.balance !== undefined) {
+      $("balanceValue").textContent = BRL(j.balance);
+      $("balanceBig").textContent = BRL(j.balance);
+      $("balanceAt").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
+    } else {
+      $("balanceValue").textContent = "—";
+      $("balanceBig").textContent = "—";
+    }
+
+    const alertBox = $("apiAlertBox");
+    if (j.apiError) {
+      alertBox.className = "warnbox";
+      alertBox.innerHTML = `<b>Atenção Asaas:</b> ${esc(j.apiError)}. As operações do <b>Banco Local TFL</b> continuam funcionando normalmente.`;
+      alertBox.classList.remove("hidden");
+    } else {
+      alertBox.classList.add("hidden");
+    }
+
+    const loc = j.localSummary || {};
+    $("kpiLocalTotal").textContent = loc.totalLocalPayments ?? 0;
+    $("kpiLocalPending").textContent = loc.pendingApprovals ?? 0;
+    $("kpiWebhooks").textContent = loc.totalWebhooks ?? 0;
+
+    const recList = loc.recentLocal || [];
+    $("overviewRecentBody").innerHTML = recList.length
+      ? recList.map(p => `<tr>
+          <td>#${p.id}</td>
+          <td><b>${esc(p.type)}</b></td>
+          <td>User #${esc(p.userId || "—")} / Av #${esc(p.avatarId || "—")}</td>
+          <td>${BRL(p.value)}</td>
+          <td style="color:var(--ok)">${USD(p.cashAmount)}</td>
+          <td>${statusTag(p.status)}</td>
+        </tr>`).join("")
+      : `<tr><td colspan="6" class="muted">Nenhuma transação registrada ainda.</td></tr>`;
+  } catch (e) {
+    toast("Erro ao carregar status: " + e.message, "err");
+  }
+}
+setInterval(loadOverviewAndBalance, BALANCE_EVERY);
+$("btnRefreshAll").onclick = () => {
+  loadOverviewAndBalance();
+  const activeTab = document.querySelector("button.tab.active")?.dataset?.tab;
+  if (activeTab && ON_OPEN[activeTab]) ON_OPEN[activeTab]();
+};
+
+// ---------- 2. BANCO LOCAL TFL & CONCILIAÇÃO ----------
+const DBP = {
+  key: "dbp", label: "Banco Local TFL", body: "dbPayBody", pager: "dbPayPager", cols: 9,
+  path: "/db/payments",
+  query: () => ({
+    type: $("dbType").value,
+    status: $("dbStatus").value,
+    avatarId: $("dbAvatarId").value.trim(),
+  }),
+  row: (p, i) => {
+    const canReview = ["WAITING_APPROVAL", "PENDING", "APPROVED_AUTO"].includes(p.status);
+    const hasRemoteId = Boolean(p.paymentId);
+    const isWithdraw = p.type === "Withdraw";
+    return `<tr data-i="${i}">
+      <td><b>#${esc(p.id)}</b></td>
+      <td>${esc(p.type)} <small class="muted">(${esc(p.provedor)})</small></td>
+      <td>User #${esc(p.userId || "—")} · Av #${esc(p.avatarId || "—")}</td>
+      <td><b>${BRL(p.value)}</b></td>
+      <td style="color:var(--ok);font-weight:700">${USD(p.cashAmount)}</td>
+      <td>${statusTag(p.status)}</td>
+      <td class="wrapcell"><small>${esc(p.pixKey || p.paymentId || p.referenceId || "—")}</small></td>
+      <td>${fmtDateTime(p.createdAt)}</td>
+      <td>
+        <div class="actions">
+          ${canReview ? `<button class="ok sm" data-act="approve" data-idx="${i}" title="Aprovar no TFL"><i class="fa-solid fa-check"></i> Aprovar</button>` : ""}
+          ${canReview && isWithdraw && p.pixKey ? `<button class="pri sm" data-act="approve-pix" data-idx="${i}" title="Aprovar e Enviar Pix via Asaas"><i class="fa-solid fa-paper-plane"></i> Aprovar + Pix</button>` : ""}
+          ${canReview ? `<button class="danger sm" data-act="reject" data-idx="${i}" title="Recusar e Estornar"><i class="fa-solid fa-xmark"></i> Recusar</button>` : ""}
+          ${hasRemoteId ? `<button class="sm" data-act="sync" data-idx="${i}" title="Sincronizar status com Asaas"><i class="fa-solid fa-rotate"></i> Sync</button>` : ""}
+          <button class="danger sm" data-act="del" data-idx="${i}" title="Excluir Registro"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  },
+  onData: (list) => {
+    $("dbPayBody").querySelectorAll("button[data-act]").forEach(btn => {
+      btn.onclick = async ev => {
+        ev.stopPropagation();
+        const item = list[+btn.dataset.idx];
+        const act = btn.dataset.act;
+        if (!item) return;
+
+        if (act === "approve" || act === "approve-pix" || act === "reject") {
+          const isReject = act === "reject";
+          const execAsaas = act === "approve-pix";
+          const confirmMsg = isReject
+            ? `Recusar o registro #${item.id} (${BRL(item.value)}) e estornar saldo se aplicável?`
+            : execAsaas
+              ? `Aprovar o saque #${item.id} e DISPARAR PIX REAL de ${BRL(item.value)} para ${item.pixKey} no Asaas?`
+              : `Aprovar manualmente o registro #${item.id} (${BRL(item.value)} / ${USD(item.cashAmount)})?`;
+          if (!confirm(confirmMsg)) return;
+
+          await withBusy(btn, async () => {
+            try {
+              await api(`/db/payments/${item.id}/review`, {
+                method: "POST",
+                body: { action: isReject ? "REJECT" : "APPROVE", executeAsaasTransfer: execAsaas },
+              });
+              toast(`Registro #${item.id} processado com sucesso!`, "ok");
+              fetchList(DBP);
+              loadOverviewAndBalance();
+            } catch (e) { toast(e.message, "err"); }
+          });
+        } else if (act === "sync") {
+          await withBusy(btn, async () => {
+            try {
+              const r = await api(`/db/payments/${item.id}/sync`, { method: "POST" });
+              toast(`Sincronizado! Status Asaas: ${r.remote?.status || r.payment?.status}`, "ok");
+              fetchList(DBP);
+              loadOverviewAndBalance();
+            } catch (e) { toast("Falha ao sincronizar: " + e.message, "err"); }
+          });
+        } else if (act === "del") {
+          if (!confirm(`Excluir permanentemente o registro local #${item.id}?`)) return;
+          await withBusy(btn, async () => {
+            try {
+              await api(`/db/payments/${item.id}`, { method: "DELETE" });
+              toast(`Registro #${item.id} removido.`, "ok");
+              fetchList(DBP);
+              loadOverviewAndBalance();
+            } catch (e) { toast(e.message, "err"); }
+          });
+        }
+      };
+    });
+  },
+};
+["dbType", "dbStatus", "dbAvatarId"].forEach(id => $(id).addEventListener("change", () => resetAndLoad(DBP)));
+
+// Modal de Lançamento Manual / Crédito de Cash
+$("btnManualCredit").onclick = () => {
+  openModal("Lançamento Manual / Creditar ou Debitar Cash no TFL", `
+    <form id="formManualCredit" class="grid">
+      <label>Tipo de Operação
+        <select name="type">
+          <option value="Buy">Compra / Crédito (Adiciona Cash)</option>
+          <option value="Deposit">Depósito / Bônus (Adiciona Cash)</option>
+          <option value="Withdraw">Saque / Débito Manual (Remove Cash)</option>
+        </select>
+      </label>
+      <label>Avatar TFL #ID *
+        <input name="avatarId" type="number" required placeholder="Ex: 1">
+      </label>
+      <label>User TFL #ID (Opcional)
+        <input name="userId" type="number" placeholder="Ex: 1">
+      </label>
+      <label>Quantidade de Cash ($ USD) *
+        <input name="cashAmount" type="number" step="0.01" min="0.01" required placeholder="Ex: 10.00">
+      </label>
+      <label>Valor Equivalente (R$)
+        <input name="value" type="number" step="0.01" min="0" placeholder="Opcional (calculado automático)">
+      </label>
+      <label>Aplicar na Carteira do Avatar?
+        <select name="applyToWallet">
+          <option value="true">Sim, atualizar saldo da carteira agora</option>
+          <option value="false">Não, apenas registrar no histórico</option>
+        </select>
+      </label>
+      <label style="grid-column:1/-1">Descrição / Motivo
+        <input name="description" maxlength="250" placeholder="Ex: Crédito aprovado via comprovante Pix">
+      </label>
+      <div class="modal-foot" style="grid-column:1/-1">
+        <button type="button" class="ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="ok" id="btnSaveManualCredit"><i class="fa-solid fa-check"></i> Confirmar Lançamento</button>
+      </div>
+    </form>
+  `);
+  $("formManualCredit").onsubmit = async ev => {
+    ev.preventDefault();
+    const f = ev.target;
+    const body = {
+      type: f.type.value,
+      avatarId: Number(f.avatarId.value),
+      userId: f.userId.value ? Number(f.userId.value) : undefined,
+      cashAmount: Number(f.cashAmount.value),
+      value: f.value.value ? Number(f.value.value) : undefined,
+      applyToWallet: f.applyToWallet.value === "true",
+      description: f.description.value.trim() || undefined,
+    };
+    await withBusy($("btnSaveManualCredit"), async () => {
+      try {
+        const j = await api("/db/payments/manual", { method: "POST", body });
+        toast(`Lançamento #${j.payment?.id} concluído!`, "ok");
+        closeModal();
+        resetAndLoad(DBP);
+        loadOverviewAndBalance();
+      } catch (e) { toast(e.message, "err"); }
+    });
+  };
+};
+
+// ---------- 3. CLIENTES ASAAS & IMPORTAÇÃO DE JOGADORES TFL ----------
 const CUST = {
-  key: "cust", label: "Clientes", body: "custBody", pager: "custPager", cols: 5, path: "/customers",
+  key: "cust", label: "Clientes", body: "custBody", pager: "custPager", cols: 6, path: "/customers",
   query: () => {
     const q = $("custQuery").value.trim();
     const digits = q.replace(/\D/g, "");
@@ -396,10 +930,36 @@ const CUST = {
     return !q ? {} : isDoc ? { cpfCnpj: digits } : /@/.test(q) ? { email: q } : { name: q };
   },
   row: (c, i) => `<tr data-i="${i}">
-    <td>${esc(c.id)}</td><td class="wrapcell">${esc(c.name)}</td><td>${esc(fmtDoc(c.cpfCnpj))}</td>
-    <td>${esc(c.email || "—")}</td><td>${esc(c.mobilePhone || c.phone || "—")}</td></tr>`,
+    <td><b>${esc(c.id)}</b></td>
+    <td class="wrapcell">${esc(c.name)}</td>
+    <td>${esc(fmtDoc(c.cpfCnpj))}</td>
+    <td>${esc(c.email || "—")}</td>
+    <td>${esc(c.mobilePhone || c.phone || "—")}</td>
+    <td>
+      <div class="actions">
+        <button class="sm" data-edit="${i}"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button class="danger sm" data-del="${i}"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </td></tr>`,
   click: c => openCustomerModal(c),
-  onData: (_, total) => $("custCount").textContent = `${total} cliente(s)`,
+  onData: (list, total) => {
+    $("custCount").textContent = `${total} cliente(s)`;
+    $("custBody").querySelectorAll("[data-edit]").forEach(b => b.onclick = ev => {
+      ev.stopPropagation(); openCustomerModal(list[+b.dataset.edit]);
+    });
+    $("custBody").querySelectorAll("[data-del]").forEach(b => b.onclick = async ev => {
+      ev.stopPropagation();
+      const c = list[+b.dataset.del];
+      if (!confirm(`Excluir o cliente ${c.name} (${c.id}) no Asaas?`)) return;
+      await withBusy(b, async () => {
+        try {
+          await api(`/customers/${encodeURIComponent(c.id)}`, { method: "DELETE" });
+          toast("Cliente excluído no Asaas.", "ok");
+          fetchList(CUST);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    });
+  },
 };
 
 let custTimer = null;
@@ -408,24 +968,34 @@ $("custQuery").addEventListener("input", () => {
   custTimer = setTimeout(() => resetAndLoad(CUST), 350);
 });
 
-function customerForm(c = {}){
-  return `
-    <form id="formCust" class="grid">
-      <label>Nome *<input name="name" required maxlength="200" value="${esc(c.name || "")}"></label>
-      <label>CPF/CNPJ *<input name="cpfCnpj" required inputmode="numeric" maxlength="18" value="${esc(c.cpfCnpj || "")}"></label>
-      <label>E-mail<input name="email" type="email" maxlength="100" value="${esc(c.email || "")}"></label>
-      <label>Celular<input name="mobilePhone" inputmode="tel" maxlength="20" value="${esc(c.mobilePhone || "")}"></label>
-      <div class="modal-foot" style="grid-column:1/-1">
-        <button type="button" class="ghost" id="btnCustCancel">Cancelar</button>
-        <button class="pri" type="submit" id="btnCustSave">Salvar</button>
-      </div>
-    </form>`;
-}
-
 function openCustomerModal(c){
   const editing = !!c?.id;
-  openModal(editing ? `Cliente ${c.id}` : "Novo cliente", customerForm(c));
-  $("btnCustCancel").onclick = closeModal;
+  openModal(editing ? `Editar Cliente ${c.id}` : "Novo Cliente Asaas", `
+    <form id="formCust" class="grid">
+      <label>Nome Completo / Razão Social *<input name="name" required maxlength="200" value="${esc(c?.name || "")}"></label>
+      <label>CPF ou CNPJ *<input name="cpfCnpj" required inputmode="numeric" maxlength="18" value="${esc(c?.cpfCnpj || "")}"></label>
+      <label>E-mail<input name="email" type="email" maxlength="100" value="${esc(c?.email || "")}"></label>
+      <label>Celular / WhatsApp<input name="mobilePhone" inputmode="tel" maxlength="20" value="${esc(c?.mobilePhone || "")}"></label>
+      <label style="grid-column:1/-1">Referência Externa (Ex: TFL_USER_1)<input name="externalReference" maxlength="80" value="${esc(c?.externalReference || "")}"></label>
+      <div class="modal-foot" style="grid-column:1/-1">
+        ${editing ? `<button type="button" class="warn sm" id="btnCustRestore"><i class="fa-solid fa-rotate-left"></i> Restaurar se Excluído</button>` : ""}
+        <button type="button" class="ghost" onclick="closeModal()">Cancelar</button>
+        <button class="pri" type="submit" id="btnCustSave"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+      </div>
+    </form>
+  `);
+  if (editing && $("btnCustRestore")) {
+    $("btnCustRestore").onclick = async () => {
+      await withBusy($("btnCustRestore"), async () => {
+        try {
+          await api(`/customers/${encodeURIComponent(c.id)}/restore`, { method: "POST" });
+          toast("Cliente restaurado!", "ok");
+          closeModal();
+          fetchList(CUST);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    };
+  }
   $("formCust").onsubmit = async ev => {
     ev.preventDefault();
     const f = ev.target;
@@ -434,13 +1004,14 @@ function openCustomerModal(c){
       cpfCnpj: f.cpfCnpj.value.replace(/\D/g, ""),
       email: f.email.value.trim() || undefined,
       mobilePhone: f.mobilePhone.value.replace(/\D/g, "") || undefined,
+      externalReference: f.externalReference.value.trim() || undefined,
     };
-    if (![11, 14].includes(body.cpfCnpj.length)) return toast("CPF deve ter 11 dígitos ou CNPJ 14", "err");
+    if (![11, 14].includes(body.cpfCnpj.length)) return toast("CPF deve ter 11 dígitos ou CNPJ 14 dígitos", "err");
     await withBusy($("btnCustSave"), async () => {
       try {
         if (editing) await api(`/customers/${encodeURIComponent(c.id)}`, { method: "PUT", body });
         else await api("/customers", { method: "POST", body });
-        toast(editing ? "Cliente atualizado" : "Cliente cadastrado", "ok");
+        toast(editing ? "Cliente atualizado!" : "Cliente cadastrado no Asaas!", "ok");
         closeModal();
         fetchList(CUST);
       } catch (e) { toast("Erro ao salvar cliente: " + e.message, "err"); }
@@ -449,54 +1020,195 @@ function openCustomerModal(c){
 }
 $("btnCustNew").onclick = () => openCustomerModal(null);
 
-// ---------- cobranças (a receber / recebidas) ----------
+// Importar Jogador do TFL para o Asaas
+$("btnSyncTflUser").onclick = async () => {
+  openModal("Importar Jogador TFL como Cliente Asaas", `<p class="muted">Carregando jogadores do TFL...</p>`);
+  try {
+    const j = await api("/tfl-users");
+    const users = j.data || [];
+    const options = users.map(u => {
+      const avNames = (u.avatars || []).map(a => `${a.name} (#${a.id} · $${Number(a.wallet?.cash || 0).toFixed(2)})`).join(", ");
+      return `<option value="${u.id}">User #${u.id}: ${esc(u.userName || u.login)} (${esc(u.email || "sem email")}) — Avatares: ${esc(avNames || "nenhum")}</option>`;
+    }).join("");
+
+    $("modalBody").innerHTML = `
+      <form id="formSyncUser" class="grid">
+        <label style="grid-column:1/-1">Selecione o Jogador TFL *
+          <select name="userId" required>${options}</select>
+        </label>
+        <label style="grid-column:1/-1">CPF ou CNPJ do Jogador (obrigatório pelo Asaas) *
+          <input name="cpfCnpj" required placeholder="Somente números (11 ou 14 dígitos)">
+        </label>
+        <div class="modal-foot" style="grid-column:1/-1">
+          <button type="button" class="ghost" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="ok" id="btnDoSyncUser"><i class="fa-solid fa-cloud-arrow-up"></i> Criar Cliente no Asaas</button>
+        </div>
+      </form>
+    `;
+    $("formSyncUser").onsubmit = async ev => {
+      ev.preventDefault();
+      const f = ev.target;
+      await withBusy($("btnDoSyncUser"), async () => {
+        try {
+          const r = await api("/customers/sync-user", {
+            method: "POST",
+            body: { userId: Number(f.userId.value), cpfCnpj: f.cpfCnpj.value },
+          });
+          toast(`Cliente criado no Asaas: ${r.data?.id}`, "ok");
+          closeModal();
+          resetAndLoad(CUST);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    };
+  } catch (e) {
+    $("modalBody").innerHTML = `<div class="errbox">${esc(e.message)}</div>`;
+  }
+};
+
+// ---------- 4 & 5. COBRANÇAS (A RECEBER E RECEBIDAS) ----------
 const PAY_ROW = (p, i) => `<tr data-i="${i}">
-  <td>${esc(p.id)}</td><td>${esc(p.customer)}</td>
-  <td class="wrapcell">${esc(p.description || p.externalReference || "")}</td>
-  <td>${BRL(p.value)}</td><td>${fmtDate(p.dueDate)}</td><td>${statusTag(p.status)}</td></tr>`;
+  <td><b>${esc(p.id)}</b></td>
+  <td>${esc(p.customer)}</td>
+  <td><span class="badge">${esc(p.billingType || "PIX")}</span></td>
+  <td class="wrapcell">${esc(p.description || p.externalReference || "—")}</td>
+  <td><b>${BRL(p.value)}</b></td>
+  <td>${fmtDate(p.dueDate)}</td>
+  <td>${statusTag(p.status)}</td>
+  <td><button class="sm"><i class="fa-solid fa-sliders"></i> Gerenciar</button></td>
+</tr>`;
 
 const REC = {
-  key: "rec", label: "Pix a receber", body: "recBody", pager: "recPager", count: "recCount", cols: 6,
-  path: "/pix/receivable", row: PAY_ROW, click: p => openChargeModal(p, true),
+  key: "rec", label: "Cobranças", body: "recBody", pager: "recPager", count: "recCount", cols: 8,
+  path: "/pix/receivable",
+  query: () => ({
+    status: $("recStatusFilter")?.value || "PENDING",
+    billingType: $("recBillingFilter")?.value || "PIX",
+  }),
+  row: PAY_ROW,
+  click: p => openChargeModal(p),
 };
+["recStatusFilter", "recBillingFilter"].forEach(id => $(id)?.addEventListener("change", () => resetAndLoad(REC)));
+
 const RCV = {
-  key: "rcv", label: "Pix recebido", body: "rcvBody", pager: "rcvPager", count: "rcvCount", cols: 6,
-  path: "/pix/received", row: PAY_ROW, click: p => openChargeModal(p, false),
+  key: "rcv", label: "Pix Recebidos", body: "rcvBody", pager: "rcvPager", count: "rcvCount", cols: 8,
+  path: "/pix/received",
+  row: PAY_ROW,
+  click: p => openChargeModal(p),
 };
 
-function openChargeModal(p, editable){
-  const link = p.invoiceUrl ? `<a href="${esc(p.invoiceUrl)}" target="_blank" rel="noopener" style="color:var(--pri)">Abrir fatura</a>` : "—";
-  const info = `
+function openChargeModal(p){
+  const isPaid = ["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"].includes(p.status);
+  const link = p.invoiceUrl ? `<a href="${esc(p.invoiceUrl)}" target="_blank" rel="noopener" style="color:var(--pri)">Abrir fatura no Asaas ↗</a>` : "—";
+
+  openModal(`Gerenciar Cobrança ${p.id}`, `
     <div class="kv">
-      <div>ID</div><div>${esc(p.id)}</div>
+      <div>ID Cobrança</div><div><b>${esc(p.id)}</b></div>
       <div>Cliente</div><div>${esc(p.customer)}</div>
+      <div>Forma</div><div>${esc(p.billingType || "PIX")}</div>
       <div>Status</div><div>${statusTag(p.status)}</div>
       <div>Vencimento</div><div>${fmtDate(p.dueDate)}</div>
-      <div>Valor</div><div>${BRL(p.value)}</div>
+      <div>Valor</div><div><b>${BRL(p.value)}</b></div>
       <div>Fatura</div><div>${link}</div>
     </div>
-    <div id="chargeQr"></div>`;
 
-  if (!editable){
-    openModal("Cobrança " + p.id, info + `<div class="modal-foot"><button id="btnQr">Ver QR Code</button><button class="ghost" onclick="closeModal()">Fechar</button></div>`);
-    $("btnQr").onclick = () => loadQr(p.id);
-    return;
-  }
+    <div class="actions" style="margin-bottom:14px">
+      <button type="button" class="pri sm" id="btnModalQr"><i class="fa-solid fa-qrcode"></i> Ver QR Code Pix</button>
+      ${!isPaid ? `<button type="button" class="ok sm" id="btnReceiveInCash"><i class="fa-solid fa-hand-holding-dollar"></i> Confirmar Recebimento em Mãos (+ Creditar TFL)</button>` : ""}
+      ${p.status === "RECEIVED_IN_CASH" ? `<button type="button" class="warn sm" id="btnUndoCash"><i class="fa-solid fa-rotate-left"></i> Desfazer Recebimento em Mãos</button>` : ""}
+      ${isPaid ? `<button type="button" class="danger sm" id="btnRefundCharge"><i class="fa-solid fa-money-bill-transfer"></i> Estornar (Refund)</button>` : ""}
+      <button type="button" class="warn sm" id="btnRestoreCharge"><i class="fa-solid fa-trash-can-arrow-up"></i> Restaurar</button>
+      <button type="button" class="danger sm" id="btnDelCharge"><i class="fa-solid fa-trash"></i> Excluir</button>
+    </div>
 
-  openModal("Cobrança " + p.id, info + `
-    <form id="formEditCharge" class="grid">
-      <label>Valor (R$)<input name="value" type="number" step="0.01" min="0.01" value="${esc(p.value)}"></label>
-      <label>Vencimento<input name="dueDate" type="date" value="${esc(p.dueDate || "")}"></label>
+    <div id="chargeQr"></div>
+
+    <form id="formEditCharge" class="grid" style="margin-top:12px">
+      <label>Editar Valor (R$)<input name="value" type="number" step="0.01" min="0.01" value="${esc(p.value)}"></label>
+      <label>Editar Vencimento<input name="dueDate" type="date" value="${esc(p.dueDate || "")}"></label>
+      <label>Referência Externa<input name="externalReference" maxlength="100" value="${esc(p.externalReference || "")}"></label>
       <label style="grid-column:1/-1">Descrição<input name="description" maxlength="500" value="${esc(p.description || "")}"></label>
       <div class="modal-foot" style="grid-column:1/-1">
-        <button type="button" class="danger" id="btnDelCharge">Excluir</button>
-        <button type="button" id="btnQr">Ver QR Code</button>
         <button type="button" class="ghost" onclick="closeModal()">Fechar</button>
-        <button type="submit" class="pri" id="btnSaveCharge">Salvar</button>
+        <button type="submit" class="pri" id="btnSaveCharge"><i class="fa-solid fa-floppy-disk"></i> Salvar Alterações</button>
       </div>
-    </form>`);
+    </form>
+  `);
 
-  $("btnQr").onclick = () => loadQr(p.id);
+  $("btnModalQr").onclick = () => loadQr(p.id);
+
+  if ($("btnReceiveInCash")) {
+    $("btnReceiveInCash").onclick = async () => {
+      if (!confirm(`Confirmar recebimento manual da cobrança ${p.id} (${BRL(p.value)}) e creditar Cash na carteira TFL vinculada?`)) return;
+      await withBusy($("btnReceiveInCash"), async () => {
+        try {
+          await api(`/pix/payments/${encodeURIComponent(p.id)}/receive-in-cash`, {
+            method: "POST",
+            body: { value: Number(p.value), creditTflWallet: true },
+          });
+          toast("Recebimento confirmado e carteira TFL atualizada!", "ok");
+          closeModal();
+          fetchList(REC);
+          loadOverviewAndBalance();
+        } catch (e) { toast(e.message, "err"); }
+      });
+    };
+  }
+
+  if ($("btnUndoCash")) {
+    $("btnUndoCash").onclick = async () => {
+      if (!confirm(`Desfazer o recebimento em mãos da cobrança ${p.id}?`)) return;
+      await withBusy($("btnUndoCash"), async () => {
+        try {
+          await api(`/pix/payments/${encodeURIComponent(p.id)}/undo-receive-in-cash`, { method: "POST" });
+          toast("Recebimento em mãos desfeito.", "ok");
+          closeModal();
+          fetchList(REC);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    };
+  }
+
+  if ($("btnRefundCharge")) {
+    $("btnRefundCharge").onclick = async () => {
+      if (!confirm(`Estornar (Refund) a cobrança ${p.id} no valor de ${BRL(p.value)}?`)) return;
+      await withBusy($("btnRefundCharge"), async () => {
+        try {
+          await api(`/pix/payments/${encodeURIComponent(p.id)}/refund`, {
+            method: "POST",
+            body: { description: "Estorno administrativo TFL" },
+          });
+          toast("Cobrança estornada com sucesso!", "ok");
+          closeModal();
+          fetchList(RCV);
+          fetchList(REC);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    };
+  }
+
+  $("btnRestoreCharge").onclick = async () => {
+    await withBusy($("btnRestoreCharge"), async () => {
+      try {
+        await api(`/pix/payments/${encodeURIComponent(p.id)}/restore`, { method: "POST" });
+        toast("Cobrança restaurada!", "ok");
+        closeModal();
+        fetchList(REC);
+      } catch (e) { toast(e.message, "err"); }
+    });
+  };
+
+  $("btnDelCharge").onclick = async () => {
+    if (!confirm(`Excluir a cobrança ${p.id}?`)) return;
+    await withBusy($("btnDelCharge"), async () => {
+      try {
+        await api(`/pix/payments/${encodeURIComponent(p.id)}`, { method: "DELETE" });
+        toast("Cobrança excluída!", "ok");
+        closeModal();
+        fetchList(REC);
+      } catch (e) { toast(e.message, "err"); }
+    });
+  };
+
   $("formEditCharge").onsubmit = async ev => {
     ev.preventDefault();
     const f = ev.target;
@@ -504,145 +1216,35 @@ function openChargeModal(p, editable){
       value: Number(f.value.value),
       dueDate: f.dueDate.value,
       description: f.description.value.trim() || undefined,
+      externalReference: f.externalReference.value.trim() || undefined,
     };
-    if (!(body.value > 0)) return toast("Valor deve ser maior que zero", "err");
     await withBusy($("btnSaveCharge"), async () => {
       try {
         await api(`/pix/payments/${encodeURIComponent(p.id)}`, { method: "PUT", body });
-        toast("Cobrança atualizada", "ok");
+        toast("Cobrança atualizada!", "ok");
         closeModal();
         fetchList(REC);
-      } catch (e) { toast("Erro ao salvar: " + e.message, "err"); }
-    });
-  };
-  $("btnDelCharge").onclick = async () => {
-    if (!confirm(`Excluir a cobrança ${p.id}?`)) return;
-    await withBusy($("btnDelCharge"), async () => {
-      try {
-        await api(`/pix/payments/${encodeURIComponent(p.id)}`, { method: "DELETE" });
-        toast("Cobrança excluída", "ok");
-        closeModal();
-        fetchList(REC);
-      } catch (e) { toast("Erro ao excluir: " + e.message, "err"); }
+      } catch (e) { toast(e.message, "err"); }
     });
   };
 }
 
 async function loadQr(id){
   const box = $("chargeQr");
-  box.innerHTML = `<p class="muted">Gerando QR...</p>`;
+  box.innerHTML = `<p class="muted">Obtendo QR Code Pix...</p>`;
   try {
     const j = await api(`/pix/payments/${encodeURIComponent(id)}/qrcode`);
     const d = j.qrCode || {};
     box.innerHTML = `
-      ${d.encodedImage ? `<div class="qr"><img alt="QR Code Pix" src="data:image/png;base64,${d.encodedImage}"></div>` : ""}
-      <p class="muted" style="margin:10px 0 4px">Pix copia e cola</p>
-      <div class="payload">${esc(d.payload || "")}</div>`;
-  } catch (e) { box.innerHTML = `<p class="muted">Erro: ${esc(e.message)}</p>`; }
+      <div class="card" style="background:#0b1120">
+        ${d.encodedImage ? `<div class="qr"><img alt="QR Code Pix" src="data:image/png;base64,${d.encodedImage}"></div>` : ""}
+        <p class="muted" style="margin:10px 0 4px">Pix Copia e Cola <button type="button" class="sm" onclick="copyText('${esc(d.payload || "")}')"><i class="fa-solid fa-copy"></i> Copiar</button></p>
+        <div class="payload">${esc(d.payload || "")}</div>
+      </div>`;
+  } catch (e) { box.innerHTML = `<div class="errbox">Erro ao gerar QR: ${esc(e.message)}</div>`; }
 }
 
-// ---------- extrato ----------
-const TX = {
-  key: "tx", label: "Extrato", body: "txBody", pager: "txPager", count: "txCount", cols: 6,
-  path: "/pix/transactions",
-  query: () => ({ type: $("txType").value, startDate: $("txStart").value, finishDate: $("txEnd").value }),
-  row: (t, i) => `<tr>
-    <td>${esc(t.id)}</td><td>${esc(t.type || $("txType").value)}</td><td>${BRL(t.value)}</td>
-    <td>${statusTag(t.status)}</td><td>${fmtDate(t.date || t.createdAt)}</td>
-    <td class="wrapcell">${esc(t.description || "")}</td></tr>`,
-};
-["txType", "txStart", "txEnd"].forEach(id => $(id).addEventListener("change", () => resetAndLoad(TX)));
-
-// ---------- envio de Pix: pendentes de aprovação ----------
-const PEND = {
-  key: "pend", label: "Pix pendentes", body: "pendBody", pager: "pendPager", count: "pendCount", cols: 7,
-  path: "/pix/transfers/pending",
-  row: (t, i) => `<tr>
-    <td>${esc(t.id)}</td><td>${BRL(t.value)}</td><td>${esc(t.pixAddressKey || "—")}</td>
-    <td>${esc(t.pixAddressKeyType || "—")}</td><td class="wrapcell">${esc(t.description || "")}</td>
-    <td>${fmtDateTime(t.dateCreated || t.createdAt)}</td>
-    <td><div class="actions">
-      <button class="ok sm" data-approve="${i}">Aprovar</button>
-      <button class="danger sm" data-cancel="${i}">Cancelar</button>
-    </div></td></tr>`,
-  onData: (list) => {
-    $("pendBody").querySelectorAll("[data-approve]").forEach(b => b.onclick = ev => {
-      ev.stopPropagation(); approveTransfer(list[+b.dataset.approve], b);
-    });
-    $("pendBody").querySelectorAll("[data-cancel]").forEach(b => b.onclick = ev => {
-      ev.stopPropagation(); cancelTransfer(list[+b.dataset.cancel], b);
-    });
-  },
-};
-
-async function approveTransfer(t, btn){
-  if (!confirm(`Aprovar envio de ${BRL(t.value)} para ${t.pixAddressKey}? Não é possível desfazer.`)) return;
-  await withBusy(btn, async () => {
-    try {
-      await api(`/pix/transfers/${encodeURIComponent(t.id)}/approve`, { method: "POST" });
-      toast("Pix aprovado", "ok");
-      fetchList(PEND);
-    } catch (e) { toast("Erro ao aprovar: " + e.message, "err"); }
-  });
-}
-async function cancelTransfer(t, btn){
-  if (!confirm(`Cancelar o envio ${t.id}?`)) return;
-  await withBusy(btn, async () => {
-    try {
-      await api(`/pix/transfers/${encodeURIComponent(t.id)}/cancel`, { method: "POST" });
-      toast("Envio cancelado", "ok");
-      fetchList(PEND);
-    } catch (e) { toast("Erro ao cancelar: " + e.message, "err"); }
-  });
-}
-
-let sendKey = null;
-$("btnNewSend").onclick = () => {
-  sendKey = "pix-" + crypto.randomUUID();
-  openModal("Enviar Pix", `
-    <div class="warnbox">Transferência real: confira chave e valor antes de enviar. Não é possível desfazer.</div>
-    <form id="formSend" class="grid">
-      <label>Tipo da chave *
-        <select name="pixAddressKeyType" required>
-          <option value="CPF">CPF</option><option value="CNPJ">CNPJ</option>
-          <option value="EMAIL">E-mail</option><option value="PHONE">Telefone</option><option value="EVP">Chave aleatória</option>
-        </select>
-      </label>
-      <label>Chave Pix *<input name="pixAddressKey" required></label>
-      <label>Valor (R$) *<input name="value" type="number" step="0.01" min="0.01" required></label>
-      <label>Descrição<input name="description" maxlength="140"></label>
-      <div class="modal-foot" style="grid-column:1/-1">
-        <button type="button" class="ghost" onclick="closeModal()">Cancelar</button>
-        <button class="pri" type="submit" id="btnSend">Enviar Pix</button>
-      </div>
-    </form>`);
-  $("formSend").onsubmit = async ev => {
-    ev.preventDefault();
-    const f = ev.target;
-    const value = Number(f.value.value);
-    const pixAddressKey = f.pixAddressKey.value.trim();
-    const pixAddressKeyType = f.pixAddressKeyType.value;
-    if (!(value > 0)) return toast("Valor deve ser maior que zero", "err");
-    if (!confirm(`Enviar ${BRL(value)} para ${pixAddressKey} (${pixAddressKeyType})?`)) return;
-    await withBusy($("btnSend"), async () => {
-      try {
-        const j = await api("/pix/send", { method: "POST", body: {
-          value, pixAddressKey, pixAddressKeyType,
-          description: f.description.value.trim() || undefined,
-          externalReference: sendKey,
-        }});
-        toast(`Pix enviado: ${j.data?.id || ""}`, "ok");
-        sendKey = null;
-        closeModal();
-        fetchList(PEND);
-      } catch (e) {
-        toast("Falha no envio: " + e.message + "\nNão reenvie até confirmar no extrato.", "err");
-      }
-    });
-  };
-};
-
-// ---------- cobrança dinâmica ----------
+// ---------- 6. GERAR COBRANÇA PIX DINÂMICA ----------
 function attachCustomerPicker({ input, list, hidden, chip, chipLabel, clearBtn }){
   let items = [], active = -1, timer = null, ctrl = null, lastQ = "";
   function close(){ list.classList.remove("open"); list.innerHTML = ""; items = []; active = -1; }
@@ -659,7 +1261,7 @@ function attachCustomerPicker({ input, list, hidden, chip, chipLabel, clearBtn }
   function paint(){
     list.innerHTML = items.map((c, i) => `
       <div class="ac-item ${i === active ? "act" : ""}" data-i="${i}">
-        <span>${esc(c.name)}</span>
+        <span><b>${esc(c.name)}</b> (${esc(c.id)})</span>
         <small>${esc(fmtDoc(c.cpfCnpj))}${c.email ? " · " + esc(c.email) : ""}</small>
       </div>`).join("");
     list.querySelectorAll(".ac-item").forEach(el => el.onmousedown = e => { e.preventDefault(); choose(items[+el.dataset.i]); });
@@ -669,7 +1271,7 @@ function attachCustomerPicker({ input, list, hidden, chip, chipLabel, clearBtn }
     if (q === lastQ) return;
     lastQ = q;
     ctrl?.abort(); ctrl = new AbortController();
-    setMsg("Buscando...");
+    setMsg("Buscando clientes no Asaas...");
     try {
       const j = await api("/customers/search", { query: { q }, signal: ctrl.signal });
       if (input.value.trim() !== q) return;
@@ -684,14 +1286,7 @@ function attachCustomerPicker({ input, list, hidden, chip, chipLabel, clearBtn }
     if (q.length < 2){ ctrl?.abort(); close(); return; }
     timer = setTimeout(() => search(q), 250);
   });
-  input.addEventListener("keydown", e => {
-    if (!list.classList.contains("open") || !items.length){ if (e.key === "Escape") close(); return; }
-    if (e.key === "ArrowDown"){ e.preventDefault(); active = (active + 1) % items.length; paint(); }
-    else if (e.key === "ArrowUp"){ e.preventDefault(); active = (active - 1 + items.length) % items.length; paint(); }
-    else if (e.key === "Enter"){ e.preventDefault(); choose(items[active]); }
-    else if (e.key === "Escape") close();
-  });
-  input.addEventListener("blur", () => setTimeout(close, 150));
+  input.addEventListener("blur", () => setTimeout(close, 180));
 }
 attachCustomerPicker({
   input: $("chargeCustQuery"), list: $("chargeCustList"),
@@ -702,11 +1297,17 @@ attachCustomerPicker({
 $("formCharge").onsubmit = async ev => {
   ev.preventDefault();
   const f = ev.target;
-  if (!f.customer.value) return toast("Selecione um cliente", "err");
+  if (!f.customer.value) return toast("Selecione um cliente do Asaas na busca", "err");
   const value = Number(f.value.value);
   if (!(value > 0)) return toast("Valor deve ser maior que zero", "err");
   const body = {
-    customer: f.customer.value, value, dueDate: f.dueDate.value,
+    customer: f.customer.value,
+    billingType: f.billingType.value,
+    value,
+    cashAmount: f.cashAmount.value ? Number(f.cashAmount.value) : undefined,
+    dueDate: f.dueDate.value,
+    avatarId: f.avatarId.value ? Number(f.avatarId.value) : undefined,
+    userId: f.userId.value ? Number(f.userId.value) : undefined,
     description: f.description.value.trim() || undefined,
     externalReference: f.externalReference.value.trim() || undefined,
   };
@@ -715,30 +1316,72 @@ $("formCharge").onsubmit = async ev => {
       const j = await api("/pix/dynamic", { method: "POST", body });
       const qr = j.qrCode || {};
       $("chargeResult").innerHTML = `
+        <div class="okbox">
+          <b>Cobrança Criada: ${esc(j.payment?.id)}</b> · Valor: ${BRL(j.payment?.value)} · Registro Local #${esc(j.purchase?.id)}
+        </div>
         <div class="card">
-          <div class="muted">Cobrança ${esc(j.payment?.id)} · ${BRL(j.payment?.value)} · vence ${fmtDate(j.payment?.dueDate)}</div>
           ${qr.encodedImage ? `<div class="qr"><img alt="QR Code Pix" src="data:image/png;base64,${qr.encodedImage}"></div>` : ""}
-          <p class="muted" style="margin:10px 0 4px">Pix copia e cola</p>
-          <div class="payload">${esc(qr.payload || "")}</div>
-          ${j.payment?.invoiceUrl ? `<p><a href="${esc(j.payment.invoiceUrl)}" target="_blank" rel="noopener" style="color:var(--pri)">Abrir fatura</a></p>` : ""}
+          ${qr.payload ? `
+            <p class="muted" style="margin:10px 0 4px">Pix Copia e Cola <button type="button" class="sm" onclick="copyText('${esc(qr.payload)}')"><i class="fa-solid fa-copy"></i> Copiar</button></p>
+            <div class="payload">${esc(qr.payload)}</div>
+          ` : ""}
+          ${j.payment?.invoiceUrl ? `<p style="margin-top:10px"><a href="${esc(j.payment.invoiceUrl)}" target="_blank" rel="noopener" style="color:var(--pri)">Abrir Fatura Completa no Asaas ↗</a></p>` : ""}
         </div>`;
       $("chargeResult").classList.remove("hidden");
-      toast("Cobrança Pix gerada", "ok");
-      if ($("tab-db").classList.contains("open")) fetchList(DBP);
+      toast("Cobrança gerada e registrada no banco TFL!", "ok");
+      loadOverviewAndBalance();
     } catch (e) { toast("Erro ao gerar cobrança: " + e.message, "err"); }
   });
 };
 
-// ---------- Pix estático ----------
+// ---------- 7. CHAVES PIX & QR ESTÁTICO ----------
 async function loadKeys(){
+  const tb = $("keysTableBody");
+  tb.innerHTML = `<tr><td colspan="5" class="muted">Carregando chaves Pix...</td></tr>`;
   try {
     const j = await api("/pix/addressKeys");
+    const keys = j.data || [];
     const sel = $("addressKeySel");
     sel.innerHTML = "";
-    (j.data || []).forEach(k => sel.add(new Option(`${k.key} (${k.type || "chave"})`, k.id)));
-    if (!sel.options.length) sel.add(new Option("Nenhuma chave ativa", ""));
-  } catch (e) { toast("Chaves Pix: " + e.message, "err"); }
+    keys.forEach(k => sel.add(new Option(`${k.key} (${k.type || "EVP"} · ${k.status})`, k.id)));
+    if (!sel.options.length) sel.add(new Option("Nenhuma chave cadastrada", ""));
+
+    tb.innerHTML = keys.length
+      ? keys.map(k => `<tr>
+          <td><b>${esc(k.id)}</b></td>
+          <td><code>${esc(k.key)}</code></td>
+          <td>${esc(k.type || "EVP")}</td>
+          <td>${statusTag(k.status)}</td>
+          <td><button class="danger sm" data-delkey="${esc(k.id)}"><i class="fa-solid fa-trash"></i> Excluir</button></td>
+        </tr>`).join("")
+      : `<tr><td colspan="5" class="muted">Nenhuma chave Pix encontrada. Clique em "Criar Chave Aleatória (EVP)".</td></tr>`;
+
+    tb.querySelectorAll("[data-delkey]").forEach(btn => btn.onclick = async () => {
+      const kid = btn.dataset.delkey;
+      if (!confirm(`Excluir a chave Pix ${kid}?`)) return;
+      await withBusy(btn, async () => {
+        try {
+          await api(`/pix/addressKeys/${encodeURIComponent(kid)}`, { method: "DELETE" });
+          toast("Chave Pix removida.", "ok");
+          loadKeys();
+        } catch (e) { toast(e.message, "err"); }
+      });
+    });
+  } catch (e) {
+    tb.innerHTML = `<tr><td colspan="5" class="muted" style="color:var(--err)">${esc(e.message)}</td></tr>`;
+  }
 }
+
+$("btnCreateEvpKey").onclick = async () => {
+  if (!confirm("Criar uma nova Chave Pix Aleatória (EVP) na sua conta Asaas?")) return;
+  await withBusy($("btnCreateEvpKey"), async () => {
+    try {
+      await api("/pix/addressKeys", { method: "POST", body: { type: "EVP" } });
+      toast("Chave Pix EVP criada com sucesso!", "ok");
+      loadKeys();
+    } catch (e) { toast("Erro ao criar chave Pix: " + e.message, "err"); }
+  });
+};
 
 $("formStatic").onsubmit = async ev => {
   ev.preventDefault();
@@ -747,7 +1390,6 @@ $("formStatic").onsubmit = async ev => {
   if (!addressKeyId) return toast("Selecione uma chave Pix", "err");
   const v = f.value.value;
   const value = v === "" ? undefined : Number(v);
-  if (value !== undefined && !(value > 0)) return toast("Valor deve ser maior que zero", "err");
   const body = {
     addressKeyId, value,
     description: f.description.value.trim() || undefined,
@@ -761,59 +1403,249 @@ $("formStatic").onsubmit = async ev => {
       $("staticResult").innerHTML = `
         <div class="card">
           ${d.encodedImage ? `<div class="qr"><img alt="QR Code Pix" src="data:image/png;base64,${d.encodedImage}"></div>` : ""}
-          <p class="muted" style="margin:10px 0 4px">Pix copia e cola</p>
+          <p class="muted" style="margin:10px 0 4px">Pix Copia e Cola <button type="button" class="sm" onclick="copyText('${esc(d.payload || "")}')"><i class="fa-solid fa-copy"></i> Copiar</button></p>
           <div class="payload">${esc(d.payload || "")}</div>
         </div>`;
       $("staticResult").classList.remove("hidden");
-      toast("QR estático gerado", "ok");
+      toast("QR Estático gerado!", "ok");
     } catch (e) { toast("Erro ao gerar QR: " + e.message, "err"); }
   });
 };
 
-// ---------- banco local ----------
-const DBP = {
-  key: "dbp", label: "Banco (pagamentos)", body: "dbPayBody", pager: "dbPayPager", cols: 9,
-  path: "/db/payments",
-  query: () => ({ type: $("dbType").value }),
-  row: (p) => {
-    const TYPE = { Buy: "Compra", Withdraw: "Saque", Deposit: "Depósito", None: "—" };
-    return `<tr>
-      <td>${esc(p.id)}</td><td>${esc(TYPE[p.type] || p.type)}</td><td>${esc(p.provedor)}</td>
-      <td>${BRL(p.value)}</td><td>${statusTag(p.status)}</td><td>${esc(p.paymentId || "—")}</td>
-      <td class="wrapcell">${esc(p.referenceId || "")}</td><td>${esc(p.customerId || "—")}</td>
-      <td>${fmtDate(p.createdAt)}</td></tr>`;
+// ---------- 8. ENVIAR PIX, DECODIFICAR/PAGAR QR & TRANSFERÊNCIAS ----------
+$("formInlineSendPix").onsubmit = async ev => {
+  ev.preventDefault();
+  const f = ev.target;
+  const value = Number(f.value.value);
+  const pixAddressKey = f.pixAddressKey.value.trim();
+  const pixAddressKeyType = f.pixAddressKeyType.value;
+  if (!(value > 0)) return toast("Informe um valor válido", "err");
+  if (!confirm(`Confirmar envio de ${BRL(value)} via Pix para ${pixAddressKey} (${pixAddressKeyType})?`)) return;
+
+  await withBusy($("btnInlineSendPix"), async () => {
+    try {
+      const j = await api("/pix/send", {
+        method: "POST",
+        body: {
+          value,
+          pixAddressKey,
+          pixAddressKeyType,
+          description: f.description.value.trim() || undefined,
+          externalReference: "pix-" + crypto.randomUUID(),
+        },
+      });
+      toast(`Transferência Pix solicitada! ID: ${j.data?.id || ""}`, "ok");
+      f.reset();
+      resetAndLoad(PEND);
+      loadOverviewAndBalance();
+    } catch (e) { toast("Erro no envio Pix: " + e.message, "err"); }
+  });
+};
+
+$("btnDecodeQr").onclick = async () => {
+  const payload = $("qrPayloadInput").value.trim();
+  if (!payload) return toast("Cole o código Pix Copia e Cola primeiro.", "err");
+  await withBusy($("btnDecodeQr"), async () => {
+    try {
+      const j = await api("/pix/qrCodes/decode", { method: "POST", body: { payload } });
+      const d = j.data || {};
+      $("decodedQrBox").innerHTML = `
+        <div class="kv">
+          <div>Recebedor</div><div><b>${esc(d.receiver?.name || "—")}</b> (${esc(d.receiver?.cpfCnpj || "—")})</div>
+          <div>Instituição</div><div>${esc(d.receiver?.ispbName || "—")}</div>
+          <div>Valor Total</div><div><b style="color:var(--ok)">${BRL(d.totalValue ?? d.value ?? 0)}</b></div>
+          <div>Chave / Descrição</div><div>${esc(d.pixKey || d.conciliationIdentifier || "—")}</div>
+        </div>
+      `;
+      $("decodedQrBox").classList.remove("hidden");
+      toast("QR Code lido com sucesso!", "ok");
+    } catch (e) { toast("Erro ao ler QR Code: " + e.message, "err"); }
+  });
+};
+
+$("btnPayQr").onclick = async () => {
+  const payload = $("qrPayloadInput").value.trim();
+  if (!payload) return toast("Cole o código Pix Copia e Cola primeiro.", "err");
+  if (!confirm("Deseja pagar este QR Code Pix utilizando o saldo da conta Asaas?")) return;
+  await withBusy($("btnPayQr"), async () => {
+    try {
+      const j = await api("/pix/qrCodes/pay", { method: "POST", body: { payload } });
+      toast(`Pagamento de QR Code agendado/realizado! ID: ${j.data?.id || ""}`, "ok");
+      $("qrPayloadInput").value = "";
+      $("decodedQrBox").classList.add("hidden");
+      loadOverviewAndBalance();
+    } catch (e) { toast("Erro ao pagar QR Code: " + e.message, "err"); }
+  });
+};
+
+const PEND = {
+  key: "pend", label: "Transferências Pix", body: "pendBody", pager: "pendPager", count: "pendCount", cols: 8,
+  path: "/pix/transfers",
+  query: () => ({ status: $("transferStatusFilter").value }),
+  row: (t, i) => `<tr>
+    <td><b>${esc(t.id)}</b></td>
+    <td><b>${BRL(t.value)}</b></td>
+    <td>${esc(t.pixAddressKey || t.bankAccount?.accountName || "—")}</td>
+    <td>${esc(t.pixAddressKeyType || t.operationType || "PIX")}</td>
+    <td>${statusTag(t.status)}</td>
+    <td class="wrapcell">${esc(t.description || "")}</td>
+    <td>${fmtDateTime(t.dateCreated || t.createdAt)}</td>
+    <td><div class="actions">
+      ${t.status === "PENDING" ? `
+        <button class="ok sm" data-approve="${i}"><i class="fa-solid fa-check"></i> Aprovar</button>
+        <button class="danger sm" data-cancel="${i}"><i class="fa-solid fa-ban"></i> Cancelar</button>
+      ` : "—"}
+    </div></td></tr>`,
+  onData: (list) => {
+    $("pendBody").querySelectorAll("[data-approve]").forEach(b => b.onclick = async ev => {
+      ev.stopPropagation();
+      const t = list[+b.dataset.approve];
+      if (!confirm(`Aprovar transferência ${t.id} (${BRL(t.value)})?`)) return;
+      await withBusy(b, async () => {
+        try {
+          await api(`/pix/transfers/${encodeURIComponent(t.id)}/approve`, { method: "POST" });
+          toast("Transferência aprovada!", "ok");
+          fetchList(PEND);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    });
+    $("pendBody").querySelectorAll("[data-cancel]").forEach(b => b.onclick = async ev => {
+      ev.stopPropagation();
+      const t = list[+b.dataset.cancel];
+      if (!confirm(`Cancelar transferência ${t.id}?`)) return;
+      await withBusy(b, async () => {
+        try {
+          await api(`/pix/transfers/${encodeURIComponent(t.id)}/cancel`, { method: "POST" });
+          toast("Transferência cancelada!", "ok");
+          fetchList(PEND);
+        } catch (e) { toast(e.message, "err"); }
+      });
+    });
   },
 };
+$("transferStatusFilter").addEventListener("change", () => resetAndLoad(PEND));
+
+// ---------- 9. EXTRATOS PIX & FINANCEIRO ----------
+const TX = {
+  key: "tx", label: "Extrato", body: "txBody", pager: "txPager", count: "txCount", cols: 6,
+  path: () => $("txSource").value === "finance" ? "/finance/transactions" : "/pix/transactions",
+  query: () => ({
+    type: $("txSource").value === "pix" ? $("txType").value : undefined,
+    startDate: $("txStart").value,
+    finishDate: $("txEnd").value,
+  }),
+  row: (t) => `<tr>
+    <td><b>${esc(t.id)}</b></td>
+    <td>${esc(t.type || t.transactionType || $("txType").value)}</td>
+    <td><b>${BRL(t.value)}</b></td>
+    <td>${t.balance !== undefined ? `Saldo: ${BRL(t.balance)}` : statusTag(t.status)}</td>
+    <td>${fmtDate(t.date || t.createdAt)}</td>
+    <td class="wrapcell">${esc(t.description || "")}</td></tr>`,
+};
+["txSource", "txType", "txStart", "txEnd"].forEach(id => $(id).addEventListener("change", () => resetAndLoad(TX)));
+
+// ---------- 10. WEBHOOKS ASAAS & LOG LOCAL ----------
+async function loadAsaasWebhooksConfig(){
+  const tb = $("asaasWhConfigBody");
+  tb.innerHTML = `<tr><td colspan="6" class="muted">Consultando Webhooks no Asaas...</td></tr>`;
+  try {
+    const j = await api("/webhooks-config");
+    const list = j.data || [];
+    tb.innerHTML = list.length
+      ? list.map(w => `<tr>
+          <td><b>${esc(w.id)}</b></td>
+          <td>${esc(w.name || "Webhook")}</td>
+          <td><code>${esc(w.url)}</code></td>
+          <td>${statusTag(w.enabled ? "ACTIVE" : "DISABLED")}</td>
+          <td>${w.interrupted ? `<span class="st err">Sim</span>` : `<span class="st ok">Não</span>`}</td>
+          <td>${esc(w.email || "—")}</td>
+        </tr>`).join("")
+      : `<tr><td colspan="6" class="muted">Nenhum webhook configurado na conta Asaas.</td></tr>`;
+  } catch (e) {
+    tb.innerHTML = `<tr><td colspan="6" class="muted" style="color:var(--err)">${esc(e.message)}</td></tr>`;
+  }
+}
+
+$("btnRegisterWebhook").onclick = () => {
+  const defaultUrl = `${location.origin}/asaas/webhook`;
+  openModal("Registrar Webhook Oficial TFL no Asaas", `
+    <form id="formWhConfig" class="grid">
+      <label style="grid-column:1/-1">URL Pública do Webhook *
+        <input name="url" required value="${esc(defaultUrl)}">
+      </label>
+      <label>Nome do Webhook
+        <input name="name" value="TFL Webhook Oficial">
+      </label>
+      <label>E-mail para Alertas de Falha *
+        <input name="email" type="email" required value="admin@thefantasylife.com">
+      </label>
+      <label style="grid-column:1/-1">Token de Autenticação (asaas-access-token / ASAAS_WEBHOOK_TOKEN)
+        <input name="authToken" placeholder="Mesmo valor definido em ASAAS_WEBHOOK_TOKEN no .env">
+      </label>
+      <div class="modal-foot" style="grid-column:1/-1">
+        <button type="button" class="ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="ok" id="btnSaveWhConfig"><i class="fa-solid fa-check"></i> Salvar no Asaas</button>
+      </div>
+    </form>
+  `);
+  $("formWhConfig").onsubmit = async ev => {
+    ev.preventDefault();
+    const f = ev.target;
+    await withBusy($("btnSaveWhConfig"), async () => {
+      try {
+        await api("/webhooks-config", {
+          method: "POST",
+          body: {
+            name: f.name.value.trim(),
+            url: f.url.value.trim(),
+            email: f.email.value.trim(),
+            authToken: f.authToken.value.trim() || undefined,
+          },
+        });
+        toast("Webhook registrado com sucesso no Asaas!", "ok");
+        closeModal();
+        loadAsaasWebhooksConfig();
+      } catch (e) { toast(e.message, "err"); }
+    });
+  };
+};
+
 const DBW = {
-  key: "dbw", label: "Banco (webhooks)", body: "dbWhBody", pager: "dbWhPager", cols: 6,
+  key: "dbw", label: "Eventos de Webhook", body: "dbWhBody", pager: "dbWhPager", cols: 6,
   path: "/db/webhooks",
   row: w => `<tr>
-    <td>${esc(w.id)}</td><td>${esc(w.event)}</td><td class="wrapcell">${esc(w.eventKey)}</td>
-    <td>${esc(w.paymentId || "—")}</td><td>${w.paymentBankId ? "Registro " + esc(w.paymentBankId) : "—"}</td>
+    <td>#${esc(w.id)}</td>
+    <td><b>${esc(w.event)}</b></td>
+    <td class="wrapcell"><small>${esc(w.eventKey)}</small></td>
+    <td><code>${esc(w.paymentId || "—")}</code></td>
+    <td>${w.paymentBankId ? `Pagamento #${esc(w.paymentBankId)}` : "—"}</td>
     <td>${fmtDateTime(w.receiveAt)}</td></tr>`,
 };
-$("dbType").addEventListener("change", () => resetAndLoad(DBP));
 
-// ---------- abas: carrega ao abrir ----------
+// ---------- NAVEGAÇÃO ENTRE ABAS ----------
 const ON_OPEN = {
-  balance: loadBalance,
+  overview: loadOverviewAndBalance,
+  db: () => resetAndLoad(DBP),
   customers: () => resetAndLoad(CUST),
   receivable: () => resetAndLoad(REC),
   received: () => resetAndLoad(RCV),
-  transactions: () => resetAndLoad(TX),
   charge: () => {},
   static: loadKeys,
   send: () => resetAndLoad(PEND),
-  db: () => { resetAndLoad(DBP); resetAndLoad(DBW); },
+  transactions: () => resetAndLoad(TX),
+  webhooks: () => { loadAsaasWebhooksConfig(); resetAndLoad(DBW); },
 };
-document.querySelectorAll("button.tab").forEach(b => b.onclick = () => {
-  document.querySelectorAll("button.tab").forEach(x => x.classList.toggle("active", x === b));
-  document.querySelectorAll("main > section").forEach(s => s.classList.toggle("open", s.id === "tab-" + b.dataset.tab));
-  ON_OPEN[b.dataset.tab]?.();
-});
 
-// ---------- inicialização ----------
-loadBalance();
+function switchTab(tabName){
+  document.querySelectorAll("button.tab").forEach(x => x.classList.toggle("active", x.dataset.tab === tabName));
+  document.querySelectorAll("main > section").forEach(s => s.classList.toggle("open", s.id === "tab-" + tabName));
+  ON_OPEN[tabName]?.();
+}
+
+document.querySelectorAll("button.tab").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+// Inicialização
+loadOverviewAndBalance();
 </script>
 </body>
 </html>

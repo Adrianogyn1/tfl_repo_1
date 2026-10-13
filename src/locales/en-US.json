@@ -1,0 +1,186 @@
+{
+    "common": {
+        "home": "Home",
+        "cancel": "Cancel",
+        "close": "Close",
+        "back": "Back",
+        "save": "Save",
+        "saved": "Saved",
+        "search": "Search",
+        "refresh": "Refresh",
+        "create": "Create",
+        "edit": "Edit",
+        "delete": "Delete",
+        "public": "Public",
+        "friendsOnly": "Friends",
+        "private": "Private",
+        "online": "Online",
+        "offline": "Offline",
+        "required": "Required field",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "serverError": "Server error. Please try again later",
+        "unknownError": "Unknown error",
+        "errors": {
+            "tokenInvalid": "Invalid link",
+            "tokenExpired": "Expired link",
+            "invalidCredentials": "Invalid credentials",
+            "emailNotFound": "Account not found",
+            "unauthorized": "Unauthorized!"
+        },
+        "success": "Success!"
+    },
+    "home": {
+        "nav": {
+            "play": "Play",
+            "explore": "Explore",
+            "support": "Support",
+            "tutorial": "Tutorial",
+            "login": "Sign In"
+        },
+        "hero": {
+            "title": "Build your story. Experience the new.",
+            "subtitle": "In The Fantasy Life, freedom comes first. An open world for authentic connections."
+        },
+        "gallery": {
+            "tag": "Gallery",
+            "title": "Explore the World",
+            "scroll": "Scroll sideways to see more →"
+        }
+    },
+    "login": {
+        "title": "Sign in to your account",
+        "subtitle": "Enter your credentials to access",
+        "emailLabel": "Email",
+        "passwordLabel": "Password",
+        "submit": "Sign In",
+        "errors": {
+            "invalidCredentials": "Invalid email or password"
+        },
+        "success": "Signed in successfully!"
+    },
+    "profile": {
+        "title": "TFL Portal",
+        "welcome": "Welcome, {{name}}",
+        "nav": {
+            "menu": "Menu",
+            "social": "The Fantasy Life",
+            "avatars": "Avatars",
+            "shop": "Shop",
+            "rooms": "Rooms",
+            "friends": "Friends",
+            "chat": "Chat",
+            "wallet": "Wallet",
+            "stats": "Statistics",
+            "tutorial": "Tutorial",
+            "account": "Account",
+            "logout": "Logout",
+            "language": "Language"
+        },
+        "social": {
+            "reels": "Reels & Mood",
+            "feeling6h": "6h",
+            "reel24h": "24h",
+            "postTitlePlaceholder": "Title (optional)...",
+            "postTextPlaceholder": "Share something...",
+            "photo": "Photo",
+            "room": "3D Room",
+            "myProfile": "Profile",
+            "publish": "Post",
+            "explore": "Explore",
+            "friends": "Friends",
+            "mine": "Mine",
+            "gallery": "Gallery",
+            "addPhoto": "New Photo",
+            "allPhotos": "All",
+            "myPhotos": "Mine",
+            "peopleAndMatch": "Travelers & Match",
+            "posts": "Posts",
+            "photos": "Photos",
+            "followers": "Followers",
+            "rooms": "Rooms",
+            "likes": "Likes",
+            "matches": "Matches",
+            "editCover": "Cover"
+        },
+        "avatars": {
+            "title": "Avatars",
+            "newAvatar": "New",
+            "editAvatar": "Edit",
+            "active": "Active",
+            "activate": "Select",
+            "female": "Fem",
+            "male": "Male"
+        },
+        "rooms": {
+            "title": "3D Rooms",
+            "newRoom": "New Room",
+            "capacity": "Slots",
+            "inspect": "Manage",
+            "empty": "No rooms created yet."
+        },
+        "friends": {
+            "title": "Friends",
+            "pending": "Pending",
+            "sent": "Sent",
+            "suggestions": "Suggestions",
+            "searchPlaceholder": "Name or #ID...",
+            "accept": "Accept",
+            "chat": "DM",
+            "add": "Add"
+        },
+        "chat": {
+            "title": "Chats",
+            "newGroup": "Group",
+            "all": "All",
+            "dms": "DMs",
+            "groups": "Groups",
+            "global": "Global",
+            "participants": "Members",
+            "typeMessage": "Message...",
+            "send": "Send"
+        },
+        "market": {
+            "title": "Wallet & Exchange",
+            "rules": "Rules",
+            "buyPix": "Deposit Pix",
+            "withdrawPix": "Withdraw Pix",
+            "poolCoins": "Coin Pool",
+            "activeOrders": "FIFO Orders",
+            "myCash": "Cash Balance",
+            "myCoins": "Coins Balance",
+            "buyCoins": "Buy Coins",
+            "sellCoins": "Sell Coins",
+            "converter": "Converter",
+            "orders": "My Orders",
+            "history": "Pix History"
+        },
+        "account": {
+            "title": "Account",
+            "fullName": "Full Name",
+            "login": "Username",
+            "email": "Email",
+            "phone": "Phone",
+            "save": "Save"
+        },
+        "stats": {
+            "title": "Statistics & Performance",
+            "subtitle": "Real-time server, database, economy & Godot API telemetry",
+            "serverHealth": "Server Performance",
+            "latency": "DB Latency",
+            "memory": "RAM Memory",
+            "uptime": "Uptime",
+            "wsClients": "WS Connections",
+            "tableTitle": "Platform Metrics Table",
+            "category": "Module",
+            "metric": "Metric",
+            "value": "Value / Total",
+            "status": "Status",
+            "apiReady": "Godot API v1 Ready"
+        },
+        "tutorial": {
+            "title": "Official Guide & Tutorial",
+            "subtitle": "How the Web Portal + 3D Game (Godot Engine) ecosystem works"
+        }
+    }
+}

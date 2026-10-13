@@ -1,7 +1,9 @@
 const { Server } = require('socket.io');
+const { WebSocketServer } = require('ws');
 const repo = require('../repositories/repository');
 const admin = require('../controllers/admin/files_controller.js');
 const cassino = require('../controllers/game/cassino/tables/master.js');
+const { chatWs } = require('../controllers/social/chat_controller.js');
 
 const IO_KEY = Symbol('io');
 
@@ -80,14 +82,30 @@ function attachSocketIO(httpServer) {
             origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : false,
             credentials: true
         },
-        destroyUpgrade: false,       // não destrói upgrades de outros paths (ex.: /terminal)
+        destroyUpgrade: false,       // não destrói upgrades de outros paths (ex.: /ws/chat, /terminal)
         maxHttpBufferSize: 1e6,
         pingTimeout: 20000
     });
     httpServer[IO_KEY] = io;
 
-    // Terminal (ws puro em /terminal) convive com o Socket.IO no mesmo server
-   // if (typeof admin.attachTerminal === 'function') admin.attachTerminal(httpServer);
+    // WebSocket nativo para o Chat em tempo real (/ws/chat e /ws)
+    if (chatWs && typeof chatWs.handleConnection === 'function') {
+        const chatWss = new WebSocketServer({ noServer: true });
+        chatWss.on('connection', chatWs.handleConnection);
+
+        httpServer.on('upgrade', (req, socket, head) => {
+            try {
+                const pathname = new URL(req.url, 'http://localhost').pathname;
+                if (pathname === '/ws/chat' || pathname === '/ws') {
+                    chatWss.handleUpgrade(req, socket, head, (ws) => {
+                        chatWss.emit('connection', ws, req);
+                    });
+                }
+            } catch (err) {
+                console.error('[ws:chat] upgrade error:', err.message);
+            }
+        });
+    }
 
     // /admin: token obrigatório e validado no banco
     const adminNsp = io.of('/admin');
@@ -99,7 +117,6 @@ function attachSocketIO(httpServer) {
     ));
 
     // /cassino: visitante pode assistir; apostar exige usuário (checado no master)
-    
     const cassinoNsp = io.of('/cassino');
     cassinoNsp.use(optionalAuth);
     cassinoNsp.on('connection', safeConnection('cassino', cassino.onConnection, cassinoNsp));

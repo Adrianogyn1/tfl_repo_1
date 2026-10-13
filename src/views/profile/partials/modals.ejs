@@ -1,0 +1,991 @@
+<!-- ================= JANELA / MODAL: MINI PROFILE DO AVATAR ================= -->
+<div id="modalMiniProfile" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden">
+        <!-- Capa Mini Profile -->
+        <div class="h-28 bg-gradient-to-r from-blue-600/40 via-sky-500/30 to-purple-600/40 relative overflow-hidden">
+            <img id="miniProfileCoverImg" src="" alt="Capa" class="hidden w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+            <button type="button" class="btn-close-modal absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-zinc-300 hover:text-white flex items-center justify-center text-lg transition z-10">&times;</button>
+        </div>
+
+        <div class="px-6 pb-6 -mt-12 relative space-y-4">
+            <!-- Avatar e Identificação -->
+            <div class="flex items-end justify-between gap-3">
+                <div class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-900 bg-slate-950 shadow-xl flex-shrink-0">
+                    <img id="miniProfileImg" src="" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div class="flex items-center gap-1.5 mb-1">
+                    <span id="miniProfileMatchPill" class="hidden px-2 py-1 rounded-lg bg-pink-500/20 border border-pink-500/40 text-[10px] font-black text-pink-300">💘 Match</span>
+                    <span id="miniProfileBadgeId" class="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-[10px] font-mono text-zinc-400">#0</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h4 id="miniProfileName" class="text-base font-black uppercase italic text-white truncate">Avatar</h4>
+                    <span id="miniProfileGender" class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 text-[10px] font-bold">Viajante</span>
+                    <span id="miniProfileFeelingBadge" class="hidden px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[10px] font-bold"></span>
+                </div>
+                <p id="miniProfileBio" class="text-xs text-zinc-400 mt-1 line-clamp-3">Biografia...</p>
+            </div>
+
+            <!-- Contadores Rápidos -->
+            <div class="grid grid-cols-5 gap-1.5 p-2.5 rounded-2xl bg-slate-950 border border-white/5 text-center">
+                <div>
+                    <div id="miniProfilePosts" class="text-xs font-black text-white">0</div>
+                    <div class="text-[8px] text-zinc-500 uppercase font-bold">Posts</div>
+                </div>
+                <div>
+                    <div id="miniProfileFriends" class="text-xs font-black text-emerald-400">0</div>
+                    <div class="text-[8px] text-zinc-500 uppercase font-bold">Amigos</div>
+                </div>
+                <div>
+                    <div id="miniProfileFollowers" class="text-xs font-black text-sky-400">0</div>
+                    <div class="text-[8px] text-zinc-500 uppercase font-bold">Seguidores</div>
+                </div>
+                <div>
+                    <div id="miniProfileRooms" class="text-xs font-black text-purple-400">0</div>
+                    <div class="text-[8px] text-zinc-500 uppercase font-bold">Salas</div>
+                </div>
+                <div>
+                    <div id="miniProfileLikes" class="text-xs font-black text-rose-400">0</div>
+                    <div class="text-[8px] text-zinc-500 uppercase font-bold">Curtidas</div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação do Mini Profile -->
+            <div id="miniProfileActions" class="space-y-2 pt-1"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: VISUALIZADOR DE FOTO (CURTIR E COMENTAR IMAGEM) ================= -->
+<div id="modalPhotoViewer" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 max-h-[90vh]">
+        <!-- Coluna da Imagem (7 colunas) -->
+        <div class="md:col-span-7 bg-black flex items-center justify-center relative min-h-[260px] max-h-[55vh] md:max-h-[90vh] overflow-hidden">
+            <img id="photoViewerImg" src="" alt="Foto" class="max-w-full max-h-[55vh] md:max-h-[85vh] object-contain">
+        </div>
+
+        <!-- Coluna de Curtidas, Reações e Comentários Recursivos da Foto (5 colunas) -->
+        <div class="md:col-span-5 flex flex-col max-h-[85vh] bg-slate-900 border-l border-white/10">
+            <!-- Topo: Autor da Foto + Fechar -->
+            <div class="p-4 border-b border-white/10 flex items-center justify-between gap-2">
+                <div id="photoViewerAuthorBox" class="flex items-center gap-2.5 overflow-hidden"></div>
+                <button type="button" class="btn-close-modal w-8 h-8 rounded-full bg-slate-800 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-lg transition">&times;</button>
+            </div>
+
+            <!-- Descrição e Reações da Foto -->
+            <div class="px-4 py-3 border-b border-white/10 space-y-2.5 bg-slate-950/50">
+                <p id="photoViewerDescription" class="text-xs text-zinc-300 break-words"></p>
+                <div id="photoViewerReactionBar" class="flex flex-wrap items-center justify-between gap-2"></div>
+            </div>
+
+            <!-- Lista de Comentários Recursivos da Foto -->
+            <div id="photoViewerCommentsList" class="flex-1 overflow-y-auto p-4 space-y-2.5"></div>
+
+            <!-- Formulário para Comentar na Foto -->
+            <form id="formCommentPhoto" class="p-3.5 border-t border-white/10 bg-slate-950 flex items-center gap-2">
+                <input type="hidden" id="activePhotoViewerId" value="">
+                <input type="text" id="inputCommentPhotoText" placeholder="Comentar nesta foto..."
+                       class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500">
+                <button type="submit" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition">
+                    Enviar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: ADICIONAR FOTO DIRETO NA GALERIA ================= -->
+<div id="modalUploadGalleryPhoto" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-images text-amber-400"></i>
+                Adicionar Foto na Galeria
+            </h4>
+            <button type="button" class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formUploadGalleryPhoto" class="space-y-4">
+            <input type="file" id="fileGalleryPhotoUpload" accept="image/*" class="hidden">
+            <input type="hidden" id="inputGalleryPhotoUrl" value="">
+
+            <div id="galleryUploadDropArea" class="p-6 rounded-2xl bg-slate-950 border-2 border-dashed border-white/15 hover:border-amber-400 text-center cursor-pointer transition space-y-2">
+                <img id="galleryUploadPreviewImg" src="" alt="Preview" class="hidden max-h-48 mx-auto rounded-xl object-contain mb-2">
+                <i id="galleryUploadIcon" class="fa-solid fa-cloud-arrow-up text-3xl text-amber-400"></i>
+                <p id="labelGalleryUploadStatus" class="text-xs font-bold text-zinc-300">Clique para selecionar uma foto (Sem vídeos)</p>
+                <p class="text-[10px] text-zinc-500">Formatos de imagem: PNG, JPG, WEBP, GIF</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Legenda / Descrição da Foto</label>
+                <textarea id="inputGalleryPhotoDesc" rows="2" placeholder="Escreva uma legenda opcional para esta foto..."
+                          class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 resize-none"></textarea>
+            </div>
+
+            <label class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950 border border-white/5 cursor-pointer text-xs text-zinc-300">
+                <input type="checkbox" id="chkShareGalleryOnFeed" checked class="w-4 h-4 accent-amber-500 rounded">
+                <span>Compartilhar também no Feed Social</span>
+            </label>
+
+            <button type="submit" id="btnSubmitGalleryPhoto" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20">
+                Salvar Foto na Galeria
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: CRIAR MINI REEL (24H FOTO/TEXTO) OU SENTIMENTO (6H) ================= -->
+<div id="modalCreateMiniReel" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div>
+                <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-pink-400"></i>
+                    Criar Mini Reel ou Sentimento
+                </h4>
+                <p class="text-[10px] text-zinc-400">Sem vídeos • Sentimento dura <strong>6 horas</strong> • Foto e Texto duram <strong>24 horas</strong></p>
+            </div>
+            <button type="button" class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <!-- Seletor de Modo: Foto (24h) | Texto (24h) | Sentimento (6h) -->
+        <div class="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-slate-950 border border-white/10">
+            <button type="button" class="btn-reel-mode-tab py-2 rounded-xl text-xs font-black uppercase transition bg-pink-600 text-white" data-mode="photo">
+                📸 Foto (24h)
+            </button>
+            <button type="button" class="btn-reel-mode-tab py-2 rounded-xl text-xs font-black uppercase transition text-zinc-400 hover:text-white" data-mode="text">
+                ✍️ Texto (24h)
+            </button>
+            <button type="button" class="btn-reel-mode-tab py-2 rounded-xl text-xs font-black uppercase transition text-zinc-400 hover:text-white" data-mode="feeling">
+                😊 Sentimento (6h)
+            </button>
+        </div>
+
+        <form id="formCreateMiniReel" class="space-y-4">
+            <input type="hidden" id="inputReelType" value="photo">
+            <input type="hidden" id="inputReelImageUrl" value="">
+            <input type="hidden" id="inputReelFeelingEmoji" value="">
+            <input type="hidden" id="inputReelFeelingLabel" value="">
+            <input type="hidden" id="inputReelBgStyle" value="from-blue-700 via-indigo-800 to-purple-900">
+            <input type="file" id="fileMiniReelImage" accept="image/*" class="hidden">
+
+            <!-- Seção de Upload de Foto (Visível quando modo === 'photo') -->
+            <div id="reelPhotoInputSection" class="space-y-2.5">
+                <div id="btnTriggerReelImageUpload" class="p-5 rounded-2xl bg-slate-950 border-2 border-dashed border-white/15 hover:border-pink-500 text-center cursor-pointer transition space-y-2">
+                    <img id="reelPreviewImage" src="" alt="Preview" class="hidden max-h-48 mx-auto rounded-xl object-contain mb-2">
+                    <i class="fa-solid fa-camera text-2xl text-pink-400"></i>
+                    <p id="labelReelUploadPhoto" class="text-xs font-bold text-zinc-300">Escolher Foto para o Mini Reel (Dura 24 horas)</p>
+                    <p class="text-[10px] text-zinc-500">Somente imagens (sem vídeos)</p>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer px-1">
+                    <input type="checkbox" id="chkSaveReelPhotoToGallery" checked class="w-4 h-4 accent-pink-500 rounded">
+                    <span>Salvar esta foto também na minha Galeria de Fotos</span>
+                </label>
+            </div>
+
+            <!-- Seção de Cor de Fundo (Visível quando modo === 'text' ou 'feeling') -->
+            <div id="reelBgStyleSection" class="hidden space-y-1.5">
+                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Estilo de Fundo do Card</label>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" class="btn-pick-reel-bg w-8 h-8 rounded-xl bg-gradient-to-br from-blue-700 via-indigo-800 to-purple-900 ring-2 ring-white" data-bg="from-blue-700 via-indigo-800 to-purple-900"></button>
+                    <button type="button" class="btn-pick-reel-bg w-8 h-8 rounded-xl bg-gradient-to-br from-pink-600 via-rose-700 to-amber-700" data-bg="from-pink-600 via-rose-700 to-amber-700"></button>
+                    <button type="button" class="btn-pick-reel-bg w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 via-teal-800 to-slate-900" data-bg="from-emerald-600 via-teal-800 to-slate-900"></button>
+                    <button type="button" class="btn-pick-reel-bg w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 via-orange-700 to-red-900" data-bg="from-amber-500 via-orange-700 to-red-900"></button>
+                    <button type="button" class="btn-pick-reel-bg w-8 h-8 rounded-xl bg-gradient-to-br from-purple-700 via-fuchsia-800 to-slate-950" data-bg="from-purple-700 via-fuchsia-800 to-slate-950"></button>
+                </div>
+            </div>
+
+            <!-- Seção de Sentimento (Obrigatório no modo 'feeling', opcional nos modos 'photo'/'text' — Dura 6 horas!) -->
+            <div class="p-3.5 rounded-2xl bg-slate-950 border border-amber-500/20 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-black uppercase text-amber-400 flex items-center gap-1.5">
+                        <span>😊</span>
+                        <span>Como você está se sentindo neste momento? (Dura 6h)</span>
+                    </label>
+                    <button type="button" id="btnClearReelFeeling" class="hidden text-[10px] text-zinc-400 hover:text-red-400 font-bold">Limpar</button>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5" id="reelFeelingOptionsGrid">
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="😊" data-label="Feliz"><span>😊</span><span class="truncate">Feliz</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="🤩" data-label="Animado"><span>🤩</span><span class="truncate">Animado</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="🥰" data-label="Apaixonado"><span>🥰</span><span class="truncate">Apaixonado</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="😎" data-label="De boa"><span>😎</span><span class="truncate">De boa</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="🎮" data-label="Jogando"><span>🎮</span><span class="truncate">Jogando</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="🥳" data-label="Festejando"><span>🥳</span><span class="truncate">Festejando</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="💭" data-label="Pensativo"><span>💭</span><span class="truncate">Pensativo</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="🔥" data-label="Focado"><span>🔥</span><span class="truncate">Focado</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="😴" data-label="Com sono"><span>😴</span><span class="truncate">Com sono</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="☕" data-label="Relaxando"><span>☕</span><span class="truncate">Relaxando</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="😢" data-label="Triste"><span>😢</span><span class="truncate">Triste</span></button>
+                    <button type="button" class="btn-pick-feeling p-2 rounded-xl bg-slate-900 hover:bg-amber-500/20 border border-white/5 text-left text-[11px] text-zinc-200 flex items-center gap-1.5 transition" data-emoji="😡" data-label="Irritado"><span>😡</span><span class="truncate">Irritado</span></button>
+                </div>
+            </div>
+
+            <!-- Texto / Frase do Mini Reel -->
+            <div>
+                <label id="labelReelTextInput" class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Texto ou Legenda (Dura 24h em Fotos/Texto)</label>
+                <textarea id="inputReelText" rows="3" maxlength="280" placeholder="Escreva algo para o seu Mini Reel..."
+                          class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-pink-500 resize-none"></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmitMiniReel" class="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-black text-xs uppercase tracking-wider transition shadow-lg shadow-pink-600/25">
+                Publicar Mini Reel
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: VISUALIZADOR VERTICAL DE MINI REEL (COM REAÇÕES E COMENTÁRIOS RECURSIVOS) ================= -->
+<div id="modalMiniReelViewer" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 max-h-[90vh]">
+        <!-- Card Vertical Estilo Mini Reel (7 colunas) -->
+        <div id="reelViewerStage" class="md:col-span-7 relative min-h-[380px] sm:min-h-[520px] flex flex-col justify-between p-5 bg-gradient-to-br from-blue-700 via-indigo-800 to-purple-900 overflow-hidden">
+            <!-- Imagem de fundo quando tipo === 'photo' -->
+            <img id="reelViewerBgImg" src="" alt="Reel" class="hidden absolute inset-0 w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/60"></div>
+
+            <!-- Topo do Mini Reel: Autor + Tempo Restante (6h ou 24h) + Excluir -->
+            <div class="relative z-10 flex items-center justify-between gap-2">
+                <div id="reelViewerAuthorBox" class="flex items-center gap-2.5"></div>
+                <div class="flex items-center gap-2">
+                    <span id="reelViewerDurationBadge" class="px-2.5 py-1 rounded-full bg-black/60 border border-white/15 text-[10px] font-bold text-amber-300 backdrop-blur-md"></span>
+                    <button type="button" id="btnDeleteActiveReel" class="hidden w-8 h-8 rounded-full bg-red-600/80 hover:bg-red-600 text-white text-xs flex items-center justify-center transition" title="Excluir Mini Reel">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Centro: Sentimento em Destaque (6h) + Texto / Legenda (24h) -->
+            <div class="relative z-10 my-auto py-8 text-center space-y-3 px-4">
+                <div id="reelViewerFeelingPill" class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-200 text-sm font-black shadow-xl backdrop-blur-md"></div>
+                <p id="reelViewerTextContent" class="text-base sm:text-xl font-black text-white drop-shadow-lg whitespace-pre-line break-words leading-relaxed"></p>
+            </div>
+
+            <!-- Rodapé do Stage: Navegação Anterior / Próximo Mini Reel -->
+            <div class="relative z-10 flex items-center justify-between pt-2">
+                <button type="button" id="btnPrevMiniReel" class="px-3.5 py-1.5 rounded-xl bg-black/60 hover:bg-white/20 text-white text-xs font-bold backdrop-blur-md border border-white/10 transition">
+                    <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                </button>
+                <span id="reelViewerIndexCounter" class="text-[11px] font-bold text-zinc-300">1 / 1</span>
+                <button type="button" id="btnNextMiniReel" class="px-3.5 py-1.5 rounded-xl bg-black/60 hover:bg-white/20 text-white text-xs font-bold backdrop-blur-md border border-white/10 transition">
+                    Próximo <i class="fa-solid fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Coluna Direita: Reações e Comentários Recursivos do Mini Reel (5 colunas) -->
+        <div class="md:col-span-5 flex flex-col max-h-[85vh] bg-slate-900 border-l border-white/10">
+            <div class="p-4 border-b border-white/10 flex items-center justify-between">
+                <h5 class="text-xs font-black uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+                    <i class="fa-solid fa-heart text-pink-400"></i>
+                    Reações & Comentários
+                </h5>
+                <button type="button" class="btn-close-modal w-8 h-8 rounded-full bg-slate-800 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-lg transition">&times;</button>
+            </div>
+
+            <div class="px-4 py-3 border-b border-white/10 bg-slate-950/60">
+                <div id="reelViewerReactionBar" class="flex flex-wrap items-center justify-between gap-2"></div>
+            </div>
+
+            <div id="reelViewerCommentsList" class="flex-1 overflow-y-auto p-4 space-y-2.5"></div>
+
+            <form id="formCommentMiniReel" class="p-3.5 border-t border-white/10 bg-slate-950 flex items-center gap-2">
+                <input type="hidden" id="activeMiniReelViewerId" value="">
+                <input type="text" id="inputCommentMiniReelText" placeholder="Comentar neste Mini Reel..."
+                       class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500">
+                <button type="submit" class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold transition">
+                    Enviar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: PARTICIPANTES & ADICIONAR AMIGOS AO GRUPO ================= -->
+<div id="modalGroupParticipants" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-7 rounded-3xl max-w-lg w-full shadow-2xl space-y-5 max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3">
+            <div>
+                <h4 id="modalGroupTitle" class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-purple-400"></i>
+                    Participantes do Grupo
+                </h4>
+                <p id="modalGroupSub" class="text-[11px] text-zinc-400">Gerencie membros e adicione amigos a este grupo</p>
+            </div>
+            <button type="button" class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-5 pr-1">
+            <!-- Seção 1: Adicionar Amigos ao Grupo -->
+            <div class="p-4 rounded-2xl bg-slate-950/90 border border-emerald-500/20 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h5 class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Adicionar Amigos ao Grupo
+                    </h5>
+                </div>
+                <div id="groupAddFriendsListContainer" class="space-y-2 max-h-44 overflow-y-auto"></div>
+            </div>
+
+            <!-- Seção 2: Lista de Participantes Atuais -->
+            <div class="space-y-2.5">
+                <h5 class="text-xs font-black uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-id-badge text-purple-400"></i>
+                    Membros no Grupo (<span id="groupParticipantsCountLabel">0</span>)
+                </h5>
+                <div id="groupCurrentParticipantsContainer" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: CRIAR GRUPO DE CHAT ================= -->
+<div id="modalCreateGroupChat" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-users text-sky-400"></i>
+                Criar Novo Grupo de Chat
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formCreateGroupChat" class="space-y-4 text-xs">
+            <div>
+                <label class="block font-bold text-zinc-400 uppercase mb-2">Nome do Grupo</label>
+                <input type="text" id="inputNewGroupName" required placeholder="Ex: Clã dos Dragões, Festa VIP..."
+                       class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-sky-500">
+            </div>
+
+            <div>
+                <label class="block font-bold text-zinc-400 uppercase mb-2">Selecionar Amigos para o Grupo</label>
+                <div class="max-h-48 overflow-y-auto space-y-2 p-3 rounded-2xl bg-slate-950 border border-white/5">
+                    <% if (friendsData?.friendsList && friendsData.friendsList.length > 0) { %>
+                        <% friendsData.friendsList.forEach(function(item) { %>
+                            <label class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-900 cursor-pointer transition">
+                                <div class="flex items-center gap-2.5">
+                                    <img src="<%= item.avatar?.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.avatar?.name || 'Avatar') + '&background=0284c7&color=fff' %>"
+                                         class="w-8 h-8 rounded-lg object-cover">
+                                    <span class="font-bold text-white"><%= item.avatar?.name %> <span class="text-[10px] text-zinc-500">#<%= item.avatar?.id %></span></span>
+                                </div>
+                                <input type="checkbox" class="chk-group-member w-4 h-4 accent-sky-500 rounded" value="<%= item.avatar?.id %>">
+                            </label>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="text-zinc-500 text-center py-3">Adicione amigos primeiro para incluí-los em grupos.</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-sky-600/30">
+                Criar Grupo e Abrir Chat
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: CRIAR AVATAR ================= -->
+<div id="modalCreateAvatar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-emerald-400"></i>
+                Criar Novo Avatar
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formCreateAvatar" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Nome do Personagem</label>
+                <div class="flex gap-2">
+                    <input type="text" id="newAvatarName" required placeholder="Ex: Shadow Hunter"
+                           class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <button type="button" id="btnRollAvatarName" class="px-3.5 bg-slate-800 hover:bg-blue-600 text-white rounded-xl text-sm transition hover:rotate-180 duration-300" title="Gerar Nome Aleatório (Dado)">
+                        <i class="fa-solid fa-dice text-base"></i>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Biografia</label>
+                <textarea id="newAvatarBio" rows="2" placeholder="Descreva a história do seu personagem..."
+                          class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Gênero</label>
+                    <select id="newAvatarGender" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+                        <option value="1">Masculino</option>
+                        <option value="0">Feminino</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Foto do Avatar</label>
+                    <input type="file" id="fileCreateAvatar" accept="image/*" class="hidden">
+                    <input type="hidden" id="newAvatarThumb">
+                    <button type="button" id="btnUploadCreateAvatar" class="w-full py-2.5 px-3 bg-slate-950 hover:bg-slate-800 border border-white/10 rounded-xl text-xs text-zinc-300 flex items-center justify-center gap-2 transition truncate">
+                        <i class="fa-solid fa-upload text-blue-400"></i>
+                        <span id="labelCreateAvatarFile">Escolher Foto</span>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-emerald-600/30">
+                Concluir Criação
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: EDITAR AVATAR & FUNDO (CAPA) ================= -->
+<div id="modalEditAvatar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-lg w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-blue-400"></i>
+                Editar Avatar & Capa
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formEditAvatar" class="space-y-4">
+            <input type="hidden" id="editAvatarId">
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Nome do Personagem</label>
+                <div class="flex gap-2">
+                    <input type="text" id="editAvatarName" required
+                           class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <button type="button" id="btnRollEditAvatarName" class="px-3.5 bg-slate-800 hover:bg-blue-600 text-white rounded-xl text-sm transition hover:rotate-180 duration-300" title="Gerar Nome Aleatório">
+                        <i class="fa-solid fa-dice text-base"></i>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Biografia</label>
+                <textarea id="editAvatarBio" rows="2"
+                          class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Gênero</label>
+                    <select id="editAvatarGender" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+                        <option value="1">Masculino</option>
+                        <option value="0">Feminino</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Foto do Avatar</label>
+                    <input type="file" id="fileEditAvatar" accept="image/*" class="hidden">
+                    <input type="hidden" id="editAvatarThumb">
+                    <button type="button" id="btnUploadEditAvatar" class="w-full py-2.5 px-3 bg-slate-950 hover:bg-slate-800 border border-white/10 rounded-xl text-xs text-zinc-300 flex items-center justify-center gap-1.5 transition truncate">
+                        <i class="fa-solid fa-camera text-blue-400"></i>
+                        <span id="labelEditAvatarFile">Nova Foto</span>
+                    </button>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Fundo / Capa</label>
+                    <input type="file" id="fileEditAvatarCover" accept="image/*" class="hidden">
+                    <input type="hidden" id="editAvatarCover">
+                    <button type="button" id="btnUploadEditAvatarCover" class="w-full py-2.5 px-3 bg-slate-950 hover:bg-slate-800 border border-white/10 rounded-xl text-xs text-zinc-300 flex items-center justify-center gap-1.5 transition truncate">
+                        <i class="fa-solid fa-image text-purple-400"></i>
+                        <span id="labelEditAvatarCoverFile">Alterar Capa</span>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-blue-600/30">
+                Salvar Alterações
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: CRIAR SALA ================= -->
+<div id="modalCreateRoom" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-house-medical text-emerald-400"></i>
+                Criar Nova Sala
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formCreateRoom" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Nome do Espaço</label>
+                <div class="flex gap-2">
+                    <input type="text" id="newRoomName" required placeholder="Ex: Mansão Celestial"
+                           class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <button type="button" id="btnRollRoomName" class="px-3.5 bg-slate-800 hover:bg-blue-600 text-white rounded-xl text-sm transition hover:rotate-180 duration-300" title="Gerar Nome Aleatório da Sala">
+                        <i class="fa-solid fa-dice text-base"></i>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Descrição</label>
+                <textarea id="newRoomDesc" rows="2" placeholder="Descreva este ambiente..."
+                          class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 items-center">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Máximo Jogadores</label>
+                    <input type="number" id="newRoomMax" value="30" min="1" max="100"
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Privacidade</label>
+                    <div class="flex items-center gap-3 py-1">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggleNewRoomPrivate" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                        <span id="labelNewRoomPrivate" class="text-xs font-bold text-zinc-400">Pública 🌐</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cobrança de Entrada (Passe 24h) -->
+            <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/20 space-y-2.5"
+                 data-room-fee-percent="<%= Number(marketStats?.roomEntryPlatformFeePercent ?? 15) %>"
+                 data-room-pass-hours="<%= Number(marketStats?.roomPassDurationHours ?? 24) %>"
+                 data-room-payout-1k="<%= Number(marketStats?.roomVisitsPayoutPer1kCoins ?? 50) %>">
+                <div class="flex items-center justify-between gap-2">
+                    <label for="newRoomEntryValue" class="text-[11px] font-black text-amber-400 uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-ticket"></i> Cobrar Entrada (Passe <%= Number(marketStats?.roomPassDurationHours ?? 24) %>h em Coins)
+                    </label>
+                    <span class="text-[10px] font-bold text-zinc-500">0 = Entrada Grátis</span>
+                </div>
+                <div class="relative">
+                    <input type="number" id="newRoomEntryValue" value="0" min="0" step="0.01" placeholder="0.00"
+                           class="w-full bg-slate-900 border border-white/10 rounded-xl pl-3.5 pr-16 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-500">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-amber-400 uppercase">Coins</span>
+                </div>
+                <div id="newRoomFeePreview" class="grid grid-cols-3 gap-2 pt-1 text-[10px] border-t border-white/5">
+                    <div>
+                        <span class="text-zinc-500 block">Passe (<%= Number(marketStats?.roomPassDurationHours ?? 24) %>h)</span>
+                        <span id="newRoomGrossDisplay" class="font-bold text-white">Grátis</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block">Taxa (<%= Number(marketStats?.roomEntryPlatformFeePercent ?? 15).toLocaleString('pt-BR') %>%)</span>
+                        <span id="newRoomFeeDisplay" class="font-bold text-rose-400">0,00 Coins</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block">Você Recebe</span>
+                        <span id="newRoomNetDisplay" class="font-black text-emerald-400">0,00 Coins</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-zinc-400 leading-relaxed">
+                    <i class="fa-solid fa-trophy text-emerald-400 mr-1"></i>
+                    Além do passe, sua sala ganha <strong class="text-emerald-400">+<%= Number(marketStats?.roomVisitsPayoutPer1kCoins ?? 50).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coins</strong> automaticamente a cada <strong class="text-white">1.000 visitas únicas no mês</strong>!
+                </p>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-emerald-600/30">
+                Criar Sala
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: INSPECIONAR & EDITAR SALA ================= -->
+<div id="modalInspectRoom" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-2xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-blue-400"></i>
+                Inspecionar & Editar Sala
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <!-- Resumo de Visitas Únicas, Passe 24h & Premiação 1k -->
+        <div class="p-4 rounded-2xl bg-slate-950/90 border border-white/10 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-line"></i> Desempenho Público de Visitas & Passes (Mês Atual)
+                </span>
+                <span id="inspectRoomMilestoneBadge" class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Prêmio: +<%= Number(marketStats?.roomVisitsPayoutPer1kCoins ?? 50).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coins / 1k Visitas Únicas
+                </span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-white/5">
+                    <span class="text-[9px] text-zinc-500 font-bold uppercase block">Visitas Totais</span>
+                    <span id="inspectRoomTotalVisits" class="text-sm font-black text-white">0</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/20">
+                    <span class="text-[9px] text-zinc-500 font-bold uppercase block">Únicas no Mês</span>
+                    <span id="inspectRoomMonthlyUniqueVisits" class="text-sm font-black text-emerald-400">0 / 1.000</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/20">
+                    <span class="text-[9px] text-zinc-500 font-bold uppercase block">Passes 24h Ativos</span>
+                    <span id="inspectRoomActivePasses" class="text-sm font-black text-amber-400">0</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-purple-500/20">
+                    <span class="text-[9px] text-zinc-500 font-bold uppercase block">Bônus 1k Pagos</span>
+                    <span id="inspectRoomMilestonesPaid" class="text-sm font-black text-purple-400">0,00 Coins</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Edição de Dados da Sala -->
+        <form id="formEditRoom" class="space-y-4">
+            <input type="hidden" id="inspectRoomId">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Nome da Sala</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="inspectRoomName" required
+                               class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <button type="button" id="btnRollInspectRoomName" class="px-3.5 bg-slate-800 hover:bg-blue-600 text-white rounded-xl text-sm transition hover:rotate-180 duration-300" title="Gerar Outro Nome">
+                            <i class="fa-solid fa-dice text-base"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Máximo de Jogadores</label>
+                    <input type="number" id="inspectRoomMax" min="1" max="100"
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Descrição</label>
+                <textarea id="inspectRoomDesc" rows="2"
+                          class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+
+            <!-- Cobrança de Entrada (Passe 24h) -->
+            <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/20 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <label for="inspectRoomEntryValue" class="text-[11px] font-black text-amber-400 uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-ticket"></i> Valor da Entrada (Passe <%= Number(marketStats?.roomPassDurationHours ?? 24) %>h em Coins)
+                    </label>
+                    <span class="text-[10px] font-bold text-zinc-500">0 = Entrada Gratuita</span>
+                </div>
+                <div class="relative">
+                    <input type="number" id="inspectRoomEntryValue" value="0" min="0" step="0.01" placeholder="0.00"
+                           class="w-full bg-slate-900 border border-white/10 rounded-xl pl-3.5 pr-16 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-500">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-amber-400 uppercase">Coins</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-1 text-[10px] border-t border-white/5">
+                    <div>
+                        <span class="text-zinc-500 block">Valor do Passe (<%= Number(marketStats?.roomPassDurationHours ?? 24) %>h)</span>
+                        <span id="inspectRoomGrossDisplay" class="font-bold text-white">Grátis</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block">Taxa (<%= Number(marketStats?.roomEntryPlatformFeePercent ?? 15).toLocaleString('pt-BR') %>%)</span>
+                        <span id="inspectRoomFeeDisplay" class="font-bold text-rose-400">0,00 Coins</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block">Repasse p/ Você</span>
+                        <span id="inspectRoomNetDisplay" class="font-black text-emerald-400">0,00 Coins</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Privacidade</label>
+                    <div class="flex items-center gap-3 py-1">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggleInspectRoomPrivate" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                        <span id="labelInspectRoomPrivate" class="text-xs font-bold text-zinc-400">Pública 🌐</span>
+                    </div>
+                </div>
+                <div id="containerInspectRoomPassword">
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Senha da Sala</label>
+                    <input type="text" id="inspectRoomPassword" placeholder="Definir senha de acesso"
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-blue-600/30">
+                    Salvar Dados da Sala
+                </button>
+            </div>
+        </form>
+
+        <!-- O que tem no item: Objetos e Estrutura da Sala -->
+        <div class="pt-4 border-t border-white/10 space-y-3">
+            <h5 class="text-xs font-black uppercase italic text-zinc-300 flex items-center gap-2">
+                <i class="fa-solid fa-cube text-yellow-500"></i>
+                Objetos Instalados nesta Sala
+            </h5>
+            <div id="roomObjectsContainer" class="p-4 rounded-2xl bg-slate-950 border border-white/5 min-h-[100px] flex flex-col justify-center text-center text-xs text-zinc-500">
+                <span>Carregando objetos da sala...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: COMPRA DE CASH VIA PIX (MÍNIMO R$ 10,00 ASAAS) ================= -->
+<div id="modalDepositPix" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-brands fa-pix text-emerald-400 text-lg"></i>
+                Comprar Cash via Pix (Asaas)
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <div id="depositFormStep" class="space-y-4">
+            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 leading-relaxed">
+                <i class="fa-solid fa-circle-info mr-1"></i>
+                Valor mínimo para processar Pix dinâmico no Asaas: <strong>R$ <%= Number(marketStats?.minPurchaseBrl || 10).toFixed(2) %></strong>
+                (equivalente a <strong><%= (Number(marketStats?.minPurchaseBrl || 10) / Number(marketStats?.usdBrlRate || 5)).toFixed(2) %> Cash</strong>).
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Quantidade de Cash Desejada</label>
+                <div class="relative">
+                    <input type="number" id="inputDepositCash"
+                           min="<%= (Number(marketStats?.minPurchaseBrl || 10) / Number(marketStats?.usdBrlRate || 5)).toFixed(2) %>"
+                           step="any" value="2" placeholder="Mínimo 2 Cash (R$ 10,00)..."
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                    <span class="absolute right-4 top-3 text-xs text-zinc-500 font-bold">$ Cash</span>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-white/5 space-y-1.5 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-zinc-400">Total a pagar em Reais:</span>
+                    <span id="labelDepositBrlTotal" class="font-black text-emerald-400 text-sm">R$ 10,00</span>
+                </div>
+                <div class="flex justify-between items-center text-[11px]">
+                    <span class="text-zinc-500">Regra de liberação:</span>
+                    <span id="labelDepositApprovalPreview" class="font-bold text-emerald-400">Automática</span>
+                </div>
+            </div>
+
+            <button type="button" id="btnGeneratePixDeposit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+                <i class="fa-brands fa-pix text-base"></i>
+                Gerar QR Code Pix Dinâmico
+            </button>
+        </div>
+
+        <!-- Passo 2: QR Code e Código Copia e Cola -->
+        <div id="depositResultStep" class="hidden space-y-4 text-center">
+            <div id="qrCodeImgContainer" class="p-4 bg-white rounded-2xl inline-block mx-auto shadow-inner">
+                <!-- Imagem do QR Code inserida dinamicamente -->
+            </div>
+
+            <div class="text-left space-y-1.5">
+                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Código Pix (Copia e Cola):</label>
+                <div class="flex gap-2">
+                    <input type="text" id="inputPixCopyPaste" readonly
+                           class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-300 font-mono">
+                    <button type="button" id="btnCopyPix" class="px-3.5 py-2 bg-slate-800 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition">
+                        Copiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 space-y-1">
+                <p class="font-bold">Aguardando confirmação do Pix...</p>
+                <p class="text-[11px] text-zinc-400">Assim que confirmado pelo Asaas, o sistema aplicará a regra de aprovação configurada.</p>
+            </div>
+
+            <input type="hidden" id="currentDepositPaymentId">
+
+            <!-- Botão de simular confirmação em ambiente de teste/localhost -->
+            <button type="button" id="btnSimulatePixPayment" class="w-full py-2.5 bg-slate-800 hover:bg-emerald-700 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition">
+                <i class="fa-solid fa-bolt mr-1 text-yellow-400"></i>
+                Simular Confirmação Pix (Modo Teste)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: SAQUE DE CASH VIA PIX (MÍNIMO 1 CASH) ================= -->
+<div id="modalWithdrawPix" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <i class="fa-solid fa-money-bill-transfer text-blue-400 text-lg"></i>
+                Solicitar Saque de Cash (Pix)
+            </h4>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formWithdrawPix" class="space-y-4">
+            <div class="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed">
+                Valor mínimo para saque: <strong>$<%= Number(marketStats?.minWithdrawCash || 1).toFixed(2) %> Cash</strong>
+                (R$ <%= (Number(marketStats?.minWithdrawCash || 1) * Number(marketStats?.usdBrlRate || 5)).toFixed(2) %>).
+                Seu saldo disponível: <strong>$<%= Number(wallet?.cash || 0).toFixed(2) %> Cash</strong>.
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs font-bold text-zinc-400 uppercase">Quantidade de Cash para Saque</label>
+                    <button type="button" id="btnMaxWithdrawCash" class="text-[10px] font-bold text-blue-400 hover:underline">
+                        Sacar Tudo ($<%= Number(wallet?.cash || 0).toFixed(2) %>)
+                    </button>
+                </div>
+                <div class="relative">
+                    <input type="number" id="inputWithdrawCash"
+                           min="<%= Number(marketStats?.minWithdrawCash || 1) %>"
+                           step="any" value="<%= Math.max(Number(marketStats?.minWithdrawCash || 1), 1) %>" required
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500">
+                    <span class="absolute right-4 top-3 text-xs text-zinc-500 font-bold">$ Cash</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Tipo Chave</label>
+                    <select id="inputWithdrawPixType" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+                        <option value="CPF">CPF</option>
+                        <option value="EMAIL">E-mail</option>
+                        <option value="PHONE">Celular</option>
+                        <option value="EVP">Aleatória</option>
+                        <option value="CNPJ">CNPJ</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Sua Chave Pix</label>
+                    <input type="text" id="inputWithdrawPixKey" required value="<%= wallet?.pixKey || '' %>"
+                           placeholder="Digite sua chave Pix..."
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-white/5 space-y-1.5 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-zinc-400">Valor a receber no Pix:</span>
+                    <span id="labelWithdrawBrlTotal" class="font-black text-emerald-400 text-sm">R$ 5,00</span>
+                </div>
+                <div class="flex justify-between items-center text-[11px]">
+                    <span class="text-zinc-500">Processamento previsto:</span>
+                    <span id="labelWithdrawApprovalPreview" class="font-bold text-emerald-400">Aprovação Automática</span>
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmitWithdraw" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i>
+                Confirmar Solicitação de Saque
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JANELA / MODAL: TABELA DE REGRAS ECONÔMICAS & APROVAÇÃO (ADMIN) ================= -->
+<div id="modalEconomyRules" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <div>
+                <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-amber-400"></i>
+                    Tabela de Regras, Spread & Aprovação (economy_rules)
+                </h4>
+                <p class="text-[11px] text-zinc-400">Configure as taxas do mercado e se compras/saques aprovam no automático ou manual.</p>
+            </div>
+            <button class="btn-close-modal text-zinc-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="formEconomyRules" class="space-y-4 text-xs">
+            <!-- Taxas de Spread do Mercado -->
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-3">
+                <h5 class="font-black uppercase text-amber-400 tracking-wider text-[11px]">Taxas de Spread (Bolsa de Coins)</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Taxa de Venda (%)</label>
+                        <input type="number" step="0.01" min="0" id="ruleSellSpread" value="<%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Taxa de Compra (%)</label>
+                        <input type="number" step="0.01" min="0" id="ruleBuySpread" value="<%= Number(marketStats?.buySpreadPercent ?? 0.1) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                </div>
+                <div class="text-[11px] text-zinc-500 flex justify-between pt-1">
+                    <span>Total já arrecadado pelo sistema em taxas de spread:</span>
+                    <strong class="text-emerald-400">$<%= Number(marketStats?.collectedFeesCash || 0).toFixed(4) %> Cash</strong>
+                </div>
+            </div>
+
+            <!-- Limites Mínimos -->
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-3">
+                <h5 class="font-black uppercase text-emerald-400 tracking-wider text-[11px]">Valores Mínimos (Compra Asaas & Saque)</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Mínimo para Compra Pix (R$)</label>
+                        <input type="number" step="0.50" min="1" id="ruleMinPurchaseBrl" value="<%= Number(marketStats?.minPurchaseBrl || 10).toFixed(2) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Mínimo para Saque ($ Cash)</label>
+                        <input type="number" step="0.50" min="0.1" id="ruleMinWithdrawCash" value="<%= Number(marketStats?.minWithdrawCash || 1).toFixed(2) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regras de Aprovação (Automático vs Manual + Teto Máximo) -->
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-3">
+                <h5 class="font-black uppercase text-blue-400 tracking-wider text-[11px]">Aprovação de Saques e Compras (Auto vs Manual)</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Modo de Aprovação de Saque</label>
+                        <select id="ruleWithdrawMode" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                            <option value="AUTO" <%= marketStats?.withdrawApprovalMode === 'AUTO' ? 'selected' : '' %>>Automático (até o limite)</option>
+                            <option value="MANUAL" <%= marketStats?.withdrawApprovalMode === 'MANUAL' ? 'selected' : '' %>>Sempre Manual (Painel Admin)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Valor Máx. Saque Automático ($ Cash)</label>
+                        <input type="number" step="1" min="0" id="ruleMaxAutoWithdrawCash" value="<%= Number(marketStats?.maxAutoWithdrawCash || 20).toFixed(2) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Modo de Aprovação de Compra</label>
+                        <select id="ruleBuyMode" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                            <option value="AUTO" <%= marketStats?.buyApprovalMode === 'AUTO' ? 'selected' : '' %>>Automático (até o limite)</option>
+                            <option value="MANUAL" <%= marketStats?.buyApprovalMode === 'MANUAL' ? 'selected' : '' %>>Sempre Manual (Painel Admin)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Valor Máx. Compra Automática (R$)</label>
+                        <input type="number" step="10" min="0" id="ruleMaxAutoBuyBrl" value="<%= Number(marketStats?.maxAutoBuyBrl || 500).toFixed(2) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regras do Conversor Direto (Desincentivo Coins -> Cash) -->
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-3">
+                <h5 class="font-black uppercase text-red-400 tracking-wider text-[11px]">Conversor Direto Coins ➔ Cash (Proteção da Bolsa)</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Conversão Direta Coins ➔ Cash</label>
+                        <select id="ruleAllowInstantCoinsToCash" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                            <option value="true" <%= marketStats?.allowInstantCoinsToCash !== false ? 'selected' : '' %>>Permitir com Taxa Punitiva</option>
+                            <option value="false" <%= marketStats?.allowInstantCoinsToCash === false ? 'selected' : '' %>>Bloquear (Somente via Bolsa)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-zinc-400 font-bold mb-1">Taxa de Perda Coins ➔ Cash (%)</label>
+                        <input type="number" step="1" min="0" max="99" id="ruleInstantCoinsToCashFee" value="<%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>"
+                               class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-600/30">
+                Salvar Regras na Tabela (economy_rules)
+            </button>
+        </form>
+    </div>
+</div>

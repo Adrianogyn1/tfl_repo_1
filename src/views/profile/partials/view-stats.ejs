@@ -1,0 +1,257 @@
+<!-- ================= VIEW 8: TABELA DE ESTATÍSTICAS & DESEMPENHO DO SITE ================= -->
+<section id="view-stats" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
+    <!-- Cabeçalho Compacto -->
+    <div class="bg-slate-900/85 border border-white/10 rounded-3xl p-5 shadow-xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <span class="material-symbols-outlined text-[24px]">monitoring</span>
+            </div>
+            <div>
+                <h2 class="text-base sm:text-lg font-black uppercase italic text-white flex items-center gap-2">
+                    <span><%= t('profile.stats.title', {}, 'Estatísticas & Desempenho') %></span>
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase">
+                        <%= t('profile.stats.apiReady', {}, 'API Godot v1 Ativa') %>
+                    </span>
+                </h2>
+                <p class="text-[11px] text-zinc-400"><%= t('profile.stats.subtitle', {}, 'Monitoramento em tempo real do servidor, banco de dados, economia e API Godot') %></p>
+            </div>
+        </div>
+
+        <button type="button" id="btnRefreshStatsTable" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-wider transition shadow-lg shadow-cyan-600/25 flex items-center gap-1.5" title="<%= t('common.refresh', {}, 'Atualizar') %>">
+            <span class="material-symbols-outlined text-[16px]">refresh</span>
+            <span><%= t('common.refresh', {}, 'Atualizar') %></span>
+        </button>
+    </div>
+
+    <!-- Cards de Telemetria de Hardware / Servidor -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
+                <span><%= t('profile.stats.latency', {}, 'Latência DB') %></span>
+                <span class="material-symbols-outlined text-[18px] text-emerald-400">speed</span>
+            </div>
+            <div id="statServerLatency" class="text-xl font-black text-emerald-400">
+                <%= typeof platformStats !== 'undefined' ? platformStats?.server?.dbLatencyMs : 1 %> ms
+            </div>
+            <p class="text-[10px] text-zinc-500">PostgreSQL / Sequelize</p>
+        </div>
+
+        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
+                <span><%= t('profile.stats.memory', {}, 'Memória RAM') %></span>
+                <span class="material-symbols-outlined text-[18px] text-cyan-400">memory</span>
+            </div>
+            <div id="statServerMemory" class="text-xl font-black text-cyan-400">
+                <%= typeof platformStats !== 'undefined' ? platformStats?.server?.heapUsedMb : 0 %> MB
+            </div>
+            <p id="statServerMemorySub" class="text-[10px] text-zinc-500">
+                RSS: <%= typeof platformStats !== 'undefined' ? platformStats?.server?.rssMb : 0 %> MB (<%= typeof platformStats !== 'undefined' ? platformStats?.server?.heapUsagePercent : 0 %>%)
+            </p>
+        </div>
+
+        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
+                <span><%= t('profile.stats.uptime', {}, 'Uptime') %></span>
+                <span class="material-symbols-outlined text-[18px] text-purple-400">schedule</span>
+            </div>
+            <div id="statServerUptime" class="text-xl font-black text-purple-400">
+                <%= typeof platformStats !== 'undefined' ? platformStats?.server?.uptimeFormatted : '00h 00m' %>
+            </div>
+            <p class="text-[10px] text-zinc-500">Node <%= typeof platformStats !== 'undefined' ? platformStats?.server?.nodeVersion : '' %></p>
+        </div>
+
+        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
+                <span>CPU / Cores</span>
+                <span class="material-symbols-outlined text-[18px] text-amber-400">developer_board</span>
+            </div>
+            <div id="statServerCpu" class="text-xl font-black text-amber-400">
+                <%= typeof platformStats !== 'undefined' ? platformStats?.server?.loadAvg1m : '0.00' %>
+            </div>
+            <p class="text-[10px] text-zinc-500"><%= typeof platformStats !== 'undefined' ? platformStats?.server?.cpuCores : 1 %> vCPUs</p>
+        </div>
+    </div>
+
+    <!-- TABELA DE ESTATÍSTICAS E INDICADORES DA PLATAFORMA -->
+    <div class="bg-slate-900/85 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-slate-950/60">
+            <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-cyan-400">table_chart</span>
+                <span><%= t('profile.stats.tableTitle', {}, 'Tabela Geral de Indicadores') %></span>
+            </h3>
+            <span id="statLastUpdatedLabel" class="text-[11px] font-mono text-zinc-400">
+                <%= typeof platformStats !== 'undefined' && platformStats?.timestamp ? new Date(platformStats.timestamp).toLocaleTimeString('pt-BR') : '' %>
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-white/10 bg-slate-950/90 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                        <th class="py-3 px-4"><%= t('profile.stats.category', {}, 'Módulo') %></th>
+                        <th class="py-3 px-4"><%= t('profile.stats.metric', {}, 'Indicador') %></th>
+                        <th class="py-3 px-4 text-right"><%= t('profile.stats.value', {}, 'Total / Valor') %></th>
+                        <th class="py-3 px-4 text-center"><%= t('profile.stats.status', {}, 'Status') %></th>
+                    </tr>
+                </thead>
+                <tbody id="statsMetricsTableBody" class="divide-y divide-white/5 text-xs">
+                    <!-- Comunidade & Identidade -->
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-purple-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">manage_accounts</span> Comunidade
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Contas Registradas (Users)</td>
+                        <td id="tbStatUsers" class="py-3 px-4 text-right font-black text-white"><%= typeof platformStats !== 'undefined' ? platformStats?.community?.usersCount : 0 %></td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">OK</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-purple-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">theater_comedy</span> Comunidade
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Avatares Criados (Personagens)</td>
+                        <td id="tbStatAvatars" class="py-3 px-4 text-right font-black text-white"><%= typeof platformStats !== 'undefined' ? platformStats?.community?.avatarsCount : 0 %></td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Ativo</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-emerald-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">group</span> Conexões
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Vínculos de Amizade / Pendentes</td>
+                        <td id="tbStatFriends" class="py-3 px-4 text-right font-black text-emerald-400">
+                            <%= typeof platformStats !== 'undefined' ? platformStats?.community?.friendsAcceptedCount : 0 %> / <span class="text-amber-400"><%= typeof platformStats !== 'undefined' ? platformStats?.community?.friendsPendingCount : 0 %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Sync</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-pink-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">local_fire_department</span> Match &Seguidores
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Matches Mútuos 💘 / Seguidores ⭐</td>
+                        <td id="tbStatMatches" class="py-3 px-4 text-right font-black text-pink-400">
+                            <%= typeof platformStats !== 'undefined' ? platformStats?.community?.matchesMutualCount : 0 %> / <span class="text-sky-400"><%= typeof platformStats !== 'undefined' ? platformStats?.community?.followsCount : 0 %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 text-[10px] font-bold">Real-Time</span></td>
+                    </tr>
+
+                    <!-- Rede Social -->
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-blue-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">article</span> Rede Social
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Publicações no Feed</td>
+                        <td id="tbStatPosts" class="py-3 px-4 text-right font-black text-white"><%= typeof platformStats !== 'undefined' ? platformStats?.social?.postsCount : 0 %></td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] font-bold">Feed</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-amber-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">photo_library</span> Galeria & Reels
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Fotos na Galeria / Mini Reels Ativos (6h/24h)</td>
+                        <td id="tbStatPhotosReels" class="py-3 px-4 text-right font-black text-amber-400">
+                            <%= typeof platformStats !== 'undefined' ? platformStats?.social?.photosCount : 0 %> / <span class="text-pink-400"><%= typeof platformStats !== 'undefined' ? platformStats?.social?.activeReelsCount : 0 %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-bold">CDN Proxy</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-rose-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">favorite</span> Engajamento
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Reações & Curtidas / Comentários Recursivos</td>
+                        <td id="tbStatLikesComments" class="py-3 px-4 text-right font-black text-rose-400">
+                            <%= typeof platformStats !== 'undefined' ? platformStats?.social?.likesCount : 0 %> / <span class="text-zinc-200"><%= typeof platformStats !== 'undefined' ? platformStats?.social?.commentsCount : 0 %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Ativo</span></td>
+                    </tr>
+
+                    <!-- Metaverso 3D Godot & Chat -->
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-indigo-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">deployed_code</span> Mundo 3D (Godot)
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Salas 3D / Objetos Instanciados</td>
+                        <td id="tbStatRoomsObjects" class="py-3 px-4 text-right font-black text-indigo-300">
+                            <%= typeof platformStats !== 'undefined' ? platformStats?.metaverse?.roomsCount : 0 %> / <span class="text-zinc-300"><%= typeof platformStats !== 'undefined' ? platformStats?.metaverse?.objectsCount : 0 %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 text-[10px] font-bold">Godot Ready</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-sky-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">forum</span> Chat Real-Time
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Canais & Grupos / Mensagens Enviadas</td>
+                        <td id="tbStatChat" class="py-3 px-4 text-right font-black text-sky-400">
+                            <%= typeof platformStats !== 'undefined' ? platformStats?.metaverse?.chatRoomsCount : 0 %> / <span class="text-white"><%= typeof platformStats !== 'undefined' ? platformStats?.metaverse?.chatMessagesCount : 0 %></span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 text-[10px] font-bold">WebSocket</span></td>
+                    </tr>
+
+                    <!-- Economia & Bolsa -->
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-emerald-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">account_balance_wallet</span> Economia
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Liquidez Total em Carteiras (Cash / Coins / Chips)</td>
+                        <td id="tbStatWallets" class="py-3 px-4 text-right font-black text-emerald-400">
+                            $<%= typeof platformStats !== 'undefined' ? Number(platformStats?.economy?.totalCashInWallets || 0).toFixed(2) : '0.00' %> •
+                            <span class="text-yellow-400"><%= typeof platformStats !== 'undefined' ? Number(platformStats?.economy?.totalCoinsInWallets || 0).toLocaleString('pt-BR') : 0 %> 🪙</span> •
+                            <span class="text-blue-400"><%= typeof platformStats !== 'undefined' ? Number(platformStats?.economy?.totalChipsInWallets || 0).toLocaleString('pt-BR') : 0 %> 🎰</span>
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Auditado</span></td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-bold text-amber-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">currency_exchange</span> Bolsa P2P & Pix
+                        </td>
+                        <td class="py-3 px-4 text-zinc-200">Pote Coletivo FIFO (Coins) / Ordens / Transações Pix</td>
+                        <td id="tbStatPool" class="py-3 px-4 text-right font-black text-amber-300">
+                            <%= typeof platformStats !== 'undefined' ? Number(platformStats?.economy?.poolCoins || 0).toLocaleString('pt-BR') : 0 %> 🪙 (<%= typeof platformStats !== 'undefined' ? platformStats?.economy?.activeOrdersCount : 0 %> ordens) • <%= typeof platformStats !== 'undefined' ? platformStats?.economy?.transactionsCount : 0 %> Pix
+                        </td>
+                        <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-bold">FIFO Ativo</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAINEL DO SIMULADOR DE BOTS (100% API v1 + WEBSOCKET) -->
+    <div class="bg-slate-900/85 border border-purple-500/25 rounded-3xl p-5 shadow-2xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                    <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                </div>
+                <div>
+                    <h3 class="text-sm sm:text-base font-black uppercase italic text-white flex items-center gap-2">
+                        <span>Simulador de Bots Autônomos (API + WebSocket)</span>
+                        <span class="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-mono">scripts/bot_simulator.js</span>
+                    </h3>
+                    <p class="text-[11px] text-zinc-400">
+                        Cria N bots que registram conta, criam avatar, foto/capa, sala 3D, postam fotos, reels/sentimentos, reagem, comentam recursivamente, dão match, fazem amizade e conversam no Chat Global usando somente a API.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <div class="flex items-center gap-1.5 bg-slate-950/80 border border-white/10 rounded-xl px-3 py-1.5" title="Quantidade de Bots">
+                    <span class="material-symbols-outlined text-[16px] text-purple-400">group_add</span>
+                    <label for="botSimCountInput" class="text-[10px] font-bold uppercase text-zinc-400">Bots:</label>
+                    <input id="botSimCountInput" type="number" min="1" max="25" value="6" class="w-12 bg-transparent text-xs font-black text-white text-center focus:outline-none">
+                </div>
+
+                <div class="flex items-center gap-1.5 bg-slate-950/80 border border-white/10 rounded-xl px-3 py-1.5" title="Rodadas de Interação por Bot">
+                    <span class="material-symbols-outlined text-[16px] text-cyan-400">sync</span>
+                    <label for="botSimRoundsInput" class="text-[10px] font-bold uppercase text-zinc-400">Rodadas:</label>
+                    <input id="botSimRoundsInput" type="number" min="1" max="10" value="2" class="w-10 bg-transparent text-xs font-black text-white text-center focus:outline-none">
+                </div>
+
+                <button type="button" id="btnRunBotSimulator" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-black uppercase tracking-wider transition shadow-lg shadow-purple-600/25 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                    <span>Rodar Bots Agora</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="botSimResultBox" class="hidden bg-slate-950/90 border border-white/10 rounded-2xl p-4 text-xs font-mono text-zinc-300 space-y-2 max-h-64 overflow-y-auto"></div>
+    </div>
+</section>
+

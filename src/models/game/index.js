@@ -37,6 +37,10 @@ module.exports = (sequelize) => {
   const Material = MateriaModelFactory(sequelize);
   const Currency = CurrencyFactory(sequelize);
   const CurrencyRegister = CurrencyRegisterFactory(sequelize);
+  const CoinOrderFactory = require("./CoinOrderModel.js");
+  const CoinOrder = CoinOrderFactory(sequelize);
+  const EconomyRuleFactory = require("./EconomyRuleModel.js");
+  const EconomyRule = EconomyRuleFactory(sequelize);
 
   const PrefabModel = PrefabModelFactory(sequelize);
   const Prefab = PrefabFactory(sequelize);
@@ -63,6 +67,8 @@ module.exports = (sequelize) => {
     PrefabModel,
     Currency,
     CurrencyRegister,
+    CoinOrder,
+    EconomyRule,
   };
 
   ApplyAssociations(models);

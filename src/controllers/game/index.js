@@ -31,4 +31,5 @@ module.exports = {
   Server: serverController,
   Texture: textureController,
   Terrain: TerrainController,
+  InventoryCloth: avatarInventoryController,
 };

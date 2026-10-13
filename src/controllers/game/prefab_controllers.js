@@ -160,8 +160,11 @@ function validReturn(prefab)
   return retVal;
 }
 
+const { ensureShopSchemaAndSeed } = require("../../services/shop3d.service");
+
 async function getAll(req, res)
 {
+  await ensureShopSchemaAndSeed();
   const limit = parseInt(req.query?.limit || req.body?.limit) || 10;
   const offset =
     parseInt(

@@ -1,0 +1,609 @@
+================================================================================
+              THE FANTASY LIFE (TFL) - MEMÓRIA E LOG DO PROJETO
+                   ARQUIVO: /PROJECT_MEMORY_LOG.txt
+================================================================================
+
+[!] REGRA OBRIGATÓRIA PARA TODOS OS MODELOS DE IA (LEIA ANTES DE CODIFICAR):
+--------------------------------------------------------------------------------
+1. LEITURA INICIAL: Antes de realizar qualquer alteração no projeto, todo modelo
+   de IA DEVE ler este arquivo (`PROJECT_MEMORY_LOG.txt`) para entender a
+   arquitetura, as regras de negócio, a separação entre público/admin/API e o
+   histórico do que já foi implementado.
+2. REGISTRO CONTÍNUO: Ao concluir qualquer tarefa ou modificação no código, o
+   modelo DEVE atualizar este arquivo (`PROJECT_MEMORY_LOG.txt`), adicionando
+   um novo bloco no final da seção "5. HISTÓRICO DE LOGS E IMPLEMENTAÇÕES" com:
+   - Data/Hora ou Sessão
+   - O que foi feito (resumo claro)
+   - Arquivos criados ou modificados
+   - Novas regras ou decisões de design adotadas
+3. ATUALIZAÇÃO DE MÓDULOS: Se um novo módulo, serviço, rota ou partial for
+   criado, atualize também a seção "4. DESCRIÇÃO DETALHADA DE CADA MÓDULO".
+
+================================================================================
+1. O QUE É O PROJETO E PARA QUE SERVE?
+================================================================================
+"The Fantasy Life" (TFL) é uma plataforma híbrida de Mundo Virtual 3D + Rede
+Social + Economia Virtual P2P/Pix.
+- Para os JOGADORES (Público Web): Funciona como uma rede social completa de
+  avatares (`The Fantasy Life`), onde uma única Conta (`User`) pode criar e
+  alternar entre múltiplos Avatares (`Avatar`), cada um com sua própria
+  identidade, foto de perfil, capa, privacidade por seção, amigos, seguidores,
+  sistema de Match/Crush, feed de publicações, galeria de fotos, Mini Reels
+  (24h), Sentimentos (6h), salas 3D, chat global/DM/grupos em tempo real e
+  carteira financeira (Cash, Coins, Chips e mercado P2P/Pix).
+- Para os ADMINISTRADORES (`/admin`): Central protegida por autenticação e role
+  para monitorar estatísticas de visitas ao site, origem/região dos visitantes,
+  saúde do servidor, métricas do banco, configuração de regras econômicas
+  (spread, cotação, aprovação automática/manual de Pix) e execução do simulador
+  de bots.
+- Para o JOGO (Uso Interno): A API REST (`/api/v1/*`) e os WebSockets (`/ws/*`)
+  são consumidos internamente pelo cliente do jogo e pelo front-end web, mas
+  NÃO são públicos e NÃO devem ser divulgados ou documentados em páginas
+  públicas do site.
+
+================================================================================
+2. REGRAS DE NEGÓCIO, UI E ARQUITETURA (NUNCA VIOLAR!)
+================================================================================
+1. ISOLAMENTO PÚBLICO vs INTERNO (API / ENGINE DO JOGO):
+   - NUNCA mencione "Godot", "Engine do Jogo" ou "Documentação de API" nas
+     páginas voltadas ao usuário final (`/`, `/profile`, `/tutorial`).
+   - A API (`/api/v1/*`) é de uso estritamente interno entre o front-end/jogo e
+     o servidor.
+2. TUTORIAL (`/tutorial`):
+   - Serve exclusivamente para ensinar o jogador a usar o site (como criar
+     avatar, publicar no feed, usar Mini Reels 24h, Sentimentos 6h, Galeria de
+     Fotos, configurar privacidade por seção, reagir, comentar recursivamente,
+     dar Match, usar o Chat e operar a Carteira/Bolsa).
+   - O link para o Tutorial NÃO deve aparecer no menu superior (`header.ejs`)
+     nem na sidebar (`sidebar.ejs`). Deve ficar APENAS no rodapé (`footer.ejs`).
+3. MUDANÇA DE IDIOMA (I18N - pt-BR, en-US, es-ES):
+   - O seletor de idioma (`#langSelect`) deve ficar EXCLUSIVAMENTE no rodapé
+     (`src/views/partials/footer.ejs`).
+   - Não repetir seletor de idioma no topo ou na barra lateral para não poluir
+     a interface.
+4. PAINEL DE ADMINISTRAÇÃO (`/admin`) vs PERFIL DO JOGADOR (`/profile`):
+   - No `/profile`, deixar SOMENTE funcionalidades públicas/sociais do jogador:
+     1. `The Fantasy Life` (Rede Social / Feed / Mini Reels / Sentimentos)
+     2. `Avatares` (Criação/Edição de Avatares e Salas)
+     3. `Amigos` (Amigos, Pedidos e Sugestões)
+     4. `Chat` (Global, DM e Grupos)
+     5. `Carteira` (Saldos, Conversor, Compra Pix, Bolsa P2P e Saque)
+     6. `Conta` (Segurança, E-mail e Senha da Conta)
+   - Tudo o que for de Administrador (Estatísticas de visitas ao site, região
+     da visita, métricas gerais, edição de taxas/regras da economia, aprovação
+     manual de saques/compras Pix e Simulador de Bots) fica EXCLUSIVAMENTE na
+     rota `/admin`.
+   - A rota `/admin` e suas sub-rotas (`/admin/api/*`) são protegidas pelo
+     middleware `requireAdminAuth` (exige role `admin`, `owner`, `ownner`,
+     `desenvolvedor` ou usuário ID `#1`).
+   - As estatísticas em `/admin` são atualizadas dinamicamente via JavaScript
+     consumindo `GET /admin/api/stats`.
+5. NOTIFICAÇÕES NO FRONT-END (SEM ALERT NATIVO):
+   - Nunca usar `window.alert()` nativo. Utilizar sempre o plugin de Toast no
+     canto da tela (`window.showToast(msg, type)` em `public/js/toast.js`).
+6. INTERFACE LIMPA E ORIENTADA A ÍCONES:
+   - Evitar textos longos ou repetitivos nos menus e botões; priorizar ícones
+     FontAwesome / Google Icons com tooltips (`title`).
+7. PRIVACIDADE DESCENTRALIZADA POR SEÇÃO:
+   - As configurações de privacidade (`public`, `friends`, `private`) ficam nos
+     locais onde pertencem dentro do Perfil Social do Avatar (`view-user-profile`):
+     * Publicações (`privacyPosts`) -> na aba Publicações
+     * Galeria de Fotos (`privacyPhotos`) -> na aba Fotos
+     * Salas (`privacyRooms`) -> na aba Salas
+     * Lista de Amigos (`privacyFriends`) -> na aba Amigos
+     * Seguidores (`privacyFollowers`) -> no modal de Seguidores
+8. CONTEÚDOS TEMPORÁRIOS (EXPIRAÇÃO AUTOMÁTICA):
+   - Sentimentos (`type: 'feeling'`): expiram em **6 horas**.
+   - Mini Reels de Foto + Texto (`type: 'reel'`): expiram em **24 horas**.
+9. REGRAS OFICIAIS DA LOJA DE ROUPAS 3D E GUARDA-ROUPA (`SHOP_3D_RULES`):
+   - **Slots Padronizados do Esqueleto 3D**: `hair` (Cabelo), `head` (Chapéu/Boné),
+     `eyes` (Óculos/Lentes), `top` (Torso/Camisa/Jaqueta), `bottom` (Pernas/Calça/Saia),
+     `fullbody` (Traje Corpo Inteiro/Vestido), `shoes` (Calçados), `accessory`
+     (Acessórios/Asas/Mochila), `skin` (Pele/Textura Base) e `animation` (Emotes).
+   - **Exclusividade por Slot e Conflitos**: Apenas 1 peça pode estar equipada por
+     slot simultaneamente (`avatar_outfits`). Ao equipar `fullbody`, o sistema
+     desequipa automaticamente `top` e `bottom`. Ao equipar `top` ou `bottom`, o
+     sistema desequipa automaticamente `fullbody`.
+   - **Compatibilidade de Gênero**: Peças marcadas como `Universal` podem ser
+     compradas e vestidas por qualquer avatar; peças `Male` apenas por avatares
+     masculinos (`gender: 1`) e `Female` apenas por femininos (`gender: 0`).
+   - **Não-Duplicidade e Estoque**: Um avatar não pode comprar duas vezes a mesma
+     peça (`shopItemId`) em seu `avatar_inventories`. Itens com `stock: -1` são
+     ilimitados; itens com `stock > 0` têm o estoque decrementado a cada venda.
+   - **Economia Multi-Moeda e Royalties UGC (70%/30%)**: Roupas podem ser vendidas
+     em `Coins`, `Cash` ou `Chips`. Se a roupa tiver um avatar criador (`avatarId`),
+     70% do valor pago vai automaticamente para a carteira do criador e 30% fica
+     retido como taxa da plataforma.
+   - **Cores Customizadas e Presets de Looks**: Cada peça no inventário e equipada
+     suporta `customColors` (`{ primary, secondary }`), e o jogador pode salvar até
+     10 combinações completas de roupas ("Looks") em `avatar_outfit_styles`.
+
+================================================================================
+3. ESTRUTURA DE DIRETÓRIOS PRINCIPAIS
+================================================================================
+- `app.js` / `server.js`: Inicialização do Express, sessões, cookies, i18n,
+  WebSockets (`/ws/chat`, `/ws/game`, `/ws/voice`) e montagem das rotas.
+- `src/routes/router.js`: Roteador raiz (`/`, `/tutorial`, `/api/visit-beacon`,
+  `/profile`, `/api/v1`, `/admin`, `/auth`, `/payment`).
+- `src/locales/`: Sistema de internacionalização (`i18n.js`, `pt-BR.json`,
+  `en-US.json`, `es-ES.json`).
+- `src/models/` & `src/repositories/repository.js`: Modelos Sequelize (PostgreSQL)
+  incluindo `User`, `Avatar`, `Post`, `Photo`, `MiniReel`, `Like`, `Comment`,
+  `Friend`, `Follower`, `AvatarMatch`, `ChatGroup`, `ChatMessage`, `RoomModel`,
+  `Currency`, `CoinOrder`, `PaymentBank`, `FileInfo`.
+- `src/services/`:
+  * `stats.service.js`: Telemetria de visitas ao site, detecção de região/país/
+    estado por fuso horário e headers, usuários online e métricas do banco.
+  * `coinMarket.service.js`: Regras da economia, ordens de venda P2P, compra de
+    moedas, saque Pix, revisão administrativa e conversor de moedas.
+  * `storage.service.js`: Upload e proxy seguro de imagens (`/profile/media/:id`).
+  * `nameGenerator.service.js`: Gerador de nomes para avatares e salas.
+- `src/controllers/`:
+  * `profile/profile_controller.js`: Rotas do portal `/profile` e endpoints
+    sociais/econômicos.
+  * `social/chat_controller.js`: API e WebSocket (`/ws/chat`) do Chat Global,
+    DMs e Grupos.
+  * `admin/index.js`: Painel `/admin` protegido e APIs administrativas
+    (`/admin/api/stats`, `/admin/api/economy/rules`, `/admin/api/economy/review`,
+    `/admin/api/bots/simulate`).
+- `src/views/`:
+  * `partials/header.ejs`: Menu superior enxuto (Início, Perfil, Sobre, Contato).
+  * `partials/footer.ejs`: Rodapé unificado com link para `/tutorial`, seletor
+    de idioma (`#langSelect`) e script automático de telemetria de visita/região
+    (`POST /api/visit-beacon`).
+  * `tutorial.ejs`: Guia passo a passo para jogadores usarem o site.
+  * `admin/index.html`: Dashboard administrativo completo em JS dinâmico.
+  * `profile/index.ejs` & `profile/partials/*.ejs`: Views modulares do portal
+    do jogador.
+- `public/js/`:
+  * `toast.js`: Plugin de notificações flutuantes no canto superior direito.
+  * `profile/core.js`: Navegação SPA, refresh dinâmico de partials, gerenciamento
+    de avatares, salas, conta e modais.
+  * `profile/social.js`: Feed, Mini Reels 24h, Sentimentos 6h, Galeria de Fotos,
+    Reações (7 emojis), Comentários Recursivos, Perfil Social, Amigos e Match.
+  * `profile/chat.js`: Cliente WebSocket e HTTP para Chat Global, DM e Grupos.
+  * `profile/market.js`: Operações de Carteira, Conversor, Compra Pix, Ordens de
+    Venda e Solicitação de Saque.
+- `scripts/bot_simulator.js`: Simulador autônomo de $N$ bots interagindo com
+  todas as funcionalidades via API HTTP + WebSocket.
+
+================================================================================
+4. DESCRIÇÃO DETALHADA DE CADA MÓDULO
+================================================================================
+
+[MÓDULO 1: AUTENTICAÇÃO E CONTA (`User`)]
+- Arquivos: `src/controllers/auth.js`, `src/views/profile/partials/view-account.ejs`
+- Responsabilidade: Cadastro, login por sessão/cookie/token Bearer, recuperação
+  de senha, troca de e-mail e senha. Uma conta pode possuir vários avatares.
+
+[MÓDULO 2: AVATARES E PERSONALIZAÇÃO (`Avatar`)]
+- Arquivos: `src/views/profile/partials/view-avatar.ejs`, `public/js/profile/core.js`
+- Responsabilidade: Criação, edição e seleção do avatar ativo (`selected: true`).
+  Upload de foto de perfil (`thumbnail`) e foto de capa (`coverUrl`) via proxy
+  `/profile/media/:id`. Contém controle de privacidade individual por seção
+  (`privacyPosts`, `privacyPhotos`, `privacyRooms`, `privacyFriends`,
+  `privacyFollowers`).
+
+[MÓDULO 3: REDE SOCIAL "THE FANTASY LIFE" (`Post`, `Photo`, `MiniReel`, `Like`, `Comment`)]
+- Arquivos: `src/views/profile/partials/view-social.ejs`,
+  `src/views/profile/partials/view-user-profile.ejs`, `public/js/profile/social.js`
+- Responsabilidade:
+  * Feed de publicações (Todos, Seguindo, Amigos) com texto, foto e sala.
+  * Mini Reels (foto + texto com duração de 24h) e Sentimentos (emoji + status
+    com duração de 6h).
+  * Galeria de Fotos dedicada com lightbox e comentários próprios.
+  * Sistema de 7 Reações (`like`, `love`, `care`, `haha`, `wow`, `sad`, `angry`)
+    aplicável em 6 alvos: `post`, `photo`, `profile`, `room`, `reel`, `comment`.
+  * Árvore de Comentários Recursivos (`commentId` pai -> respostas infinitas).
+  * Compartilhamento de publicações no feed.
+
+[MÓDULO 4: GRAFO SOCIAL - AMIGOS, SEGUIDORES E MATCH (`Friend`, `Follower`, `AvatarMatch`)]
+- Arquivos: `src/views/profile/partials/view-friends.ejs`, `public/js/profile/social.js`
+- Responsabilidade:
+  * Solicitação, aceite, recusa e remoção de amizade entre avatares.
+  * Sistema de Seguir/Deixar de seguir avatares.
+  * Sistema de Match/Crush (`POST /profile/social/match/toggle`): quando dois
+    avatares curtem um ao outro com 💘, o status vira `matched` (Match Mútuo!).
+
+[MÓDULO 5: CHAT EM TEMPO REAL (`ChatGroup`, `ChatMessage`, `/ws/chat`)]
+- Arquivos: `src/controllers/social/chat_controller.js`,
+  `src/views/profile/partials/view-chat.ejs`, `public/js/profile/chat.js`
+- Responsabilidade: Chat Global em tempo real via WebSocket, Mensagens Diretas
+  (DM) privadas entre avatares e criação de Grupos customizados com convite de
+  membros.
+
+[MÓDULO 6: CARTEIRA, CONVERSOR E BOLSA DE MOEDAS (`Currency`, `CoinOrder`, `PaymentBank`)]
+- Arquivos: `src/services/coinMarket.service.js`,
+  `src/views/profile/partials/view-market.ejs`, `public/js/profile/market.js`
+- Responsabilidade:
+  * Três moedas por avatar: `Cash` (moeda forte lastreada), `Coins` (moeda de
+    circulação no mundo) e `Chips` (fichas de minigames).
+  * Conversor instantâneo (Cash -> Coins, Coins -> Chips, Chips -> Coins,
+    Coins -> Cash com deságio de liquidez).
+  * Compra de Cash/Coins via Pix e livro de ofertas P2P (`CoinOrder`) para
+    venda de lotes de Coins e saque via Pix.
+
+[MÓDULO 7: TELEMETRIA DE VISITAS E PAINEL ADMIN (`/admin`)]
+- Arquivos: `src/services/stats.service.js`, `src/controllers/admin/index.js`,
+  `src/views/admin/index.html`
+- Responsabilidade:
+  * Rastreia cada visita ao site (`recordSiteVisit`) via middleware e beacon JS
+    no rodapé (`POST /api/visit-beacon`), identificando a Região/País/Estado do
+    visitante (via `Intl.DateTimeFormat().resolvedOptions().timeZone`, idioma e
+    headers de proxy/Cloudflare), páginas mais acessadas, visitantes únicos,
+    usuários online na janela de 5 minutos e log de acessos em tempo real.
+  * No painel `/admin`, exibe gráficos de visitas por região, rotas mais
+    visitadas, contadores gerais do banco, configuração das regras da economia,
+    fila de aprovação manual de transações Pix e disparador do Simulador de Bots.
+
+[MÓDULO 8: SIMULADOR DE BOTS (`scripts/bot_simulator.js`)]
+- Arquivos: `scripts/bot_simulator.js`
+- Responsabilidade: Cria e executa $N$ bots autônomos (`npm run bots` ou via
+  painel `/admin`) que testam 100% da plataforma via chamadas HTTP à API e
+  WebSocket.
+
+[MÓDULO 9: CENTRAL FINANCEIRA ASAAS & CONCILIAÇÃO TFL (`/admin/assas` e `/asaas`)]
+- Arquivos: `src/api/v1/old/assas_client.js`, `src/api/v1/old/bank_controller.js`,
+  `src/controllers/admin/routers.js`, `src/views/admin/assas.html`
+- Responsabilidade:
+  * Integração completa com a API Asaas v3 (Sandbox e Produção) e conciliação
+    com o banco local TFL (`PaymentBank`, `PaymentWebHook`, `Currency`).
+  * Operações disponíveis em `/admin/assas` (e `/admin/asaas`):
+    - Diagnóstico de variáveis `.env`, saldo em tempo real e dados da conta.
+    - Banco Local TFL: aprovação/rejeição de compras e saques, aprovação de
+      saque com disparo imediato do Pix via Asaas, sincronização remota de
+      status (`Sync`) e lançamento manual de crédito/débito de `Cash` na
+      carteira de qualquer Avatar.
+    - Clientes Asaas: criar, editar, excluir, restaurar e importar/sincronizar
+      jogadores do TFL para o Asaas com 1 clique.
+    - Cobranças Pix/Boleto: gerar cobrança dinâmica vinculada ao Avatar TFL,
+      ver QR Code + Copia e Cola, editar valor/vencimento, confirmar
+      recebimento em mãos (`receiveInCash` + crédito na carteira), desfazer
+      recebimento em mãos, estornar (`refund`), excluir e restaurar.
+    - Chaves Pix & QR Estático: listar chaves, criar chave aleatória (`EVP`),
+      excluir chave e gerar QR Code Pix estático reutilizável.
+    - Envio de Pix & Pagamento de QR Code: enviar transferência Pix por chave,
+      decodificar e pagar QR Code Pix Copia e Cola, aprovar/cancelar
+      transferências pendentes.
+    - Extratos Pix (`CREDIT`/`DEBIT`) e Extrato Financeiro Geral (`/financialTransactions`).
+    - Webhooks: listar e registrar/atualizar automaticamente o Webhook Oficial
+      do TFL na conta Asaas + log de eventos recebidos (`bank_webhook`).
+
+[MÓDULO 10: LOJA DE ROUPAS 3D INDEPENDENTE (`view-shop` / `shop.js`), GUARDA-ROUPA & SLOTS DE AVATAR (`ShopContainer`, `ShopItem`, `Inventory`, `AvatarOutfit`, `AvatarOutfitStyle`, `PrefabModel`, `TextureModel`)]
+- Arquivos: `src/views/profile/partials/view-shop.ejs`, `public/js/profile/shop.js`,
+  `src/services/shop3d.service.js`, `src/controllers/game/shop/shop_controller.js`,
+  `src/models/game/ShopContainer.js`, `src/models/game/ShopItem.js`,
+  `src/models/game/inventory.js`, `src/models/game/AvatarOutfit.js`,
+  `src/models/game/AvatarOutfitStyle.js`, `src/controllers/game/cloth_controllers.js`,
+  `src/controllers/game/outfit_controller.js`, `src/views/profile/partials/view-avatar.ejs`,
+  `public/js/profile/avatar-rooms.js`
+- Responsabilidade:
+  * **Módulo Independente da Loja 3D (`view-shop.ejs` + `public/js/profile/shop.js`)**:
+    Separado na sidebar em **Loja** (`data-view="view-shop"`) e modelado exatamente
+    como a cena `shop_app.tscn` com 7 sub-páginas integradas:
+    1. `ShopPage` (Vitrine 4x2 paginada com busca, filtro de gênero/slot, preço em
+       ouro `◈` e botões `+ Criar item`, `Textures`, `🎒 Inventário` e `🛍️ Carrinho (0)`).
+    2. `PreviewPage` (3 colunas: `Remover slot` [`Torso`, `Leg`, `Shoes`], Preview
+       central e Detalhes com `Adicionar ao carrinho`, `Comprar agora`, `Ver carrinho`
+       e `📊 Ver estatísticas`).
+    3. `CartPage` (Lista de itens do carrinho, `Resumo` e `Finalizar compra`).
+    4. `CreateItemPage` (Criação/Edição de itens UGC com aviso `"A taxa de criação é de 5,00"`,
+       alternância `Male (HM)` / `Female (HF)`, seletor de `Modelo (mesh)` carregado
+       da tabela `prefabs`, upload de thumbnail e geração dinâmica de controles de
+       shader idênticos ao `ParamSchema.cs`: `SkinHeadSchema`, `SkinBodySchema`,
+       `HairSchema` e `PbrSchema`).
+    5. `MyTexturesPage` + `UploadForm` (Galeria de texturas do usuário, modo seletor
+       para parâmetros de shader e modal de upload com aviso `"A taxa de envio é de 1,00"`).
+    6. `InventoryPage` (Abas `Comprados` [com botão `Equipar`/`Despir`] e
+       `Criados por mim` [com contador `Vendas: X` e botão `Editar`]).
+    7. `ReviewsPage` (Estatísticas de `Curtidas`, `Favoritos`, `Vendas` e `Compartilhamentos`).
+  * **Guarda-Roupa 3D e Manequim (`view-avatar.ejs` + `avatar-rooms.js`)**:
+    Focado nos Slots 3D Equipados, customização rápida de cores (`primary`/`secondary`)
+    e até 10 Presets de Looks (`avatar_outfit_styles`), com botão direto para abrir
+    o módulo **Loja**.
+
+[MÓDULO 11: TABELA DE TAXAS UNIFICADA (`economy_rules`), PASSE DE ENTRADA 24H DE SALAS (`room_entry_passes`), VISITAS ÚNICAS MENSAIS (`room_visits`) & PRÊMIO AUTOMÁTICO POR 1K VISITAS (`room_visit_payouts`)]
+- Arquivos: `src/models/game/EconomyRuleModel.js`, `src/services/coinMarket.service.js`,
+  `src/services/shop3d.service.js`, `src/controllers/profile/profile_controller.js`,
+  `src/controllers/game/rooms_controllers.js`, `src/views/profile/partials/view-salas.ejs`,
+  `src/views/profile/partials/view-market.ejs`, `src/views/profile/partials/view-shop.ejs`,
+  `src/views/profile/partials/modals.ejs`, `public/js/profile/avatar-rooms.js`,
+  `public/js/profile/social.js`, `src/views/admin/index.html`
+- Responsabilidade:
+  * **Tabela Oficial de Taxas (`economy_rules` + `view-market.ejs` + `/admin`)**:
+    Centraliza todas as taxas de carteira (`withdrawFeePercent`, `withdrawFixedFeeCash`),
+    conversões (`cashToCoinsFeePercent`, `instantCoinsToCashFeePercent`,
+    `coinsToChipsFeePercent`, `chipsToCoinsFeePercent`), spread de compra e venda,
+    taxas fixas do Shop (`shopTextureUploadFixedFeeCoins`, `shopCreationFixedFeeCoins`,
+    `shopSalePlatformFeePercent`) e regras de Salas 3D (`roomEntryPlatformFeePercent`,
+    `roomPassDurationHours`, `roomVisitsPayoutPer1kCoins`).
+  * **Passe de Entrada 24h em Salas (`room_entry_passes`)**:
+    O dono da sala escolhe se a entrada é gratuita (`0`) ou paga (`entryValue > 0` em Coins).
+    Cada pagamento concede um Passe de Entrada válido por 24 horas (`expiresAt`),
+    retém a taxa da plataforma (`roomEntryPlatformFeePercent`, padrão `15%`) e
+    repassa imediatamente a diferença líquida (`85%`) para a carteira do dono da sala.
+  * **Visitas Únicas Mensais (`room_visits`) & Pagamento por 1.000 Visitas (`room_visit_payouts`)**:
+    Toda visita registra a presença em `room_visits` (`UNIQUE("roomId", "visitorAvatarId", "monthKey")`)
+    e incrementa `rooms.visits`. Sempre que uma sala atinge um novo múltiplo de
+    **1.000 visitas únicas no mês**, o sistema credita automaticamente
+    `roomVisitsPayoutPer1kCoins` (padrão `50,00 Coins`) na carteira do dono e registra
+    em `room_visit_payouts`. Todos os indicadores são públicos nos cards de salas,
+    perfis sociais, posts e modais de inspeção.
+
+[MÓDULO 12: CLUBE VIP (`view-vip.ejs`, `vip_subscriptions`, `chat_daily_quotas`), SELO VIP (`👑 VIP`) & COTAS DIÁRIAS DE CHAT]
+- Arquivos: `src/views/profile/partials/view-vip.ejs`, `src/services/coinMarket.service.js`,
+  `src/controllers/social/chat_controller.js`, `src/views/profile/partials/view-chat.ejs`,
+  `public/js/profile/friends-chat.js`, `public/js/profile/market.js`
+- Responsabilidade:
+  * Planos de assinatura VIP acumuláveis (`vip_subscriptions`): **1 Semana** (`vipPrice1WeekCash`, padrão `$0.75`),
+    **1 Mês** (`vipPrice1MonthCash`, padrão `$2.00 Cash` — configurável no `/admin`) e **3 Meses** (`vipPrice3MonthsCash`, padrão `$5.00`),
+    pagáveis com `Cash` ou equivalente em `Coins`.
+  * Concede o **Selo Oficial `👑 VIP`** exibido no topo do perfil, na barra lateral, no chat e retornado na API para ações especiais dentro do jogo 3D.
+  * **Regras de Chat para Membro Básico vs Membro VIP**:
+    - Membros Básicos só podem abrir novas conversas diretas (DMs) com **Amigos aceitos** e possuem limite diário (`basicMaxChatOpensPerDay`, padrão `3/dia`). Membros VIP abrem DM com qualquer jogador sem limite diário.
+    - Envio de **Foto (`image`)** e **Mensagem de Voz (`audio` gravada no microfone via `MediaRecorder` ou arquivo)** possui cota diária para Membro Básico (`basicMaxChatImagesPerDay = 2`, `basicMaxChatAudioPerDay = 2`) e é ilimitado para Membros VIP.
+
+[MÓDULO 13: EXTRATO COMPLETO DA CARTEIRA (`wallet_ledger`), TRANSFERÊNCIA P2P DE COINS (MOEDA DO JOGO), CENTRAL DE NOTIFICAÇÕES (`user_notifications`) & EXPLORAR SALAS PÚBLICAS COM BOOST 24H]
+- Arquivos: `src/services/coinMarket.service.js`, `src/views/profile/partials/view-market.ejs`,
+  `src/views/profile/partials/view-salas.ejs`, `src/views/profile/index.ejs`,
+  `public/js/profile/market.js`, `public/js/profile/avatar-rooms.js`
+- Responsabilidade:
+  * **Regra Estrita P2P**: Nunca há transferência de valores reais (`Cash` / R$) entre usuários; **somente a moeda do jogo (`Coins`)** pode ser transferida entre jogadores (`POST /profile/market/transfer-coins`), cobrando uma taxa baixa configurável (`p2pCoinsTransferFeePercent`, padrão `2%`), além de envio de roupas 3D de presente (`POST /profile/shop/gift`) pago em `Coins`.
+  * **Extrato Completo (`wallet_ledger`)**: Registra todas as movimentações de `Coins`, `Cash` e `Chips` com tipo, valor bruto, taxa retida, valor líquido e saldo após a operação.
+  * **Central de Notificações (`user_notifications` + Sininho 🔔)**: Notifica o jogador ao receber Coins P2P, vender passe 24h de sala, bater 1k visitas na sala, vender/ganhar roupa 3D ou ativar VIP.
+  * **Anti-Farm em Visitas de Sala & Explorar Salas Públicas + Boost 24h**: Avatares da mesma conta (`userId`) do dono da sala não contam para a meta de 1.000 visitas únicas mensais (`DISTINCT COALESCE("visitorUserId", -"visitorAvatarId")`), e donos de salas podem destacar sua sala no topo do Ranking por 24h (`roomBoost24hFeeCoins`, padrão `20 Coins`).
+
+[MÓDULO 14: CASSINO & MINIGAMES (`view-cassino.ejs`), AUTENTICAÇÃO DA API POR TOKENS (`/api/v1/*`) & PALCO 3D INTERATIVO (BABYLON.JS / GODOT WEBGL)]
+- Arquivos: `src/views/profile/partials/view-cassino.ejs`, `src/api/v1/index.js`,
+  `src/api/v1/bank/index.js`, `public/js/profile/stage3d-babylon.js`, `src/views/profile/partials/view-avatar.ejs`
+- Responsabilidade:
+  * **Cassino & Minigames (`view-cassino.ejs` + `POST /profile/casino/play`)**: Jogos rápidos de teste operando com `Chips` (Fichas): *Golden Tiger Slots 3x3*, *Roleta Real (Vermelho/Preto 2x e Ouro 14x)* e *Dados da Fortuna (2d6)*, com registro automático no `wallet_ledger`.
+  * **Autenticação da API por Tokens (`src/api/v1/index.js`)**: Mantém `/api/v1/*` acessível para os servidores online e clientes do jogo exigindo token de autenticação (`tfl-token`, `Authorization: Bearer <token>` ou `x-server-token`).
+  * **Palco 3D Interativo (`public/js/profile/stage3d-babylon.js`)**: Renderiza um palco 3D interativo em **Babylon.js** dentro de `view-avatar.ejs` (com rotação orbital 360°, iluminação neon, reação às roupas/cores equipadas e botão para alternar com container **Godot WebGL**).
+
+[MÓDULO 15: COMPARTILHAMENTO DE ENDEREÇO DE SALA NO CHAT & AUTO-REPLICAÇÃO DE INSTÂNCIAS DO SERVIDOR (`ServerModel` / `servers`)]
+- Arquivos: `src/models/game/ServerModel.js`, `src/models/game/associations.js`,
+  `src/services/coinMarket.service.js`, `src/controllers/game/server_controller.js`,
+  `src/controllers/social/chat_controller.js`, `src/controllers/profile/profile_controller.js`,
+  `src/views/profile/partials/view-chat.ejs`, `src/views/profile/partials/view-salas.ejs`,
+  `public/js/profile/friends-chat.js`
+- Responsabilidade:
+  * **Gerenciamento de Instâncias Replicadas na Tabela `servers` (`ServerModel`)**:
+    - O servidor de jogo usa a tabela `servers` (`id`, `pid`, `roomId`, `ip`, `port`, `publicPort`, `maxPlayers`, `playersCount`, `scene`, `language`, `uid`) para gerenciar as instâncias ativas de cada sala (`RoomModel.hasMany(Server)`).
+    - Uma mesma sala (`roomId`) pode ser **replicada inúmeras vezes (`Instância #1`, `Instância #2`, `Instância #3`, ...)** sempre que uma instância atinge a lotação máxima (`playersCount >= maxPlayers`) ou sob demanda (`allocateOrReplicateRoomServerInstance` e `/server_create`).
+  * **Envio e Card Interativo de Endereço da Sala no Chat (`view-chat.ejs` + `friends-chat.js`)**:
+    - Botão **`🏠 Sala`** (`#btnShareRoomInChat`) na barra de mensagem do Chat e botão **`📢 Chat`** (`.btn-share-room-to-chat`) nos cards de Salas 3D abrem o modal `#modalShareRoomChat`, permitindo selecionar a conversa de destino (Global, Grupo ou DM), a Sala 3D e a Instância ativa da tabela `servers` (ou forçar uma nova réplica).
+    - Endpoint `POST /api/chats/:uid/messages/room-invite` salva o convite estruturado em `ChatMessage.linkFile` (`kind: "room_invite"`) e transmite em tempo real via WebSocket (`chat:message`).
+    - O Chat renderiza um **Card Interativo de Endereço de Sala & Servidor** exibindo Nome da Sala, Cena, Passe 24h (`Grátis` ou `X Coins`), `Instância #N`, total de réplicas ativas (`N inst.`), endereço `IP:PublicPort` (`127.0.0.1:10018`), URI direta (`tfl://join?roomId=...&serverId=...&ip=...&port=...`), barra de lotação em tempo real (`playersCount / maxPlayers`) e botões para **🚀 Entrar na Sala** (redirecionando automaticamente para uma nova réplica caso a instância convidada tenha lotado), **🖧 Instâncias** e **📋 Copiar Endereço**.
+
+================================================================================
+5. HISTÓRICO DE LOGS E IMPLEMENTAÇÕES
+================================================================================
+
+[LOG #01 - 2026-10-12] Padronização de Menus, Galeria de Fotos, Mini Reels 24h, Sentimentos 6h e Privacidade por Seção
+- Renomeados menus da sidebar com ícones limpos (`The Fantasy Life`, `Avatares`, `Amigos`, `Chat`, `Carteira`, `Conta`).
+- Implementados modelos e rotas de Galeria de Fotos (`Photo`), Mini Reels 24h e Sentimentos 6h (`MiniReel`).
+- Descentralizadas as configurações de privacidade para dentro de cada seção correspondente no perfil social do avatar.
+
+[LOG #02 - 2026-10-12] Modularização de Views/JS e Sistema de Notificações Toast
+- Dividido `src/views/profile/index.ejs` em partials independentes (`src/views/profile/partials/*.ejs`) com carregamento dinâmico (`GET /profile/partial/:section`).
+- Separado o JavaScript do perfil em módulos (`public/js/profile/core.js`, `social.js`, `chat.js`, `market.js`).
+- Substituídos todos os `alert()` nativos pelo plugin `public/js/toast.js` (`window.showToast`).
+
+[LOG #03 - 2026-10-12] Internacionalização (i18n) e Simulador de Bots via API
+- Criado sistema de tradução `src/locales/i18n.js` (`pt-BR`, `en-US`, `es-ES`).
+- Criado `scripts/bot_simulator.js` capaz de simular múltiplos usuários reais interagindo com todos os endpoints e WebSocket.
+
+[LOG #04 - 2026-10-12] Isolamento Público vs Admin, Tutorial do Usuário, Rodapé Unificado, Telemetria de Visitas por Região e Memória do Projeto
+- O que foi feito:
+  1. Reescrito `src/views/tutorial.ejs` para ensinar exclusivamente como o jogador utiliza o site (sem mencionar API ou engine do jogo).
+  2. Removido o link do Tutorial do menu superior (`header.ejs`) e da sidebar (`sidebar.ejs`), posicionando-o exclusivamente no rodapé (`src/views/partials/footer.ejs`) junto ao seletor único de idioma (`#langSelect`).
+  3. Removidas do `/profile` todas as abas e botões administrativos (`view-stats`, `view-tutorial`, edição de regras da bolsa e aprovação manual de pagamentos), deixando `/profile` 100% voltado ao jogador.
+  4. Implementado rastreamento de visitas e região (`recordSiteVisit` e `getVisitStatsSnapshot` em `src/services/stats.service.js` + `POST /api/visit-beacon` em `src/routes/router.js`).
+  5. Protegida toda a rota `/admin` com `requireAdminAuth` (`src/controllers/admin/index.js` e `src/controllers/auth.js`) e criado o novo dashboard administrativo (`src/views/admin/index.html`) atualizado via JS (`GET /admin/api/stats`) com estatísticas de visitas ao site, ranking por região, rotas mais visitadas, logs em tempo real, gestão da economia, aprovação de Pix e controle de bots.
+  6. Criados `PROJECT_MEMORY_LOG.txt` e `.agent/rules/project-memory.md` para servir de memória contínua para os próximos modelos de IA.
+- Arquivos modificados/criados:
+  * `src/views/tutorial.ejs`
+  * `src/views/partials/header.ejs`
+  * `src/views/partials/footer.ejs`
+  * `src/views/profile/index.ejs`
+  * `src/views/profile/partials/sidebar.ejs`
+  * `src/views/profile/partials/view-market.ejs`
+  * `public/js/profile/core.js`
+  * `src/services/stats.service.js`
+  * `src/routes/router.js`
+  * `src/controllers/auth.js`
+  * `src/controllers/admin/index.js`
+  * `src/views/admin/index.html`
+  * `src/controllers/profile/profile_controller.js`
+  * `scripts/bot_simulator.js`
+  * `PROJECT_MEMORY_LOG.txt`
+  * `.agent/rules/project-memory.md`
+
+[LOG #05 - 2026-10-12] Restauração do Seletor de Idiomas no Rodapé da Sidebar e Handler Global
+- O que foi feito:
+  1. Restaurado o seletor de idiomas (`PT | EN | ES`, `.btn-switch-lang`) na parte inferior (rodapé) da sidebar (`src/views/profile/partials/sidebar.ejs`), mantendo também o seletor `#langSelect` no rodapé global (`src/views/partials/footer.ejs`).
+  2. Restaurado o handler `.btn-switch-lang` em `public/js/profile/core.js` e garantido o envio de `currentLang` em `buildProfileViewPayload` (`src/controllers/profile/profile_controller.js`).
+- Arquivos modificados:
+  * `src/views/profile/partials/sidebar.ejs`
+  * `public/js/profile/core.js`
+  * `src/controllers/profile/profile_controller.js`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #06 - 2026-10-12] Correção de `/admin/assas` e Expansão Completa do Módulo Financeiro Asaas + Banco TFL
+- O que foi feito:
+  1. Corrigido `sendPage` em `src/controllers/admin/routers.js` (que apontava para `../views/paginas/admin/` inexistente e travava em `res.status(404)` sem `.send()`) para resolver `../../views/admin/${page}.html`, além de suportar tanto `/admin/assas` quanto `/admin/asaas`.
+  2. Corrigida concatenação de URLs em `src/api/v1/old/assas_client.js` (evitando barras duplas `//` na URL da API do Asaas) e adicionado `getAsaasConfigStatus()`.
+  3. Expandido `src/api/v1/old/bank_controller.js` com dezenas de ações administrativas do Asaas + Banco TFL: diagnóstico de integração (`/status`), criação/exclusão de chaves Pix EVP (`/pix/addressKeys`), importação de jogadores TFL como clientes Asaas (`/customers/sync-user`), restauração de clientes e cobranças, confirmação de recebimento em mãos com crédito na carteira TFL (`/receive-in-cash`), estorno (`/refund`), leitura e pagamento de QR Code Pix Copia e Cola (`/pix/qrCodes/decode` e `/pay`), aprovação/cancelamento de transferências, extrato financeiro completo (`/finance/transactions`), configuração automática de Webhooks (`/webhooks-config`), conciliação remota (`POST /db/payments/:id/sync`), revisão de fila com disparo opcional de Pix real (`POST /db/payments/:id/review`) e lançamento manual de crédito/débito de Cash (`POST /db/payments/manual`).
+  4. Reescrito `src/views/admin/assas.html` com 10 abas completas de gestão e adicionado atalho direto na sidebar de `src/views/admin/index.html`.
+- Arquivos modificados:
+  * `src/controllers/admin/routers.js`
+  * `src/routes/router.js`
+  * `src/api/v1/old/assas_client.js`
+  * `src/api/v1/old/bank_controller.js`
+  * `src/views/admin/assas.html`
+  * `src/views/admin/index.html`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #07 - 2026-10-12] Revisão, Correção de Tabelas e Criação da Loja de Roupas 3D, Guarda-Roupa e Regras de Slots (`SHOP_3D_RULES`)
+- O que foi feito:
+  1. Corrigidos os modelos quebrados de loja e guarda-roupa:
+     - `src/models/game/ShopContainer.js`: corrigido default do ENUM `gender` (`"universal"` minúsculo quebrava no Postgres; ajustado para `"Universal"`), adicionado `avatarId`, `slot`, `category`, `prefabPath`, `currencyType` (`Coins`, `Cash`, `Chips`), `rarity` (`common`, `rare`, `epic`, `legendary`), `defaultColors` (JSON), `stock` e `active`.
+     - `src/models/game/inventory.js`: descomentado e corrigido `avatarId` (que estava comentado impedindo vincular roupas ao avatar), adicionado `slot` e `customColors` (JSON).
+     - `src/models/game/AvatarOutfit.js` e `src/models/game/associations.js`: vinculado `Inventory` e `AvatarOutfit` ao `ShopContainer` (`as: "shopItem"`) e adicionado `inventoryId`.
+  2. Criado `src/services/shop3d.service.js` centralizando `SHOP_3D_RULES` (10 slots 3D do esqueleto, exclusividade por slot, conflito automático entre `fullbody` e `top`/`bottom`, validação de gênero, não-duplicidade no inventário, pagamento multi-moeda com 70% de comissão para o criador, customização de cores e até 10 presets de Looks salvos), além de auto-migração de colunas e seed inicial de 10 peças 3D.
+  3. Corrigidos os controllers legados (`src/controllers/game/cloth_controllers.js`, `src/controllers/game/outfit_controller.js` e `src/controllers/game/avatar/inventoryCloth_controller..js`) que referenciavam `repo.Cloth` e `repo.Outfit` inexistentes.
+  4. Adicionadas as rotas `/profile/shop/catalog`, `/profile/shop/wardrobe`, `/profile/shop/buy`, `/profile/shop/equip`, `/profile/shop/style/save`, `/profile/shop/style/apply` e `/profile/shop/style/delete` em `src/controllers/profile/profile_controller.js`, e integrada a UI completa de **Manequim 3D de Slots Equipados + Meus Looks + Guarda-Roupa 3D + Loja de Roupas 3D** em `src/views/profile/partials/view-avatar.ejs` e `public/js/profile/avatar-rooms.js`.
+  5. Adicionada a aba **Loja 3D & Roupas** em `/admin` (`src/controllers/admin/index.js` + `src/views/admin/index.html`) para o administrador cadastrar, editar e excluir roupas na tabela `shop_containers`.
+- Arquivos criados/modificados:
+  * `src/services/shop3d.service.js`
+  * `src/models/game/ShopContainer.js`
+  * `src/models/game/inventory.js`
+  * `src/models/game/AvatarOutfit.js`
+  * `src/models/game/associations.js`
+  * `src/controllers/game/cloth_controllers.js`
+  * `src/controllers/game/outfit_controller.js`
+  * `src/controllers/game/avatar/inventoryCloth_controller..js`
+  * `src/controllers/profile/profile_controller.js`
+  * `src/views/profile/partials/view-avatar.ejs`
+  * `public/js/profile/avatar-rooms.js`
+  * `src/controllers/admin/index.js`
+  * `src/views/admin/index.html`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #08 - 2026-10-12] Inspeção de `/media/not/Projetos/godot/tfl-1/Editor/Teste/phone_menus` e Compatibilidade C# <-> Backend (`/api/shop/*`)
+- O que foi feito:
+  1. Analisados todos os scripts C# de `phone_menus` no projeto Godot (`AvatarShop.cs`, `CreateItemPage.cs`, `InventoryPage.cs`, `MyFormUploadShop.cs`, `MyTexturesPage.cs`, `ParamSchema.cs`, `PersonalizarPage.cs`, `ReviewsPage.cs`, `ShopCardPage.cs`, `ShopPageBase.cs`, `ShopPreviewPage.cs`, `SubviewShopCamera.cs`), além de `ShopService.cs` e `ClothingSlot.cs`.
+  2. Identificados os endpoints que `ShopService.cs` e `AvatarShop.cs` chamam ou precisavam (`GET /api/shop/:id`, `POST /api/shop` via JSON do `CreateItemPage.cs`, `PUT /api/shop/:id`, `DELETE /api/shop/:id`, `GET /api/shop/my` para `InventoryPage.cs` e `POST /api/shop/checkout` para `ShopCardPage.cs`) e implementados todos em `src/controllers/game/shop/shop_controller.js` com conversão bidirecional automática entre o enum `ClothingSlotType` / `Gender` do C# e as chaves do Web Portal (`top`, `bottom`, `fullbody`, `hair`, `shoes`, `eyes`, `skin`).
+  3. Exportado `InventoryCloth: avatarInventoryController` em `src/controllers/game/index.js` para ativar `/api/inventory/cloth` no roteador do jogo.
+- Arquivos modificados:
+  * `src/controllers/game/shop/shop_controller.js`
+  * `src/controllers/game/index.js`
+  * `src/views/profile/partials/view-avatar.ejs`
+  * `src/controllers/profile/profile_controller.js`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #09 - 2026-10-12] Separação da Loja em Módulo Independente (`view-shop.ejs` + `shop.js`) Fiel ao `shop_app.tscn`
+- O que foi feito:
+  1. Separada a Loja (`Shop`) de dentro de `view-avatar.ejs` para um módulo próprio independente no portal `/profile`, com item dedicado **Loja** (`data-view="view-shop"`) na `sidebar.ejs`, view partial dedicada `src/views/profile/partials/view-shop.ejs` e módulo JS dedicado `public/js/profile/shop.js`.
+  2. Reproduzida fielmente em `view-shop.ejs` e `public/js/profile/shop.js` a estética dark navy/indigo (`#090c17` / `#131829`), estrutura e todas as 7 páginas da cena `shop_app.tscn`.
+  3. Adicionado seed automático de 18 `prefabs` 3D iniciais (`HM_*` masculinos e `HF_*` femininos nos slots `UpperBody`, `LowerBody`, `FullBody`, `Hair`, `Shoes`, `Eyes`, `Skin`) em `src/services/shop3d.service.js` e `src/controllers/game/prefab_controllers.js`.
+- Arquivos criados/modificados:
+  * `src/views/profile/partials/view-shop.ejs`
+  * `public/js/profile/shop.js`
+  * `src/views/profile/partials/sidebar.ejs`
+  * `src/views/profile/index.ejs`
+  * `src/views/profile/partials/view-avatar.ejs`
+  * `public/js/profile/core.js`
+  * `src/controllers/profile/profile_controller.js`
+  * `src/services/shop3d.service.js`
+  * `src/controllers/game/prefab_controllers.js`
+  * `src/controllers/game/shop/shop_controller.js`
+  * `src/locales/pt-BR.json`
+  * `src/locales/en-US.json`
+  * `src/locales/es-ES.json`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #10 - 2026-10-13] Tabela Oficial de Taxas, Passe de Entrada 24h em Salas (`room_entry_passes`), Visitas Únicas Mensais (`room_visits`), Prêmio por 1k Visitas (`room_visit_payouts`) e Taxa Fixa de Upload no Shop
+- O que foi feito:
+  1. Expandido `src/models/game/EconomyRuleModel.js` e `src/services/coinMarket.service.js` (`ensureFeeAndRoomTables`) com todas as taxas configuráveis:
+     - Carteira & Saques: `withdrawFeePercent`, `withdrawFixedFeeCash`.
+     - Conversões & Compra/Venda: `cashToCoinsFeePercent`, `instantCoinsToCashFeePercent`, `coinsToChipsFeePercent`, `chipsToCoinsFeePercent`, `buySpreadPercent`, `sellSpreadPercent`.
+     - Loja 3D (UGC): `shopTextureUploadFixedFeeCoins` (taxa fixa no upload de imagem/textura, padrão `1,00 Coin`), `shopCreationFixedFeeCoins` (taxa fixa na publicação de item 3D, padrão `5,00 Coins`), `shopSalePlatformFeePercent` (comissão da plataforma sobre vendas UGC, padrão `30%`, repassando `70%` ao criador em `src/services/shop3d.service.js`).
+     - Salas 3D: `roomEntryPlatformFeePercent` (taxa sobre o passe de entrada, padrão `15%`, repassando `85%` ao dono da sala), `roomPassDurationHours` (`24` horas), `roomVisitsPayoutPer1kCoins` (bônus automático de `50,00 Coins` a cada `1.000` visitas únicas no mês).
+  2. Criadas automaticamente as tabelas de Salas 3D em `src/services/coinMarket.service.js`:
+     - `room_entry_passes`: registra cada compra do Passe de Entrada de 24h (`grossEntryCoins`, `platformFeeCoins`, `ownerNetCoins`, `expiresAt`).
+     - `room_visits`: contabiliza visitas únicas mensais por sala e visitante (`UNIQUE("roomId", "visitorAvatarId", "monthKey")`) e total de entradas.
+     - `room_visit_payouts`: registra e credita automaticamente o prêmio (`roomVisitsPayoutPer1kCoins`) na carteira do dono sempre que a sala atinge um novo marco de `1.000` visitas únicas no mês (`1000, 2000, 3000...`).
+  3. Implementados os métodos `enrichRoomsWithVisitStats`, `enterRoomWithPassAndVisit` e `getRoomVisitDetails` em `src/services/coinMarket.service.js`, e expostos em `src/controllers/profile/profile_controller.js` (`POST /profile/room/:id/enter`, `GET /profile/room/:id/details`, `POST /profile/room/create`, `POST /profile/room/update`) e `src/controllers/game/rooms_controllers.js` (`POST /api/room/:id/enter`, `GET /api/room/:id/visits`).
+  4. Atualizadas as interfaces públicas e administrativas:
+     - `src/views/profile/partials/view-salas.ejs`, `src/views/profile/partials/modals.ejs`, `public/js/profile/avatar-rooms.js` e `public/js/profile/social.js`: permitem ao dono definir se quer cobrar entrada (`entryValue`), simulam ao vivo a taxa da plataforma vs repasse líquido, mostram publicamente o valor do Passe 24h, visitas totais, barra de progresso de visitas únicas no mês (`X / 1.000`) e o prêmio de `+50 Coins / 1k`, além do botão **Entrar / Passe 24h** (`.btn-enter-room-pass`).
+     - `src/views/profile/partials/view-market.ejs`: adicionada a **Tabela Oficial de Taxas, Conversões, Loja 3D & Salas**.
+     - `src/views/profile/partials/view-shop.ejs`: exibidas dinamicamente as taxas fixas de upload de imagem (`shopTextureUploadFixedFeeCoins`) e criação de item (`shopCreationFixedFeeCoins`).
+     - `src/views/admin/index.html`: adicionados todos os campos da tabela de taxas em `#formAdminEconomyRules`.
+- Arquivos modificados:
+  * `src/models/game/EconomyRuleModel.js`
+  * `src/services/coinMarket.service.js`
+  * `src/services/shop3d.service.js`
+  * `src/controllers/profile/profile_controller.js`
+  * `src/controllers/game/rooms_controllers.js`
+  * `src/views/profile/partials/view-salas.ejs`
+  * `src/views/profile/partials/view-market.ejs`
+  * `src/views/profile/partials/view-shop.ejs`
+  * `src/views/profile/partials/modals.ejs`
+  * `public/js/profile/avatar-rooms.js`
+  * `public/js/profile/social.js`
+  * `src/views/admin/index.html`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #11 - 2026-10-13] Extrato Completo (`wallet_ledger`), Transferência P2P de Coins, Clube VIP (`view-vip.ejs`) + Limites de Chat/Voz/Foto, Anti-Farm e Boost de Salas, Notificações, Autenticação de API por Token, Cassino Básico (`view-cassino.ejs`) e Palco 3D (Babylon.js / Godot WebGL)
+- O que foi feito:
+  1. **Item 1 — Extrato Completo da Carteira (`wallet_ledger`)**: Criada tabela `wallet_ledger` e helper `recordLedgerEntry` em `src/services/coinMarket.service.js` e `src/services/shop3d.service.js`, registrando todas as entradas/saídas, taxas retidas e saldo final, com tabela de extrato e filtro por moeda em `src/views/profile/partials/view-market.ejs`.
+  2. **Item 2 — Explorar Salas Públicas, Ranking Mensal & Boost 24h**: Adicionadas abas *Minhas Salas 3D* e *Explorar Salas Públicas & Ranking do Mês* em `src/views/profile/partials/view-salas.ejs`, além do botão **🚀 Impulsionar 24h** (`POST /profile/room/:id/boost`, `roomBoost24hFeeCoins = 20 Coins`).
+  3. **Item 3 — Anti-Fraude (Anti-Farm) nas Visitas Mensais de Salas**: Atualizado `enterRoomWithPassAndVisit` em `src/services/coinMarket.service.js` para impedir que avatares pertencentes à mesma conta (`userId`) do dono da sala contem para a meta de 1.000 visitas únicas mensais e unificar a contagem por `DISTINCT COALESCE("visitorUserId", -"visitorAvatarId")`.
+  4. **Item 4 — Central de Notificações (`user_notifications` + Sininho 🔔)**: Adicionado sininho de notificações no topo de `src/views/profile/index.ejs` com dropdown e rotas `GET /profile/notifications` e `POST /profile/notifications/read`.
+  5. **Item 5 — Transferência P2P Somente de Moeda do Jogo (`Coins`) & Presentes na Loja 3D**:
+     - Bloqueada qualquer transferência de valores reais (`Cash` / R$) entre contas; criado o painel **Transferir Coins para Outro Jogador** em `src/views/profile/partials/view-market.ejs` (`POST /profile/market/transfer-coins`) cobrando taxa baixa configurável (`p2pCoinsTransferFeePercent`, padrão `2%`).
+     - Adicionado botão e modal **🎁 Presentear Amigo (Coins)** em `src/views/profile/partials/view-shop.ejs` e `public/js/profile/shop.js` (`POST /profile/shop/gift`).
+  6. **Sistema de Membro VIP (`view-vip.ejs`, `vip_subscriptions`, `chat_daily_quotas`) & Limites de Chat**:
+     - Criado módulo `src/views/profile/partials/view-vip.ejs` com planos de **1 Semana** (`$0.75`), **1 Mês** (`$2.00 Cash` padrão, configurável em `/admin`) e **3 Meses** (`$5.00`), pagáveis com `Cash` ou `Coins`.
+     - Adicionado Selo Oficial **`👑 VIP`** no perfil, sidebar, chat e API.
+     - Aplicadas regras de Chat em `src/controllers/social/chat_controller.js`, `src/views/profile/partials/view-chat.ejs` e `public/js/profile/friends-chat.js`: Membro Básico só abre DM privada com **Amigos aceitos** (limite diário `basicMaxChatOpensPerDay = 3`) e possui cota diária para enviar **Fotos (`basicMaxChatImagesPerDay = 2`)** e **Mensagens de Voz (`basicMaxChatAudioPerDay = 2`, com gravador de microfone `MediaRecorder`)**, enquanto Membros VIP têm DMs livres com qualquer jogador e envio ilimitado de voz/imagens.
+  7. **Autenticação da API por Tokens (`/api/v1/*`)**: Atualizado `src/api/v1/index.js` e `src/api/v1/bank/index.js` com middleware `requireApiOrServerToken` para permitir que os servidores online e o cliente Godot consultem a API usando tokens (`tfl-token`, `Authorization: Bearer <token>` ou `x-server-token`) e bloqueando acessos anônimos sem token nas rotas privadas.
+  8. **Módulo de Cassino Básico (`view-cassino.ejs`)**: Criada view `src/views/profile/partials/view-cassino.ejs` e endpoint `POST /profile/casino/play` para testes funcionais usando `Chips` (*Golden Tiger 3x3 Slots*, *Roleta Real* e *Dados 2d6*).
+  9. **Palco 3D Interativo no Site (Babylon.js + Container Godot WebGL)**: Criado `public/js/profile/stage3d-babylon.js` e integrado em `src/views/profile/partials/view-avatar.ejs` com cena 3D interativa em Babylon.js (câmera ArcRotate, iluminação neon, manequim estilizado que reage às cores e slots equipados) e alternância para container Godot WebGL.
+- Arquivos criados/modificados:
+  * `src/models/game/EconomyRuleModel.js`
+  * `src/services/coinMarket.service.js`
+  * `src/services/shop3d.service.js`
+  * `src/controllers/social/chat_controller.js`
+  * `src/controllers/profile/profile_controller.js`
+  * `src/api/v1/index.js`
+  * `src/api/v1/bank/index.js`
+  * `src/views/profile/partials/view-vip.ejs`
+  * `src/views/profile/partials/view-cassino.ejs`
+  * `src/views/profile/partials/view-market.ejs`
+  * `src/views/profile/partials/view-salas.ejs`
+  * `src/views/profile/partials/view-chat.ejs`
+  * `src/views/profile/partials/view-avatar.ejs`
+  * `src/views/profile/partials/view-shop.ejs`
+  * `src/views/profile/partials/sidebar.ejs`
+  * `src/views/profile/index.ejs`
+  * `src/views/admin/index.html`
+  * `public/js/profile/stage3d-babylon.js`
+  * `public/js/profile/market.js`
+  * `public/js/profile/avatar-rooms.js`
+  * `public/js/profile/friends-chat.js`
+  * `public/js/profile/shop.js`
+  * `PROJECT_MEMORY_LOG.txt`
+
+[LOG #12 - 2026-10-13] Envio de Endereço de Sala & Instância do Servidor (`servers`) no Chat e Auto-Replicação de Salas Cheias
+- O que foi feito:
+  1. **Associação e Gerenciamento Multi-Instância (`ServerModel` / `servers`)**:
+     - Associado `RoomModel.hasMany(models.Server, { as: "servers", foreignKey: "roomId" })` e `models.Server.belongsTo(RoomModel, { as: "room", foreignKey: "roomId" })` em `src/models/game/associations.js`.
+     - Implementados em `src/services/coinMarket.service.js` os métodos `formatServerInstance`, `getRoomActiveServerInstances(roomId)` e `allocateOrReplicateRoomServerInstance({ roomId, preferredServerId, preferredServerUid, forceNewReplica, joinPlayer, fillCurrentToTest })`.
+     - Sempre que todas as instâncias ativas de uma sala atingem a capacidade máxima (`playersCount >= maxPlayers`), o sistema cria automaticamente uma nova instância replicada (`Instância #2`, `Instância #3`, ...) na tabela `servers` com porta dedicada (`port` / `publicPort`).
+     - Corrigido e expandido `src/controllers/game/server_controller.js` (`repo.ServerModel` -> `repo.Server`, alocação dinâmica de portas, `GET /servers/room/:roomId`, `POST /servers/room/:roomId/replicate` e suporte a réplicas em `/server_create`).
+  2. **Compartilhamento de Endereço da Sala & Servidor no Chat (`chat_controller.js`, `view-chat.ejs`, `friends-chat.js`)**:
+     - Adicionados os endpoints `GET /api/chats/shareable-rooms` e `POST /api/chats/:uid/messages/room-invite` em `src/controllers/social/chat_controller.js`.
+     - Adicionados os endpoints `GET /profile/room/:id/servers` e `POST /profile/room/:id/replicate` em `src/controllers/profile/profile_controller.js` e integrado `enterRoomWithPassAndVisit` com alocação/auto-replicação na tabela `servers`.
+     - Adicionado o botão **`🏠 Sala`** (`#btnShareRoomInChat`) na barra de envio do Chat e os modais globais `#modalShareRoomChat` e `#modalRoomServerInstances` em `src/views/profile/partials/view-chat.ejs`.
+     - Atualizado `TFL.renderMessageItem` em `public/js/profile/friends-chat.js` para renderizar o **Card Interativo de Endereço de Sala & Servidor (`servers`)** no Chat com `Instância #N`, total de réplicas abertas, `IP:Porta Pública`, `tfl://join?...`, barra de lotação em tempo real (`playersCount / maxPlayers`) e botões **🚀 Entrar na Sala**, **🖧 Instâncias** e **📋 Copiar Endereço**.
+  3. **Telemetria de Servidor nos Cards de Salas (`view-salas.ejs`)**:
+     - Exibidos o número de instâncias abertas na tabela `servers`, jogadores online (`X/Y on`), endereço `IP:Porta` e botões rápidos **🖧 Instâncias** e **📢 Chat** em todos os cards de salas (Minhas Salas e Explorador Público).
+- Arquivos modificados:
+  * `src/models/game/associations.js`
+  * `src/services/coinMarket.service.js`
+  * `src/controllers/game/server_controller.js`
+  * `src/controllers/social/chat_controller.js`
+  * `src/controllers/profile/profile_controller.js`
+  * `src/views/profile/partials/view-chat.ejs`
+  * `src/views/profile/partials/view-salas.ejs`
+  * `public/js/profile/friends-chat.js`
+  * `PROJECT_MEMORY_LOG.txt`
+
+================================================================================
+[!] LEMBRETE FINAL PARA O PRÓXIMO MODELO:
+Sempre adicione um novo `[LOG #XX - DATA]` acima desta linha antes de encerrar
+sua resposta quando fizer alterações no projeto!
+================================================================================

@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "node index.js",
+    "bots": "node scripts/bot_simulator.js",
     "lint": "eslint . --ext .js",
     "format": "prettier --write ."
   },

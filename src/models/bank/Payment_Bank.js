@@ -15,7 +15,11 @@ const PaymentBankModel = (sequelize) => {
         customer_id: { type: DataTypes.STRING, allowNull: true },     // customer vindo da API
         status: { type: DataTypes.STRING, allowNull: true },
         uid: { type: DataTypes.STRING, allowNull: true, unique: true, defaultValue: DataTypes.UUIDV4 },
-        value: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },
+        value: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },               // valor em R$ (BRL)
+        cash_amount: { type: DataTypes.DECIMAL(12, 4), allowNull: true, defaultValue: 0 },          // valor equivalente em Cash ($ USD)
+        pix_key: { type: DataTypes.STRING, allowNull: true },                                       // chave Pix informada no saque
+        pix_key_type: { type: DataTypes.STRING, allowNull: true },                                  // CPF, CNPJ, EMAIL, PHONE, EVP
+        approval_mode: { type: DataTypes.STRING, allowNull: true, defaultValue: "AUTO" },           // AUTO ou MANUAL
         provedor: { type: DataTypes.ENUM(...PROVEDOR), allowNull: false, defaultValue: "Asaas" },
         type: { type: DataTypes.ENUM(...TRANSACTION_TYPES), allowNull: false, defaultValue: "None" },
     },

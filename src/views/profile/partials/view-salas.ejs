@@ -1,0 +1,331 @@
+<!-- ================= VIEW 3: SALAS 3D (PASSE 24H, VISITAS ÚNICAS MÊS, EXPLORADOR PÚBLICO & BOOST 24H) ================= -->
+<section id="view-salas" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-5">
+    <%
+        const roomFeePct = Number(marketStats?.roomEntryPlatformFeePercent ?? 15);
+        const roomOwnerPct = Number(marketStats?.roomOwnerSharePercent ?? (100 - roomFeePct));
+        const roomPassHours = Number(marketStats?.roomPassDurationHours || 24);
+        const payout1kCoins = Number(marketStats?.roomVisitsPayoutPer1kCoins ?? 50);
+        const boostFeeCoins = Number(marketStats?.roomBoost24hFeeCoins ?? 20);
+        const pubRoomsList = Array.isArray(publicRooms) ? publicRooms : [];
+    %>
+
+    <div class="flex flex-wrap justify-between items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="btn-rooms-subtab px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 flex items-center gap-1.5" data-subtab="my-rooms">
+                <span class="material-symbols-outlined text-[16px]">deployed_code</span>
+                <span>Minhas Salas (<%= rooms ? rooms.length : 0 %>)</span>
+            </button>
+            <button type="button" class="btn-rooms-subtab px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition bg-slate-900 border border-white/10 text-zinc-300 hover:text-white flex items-center gap-1.5" data-subtab="explore-rooms">
+                <span class="material-symbols-outlined text-[16px] text-amber-400">travel_explore</span>
+                <span>Explorar Salas Públicas &amp; Ranking do Mês</span>
+            </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-purple-500/25 rounded-xl px-2.5 py-1.5" title="Privacidade de Salas">
+                <span class="material-symbols-outlined text-[16px] text-purple-400">shield_lock</span>
+                <select class="select-section-privacy bg-slate-950 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-white font-bold focus:outline-none cursor-pointer" data-field="privacyRooms">
+                    <option value="public" <%= (activeAvatar?.privacyRooms || 'public') === 'public' ? 'selected' : '' %>>🌐 <%= t('common.public', {}, 'Público') %></option>
+                    <option value="friends" <%= activeAvatar?.privacyRooms === 'friends' ? 'selected' : '' %>>👥 <%= t('common.friendsOnly', {}, 'Amigos') %></option>
+                    <option value="private" <%= activeAvatar?.privacyRooms === 'private' ? 'selected' : '' %>>🔒 <%= t('common.private', {}, 'Privado') %></option>
+                </select>
+                <span class="privacy-save-status hidden text-[10px] font-bold text-emerald-400">✔</span>
+            </div>
+            <button id="btnOpenCreateRoomModal" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                <span class="material-symbols-outlined text-[16px]">add_home</span>
+                <span><%= t('profile.rooms.newRoom', {}, 'Nova Sala') %></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Banner Público: Monetização de Salas (Passe de Entrada 24h + Pagamento por 1.000 Visitas Únicas/Mês + Anti-Farm) -->
+    <div class="bg-gradient-to-r from-indigo-950/60 via-slate-900 to-amber-950/30 border border-indigo-500/30 rounded-3xl p-4 sm:p-5 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+            </div>
+            <div class="space-y-1">
+                <div class="text-xs font-black uppercase text-white flex items-center gap-2">
+                    <span>Passe de Entrada (<%= roomPassHours %> Horas)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">Repasse <%= roomOwnerPct %>%</span>
+                </div>
+                <p class="text-[11px] text-zinc-300 leading-relaxed">
+                    Você decide se sua sala tem <strong>Entrada Grátis</strong> ou se cobra entrada em Coins. Cada entrada paga vale como um <strong>Passe de <%= roomPassHours %>h</strong> (o visitante entra livremente durante o dia todo). Taxa da plataforma: <strong><%= roomFeePct %>%</strong> (você recebe <strong><%= roomOwnerPct %>%</strong> líquido na hora).
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-3 md:border-l md:border-white/10 md:pl-4">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">trophy</span>
+            </div>
+            <div class="space-y-1">
+                <div class="text-xs font-black uppercase text-white flex items-center gap-2">
+                    <span>Prêmio por 1.000 Visitas Únicas / Mês</span>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">+<%= payout1kCoins %> Coins / 1k</span>
+                </div>
+                <p class="text-[11px] text-zinc-300 leading-relaxed">
+                    Contabilizamos publicamente todas as visitas únicas do mês por conta (com proteção Anti-Farm). A cada <strong>1.000 visitantes únicos no mês</strong>, o dono da sala recebe automaticamente <strong>+<%= payout1kCoins %> Coins</strong> direto na carteira!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB-ABA 1: MINHAS SALAS -->
+    <div id="subtabRoomsMine" class="rooms-subtab-panel grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <% if (rooms && rooms.length > 0) { %>
+            <% rooms.forEach(function(room) {
+                const entryPrice = Number(room.entryValue || 0);
+                const isPaid = entryPrice > 0;
+                const netOwner = Number((entryPrice * (roomOwnerPct / 100)).toFixed(2));
+                const uniqueMonthly = Number(room.monthlyUniqueVisits || 0);
+                const totalVis = Number(room.totalVisits || room.visits || 0);
+                const nextTarget = Number(room.nextMilestoneTarget || 1000);
+                const progressPct = Number(room.milestoneProgressPercent || Math.min(100, Math.round(((uniqueMonthly % 1000) / 1000) * 100)));
+                const isBoosted = room.boostExpiresAt && new Date(room.boostExpiresAt) > new Date();
+            %>
+                <div class="bg-slate-900/80 border <%= isBoosted ? 'border-amber-500/50 shadow-lg shadow-amber-500/10' : 'border-white/10' %> rounded-2xl p-4 space-y-3.5 backdrop-blur-md hover:border-blue-500/40 transition flex flex-col justify-between">
+                    <div class="space-y-2.5">
+                        <div class="flex justify-between items-start gap-2">
+                            <h4 class="font-bold text-white text-sm truncate flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px] text-indigo-400">meeting_room</span>
+                                <span class="truncate"><%= room.name || 'Sala' %></span>
+                            </h4>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <% if (isBoosted) { %>
+                                    <span class="px-2 py-0.5 rounded-lg bg-amber-500 text-slate-950 text-[9px] font-black uppercase" title="Sala impulsionada no topo do Explorador">
+                                        🚀 Topo 24h
+                                    </span>
+                                <% } %>
+                                <% if (isPaid) { %>
+                                    <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-black" title="Passe válido por <%= roomPassHours %>h • Você recebe <%= netOwner %> Coins líquidos por passe">
+                                        🎟️ <%= entryPrice %> Coins (<%= roomPassHours %>h)
+                                    </span>
+                                <% } else { %>
+                                    <span class="px-2 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                                        Entrada Grátis
+                                    </span>
+                                <% } %>
+                                <span class="text-xs" title="<%= room.isPrivate ? 'Privada' : 'Pública' %>"><%= room.isPrivate ? '🔒' : '🌐' %></span>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-zinc-400 line-clamp-2"><%= room.description || 'Espaço 3D interativo' %></p>
+
+                        <!-- Estatísticas Públicas de Visitas e Meta de 1k Visitas Únicas no Mês -->
+                        <div class="p-2.5 rounded-xl bg-slate-950/80 border border-white/5 space-y-1.5">
+                            <div class="flex items-center justify-between text-[10px]">
+                                <span class="text-zinc-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-eye text-sky-400"></i>
+                                    Total: <strong class="text-white"><%= totalVis.toLocaleString('pt-BR') %></strong>
+                                </span>
+                                <span class="text-indigo-300 font-bold" title="Visitas únicas neste mês (<%= room.monthKey || 'Mês Atual' %>)">
+                                    ✨ <%= uniqueMonthly.toLocaleString('pt-BR') %> / <%= nextTarget.toLocaleString('pt-BR') %> únicas/mês
+                                </span>
+                            </div>
+                            <div class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden" title="<%= progressPct %>% para o próximo bônus de +<%= payout1kCoins %> Coins (1k visitas únicas/mês)">
+                                <div class="h-full bg-gradient-to-r from-indigo-500 via-sky-400 to-amber-400 rounded-full transition-all" style="width: <%= Math.max(4, progressPct) %>%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] text-zinc-500">
+                                <span>Prêmio 1k/mês: <strong class="text-amber-400">+<%= payout1kCoins %> 🪙</strong></span>
+                                <% if (isPaid) { %>
+                                    <span>Líquido/passe: <strong class="text-emerald-400">+<%= netOwner %> 🪙</strong></span>
+                                <% } else { %>
+                                    <span>Passes: <strong class="text-zinc-400">Livre</strong></span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- Telemetria de Servidor & Instâncias Replicadas (`servers` table) -->
+                        <%
+                            const srvCount = Number(room.instancesCount || 0);
+                            const liveOnline = Number(room.livePlayersOnline || 0);
+                            const totalCap = Number(room.totalCapacityOnline || room.maxPlayers || 30);
+                            const srvAddr = room.primaryServerAddress || 'Alocação sob demanda';
+                        %>
+                        <div class="px-2.5 py-2 rounded-xl bg-indigo-950/30 border border-indigo-500/20 flex items-center justify-between gap-2 text-[10px]">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="w-2 h-2 rounded-full <%= srvCount > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500' %> flex-shrink-0"></span>
+                                <span class="text-zinc-300 truncate">
+                                    <strong class="text-sky-300"><%= srvCount %> inst.</strong> • <strong class="text-emerald-300"><%= liveOnline %>/<%= totalCap %></strong> on • <code class="text-zinc-400"><%= srvAddr %></code>
+                                </span>
+                            </div>
+                            <button type="button"
+                                    class="btn-open-room-instances-modal px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-sky-600 text-sky-300 hover:text-white font-black transition flex-shrink-0"
+                                    data-room-id="<%= room.id %>"
+                                    data-room-name="<%= room.name %>"
+                                    title="Ver ou replicar instâncias desta sala na tabela servers">
+                                🖧 Instâncias
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2.5 border-t border-white/5">
+                        <div class="flex flex-wrap items-center justify-between gap-1.5">
+                            <button type="button"
+                                    class="btn-share-room-to-chat px-2.5 py-1.5 bg-sky-600/15 hover:bg-sky-600 border border-sky-500/30 text-sky-300 hover:text-white text-[10px] font-black rounded-xl transition flex items-center gap-1"
+                                    data-room-id="<%= room.id %>"
+                                    data-room-name="<%= room.name %>"
+                                    title="Enviar endereço da sala e instância do servidor no Chat">
+                                <span class="material-symbols-outlined text-[14px]">share</span>
+                                <span>Chat</span>
+                            </button>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <button type="button"
+                                        class="btn-boost-room px-2 py-1.5 bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-amber-300 text-[10px] font-black rounded-xl transition flex items-center gap-1"
+                                        data-id="<%= room.id %>"
+                                        data-name="<%= room.name %>"
+                                        title="Impulsionar Sala no Topo do Ranking por 24h (<%= boostFeeCoins %> Coins)">
+                                    🚀 <span>Boost (<%= boostFeeCoins %>🪙)</span>
+                                </button>
+                                <button type="button"
+                                        class="btn-enter-room-pass px-2.5 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-300 hover:text-white text-[11px] font-bold rounded-xl transition flex items-center gap-1"
+                                        data-id="<%= room.id %>"
+                                        data-name="<%= room.name %>"
+                                        data-entryvalue="<%= entryPrice %>"
+                                        title="Entrar na Sala / Contabilizar Visita">
+                                    <span class="material-symbols-outlined text-[14px]">login</span>
+                                    <span>Entrar</span>
+                                </button>
+                                <button type="button"
+                                        class="btn-inspect-room px-2 py-1.5 bg-slate-800 hover:bg-blue-600 text-white text-[11px] font-bold rounded-xl transition flex items-center gap-1"
+                                        data-id="<%= room.id %>"
+                                        data-name="<%= room.name %>"
+                                        data-description="<%= room.description || '' %>"
+                                        data-maxplayers="<%= room.maxPlayers || 30 %>"
+                                        data-entryvalue="<%= entryPrice %>"
+                                        data-isprivate="<%= room.isPrivate %>"
+                                        data-password="<%= room.password || '' %>">
+                                    <span class="material-symbols-outlined text-[14px]">tune</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="col-span-full bg-slate-900/40 border border-dashed border-white/10 rounded-3xl p-8 text-center text-zinc-500 space-y-2">
+                <span class="material-symbols-outlined text-3xl text-zinc-600">domain_disabled</span>
+                <p class="text-xs font-bold text-zinc-400"><%= t('profile.rooms.empty', {}, 'Nenhuma sala criada.') %></p>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- SUB-ABA 2: EXPLORADOR DE SALAS PÚBLICAS & RANKING DE VISITAS ÚNICAS DO MÊS -->
+    <div id="subtabRoomsExplore" class="rooms-subtab-panel hidden space-y-4">
+        <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                <i class="fa-solid fa-ranking-star"></i>
+                <span>Ranking Público de Salas 3D — Mais Visitadas no Mês &amp; Impulsionadas</span>
+            </h4>
+            <button type="button" id="btnRefreshPublicRooms" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 hover:border-amber-500/40 text-[11px] font-bold text-zinc-300 hover:text-white transition flex items-center gap-1">
+                <i class="fa-solid fa-rotate"></i> Atualizar Ranking
+            </button>
+        </div>
+
+        <div id="publicRoomsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <% if (pubRoomsList.length > 0) { %>
+                <% pubRoomsList.forEach(function(room, idx) {
+                    const entryPrice = Number(room.entryValue || 0);
+                    const isPaid = entryPrice > 0;
+                    const uniqueMonthly = Number(room.monthlyUniqueVisits || 0);
+                    const totalVis = Number(room.totalVisits || room.visits || 0);
+                    const nextTarget = Number(room.nextMilestoneTarget || 1000);
+                    const progressPct = Number(room.milestoneProgressPercent || Math.min(100, Math.round(((uniqueMonthly % 1000) / 1000) * 100)));
+                    const ownerAv = room.ownerAvatar || null;
+                    const srvCount = Number(room.instancesCount || 0);
+                    const liveOnline = Number(room.livePlayersOnline || 0);
+                    const totalCap = Number(room.totalCapacityOnline || room.maxPlayers || 30);
+                    const srvAddr = room.primaryServerAddress || 'Sob demanda';
+                %>
+                    <div class="bg-slate-900/90 border <%= room.isBoosted ? 'border-amber-500/60 shadow-lg shadow-amber-500/10' : 'border-white/10' %> rounded-2xl p-4 space-y-3 flex flex-col justify-between">
+                        <div class="space-y-2.5">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="px-2 py-0.5 rounded-md <%= idx < 3 ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-zinc-400' %> text-[10px] font-black">#<%= idx + 1 %></span>
+                                    <h4 class="font-bold text-white text-sm truncate"><%= room.name || 'Sala Pública' %></h4>
+                                </div>
+                                <% if (room.isBoosted) { %>
+                                    <span class="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[9px] font-black uppercase flex-shrink-0">
+                                        🚀 Destaque 24h
+                                    </span>
+                                <% } %>
+                            </div>
+
+                            <% if (ownerAv) { %>
+                                <div class="flex items-center gap-2 text-[11px] text-zinc-300">
+                                    <img src="<%= ownerAv.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(ownerAv.name || 'Owner') %>" class="w-5 h-5 rounded-full object-cover">
+                                    <span class="truncate">Criador: <strong class="text-white"><%= ownerAv.name %></strong> <%= ownerAv.isVip ? '👑' : '' %></span>
+                                </div>
+                            <% } %>
+
+                            <p class="text-xs text-zinc-400 line-clamp-2"><%= room.description || 'Espaço público 3D aberto para visitas' %></p>
+
+                            <div class="p-2.5 rounded-xl bg-slate-950/80 border border-white/5 space-y-1.5 text-[10px]">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-zinc-400">Visitas Totais: <strong class="text-white"><%= totalVis.toLocaleString('pt-BR') %></strong></span>
+                                    <span class="text-indigo-300 font-bold">✨ <%= uniqueMonthly.toLocaleString('pt-BR') %> / <%= nextTarget.toLocaleString('pt-BR') %> únicas/mês</span>
+                                </div>
+                                <div class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-indigo-500 via-sky-400 to-amber-400 rounded-full" style="width: <%= Math.max(4, progressPct) %>%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Telemetria de Servidor & Instâncias Replicadas (`servers` table) -->
+                            <div class="px-2.5 py-2 rounded-xl bg-indigo-950/30 border border-indigo-500/20 flex items-center justify-between gap-2 text-[10px]">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="w-2 h-2 rounded-full <%= srvCount > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500' %> flex-shrink-0"></span>
+                                    <span class="text-zinc-300 truncate">
+                                        <strong class="text-sky-300"><%= srvCount %> inst.</strong> • <strong class="text-emerald-300"><%= liveOnline %>/<%= totalCap %></strong> on • <code class="text-zinc-400"><%= srvAddr %></code>
+                                    </span>
+                                </div>
+                                <button type="button"
+                                        class="btn-open-room-instances-modal px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-sky-600 text-sky-300 hover:text-white font-black transition flex-shrink-0"
+                                        data-room-id="<%= room.id %>"
+                                        data-room-name="<%= room.name %>"
+                                        title="Ver instâncias desta sala na tabela servers">
+                                    🖧 Instâncias
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-white/5">
+                            <div>
+                                <% if (room.viewerHasActivePass) { %>
+                                    <span class="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-black">✔ Passe 24h Ativo</span>
+                                <% } else if (isPaid) { %>
+                                    <span class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-black">🎟️ <%= entryPrice %> Coins (24h)</span>
+                                <% } else { %>
+                                    <span class="px-2 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 text-[10px] font-bold">Entrada Grátis</span>
+                                <% } %>
+                            </div>
+
+                            <div class="flex items-center gap-1.5">
+                                <button type="button"
+                                        class="btn-share-room-to-chat px-2.5 py-1.5 bg-sky-600/20 hover:bg-sky-600 border border-sky-500/30 text-sky-300 hover:text-white text-[11px] font-bold rounded-xl transition flex items-center gap-1"
+                                        data-room-id="<%= room.id %>"
+                                        data-room-name="<%= room.name %>"
+                                        title="Enviar endereço desta sala no Chat">
+                                    <span class="material-symbols-outlined text-[14px]">share</span>
+                                    <span>Chat</span>
+                                </button>
+                                <button type="button"
+                                        class="btn-enter-room-pass px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase rounded-xl transition flex items-center gap-1"
+                                        data-id="<%= room.id %>"
+                                        data-name="<%= room.name %>"
+                                        data-entryvalue="<%= entryPrice %>">
+                                    <span class="material-symbols-outlined text-[15px]">login</span>
+                                    <span>Visitar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="col-span-full p-8 rounded-2xl bg-slate-900/40 border border-dashed border-white/10 text-center text-xs text-zinc-500">
+                    Nenhuma sala pública disponível no momento.
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>

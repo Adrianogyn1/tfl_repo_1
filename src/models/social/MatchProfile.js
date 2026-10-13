@@ -6,6 +6,9 @@ module.exports = (sequelize) =>
     "MatchProfile",
     {
       id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true,},
+      profileId: { type: DataTypes.INTEGER, allowNull: true },
+      targetProfileId: { type: DataTypes.INTEGER, allowNull: true },
+      status: { type: DataTypes.STRING, defaultValue: "liked" },
       userid: { type: DataTypes.STRING, defaultValue: "" },
       name: { type: DataTypes.STRING, defaultValue: "" },
       age: { type: DataTypes.INTEGER, defaultValue: 0 },

@@ -1,27 +1,93 @@
-<%- include('../partials/header') %>
+<%- include('../partials/header', { title: t('profile.title', {}, 'Portal TFL — Perfil & Universo'), hideHeader: true }) %>
 
-<%-
-   
-%>
+<!-- CONTAINER PRINCIPAL DA APLICAÇÃO (LAYOUT EM L: SIDEBAR RETRÁTIL + CONTEÚDO) -->
+<div class="flex h-screen overflow-hidden bg-slate-950 text-zinc-100">
 
-    <div class="grid-2">
-        <div><%- user?.name||'Anonimo' %></div>
-        <div class="p-6 bg-gray-900">
-            <div class="text-2xl font-display font-black tracking-tight uppercase italic">
-                <ul>
-                    <li><a href="#edit">Conta</a></li>
-                    <li><a href="#edit">Avatar</a></li>
-                    <li><a href="#edit">Rooms</a></li>
-                </ul>
+    <!-- ================= 1. SIDEBAR RETRÁTIL ================= -->
+    <%- include('./partials/sidebar') %>
+
+    <!-- ================= 2. ÁREA CENTRAL DE CONTEÚDO ================= -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
+
+        <!-- CONTEÚDO DAS VIEWS (SCROLLÁVEL COM RODAPÉ UNIFICADO) -->
+        <div class="flex-1 overflow-y-auto flex flex-col justify-between">
+            <div>
+                <!-- VIEW 1: THE FANTASY LIFE (REDE SOCIAL, MINI REELS 24H, SENTIMENTO 6H & GALERIA) -->
+                <%- include('./partials/view-social') %>
+
+                <!-- VIEW 1.5: PERFIL SOCIAL COMPLETO DO USUÁRIO (PÚBLICO / PESSOAL) -->
+                <%- include('./partials/view-user-profile') %>
+
+                <!-- VIEW 2: AVATARES -->
+                <%- include('./partials/view-avatar') %>
+
+                <!-- VIEW 2.5: LOJA 3D (MÓDULO SHOP INDEPENDENTE - SHOP_APP) -->
+                <%- include('./partials/view-shop') %>
+
+                <!-- VIEW 3: SALAS 3D -->
+                <%- include('./partials/view-salas') %>
+
+                <!-- VIEW 4: CONTA USER (DADOS PESSOAIS & SEGURANÇA) -->
+                <%- include('./partials/view-account') %>
+
+                <!-- VIEW 5: CARTEIRA / BANCO, BOLSA DE MOEDAS & CONVERSOR -->
+                <%- include('./partials/view-market') %>
+
+                <!-- VIEW 5.5: CLUBE VIP (1 SEMANA, 1 MÊS, 3 MESES + SELO VIP + COTAS DE CHAT) -->
+                <%- include('./partials/view-vip') %>
+
+                <!-- VIEW 5.8: CASSINO TFL (SLOTS 3X3, ROLETA E DADOS EM CHIPS) -->
+                <%- include('./partials/view-cassino') %>
+
+                <!-- VIEW 6: AMIGOS -->
+                <%- include('./partials/view-friends') %>
+
+                <!-- VIEW 7: CHAT REAL-TIME (LISTA OU CONVERSA) -->
+                <%- include('./partials/view-chat') %>
             </div>
-        </div>
 
-        <div class="p-6 bg-white">
-            <div class="text-2xl font-display font-black tracking-tight uppercase italic">
+            <!-- ================= 3. MODAIS GLOBAIS & SCRIPTS ================= -->
+            <%- include('./partials/modals') %>
 
-            </div>
+            <script>
+                window.TFL_CONFIG = {
+                    activeAvatarId: <%= Number(activeAvatar?.id || 0) %>,
+                    isVip: <%= Boolean(vipStatus?.isVip || activeAvatar?.isVip) %>,
+                    currentLang: '<%= typeof currentLang !== "undefined" ? currentLang : "pt-BR" %>',
+                    walletCash: <%= Number(wallet?.cash || 0) %>,
+                    walletCoins: <%= Number(wallet?.coins || 0) %>,
+                    walletChips: <%= Number(wallet?.chips || 0) %>,
+                    rateCoinsPerCash: <%= Number(marketStats?.rateCoinsPerCash || 250.0) %>,
+                    rateChipsPerCoin: <%= Number(marketStats?.rateChipsPerCoin || 10.0) %>,
+                    sellSpreadPercent: <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>,
+                    buySpreadPercent: <%= Number(marketStats?.buySpreadPercent ?? 0.1) %>,
+                    usdBrlRate: <%= Number(marketStats?.usdBrlRate || 5.0) %>,
+                    minPurchaseBrl: <%= Number(marketStats?.minPurchaseBrl || 10.0) %>,
+                    minWithdrawCash: <%= Number(marketStats?.minWithdrawCash || 1.0) %>,
+                    buyApprovalMode: '<%= marketStats?.buyApprovalMode || "AUTO" %>',
+                    maxAutoBuyBrl: <%= Number(marketStats?.maxAutoBuyBrl || 500.0) %>,
+                    withdrawApprovalMode: '<%= marketStats?.withdrawApprovalMode || "AUTO" %>',
+                    maxAutoWithdrawCash: <%= Number(marketStats?.maxAutoWithdrawCash || 20.0) %>,
+                    allowInstantCoinsToCash: <%= Boolean(marketStats?.allowInstantCoinsToCash ?? true) %>,
+                    instantCoinsToCashFeePercent: <%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30.0) %>,
+                    p2pCoinsTransferFeePercent: <%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2.0) %>,
+                    roomBoost24hFeeCoins: <%= Number(marketStats?.roomBoost24hFeeCoins ?? 20.0) %>
+                };
+            </script>
+            <!-- Babylon.js 3D Engine para Interação 3D no Navegador -->
+            <script src="https://cdn.babylonjs.com/babylon.js"></script>
+            <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+            <script src="/static/js/profile/toast.js"></script>
+            <script src="/static/js/profile/core.js"></script>
+            <script src="/static/js/profile/stage3d-babylon.js"></script>
+            <script src="/static/js/profile/avatar-rooms.js"></script>
+            <script src="/static/js/profile/shop.js"></script>
+            <script src="/static/js/profile/market.js"></script>
+            <script src="/static/js/profile/social.js"></script>
+            <script src="/static/js/profile/friends-chat.js"></script>
+
+            <!-- ================= 4. RODAPÉ GLOBAL (TUTORIAL & MUDANÇA DE IDIOMA) ================= -->
+            <%- include('../partials/footer') %>
         </div>
     </div>
-
-
-    <%- include('../partials/footer') %>
+</div>

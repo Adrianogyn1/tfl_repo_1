@@ -21,20 +21,6 @@ Object.values(controllers).forEach((controller) =>
   }
 });
 
-router.use("/", (req, res) =>
-{
-  const result = {
-    message: "rota não encontrada, ou você não tem permissão",
-    error: true,
-    success: false
-
-  };
-  if (result.id)
-  {
-    delete result.id;
-  }
-  res.json({ result });
-});
 module.exports = { router };
 
 /*

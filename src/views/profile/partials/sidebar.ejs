@@ -1,0 +1,190 @@
+<!-- ================= SIDEBAR LATERAL (RETRÁTIL, ÍCONES GOOGLE + FONTAWESOME + I18N) ================= -->
+<%
+    const isSidebarVip = Boolean(vipStatus?.isVip || activeAvatar?.isVip);
+    const notifUnread = Number(notificationsData?.unreadCount || 0);
+    const notifList = Array.isArray(notificationsData?.notifications) ? notificationsData.notifications : [];
+%>
+<aside id="appSidebar" class="w-64 bg-slate-900/95 border-r border-white/10 flex flex-col justify-between transition-all duration-300 z-40 relative backdrop-blur-2xl">
+    <div class="overflow-y-auto">
+        <!-- Header da Sidebar / Toggle + Sino de Notificações -->
+        <div class="p-3.5 border-b border-white/10 flex items-center justify-between gap-2">
+            <div class="sidebar-text flex items-center gap-2 overflow-hidden whitespace-nowrap">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+                <span class="text-xs font-black uppercase tracking-widest text-zinc-300"><%= t('profile.nav.menu', {}, 'Menu') %></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <!-- SINO DE NOTIFICAÇÕES EM TEMPO REAL -->
+                <div class="relative">
+                    <button type="button" id="btnToggleNotifications" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-zinc-300 hover:text-amber-400 transition relative" title="Central de Notificações">
+                        <span class="material-symbols-outlined text-[18px]">notifications</span>
+                        <span id="badgeNotificationsUnread" class="<%= notifUnread > 0 ? '' : 'hidden' %> absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black flex items-center justify-center">
+                            <%= notifUnread %>
+                        </span>
+                    </button>
+                </div>
+
+                <button id="btnToggleSidebar" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-zinc-400 hover:text-white transition" title="<%= t('profile.nav.menu', {}, 'Menu') %>">
+                    <span class="material-symbols-outlined text-[18px]">menu_open</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PAINEL RETRÁTIL DE NOTIFICAÇÕES -->
+        <div id="notificationsDropdownPanel" class="hidden mx-2.5 mt-2 p-3 rounded-2xl bg-slate-950 border border-amber-500/30 shadow-2xl space-y-2.5 max-h-80 overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
+                    <i class="fa-solid fa-bell"></i> Notificações
+                </span>
+                <button type="button" id="btnMarkAllNotificationsRead" class="text-[10px] font-bold text-sky-400 hover:text-sky-300">
+                    Marcar lidas
+                </button>
+            </div>
+            <div id="notificationsListContainer" class="space-y-2">
+                <% if (notifList.length === 0) { %>
+                    <div class="text-[11px] text-zinc-500 text-center py-3">Nenhuma notificação recente.</div>
+                <% } else { %>
+                    <% notifList.slice(0, 12).forEach(function(n) { %>
+                        <div class="p-2.5 rounded-xl border <%= n.isRead ? 'bg-slate-900/50 border-white/5 text-zinc-400' : 'bg-amber-500/10 border-amber-500/30 text-zinc-100' %> text-[11px] space-y-0.5">
+                            <div class="font-black text-white flex items-center justify-between gap-1">
+                                <span><%= n.title %></span>
+                                <% if (!n.isRead) { %><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><% } %>
+                            </div>
+                            <p class="text-[10px] leading-snug text-zinc-300"><%= n.message %></p>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Mini Perfil do Avatar Selecionado na Sidebar + Selo VIP -->
+        <div class="p-3.5 border-b border-white/5 flex items-center gap-3 bg-slate-950/40">
+            <input type="hidden" id="selectActiveAvatar" value="<%= activeAvatar?.id || '' %>">
+            <button type="button" class="btn-open-mini-profile w-10 h-10 rounded-xl overflow-hidden border <%= isSidebarVip ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-blue-500/40' %> bg-slate-900 flex-shrink-0 hover:scale-105 transition relative"
+                    data-avatarid="<%= activeAvatar?.id || 1 %>" title="<%= activeAvatar?.name || 'Avatar' %>">
+                <img id="sidebarAvatarImg" 
+                     src="<%= activeAvatar?.thumbnail || user?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(activeAvatar?.name || user?.userName || 'Player') + '&background=0284c7&color=fff' %>" 
+                     alt="Avatar" class="w-full h-full object-cover">
+            </button>
+            <div class="sidebar-text overflow-hidden flex-1">
+                <div class="flex items-center gap-1.5">
+                    <h4 class="text-xs font-bold text-white truncate"><%= activeAvatar?.name || 'Avatar' %></h4>
+                    <% if (isSidebarVip) { %>
+                        <span id="sidebarVipBadge" class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[9px] font-black uppercase tracking-wider flex-shrink-0" title="Membro VIP Oficial">
+                            👑 VIP
+                        </span>
+                    <% } else { %>
+                        <span id="sidebarVipBadge" class="hidden px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[9px] font-black uppercase tracking-wider flex-shrink-0">
+                            👑 VIP
+                        </span>
+                    <% } %>
+                </div>
+                <p class="text-[10px] text-zinc-400 truncate">#<%= activeAvatar?.id || 1 %> <%= isSidebarVip ? '• Clube VIP' : '• Membro Básico' %></p>
+            </div>
+        </div>
+
+        <!-- Menus Principais -->
+        <nav class="p-2.5 space-y-1">
+            <!-- THE FANTASY LIFE (HOME DO MUNDO / REDE SOCIAL) -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition bg-blue-600 text-white shadow-lg shadow-blue-600/30" data-view="view-social" title="<%= t('profile.nav.social', {}, 'The Fantasy Life') %>">
+                <img src="/static/images/Icon_tfl.png" alt="The Fantasy Life" class="w-5 h-5 object-contain flex-shrink-0">
+                <span class="sidebar-text truncate"><%= t('profile.nav.social', {}, 'The Fantasy Life') %></span>
+            </button>
+
+            <!-- AVATARES -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-avatar" title="<%= t('profile.nav.avatars', {}, 'Avatares') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-purple-400">theater_comedy</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.avatars', {}, 'Avatares') %></span>
+            </button>
+
+            <!-- LOJA 3D (MÓDULO SHOP INDEPENDENTE) -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-shop" title="<%= t('profile.nav.shop', {}, 'Loja') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">storefront</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.shop', {}, 'Loja') %></span>
+            </button>
+
+            <!-- SALAS -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-salas" title="<%= t('profile.nav.rooms', {}, 'Salas') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-indigo-400">deployed_code</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.rooms', {}, 'Salas') %></span>
+            </button>
+
+            <!-- AMIGOS -->
+            <button class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-friends" title="<%= t('profile.nav.friends', {}, 'Amigos') %>">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-emerald-400">group</span>
+                    <span class="sidebar-text truncate"><%= t('profile.nav.friends', {}, 'Amigos') %></span>
+                </div>
+                <% if (typeof friendsData !== 'undefined' && friendsData?.pendingReceived?.length > 0) { %>
+                    <span id="sidebarFriendsBadge" class="sidebar-text px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500 text-slate-950">
+                        <%= friendsData.pendingReceived.length %>
+                    </span>
+                <% } else { %>
+                    <span id="sidebarFriendsBadge" class="hidden sidebar-text px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500 text-slate-950">0</span>
+                <% } %>
+            </button>
+
+            <!-- CHAT -->
+            <button id="navBtnChat" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-chat" title="<%= t('profile.nav.chat', {}, 'Chat') %>">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-sky-400">forum</span>
+                    <span class="sidebar-text truncate"><%= t('profile.nav.chat', {}, 'Chat') %></span>
+                </div>
+                <span id="sidebarChatUnreadBadge" class="hidden sidebar-text px-2 py-0.5 text-[10px] font-black rounded-full bg-sky-500 text-slate-950">0</span>
+            </button>
+
+            <!-- CARTEIRA -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-market" title="<%= t('profile.nav.wallet', {}, 'Carteira') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">account_balance_wallet</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.wallet', {}, 'Carteira') %></span>
+            </button>
+
+            <!-- CLUBE VIP -->
+            <button class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-vip" title="Clube VIP">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">workspace_premium</span>
+                    <span class="sidebar-text truncate">Clube VIP</span>
+                </div>
+                <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">👑</span>
+            </button>
+
+            <!-- CASSINO TFL -->
+            <button class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-cassino" title="Cassino TFL">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-pink-400">casino</span>
+                    <span class="sidebar-text truncate">Cassino</span>
+                </div>
+                <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-pink-500/20 text-pink-300 border border-pink-500/30">🎲</span>
+            </button>
+
+            <!-- CONTA -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-profile" title="<%= t('profile.nav.account', {}, 'Conta') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-zinc-300">manage_accounts</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.account', {}, 'Conta') %></span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Parte Inferior da Sidebar (Saldo Compacto e Logout) -->
+    <div class="p-2.5 border-t border-white/10 space-y-2">
+        <!-- Saldo Compacto em Ícones -->
+        <div class="sidebar-text p-2.5 rounded-xl bg-slate-950/70 border border-white/5 grid grid-cols-3 gap-1 text-center">
+            <div class="p-1 rounded-lg bg-slate-900/80" title="Cash ($ USD)">
+                <i class="fa-solid fa-dollar-sign text-emerald-400 text-[10px]"></i>
+                <div class="text-[10px] font-black text-emerald-400 truncate"><%= Number(wallet?.cash || 0).toFixed(2) %></div>
+            </div>
+            <div class="p-1 rounded-lg bg-slate-900/80" title="Coins">
+                <i class="fa-solid fa-coins text-yellow-400 text-[10px]"></i>
+                <div class="text-[10px] font-black text-yellow-400 truncate"><%= Math.floor(wallet?.coins || 0) %></div>
+            </div>
+            <div class="p-1 rounded-lg bg-slate-900/80" title="Chips">
+                <i class="fa-solid fa-dice text-blue-400 text-[10px]"></i>
+                <div class="text-[10px] font-black text-blue-400 truncate"><%= Math.floor(wallet?.chips || 0) %></div>
+            </div>
+        </div>
+
+        <a href="/profile/logout" class="w-full p-2.5 rounded-xl bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold uppercase" title="<%= t('profile.nav.logout', {}, 'Sair') %>">
+            <span class="material-symbols-outlined text-[18px]">power_settings_new</span>
+            <span class="sidebar-text"><%= t('profile.nav.logout', {}, 'Sair') %></span>
+        </a>
+    </div>
+</aside>

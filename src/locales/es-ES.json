@@ -1,0 +1,154 @@
+{
+    "common": {
+        "home": "Inicio",
+        "cancel": "Cancelar",
+        "close": "Cerrar",
+        "back": "Volver",
+        "save": "Guardar",
+        "saved": "Guardado",
+        "search": "Buscar",
+        "refresh": "Actualizar",
+        "create": "Crear",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "public": "Público",
+        "friendsOnly": "Amigos",
+        "private": "Privado",
+        "online": "En línea",
+        "offline": "Desconectado",
+        "success": "¡Éxito!"
+    },
+    "home": {
+        "nav": {
+            "play": "Jugar",
+            "explore": "Explorar",
+            "support": "Apoyar",
+            "tutorial": "Tutorial",
+            "login": "Entrar"
+        }
+    },
+    "profile": {
+        "title": "Portal TFL",
+        "welcome": "Bienvenido, {{name}}",
+        "nav": {
+            "menu": "Menú",
+            "social": "The Fantasy Life",
+            "avatars": "Avatares",
+            "shop": "Tienda",
+            "rooms": "Salas",
+            "friends": "Amigos",
+            "chat": "Chat",
+            "wallet": "Billetera",
+            "stats": "Estadísticas",
+            "tutorial": "Tutorial",
+            "account": "Cuenta",
+            "logout": "Salir",
+            "language": "Idioma"
+        },
+        "social": {
+            "reels": "Reels y Ánimo",
+            "feeling6h": "6h",
+            "reel24h": "24h",
+            "postTitlePlaceholder": "Título (opcional)...",
+            "postTextPlaceholder": "Comparte algo...",
+            "photo": "Foto",
+            "room": "Sala 3D",
+            "myProfile": "Perfil",
+            "publish": "Publicar",
+            "explore": "Explorar",
+            "friends": "Amigos",
+            "mine": "Míos",
+            "gallery": "Galería",
+            "addPhoto": "Nueva Foto",
+            "allPhotos": "Todas",
+            "myPhotos": "Mías",
+            "peopleAndMatch": "Viajeros y Match",
+            "posts": "Posts",
+            "photos": "Fotos",
+            "followers": "Seguidores",
+            "rooms": "Salas",
+            "likes": "Me gusta",
+            "matches": "Matches",
+            "editCover": "Portada"
+        },
+        "avatars": {
+            "title": "Avatares",
+            "newAvatar": "Nuevo",
+            "editAvatar": "Editar",
+            "active": "Activo",
+            "activate": "Activar",
+            "female": "Fem",
+            "male": "Masc"
+        },
+        "rooms": {
+            "title": "Salas 3D",
+            "newRoom": "Nueva Sala",
+            "capacity": "Cupo",
+            "inspect": "Gestionar",
+            "empty": "Sin salas creadas."
+        },
+        "friends": {
+            "title": "Amigos",
+            "pending": "Pendientes",
+            "sent": "Enviados",
+            "suggestions": "Sugerencias",
+            "searchPlaceholder": "Nombre o #ID...",
+            "accept": "Aceptar",
+            "chat": "DM",
+            "add": "Añadir"
+        },
+        "chat": {
+            "title": "Chats",
+            "newGroup": "Grupo",
+            "all": "Todos",
+            "dms": "DMs",
+            "groups": "Grupos",
+            "global": "Global",
+            "participants": "Miembros",
+            "typeMessage": "Mensaje...",
+            "send": "Enviar"
+        },
+        "market": {
+            "title": "Billetera y Bolsa",
+            "rules": "Reglas",
+            "buyPix": "Depositar Pix",
+            "withdrawPix": "Retirar Pix",
+            "poolCoins": "Fondo Coins",
+            "activeOrders": "Órdenes FIFO",
+            "myCash": "Saldo Cash",
+            "myCoins": "Saldo Coins",
+            "buyCoins": "Comprar Coins",
+            "sellCoins": "Vender Coins",
+            "converter": "Conversor",
+            "orders": "Mis Órdenes",
+            "history": "Historial Pix"
+        },
+        "account": {
+            "title": "Cuenta",
+            "fullName": "Nombre",
+            "login": "Usuario",
+            "email": "Correo",
+            "phone": "Teléfono",
+            "save": "Guardar"
+        },
+        "stats": {
+            "title": "Estadísticas y Rendimiento",
+            "subtitle": "Monitoreo en tiempo real del servidor, base de datos, economía y API Godot",
+            "serverHealth": "Rendimiento del Servidor",
+            "latency": "Latencia DB",
+            "memory": "Memoria RAM",
+            "uptime": "Tiempo Activo",
+            "wsClients": "Conexiones WS",
+            "tableTitle": "Tabla General de Indicadores",
+            "category": "Módulo",
+            "metric": "Indicador",
+            "value": "Valor / Total",
+            "status": "Estado",
+            "apiReady": "API Godot v1 Activa"
+        },
+        "tutorial": {
+            "title": "Guía y Tutorial Oficial",
+            "subtitle": "Cómo funciona el ecosistema Web + Juego 3D (Godot Engine)"
+        }
+    }
+}

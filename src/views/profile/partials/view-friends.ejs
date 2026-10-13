@@ -1,0 +1,202 @@
+<!-- ================= VIEW 6: AMIGOS & CONEXÕES (ICON-FIRST & I18N) ================= -->
+<section id="view-friends" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
+    <!-- Header de Amigos + Busca -->
+    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-base sm:text-lg font-black uppercase italic text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-[22px] text-emerald-400">group</span>
+                <span><%= t('profile.friends.title', {}, 'Amigos') %> • <%= activeAvatar?.name || 'Avatar' %></span>
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-bold">
+                <span class="px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-1" title="<%= t('profile.friends.title', {}, 'Amigos') %>">
+                    <span class="material-symbols-outlined text-[15px]">how_to_reg</span>
+                    <%= friendsData?.friendsList?.length || 0 %>
+                </span>
+                <span class="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center gap-1" title="<%= t('profile.friends.pending', {}, 'Pendentes') %>">
+                    <span class="material-symbols-outlined text-[15px]">schedule</span>
+                    <%= friendsData?.pendingReceived?.length || 0 %>
+                </span>
+            </div>
+        </div>
+
+        <!-- Barra de Busca de Avatares -->
+        <div class="flex gap-2">
+            <div class="relative flex-1">
+                <span class="material-symbols-outlined text-[18px] absolute left-3.5 top-2.5 text-zinc-500">search</span>
+                <input type="text" id="inputSearchFriend" placeholder="<%= t('profile.friends.searchPlaceholder', {}, 'Nome ou #ID...') %>"
+                       class="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+            </div>
+            <button type="button" id="btnSearchFriend" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-emerald-600/20 flex items-center gap-1.5" title="<%= t('common.search', {}, 'Buscar') %>">
+                <span class="material-symbols-outlined text-[18px]">person_search</span>
+                <span class="hidden sm:inline"><%= t('common.search', {}, 'Buscar') %></span>
+            </button>
+        </div>
+        <div id="friendSearchResultsContainer" class="hidden pt-1"></div>
+    </div>
+
+    <!-- Solicitações de Amizade Recebidas -->
+    <% if (friendsData?.pendingReceived && friendsData.pendingReceived.length > 0) { %>
+        <div class="bg-slate-900/80 border border-emerald-500/30 rounded-3xl p-5 shadow-xl space-y-3.5">
+            <h3 class="text-xs sm:text-sm font-black uppercase italic text-emerald-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] animate-bounce">notifications_active</span>
+                <span><%= t('profile.friends.pending', {}, 'Pendentes') %> (<%= friendsData.pendingReceived.length %>)</span>
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                <% friendsData.pendingReceived.forEach(function(reqItem) { %>
+                    <div class="p-3.5 rounded-2xl bg-slate-950 border border-emerald-500/30 flex items-center justify-between gap-2.5">
+                        <button type="button" class="btn-open-mini-profile flex items-center gap-2.5 text-left group overflow-hidden flex-1"
+                                data-avatarid="<%= reqItem.avatar?.id %>">
+                            <img src="<%= reqItem.avatar?.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(reqItem.avatar?.name || 'Avatar') + '&background=0284c7&color=fff' %>"
+                                 class="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0">
+                            <div class="overflow-hidden">
+                                <h4 class="text-xs font-bold text-white group-hover:text-emerald-400 transition truncate"><%= reqItem.avatar?.name %></h4>
+                                <p class="text-[10px] text-zinc-500">#<%= reqItem.avatar?.id %></p>
+                            </div>
+                        </button>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button type="button" class="btn-accept-friend p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center justify-center"
+                                    data-id="<%= reqItem.friendshipId %>" title="<%= t('profile.friends.accept', {}, 'Aceitar') %>">
+                                <span class="material-symbols-outlined text-[16px]">check</span>
+                            </button>
+                            <button type="button" class="btn-navigate-user-profile p-2 rounded-xl bg-slate-900 hover:bg-blue-600 border border-white/10 text-zinc-300 hover:text-white text-xs transition"
+                                    data-avatarid="<%= reqItem.avatar?.id %>" title="Perfil">
+                                <span class="material-symbols-outlined text-[16px]">person</span>
+                            </button>
+                            <button type="button" class="btn-remove-friend p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs transition"
+                                    data-id="<%= reqItem.friendshipId %>" title="Recusar">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Lista de Amigos Aceitos -->
+    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-3">
+            <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-emerald-400">diversity_3</span>
+                <span><%= t('profile.friends.title', {}, 'Amigos') %> (<%= friendsData?.friendsList?.length || 0 %>)</span>
+            </h3>
+            <div class="flex items-center gap-1.5 bg-slate-950/90 border border-white/10 rounded-xl px-2.5 py-1" title="Privacidade da Lista de Amigos">
+                <span class="material-symbols-outlined text-[15px] text-emerald-400">shield_lock</span>
+                <select class="select-section-privacy bg-transparent text-[11px] font-bold text-white focus:outline-none cursor-pointer" data-field="privacyFriends">
+                    <option value="public" class="bg-slate-900" <%= (!activeAvatar?.privacyFriends || activeAvatar?.privacyFriends === 'public') ? 'selected' : '' %>>🌐 <%= t('common.public', {}, 'Público') %></option>
+                    <option value="friends" class="bg-slate-900" <%= activeAvatar?.privacyFriends === 'friends' ? 'selected' : '' %>>👥 <%= t('common.friendsOnly', {}, 'Amigos') %></option>
+                    <option value="private" class="bg-slate-900" <%= activeAvatar?.privacyFriends === 'private' ? 'selected' : '' %>>🔒 <%= t('common.private', {}, 'Privado') %></option>
+                </select>
+                <span class="privacy-save-status text-[10px] text-emerald-400 font-bold hidden">✔</span>
+            </div>
+        </div>
+
+        <% if (friendsData?.friendsList && friendsData.friendsList.length > 0) { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                <% friendsData.friendsList.forEach(function(item) { %>
+                    <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/10 hover:border-sky-500/40 transition flex items-center justify-between gap-2.5">
+                        <button type="button" class="btn-open-mini-profile flex items-center gap-2.5 text-left group overflow-hidden flex-1"
+                                data-avatarid="<%= item.avatar?.id %>">
+                            <div class="relative flex-shrink-0">
+                                <img src="<%= item.avatar?.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.avatar?.name || 'Avatar') + '&background=0284c7&color=fff' %>"
+                                     class="w-11 h-11 rounded-xl object-cover border border-blue-500/30">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950 absolute -bottom-0.5 -right-0.5"></span>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate"><%= item.avatar?.name %></h4>
+                                <p class="text-[10px] text-zinc-500">#<%= item.avatar?.id %></p>
+                            </div>
+                        </button>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button type="button" class="btn-open-dm p-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition shadow-md shadow-sky-600/20"
+                                    data-profileid="<%= item.avatar?.id %>"
+                                    data-name="<%= item.avatar?.name %>" title="<%= t('profile.friends.chat', {}, 'DM') %>">
+                                <span class="material-symbols-outlined text-[16px]">chat</span>
+                            </button>
+                            <button type="button" class="btn-navigate-user-profile p-2 rounded-xl bg-slate-900 hover:bg-blue-600 border border-white/10 text-zinc-300 hover:text-white text-xs transition"
+                                    data-avatarid="<%= item.avatar?.id %>" title="Perfil">
+                                <span class="material-symbols-outlined text-[16px]">person</span>
+                            </button>
+                            <button type="button" class="btn-remove-friend p-2 rounded-xl bg-slate-900 hover:bg-red-500/20 border border-white/5 text-zinc-400 hover:text-red-400 text-xs transition"
+                                    data-id="<%= item.friendshipId %>" title="Remover">
+                                <span class="material-symbols-outlined text-[16px]">person_remove</span>
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="p-6 rounded-2xl bg-slate-950/40 border border-dashed border-white/5 text-center text-xs text-zinc-500">
+                <span class="material-symbols-outlined text-2xl text-zinc-600 block mb-1">group_off</span>
+                <span>0 <%= t('profile.friends.title', {}, 'Amigos') %></span>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Solicitações Enviadas & Sugestões -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
+            <h3 class="text-xs font-black uppercase italic text-amber-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">outbox</span>
+                <span><%= t('profile.friends.sent', {}, 'Enviados') %> (<%= friendsData?.pendingSent?.length || 0 %>)</span>
+            </h3>
+            <% if (friendsData?.pendingSent && friendsData.pendingSent.length > 0) { %>
+                <div class="space-y-2">
+                    <% friendsData.pendingSent.forEach(function(sentItem) { %>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-white/5 flex items-center justify-between gap-2">
+                            <button type="button" class="btn-open-mini-profile flex items-center gap-2 overflow-hidden text-left group"
+                                    data-avatarid="<%= sentItem.avatar?.id %>">
+                                <img src="<%= sentItem.avatar?.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(sentItem.avatar?.name || 'Avatar') + '&background=0284c7&color=fff' %>"
+                                     class="w-8 h-8 rounded-lg object-cover flex-shrink-0">
+                                <div class="overflow-hidden">
+                                    <div class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate"><%= sentItem.avatar?.name %></div>
+                                    <div class="text-[10px] text-zinc-500">#<%= sentItem.avatar?.id %></div>
+                                </div>
+                            </button>
+                            <button type="button" class="btn-remove-friend p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition"
+                                    data-id="<%= sentItem.friendshipId %>" title="<%= t('common.cancel', {}, 'Cancelar') %>">
+                                <span class="material-symbols-outlined text-[15px]">close</span>
+                            </button>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <p class="text-xs text-zinc-500 py-3 text-center">—</p>
+            <% } %>
+        </div>
+
+        <div class="lg:col-span-2 bg-slate-900/80 border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
+            <h3 class="text-xs font-black uppercase italic text-blue-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">explore</span>
+                <span><%= t('profile.friends.suggestions', {}, 'Sugestões') %></span>
+            </h3>
+            <% if (friendsData?.suggestedAvatars && friendsData.suggestedAvatars.length > 0) { %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <% friendsData.suggestedAvatars.forEach(function(sug) { %>
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-between gap-2.5">
+                            <button type="button" class="btn-open-mini-profile flex items-center gap-2.5 overflow-hidden text-left group flex-1"
+                                    data-avatarid="<%= sug.id %>">
+                                <img src="<%= sug.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(sug.name || 'Avatar') + '&background=0284c7&color=fff' %>"
+                                     class="w-9 h-9 rounded-xl object-cover border border-white/10 flex-shrink-0">
+                                <div class="overflow-hidden">
+                                    <h5 class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate"><%= sug.name %></h5>
+                                    <span class="text-[10px] text-zinc-500">#<%= sug.id %></span>
+                                </div>
+                            </button>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button type="button" class="btn-navigate-user-profile p-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-zinc-400 hover:text-white text-xs transition"
+                                        data-avatarid="<%= sug.id %>" title="Perfil">
+                                    <span class="material-symbols-outlined text-[16px]">person</span>
+                                </button>
+                                <button type="button" class="btn-send-friend-request p-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white text-xs font-bold transition"
+                                        data-targetid="<%= sug.id %>" title="<%= t('profile.friends.add', {}, 'Adicionar') %>">
+                                    <span class="material-symbols-outlined text-[16px]">person_add</span>
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>

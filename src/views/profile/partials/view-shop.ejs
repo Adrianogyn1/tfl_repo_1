@@ -1,0 +1,591 @@
+<!-- ============================================================================
+     VIEW: MÓDULO LOJA 3D (RÉPLICA FIEL DO SHOP_APP.TSCN: VITRINE, PREVIEW,
+     CARRINHO, CRIAR ITEM UGC COM PARAMSCHEMA, TEXTURAS, INVENTÁRIO E ESTATÍSTICAS)
+     ============================================================================ -->
+<%
+    const curWallet = (typeof wallet !== 'undefined' && wallet) ? wallet : ((typeof activeCurrency !== 'undefined' && activeCurrency) ? activeCurrency : { coins: 0, cash: 0, chips: 0 });
+%>
+<section id="view-shop" class="view-panel hidden p-4 sm:p-6 max-w-7xl mx-auto">
+
+    <!-- CONTAINER PRINCIPAL DO SHOP APP (ESTILO SHOP_APP.TSCN: #090C17 / #131829) -->
+    <div id="tflShopAppRoot" class="rounded-3xl border border-[#2e3d70]/70 bg-[#090c17] text-[#f0f2fa] shadow-2xl overflow-hidden min-h-[760px] flex flex-col">
+
+        <!-- ====================================================================
+             PÁGINA 1: SHOP PAGE (VITRINE PRINCIPAL - ShopPage)
+             ==================================================================== -->
+        <div id="shopAppPage_ShopPage" class="shop-app-subpage flex-1 flex flex-col p-5 sm:p-7 space-y-5">
+
+            <!-- Header -->
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-2xl font-black tracking-wider text-[#f2f5ff] uppercase">LOJA</h2>
+                        <!-- Saldo Rápido -->
+                        <div class="flex items-center gap-2.5 px-3 py-1 rounded-xl bg-[#131829] border border-[#2e3d70] text-xs">
+                            <span class="font-black text-[#ffd76a]" title="Saldo de Coins">
+                                <span id="shopHeaderCoins"><%= Number(curWallet.coins || 0).toLocaleString('pt-BR') %></span> ◈
+                            </span>
+                            <span class="text-[#3d4d80]">|</span>
+                            <span class="font-bold text-emerald-400" title="Saldo de Cash">
+                                $<span id="shopHeaderCash"><%= Number(curWallet.cash || 0).toFixed(2) %></span>
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-[#8794b8] mt-0.5">Personalize seu avatar com novos itens.</p>
+                </div>
+
+                <!-- HeaderActions (Exatamente como no shop_app.tscn) -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button type="button" id="btnShopOpenCreate"
+                            class="px-4 py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center gap-1.5">
+                        <span>+ Criar item</span>
+                    </button>
+                    <button type="button" id="btnShopOpenTextures"
+                            class="px-4 py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-sky-400"></i>
+                        <span>Textures</span>
+                    </button>
+                    <button type="button" id="btnShopOpenInventory"
+                            class="px-4 py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center gap-1.5">
+                        <span>🎒 Inventário</span>
+                    </button>
+                    <button type="button" id="btnShopOpenCart"
+                            class="px-4 py-2.5 rounded-xl bg-[#427aff] hover:bg-[#5c8fff] text-xs font-black text-white shadow-lg shadow-blue-600/25 transition flex items-center gap-1.5">
+                        <span id="shopCartBtnLabel">🛍️ Carrinho (0)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FilterBar (#121728 com borda #283357) -->
+            <div class="p-3.5 rounded-xl bg-[#121728] border border-[#283357] flex flex-wrap items-center gap-3">
+                <input type="text" id="shopSearchInput"
+                       placeholder="Pesquisar por nome..."
+                       class="flex-1 min-w-[200px] bg-[#1a223b] border border-[#384d85] focus:border-[#5980f2] rounded-lg px-3.5 py-2 text-xs text-white placeholder-[#7380a6] focus:outline-none">
+
+                <select id="shopGenderFilter"
+                        class="bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2 text-xs text-white font-semibold focus:outline-none">
+                    <option value="all">Todos os Gêneros</option>
+                    <option value="Female">Feminino</option>
+                    <option value="Male">Masculino</option>
+                    <option value="Universal">Universal</option>
+                </select>
+
+                <select id="shopSlotFilter"
+                        class="bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2 text-xs text-white font-semibold focus:outline-none">
+                    <option value="all">Todos os Slots</option>
+                    <option value="top">UpperBody (Torso)</option>
+                    <option value="bottom">LowerBody (Legs)</option>
+                    <option value="fullbody">FullBody (Traje)</option>
+                    <option value="hair">Hair (Cabelo)</option>
+                    <option value="shoes">Shoes (Calçados)</option>
+                    <option value="eyes">Eyes (Olhos/Visor)</option>
+                    <option value="skin">Skin (Pele/Make)</option>
+                    <option value="head">Head (Chapéu/Boné)</option>
+                    <option value="accessory">Accessory (Asas/Mochila)</option>
+                </select>
+
+                <button type="button" id="btnShopSearch"
+                        class="px-5 py-2 rounded-lg bg-[#427aff] hover:bg-[#5c8fff] text-xs font-bold text-white transition">
+                    Buscar
+                </button>
+            </div>
+
+            <!-- StatusLabel -->
+            <div class="flex items-center justify-between">
+                <p id="shopStatusLabel" class="text-xs text-[#808cb3]">Carregando itens...</p>
+                <span class="text-[11px] text-[#6685eb]">Royalty de Criador: 70% de cada venda</span>
+            </div>
+
+            <!-- ItemsGrid (4 colunas igual ao GridContainer columns = 4 do shop_app.tscn) -->
+            <div id="shopItemsGrid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Preenchido dinamicamente por public/js/profile/shop.js -->
+            </div>
+
+            <!-- PaginationBar -->
+            <div class="pt-3 border-t border-[#242e4d] flex items-center justify-center gap-6">
+                <button type="button" id="btnShopPrevPage"
+                        class="px-4 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] disabled:opacity-40 text-xs font-bold text-white transition">
+                    ← Anterior
+                </button>
+                <span id="shopPageIndicator" class="text-xs font-bold text-[#99a6cc] min-w-[110px] text-center">
+                    Página 1/1
+                </span>
+                <button type="button" id="btnShopNextPage"
+                        class="px-4 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] disabled:opacity-40 text-xs font-bold text-white transition">
+                    Próxima →
+                </button>
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             PÁGINA 2: PREVIEW PAGE (VISUALIZAÇÃO DO ITEM - PreviewPage)
+             ==================================================================== -->
+        <div id="shopAppPage_PreviewPage" class="shop-app-subpage hidden flex-1 flex flex-col p-5 sm:p-7 space-y-5">
+            <!-- TopBar -->
+            <div>
+                <button type="button" id="btnPreviewBackToShop"
+                        class="px-4 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                    ← Voltar à loja
+                </button>
+            </div>
+
+            <!-- Content (3 colunas: AvatarControl | AvatarPreview | Details) -->
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+                <!-- Coluna Esquerda: AvatarControl (Remover slot: Torso, Leg, Shoes) -->
+                <div class="lg:col-span-2 flex flex-col justify-center space-y-2.5 bg-[#131829] border border-[#2e3d70] rounded-2xl p-4">
+                    <span class="text-xs font-bold text-[#8794b8] uppercase tracking-wider mb-1">Remover slot</span>
+                    <button type="button" class="btn-preview-hide-slot w-full py-2.5 px-3 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center justify-between"
+                            data-slot="top">
+                        <span>Torso</span>
+                        <span class="slot-eye-indicator text-[10px] text-emerald-400">Visível</span>
+                    </button>
+                    <button type="button" class="btn-preview-hide-slot w-full py-2.5 px-3 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center justify-between"
+                            data-slot="bottom">
+                        <span>Leg</span>
+                        <span class="slot-eye-indicator text-[10px] text-emerald-400">Visível</span>
+                    </button>
+                    <button type="button" class="btn-preview-hide-slot w-full py-2.5 px-3 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center justify-between"
+                            data-slot="shoes">
+                        <span>Shoes</span>
+                        <span class="slot-eye-indicator text-[10px] text-emerald-400">Visível</span>
+                    </button>
+                </div>
+
+                <!-- Coluna Central: AvatarPreview (SubViewportContainer 3D / Visualizador Interativo) -->
+                <div class="lg:col-span-6 bg-[#090c17] border-2 border-[#334785] rounded-2xl relative overflow-hidden flex flex-col items-center justify-center min-h-[420px] p-6">
+                    <div class="absolute top-3 left-3 flex items-center gap-2">
+                        <span id="previewMeshBadge" class="px-2.5 py-1 rounded-lg bg-[#131829]/90 border border-[#2e3d70] text-[11px] font-mono text-[#6699ff]">
+                            mesh_3d
+                        </span>
+                    </div>
+                    <div id="previewHiddenSlotsBanner" class="hidden absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10px] font-bold text-amber-300">
+                        Slots ocultos: <span id="previewHiddenSlotsList"></span>
+                    </div>
+
+                    <!-- Imagem / Manequim do Item com Zoom -->
+                    <div class="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl overflow-hidden border border-[#2e3d70] bg-[#131829] shadow-2xl flex items-center justify-center group">
+                        <img id="previewItemImage" src="" alt="Preview" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                    </div>
+
+                    <!-- Lista de Sub-recursos (ShopItem / Shaders / Cores) -->
+                    <div id="previewResourcesPills" class="mt-4 flex flex-wrap items-center justify-center gap-2"></div>
+                </div>
+
+                <!-- Coluna Direita: Details (360px panel #131829) -->
+                <div class="lg:col-span-4 bg-[#131829] border border-[#2e3d70] rounded-2xl p-6 flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div id="previewCategoryLabel" class="text-xs font-black uppercase tracking-widest text-[#6699ff]">
+                            UNIVERSAL
+                        </div>
+                        <h3 id="previewTitleLabel" class="text-2xl font-black text-white break-words">
+                            Nome do item
+                        </h3>
+                        <div id="previewPriceLabel" class="text-xl font-black text-[#ffd76a]">
+                            0 ◈
+                        </div>
+                        <hr class="border-[#242e4d]">
+                        <p id="previewDescLabel" class="text-xs text-[#9ea8c7] leading-relaxed whitespace-pre-line">
+                            Descrição detalhada do item selecionado.
+                        </p>
+                    </div>
+
+                    <div class="space-y-2.5 pt-4">
+                        <button type="button" id="btnPreviewAddToCart"
+                                class="w-full py-3 rounded-xl bg-[#427aff] hover:bg-[#5c8fff] text-xs font-black uppercase tracking-wider text-white transition shadow-lg shadow-blue-600/20">
+                            Adicionar ao carrinho
+                        </button>
+                        <button type="button" id="btnPreviewBuyNow"
+                                class="w-full py-2.5 rounded-xl bg-[#24803d] hover:bg-[#2ea14d] text-xs font-black uppercase tracking-wider text-white transition">
+                            Comprar agora
+                        </button>
+                        <button type="button" id="btnPreviewGiftItem"
+                                class="w-full py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 border border-amber-500/40 text-amber-300 hover:text-slate-950 text-xs font-black uppercase tracking-wider transition">
+                            🎁 Presentear Amigo (Coins)
+                        </button>
+                        <button type="button" id="btnPreviewOpenCart"
+                                class="w-full py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                            Ver carrinho
+                        </button>
+                        <button type="button" id="btnPreviewOpenStats"
+                                class="w-full py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                            📊 Ver estatísticas
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             PÁGINA 3: CART PAGE (CARRINHO DE COMPRAS - CartPage)
+             ==================================================================== -->
+        <div id="shopAppPage_CartPage" class="shop-app-subpage hidden flex-1 flex flex-col p-5 sm:p-7 space-y-5">
+            <!-- TopBar -->
+            <div>
+                <button type="button" id="btnCartBackToShop"
+                        class="px-4 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                    ← Continuar comprando
+                </button>
+            </div>
+
+            <!-- Body (CartItemsPanel | SummaryPanel) -->
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- CartItemsPanel -->
+                <div class="lg:col-span-8 bg-[#131829] border border-[#2e3d70] rounded-2xl p-5 space-y-4 min-h-[420px]">
+                    <h3 class="text-lg font-black text-white">Seu carrinho</h3>
+                    <div id="shopCartItemsList" class="space-y-2.5">
+                        <!-- Itens do carrinho renderizados via JS -->
+                    </div>
+                </div>
+
+                <!-- SummaryPanel -->
+                <div class="lg:col-span-4 bg-[#131829] border border-[#42599e] rounded-2xl p-6 space-y-4">
+                    <h3 class="text-lg font-black text-white">Resumo</h3>
+                    <div id="cartItemCountLabel" class="text-xs font-semibold text-[#8794b8]">
+                        Itens: 0
+                    </div>
+                    <div id="cartTotalPriceLabel" class="text-2xl font-black text-[#ffd76a]">
+                        Total: 0 ◈
+                    </div>
+                    <hr class="border-[#242e4d]">
+                    <div class="flex items-center gap-2 text-xs text-[#9ea8c7]">
+                        <input type="checkbox" id="chkCartAutoEquip" checked class="rounded bg-[#1a223b] border-[#384d85] text-[#427aff]">
+                        <label for="chkCartAutoEquip">Equipar automaticamente após a compra</label>
+                    </div>
+                    <button type="button" id="btnCartCheckout"
+                            class="w-full py-3.5 rounded-xl bg-[#427aff] hover:bg-[#5c8fff] disabled:opacity-40 text-xs font-black uppercase tracking-wider text-white transition shadow-lg shadow-blue-600/25">
+                        Finalizar compra
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             PÁGINA 4: CREATE ITEM PAGE (CRIAR/EDITAR ITEM UGC - CreateItemPage)
+             ==================================================================== -->
+        <div id="shopAppPage_CreateItemPage" class="shop-app-subpage hidden flex-1 flex flex-col p-5 sm:p-7 space-y-4">
+            <!-- Header -->
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#242e4d] pb-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h3 id="createItemHeaderTitle" class="text-xl font-black text-white">Criar novo item</h3>
+                    <span class="px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-400/30 text-xs font-bold text-[#ffe01f]">
+                        Taxa fixa de criação: <%= Number(marketStats?.shopCreationFixedFeeCoins ?? 5).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coins
+                    </span>
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-400/30 text-xs font-bold text-emerald-400">
+                        Venda UGC: Você recebe <%= (100 - Number(marketStats?.shopSalePlatformFeePercent ?? 30)).toLocaleString('pt-BR') %>% (Taxa <%= Number(marketStats?.shopSalePlatformFeePercent ?? 30).toLocaleString('pt-BR') %>%)
+                    </span>
+                </div>
+                <button type="button" id="btnCreateClose"
+                        class="w-9 h-9 rounded-lg bg-[#e02424] hover:bg-red-500 text-white font-black text-sm transition flex items-center justify-center"
+                        title="Fechar">
+                    x
+                </button>
+            </div>
+
+            <!-- Body (PreviewPanel | FormContainer) -->
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- Left: PreviewPanel (Male / Female, 350x350 Viewport, Torso/Leg/Shoes, Capturar Thumbnail) -->
+                <div class="lg:col-span-5 bg-[#131829] border border-[#2e3d70] rounded-2xl p-5 flex flex-col items-center space-y-4">
+                    <!-- Botões Male / Female (Exatamente como no shop_app.tscn: Male azul #1a7de6, Female rosa #ff1a9c) -->
+                    <div class="flex items-center justify-center gap-3 w-full">
+                        <button type="button" id="btnCreateGenderMale"
+                                class="flex-1 py-2 px-4 rounded-lg bg-[#1a7de6] text-white text-xs font-black uppercase tracking-wider transition ring-2 ring-white/40">
+                            Male (HM)
+                        </button>
+                        <button type="button" id="btnCreateGenderFemale"
+                                class="flex-1 py-2 px-4 rounded-lg bg-[#ff1a9c]/70 hover:bg-[#ff1a9c] text-white text-xs font-black uppercase tracking-wider transition">
+                            Female (HF)
+                        </button>
+                    </div>
+
+                    <!-- Preview Stage + Botões Verticais Torso / Leg / Shoes -->
+                    <div class="relative w-full max-w-[350px] h-[350px] rounded-2xl bg-[#090c17] border-2 border-[#334785] overflow-hidden flex items-center justify-center">
+                        <img id="createThumbPreviewImg"
+                             src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=400&q=80"
+                             alt="Thumbnail Preview"
+                             class="w-full h-full object-cover">
+
+                        <!-- Botões Verticais Torso / Leg / Shoes no canto esquerdo (igual ao VBoxContainer de CreateItemPage) -->
+                        <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                            <button type="button" class="btn-create-hide-slot px-2.5 py-1.5 rounded bg-[#131829]/90 hover:bg-[#427aff] border border-[#3d528c] text-[10px] font-bold text-white transition" data-slot="top">
+                                Torso
+                            </button>
+                            <button type="button" class="btn-create-hide-slot px-2.5 py-1.5 rounded bg-[#131829]/90 hover:bg-[#427aff] border border-[#3d528c] text-[10px] font-bold text-white transition" data-slot="bottom">
+                                Leg
+                            </button>
+                            <button type="button" class="btn-create-hide-slot px-2.5 py-1.5 rounded bg-[#131829]/90 hover:bg-[#427aff] border border-[#3d528c] text-[10px] font-bold text-white transition" data-slot="shoes">
+                                Shoes
+                            </button>
+                        </div>
+
+                        <div class="absolute bottom-2 right-2 px-2.5 py-1 rounded bg-black/75 text-[10px] font-bold text-[#ffd76a]" id="createPreviewModeBadge">
+                            Modo: Thumbnail
+                        </div>
+                    </div>
+
+                    <input type="file" id="inputCreateThumbFile" accept="image/*" class="hidden">
+
+                    <div class="w-full max-w-[350px] space-y-2">
+                        <button type="button" id="btnCreateCaptureThumb"
+                                class="w-full py-2.5 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                            📸 Capturar / Enviar thumbnail
+                        </button>
+                        <button type="button" id="btnCreateTogglePreviewMode"
+                                class="w-full py-2 rounded-lg bg-[#121728] hover:bg-[#1f2947] border border-[#283357] text-xs font-semibold text-[#9ea8c7] hover:text-white transition">
+                            🔄 Alternar preview (Modo: Thumbnail)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: FormContainer (Titulo, Descricao, Valor, Modelo (mesh), + Adicionar item, Itens adicionados + ParamSchema, Create) -->
+                <div class="lg:col-span-7 bg-[#131829] border border-[#2e3d70] rounded-2xl p-5 space-y-4 max-h-[650px] overflow-y-auto">
+                    <input type="hidden" id="inputCreateEditId" value="">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-white mb-1">Título</label>
+                            <input type="text" id="inputCreateTitle" placeholder="Nome do item..."
+                                   class="w-full bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5980f2]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-white mb-1">Valor ◈</label>
+                            <input type="number" id="inputCreatePrice" step="0.5" min="0" value="50"
+                                   class="w-full bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2 text-xs text-[#ffd76a] font-black focus:outline-none focus:border-[#5980f2]">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-1">Descrição</label>
+                        <input type="text" id="inputCreateDesc" placeholder="Descrição do item..."
+                               class="w-full bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5980f2]">
+                    </div>
+
+                    <hr class="border-[#242e4d]">
+
+                    <!-- Seleção de Modelo (mesh) filtrado por HM / HF -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-white">Modelo (mesh)</label>
+                        <div class="flex items-center gap-2">
+                            <select id="selectCreateModel"
+                                    class="flex-1 bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2.5 text-xs text-white font-semibold focus:outline-none">
+                                <!-- Populado via JS com os Prefabs HM ou HF -->
+                            </select>
+                            <button type="button" id="btnCreateAddMeshItem"
+                                    class="px-4 py-2.5 rounded-lg bg-[#427aff] hover:bg-[#5c8fff] text-xs font-black text-white transition whitespace-nowrap">
+                                + Adicionar item
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="border-[#242e4d]">
+
+                    <!-- Itens adicionados (Lista de Accordions com ParamSchema: PBR, Hair, SkinHead, SkinBody) -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-white">Itens adicionados (Shaders & Texturas)</label>
+                            <span id="createAddedItemsCount" class="text-[11px] text-[#8794b8]">0 modelo(s)</span>
+                        </div>
+                        <div id="createAddedItemsList" class="space-y-3">
+                            <!-- Accordions gerados pelo ParamSchema em public/js/profile/shop.js -->
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-[#242e4d]">
+                        <button type="button" id="btnCreateSubmitItem"
+                                class="w-full py-3.5 rounded-xl bg-[#427aff] hover:bg-[#5c8fff] text-xs font-black uppercase tracking-wider text-white transition shadow-lg shadow-blue-600/25">
+                            Create
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             PÁGINA 5: MY TEXTURES PAGE (MINHAS TEXTURAS - MyTexturesPage)
+             ==================================================================== -->
+        <div id="shopAppPage_MyTexturesPage" class="shop-app-subpage hidden flex-1 flex flex-col p-5 sm:p-7 space-y-5">
+            <!-- TopBar -->
+            <div class="flex flex-wrap items-center gap-3">
+                <input type="text" id="inputTextureSearch"
+                       placeholder="Buscar textura..."
+                       class="flex-1 min-w-[200px] bg-[#1a223b] border border-[#384d85] rounded-lg px-3.5 py-2.5 text-xs text-white placeholder-[#7380a6] focus:outline-none">
+                <button type="button" id="btnOpenTextureUploadModal"
+                        class="px-5 py-2.5 rounded-lg bg-[#24803d] hover:bg-[#2ea14d] text-xs font-black text-white transition flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Upload de Imagem/Textura (Taxa: <%= Number(marketStats?.shopTextureUploadFixedFeeCoins ?? 1).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coin)</span>
+                </button>
+                <button type="button" id="btnTexturesBack"
+                        class="px-5 py-2.5 rounded-lg bg-[#b82e2e] hover:bg-red-600 text-xs font-black text-white transition">
+                    Voltar
+                </button>
+            </div>
+
+            <div id="texturePickerModeBanner" class="hidden p-3 rounded-xl bg-blue-500/15 border border-blue-400/40 flex items-center justify-between text-xs text-blue-200">
+                <span>Selecione uma textura abaixo para aplicar ao parâmetro do modelo 3D.</span>
+                <button type="button" id="btnCancelTexturePicker" class="px-3 py-1 rounded bg-slate-900 text-zinc-300 hover:text-white font-bold">
+                    Cancelar seleção
+                </button>
+            </div>
+
+            <!-- TexturesGrid (Grid 150x150) -->
+            <div id="shopTexturesGrid" class="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Preenchido via JS -->
+            </div>
+
+            <!-- Modal Interno UploadForm (Taxa fixa de upload de imagem no Shop) -->
+            <div id="modalShopTextureUpload" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div class="w-full max-w-md rounded-2xl bg-[#131829] border border-[#42599e] p-6 space-y-4 shadow-2xl">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-base font-black text-white">Enviar Nova Imagem / Textura</h4>
+                        <span class="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-400/30 text-xs font-bold text-[#ffe01f]">
+                            Taxa fixa: <%= Number(marketStats?.shopTextureUploadFixedFeeCoins ?? 1).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coin
+                        </span>
+                    </div>
+
+                    <input type="file" id="inputUploadTextureFile" accept="image/png,image/jpeg,image/webp" class="hidden">
+
+                    <button type="button" id="btnTriggerTextureFileSelect"
+                            class="w-full py-2.5 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                        Selecionar Textura (PNG)
+                    </button>
+
+                    <div>
+                        <label class="block text-xs font-bold text-[#8794b8] mb-1">Nome da textura</label>
+                        <input type="text" id="inputUploadTextureName" placeholder="Nome da textura"
+                               class="w-full bg-[#1a223b] border border-[#384d85] rounded-lg px-3 py-2 text-xs text-white focus:outline-none">
+                    </div>
+
+                    <div class="w-[200px] h-[200px] mx-auto rounded-xl bg-[#090c17] border border-[#2e3d70] overflow-hidden flex items-center justify-center">
+                        <img id="imgUploadTexturePreview" src="" alt="Preview" class="hidden w-full h-full object-cover">
+                        <span id="lblUploadTexturePlaceholder" class="text-xs text-[#7380a6]">Preview 200x200</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="button" id="btnSubmitTextureUpload"
+                                class="flex-1 py-2.5 rounded-lg bg-[#24803d] hover:bg-[#2ea14d] text-xs font-black text-white transition">
+                            Enviar Textura
+                        </button>
+                        <button type="button" id="btnCloseTextureUploadModal"
+                                class="px-5 py-2.5 rounded-lg bg-[#b82e2e] hover:bg-red-600 text-xs font-black text-white transition">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             PÁGINA 6: INVENTORY PAGE (INVENTÁRIO DA LOJA - InventoryPage)
+             ==================================================================== -->
+        <div id="shopAppPage_InventoryPage" class="shop-app-subpage hidden flex-1 flex flex-col p-5 sm:p-7 space-y-5">
+            <!-- TopBar -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <button type="button" id="btnInventoryBackToShop"
+                            class="px-4 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                        ← Voltar
+                    </button>
+                    <button type="button" id="btnInvTabPurchased"
+                            class="px-5 py-2 rounded-lg bg-[#427aff] text-xs font-black text-white transition">
+                        Comprados
+                    </button>
+                    <button type="button" id="btnInvTabCreated"
+                            class="px-5 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] text-xs font-bold text-white transition">
+                        Criados por mim
+                    </button>
+                </div>
+
+                <button type="button" class="btn-go-avatar-wardrobe px-3.5 py-2 rounded-lg bg-[#121728] hover:bg-[#1f2947] border border-[#2e3d70] text-xs font-bold text-cyan-400 transition flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">checkroom</span>
+                    <span>Manequim & Looks 3D</span>
+                </button>
+            </div>
+
+            <!-- Aba 1: Comprados (PurchasedGrid) -->
+            <div id="shopInvPurchasedWrap" class="flex-1">
+                <div id="shopInvPurchasedGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- Aba 2: Criados por mim (CreatedGrid) -->
+            <div id="shopInvCreatedWrap" class="hidden flex-1">
+                <div id="shopInvCreatedGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             PÁGINA 7: REVIEWS PAGE (ESTATÍSTICAS DO ITEM - ReviewsPage)
+             ==================================================================== -->
+        <div id="shopAppPage_ReviewsPage" class="shop-app-subpage hidden flex-1 flex flex-col p-5 sm:p-7 space-y-5">
+            <div>
+                <button type="button" id="btnReviewsBack"
+                        class="px-4 py-2 rounded-lg bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition">
+                    ← Voltar
+                </button>
+            </div>
+
+            <h3 id="reviewsItemTitle" class="text-2xl font-black text-white">Nome do item</h3>
+
+            <div class="max-w-lg bg-[#131829] border border-[#2e3d70] rounded-2xl p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-[#242e4d] pb-3">
+                    <span class="text-sm font-bold text-[#8794b8]">👍 Curtidas</span>
+                    <span id="reviewsLikesLabel" class="text-base font-black text-white">0</span>
+                </div>
+                <div class="flex items-center justify-between border-b border-[#242e4d] pb-3">
+                    <span class="text-sm font-bold text-[#8794b8]">⭐ Favoritos</span>
+                    <span id="reviewsFavoritesLabel" class="text-base font-black text-[#ffd76a]">0</span>
+                </div>
+                <div class="flex items-center justify-between border-b border-[#242e4d] pb-3">
+                    <span class="text-sm font-bold text-[#8794b8]">🛍️ Vendas</span>
+                    <span id="reviewsSalesLabel" class="text-base font-black text-emerald-400">0</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-[#8794b8]">🔗 Compartilhamentos</span>
+                    <span id="reviewsSharesLabel" class="text-base font-black text-sky-400">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DE PRESENTEAR ITEM 3D (COINS SOMENTE) -->
+        <div id="modalShopGiftItem" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="w-full max-w-md rounded-2xl bg-[#131829] border border-amber-500/40 p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-base font-black text-white flex items-center gap-2">
+                        <span>🎁 Presentear Roupa 3D</span>
+                    </h4>
+                    <button type="button" id="btnCloseShopGiftModal" class="text-zinc-400 hover:text-white text-lg font-bold">✕</button>
+                </div>
+                <p class="text-xs text-[#9ea8c7]">
+                    Envie <strong id="giftModalItemTitle" class="text-amber-300">Item</strong> diretamente para o guarda-roupa de outro jogador pagando com <strong class="text-amber-400">Coins</strong> (moeda do jogo).
+                </p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[#8794b8] mb-1">ID do Avatar ou Nickname do Destinatário</label>
+                        <input type="text" id="inputGiftTargetAvatar" placeholder="Ex: 12 ou NomeDoAvatar"
+                               class="w-full bg-[#090c17] border border-[#2e3d70] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[#8794b8] mb-1">Mensagem de Presente (Opcional)</label>
+                        <input type="text" id="inputGiftMessage" maxlength="100" placeholder="Ex: Parabéns pelo seu estilo!"
+                               class="w-full bg-[#090c17] border border-[#2e3d70] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" id="btnCancelShopGiftModal" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-zinc-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="button" id="btnConfirmShopGift" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase transition">
+                        🎁 Enviar Presente
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

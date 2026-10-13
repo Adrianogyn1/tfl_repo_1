@@ -17,6 +17,12 @@ module.exports = (sequelize) => {
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     selected: { type: DataTypes.BOOLEAN, defaultValue: false },
+    coverUrl: { type: DataTypes.STRING, defaultValue: "" },
+    privacyPosts: { type: DataTypes.STRING, defaultValue: "public" },
+    privacyPhotos: { type: DataTypes.STRING, defaultValue: "public" },
+    privacyRooms: { type: DataTypes.STRING, defaultValue: "public" },
+    privacyFriends: { type: DataTypes.STRING, defaultValue: "public" },
+    privacyFollowers: { type: DataTypes.STRING, defaultValue: "public" },
   }, {
     tableName: "avatars",
     timestamps: false,

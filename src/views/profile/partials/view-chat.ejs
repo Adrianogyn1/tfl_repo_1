@@ -1,0 +1,308 @@
+<!-- ================= VIEW 7: CENTRAL DE CHAT & MENSAGENS (ICON-FIRST & I18N) ================= -->
+<section id="view-chat" class="view-panel hidden p-4 sm:p-6 max-w-4xl mx-auto w-full h-[calc(100vh-32px)] flex flex-col">
+    <div class="flex-1 bg-slate-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[540px]">
+
+        <!-- TELA 1: LISTA DE CONVERSAS -->
+        <div id="chatListScreen" class="flex-1 flex flex-col bg-slate-950/60 h-full overflow-hidden">
+            <div class="p-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 bg-slate-950/80">
+                <div class="flex items-center gap-2.5">
+                    <span class="material-symbols-outlined text-[22px] text-sky-400">forum</span>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-black uppercase italic text-white"><%= t('profile.chat.title', {}, 'Conversas') %></h3>
+                        <div class="flex items-center gap-1.5">
+                            <span id="wsStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span id="wsStatusText" class="text-[10px] text-zinc-400">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="btnOpenCreateGroupModal" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-sky-600/20" title="<%= t('profile.chat.newGroup', {}, 'Grupo') %>">
+                    <span class="material-symbols-outlined text-[18px]">group_add</span>
+                    <span><%= t('profile.chat.newGroup', {}, 'Grupo') %></span>
+                </button>
+            </div>
+
+            <!-- Filtros da Lista de Conversas -->
+            <div class="px-4 py-2 border-b border-white/5 bg-slate-900/60 flex items-center gap-1.5 overflow-x-auto">
+                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-sky-600 text-white transition flex items-center gap-1" data-filter="all">
+                    <span class="material-symbols-outlined text-[15px]">all_inbox</span>
+                    <span><%= t('profile.chat.all', {}, 'Todas') %></span>
+                </button>
+                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-950 text-zinc-400 hover:text-white transition flex items-center gap-1" data-filter="private">
+                    <span class="material-symbols-outlined text-[15px] text-emerald-400">person</span>
+                    <span><%= t('profile.chat.dms', {}, 'DMs') %></span>
+                </button>
+                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-950 text-zinc-400 hover:text-white transition flex items-center gap-1" data-filter="group">
+                    <span class="material-symbols-outlined text-[15px] text-purple-400">groups</span>
+                    <span><%= t('profile.chat.groups', {}, 'Grupos') %></span>
+                </button>
+                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-950 text-zinc-400 hover:text-white transition flex items-center gap-1" data-filter="global">
+                    <span class="material-symbols-outlined text-[15px] text-sky-400">public</span>
+                    <span><%= t('profile.chat.global', {}, 'Global') %></span>
+                </button>
+            </div>
+
+            <!-- Lista de Salas / Conversas -->
+            <div id="chatRoomsListContainer" class="flex-1 overflow-y-auto p-3.5 space-y-2">
+                <div class="p-8 text-center text-xs text-zinc-500">
+                    <i class="fa-solid fa-spinner fa-spin text-sky-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- TELA 2: JANELA DE MENSAGENS DA CONVERSA ATIVA -->
+        <div id="chatConversationScreen" class="hidden flex-1 flex flex-col bg-slate-900/40 h-full overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/10 bg-slate-950/80 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 overflow-hidden">
+                    <button type="button" id="btnBackToChatList" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white transition flex-shrink-0" title="<%= t('common.back', {}, 'Voltar') %>">
+                        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    </button>
+
+                    <button type="button" id="btnChatHeaderAction" class="flex items-center gap-2.5 overflow-hidden text-left group">
+                        <div id="chatActiveAvatarBox" class="w-9 h-9 rounded-xl bg-sky-600/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-black flex-shrink-0 overflow-hidden">
+                            <span class="material-symbols-outlined text-[18px]">public</span>
+                        </div>
+                        <div class="overflow-hidden">
+                            <h4 id="chatActiveHeaderTitle" class="text-xs sm:text-sm font-black text-white group-hover:text-sky-400 transition truncate">Chat</h4>
+                            <p id="chatActiveHeaderSub" class="text-[10px] text-zinc-400 truncate"></p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Ações Direitas do Cabeçalho por Ícones -->
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <div id="chatTypingIndicator" class="hidden text-[11px] font-semibold text-sky-400 italic animate-pulse mr-1">...</div>
+
+                    <button type="button" id="btnChatHeaderMiniProfile" class="hidden p-2 rounded-xl bg-slate-900 hover:bg-sky-600 border border-white/10 text-zinc-300 hover:text-white transition items-center justify-center" title="Mini Profile">
+                        <span class="material-symbols-outlined text-[18px] text-sky-400">badge</span>
+                    </button>
+                    <button type="button" id="btnChatHeaderFullProfile" class="hidden p-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-400 hover:text-white transition items-center justify-center" title="Perfil">
+                        <span class="material-symbols-outlined text-[18px]">person</span>
+                    </button>
+
+                    <button type="button" id="btnOpenGroupParticipants" class="hidden px-2.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600 border border-purple-500/30 text-purple-300 hover:text-white text-xs font-bold transition items-center gap-1" title="<%= t('profile.chat.participants', {}, 'Membros') %>">
+                        <span class="material-symbols-outlined text-[16px]">groups</span>
+                        <span id="labelGroupParticipantsBtn" class="hidden sm:inline"><%= t('profile.chat.participants', {}, 'Membros') %></span>
+                    </button>
+                    <button type="button" id="btnOpenGroupAddFriends" class="hidden p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition items-center justify-center shadow-md shadow-emerald-600/20" title="<%= t('profile.friends.add', {}, 'Adicionar') %>">
+                        <span class="material-symbols-outlined text-[18px]">person_add</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Status VIP & Cotas Diárias do Chat -->
+            <%
+                const isChatVip = Boolean(vipStatus?.isVip || activeAvatar?.isVip);
+                const cDmUsed = Number(vipStatus?.usageToday?.dmOpens || 0);
+                const cImgUsed = Number(vipStatus?.usageToday?.imagesSent || 0);
+                const cAudUsed = Number(vipStatus?.usageToday?.audioSent || 0);
+                const cMaxDm = Number(marketStats?.basicMaxChatOpensPerDay ?? 3);
+                const cMaxImg = Number(marketStats?.basicMaxChatImagesPerDay ?? 2);
+                const cMaxAud = Number(marketStats?.basicMaxChatAudioPerDay ?? 2);
+            %>
+            <div id="chatVipQuotaBanner" class="px-4 py-2 border-b border-white/5 bg-slate-950/90 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                <div class="flex flex-wrap items-center gap-3">
+                    <% if (isChatVip) { %>
+                        <span class="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[10px]">👑 VIP ATIVO</span>
+                        <span class="text-zinc-300">DMs Livres • 📷 Fotos e 🎤 Voz Liberados</span>
+                    <% } else { %>
+                        <span class="px-2 py-0.5 rounded-md bg-slate-800 text-zinc-300 font-bold text-[10px]">Membro Básico (DMs apenas c/ Amigos)</span>
+                        <span class="text-zinc-400">Hoje: 💬 DMs <strong id="lblChatQuotaDm" class="text-white"><%= cDmUsed %>/<%= cMaxDm %></strong> • 📷 Fotos <strong id="lblChatQuotaImg" class="text-white"><%= cImgUsed %>/<%= cMaxImg %></strong> • 🎤 Voz <strong id="lblChatQuotaAud" class="text-white"><%= cAudUsed %>/<%= cMaxAud %></strong></span>
+                    <% } %>
+                </div>
+                <% if (!isChatVip) { %>
+                    <button type="button" class="nav-item px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 font-black text-[10px] uppercase transition" data-view="view-vip">
+                        👑 Ser VIP ($<%= Number(marketStats?.vipPrice1MonthCash ?? 2).toFixed(2) %>)
+                    </button>
+                <% } %>
+            </div>
+
+            <!-- Histórico de Mensagens -->
+            <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#070709]/60"></div>
+
+            <!-- Barra de Gravação de Voz Ativa (Oculta por padrão) -->
+            <div id="voiceRecordingBar" class="hidden px-4 py-2.5 border-t border-rose-500/30 bg-rose-950/40 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-xs font-bold text-rose-300">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                    <span>Gravando mensagem de voz... <strong id="voiceRecordingTimer">00:00</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnCancelVoiceRecord" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-zinc-300 text-[11px] font-bold">
+                        Cancelar
+                    </button>
+                    <button type="button" id="btnStopAndSendVoice" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black uppercase">
+                        Enviar Voz 🎤
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Envio de Mensagem / Imagem / Voz / Endereço de Sala -->
+            <form id="formSendChatMessage" class="p-3 border-t border-white/10 bg-slate-950/80 flex items-center gap-2">
+                <input type="hidden" id="activeChatRoomUid" value="">
+                <input type="file" id="fileChatMedia" class="hidden" accept="image/*,audio/*,video/*">
+                <input type="file" id="fileChatImageOnly" class="hidden" accept="image/*">
+                <input type="file" id="fileChatAudioOnly" class="hidden" accept="audio/*">
+
+                <button type="button" id="btnAttachChatImage" class="p-2.5 rounded-xl bg-slate-800 hover:bg-sky-600 text-sky-400 hover:text-white transition flex-shrink-0" title="Enviar Imagem / Foto no Chat">
+                    <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                </button>
+                <button type="button" id="btnRecordChatVoice" class="p-2.5 rounded-xl bg-slate-800 hover:bg-amber-500 text-amber-400 hover:text-slate-950 transition flex-shrink-0" title="Gravar ou Enviar Mensagem de Voz (Áudio)">
+                    <span class="material-symbols-outlined text-[18px]">mic</span>
+                </button>
+                <button type="button" id="btnShareRoomInChat" class="px-2.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-300 hover:text-white transition flex items-center gap-1 flex-shrink-0 text-[11px] font-black uppercase" title="Enviar Endereço de Sala 3D e Instância do Servidor no Chat">
+                    <span class="material-symbols-outlined text-[17px]">meeting_room</span>
+                    <span class="hidden sm:inline">Sala</span>
+                </button>
+                <input type="text" id="inputChatMessageText" autocomplete="off" placeholder="<%= t('profile.chat.typeMessage', {}, 'Mensagem...') %>"
+                       class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 transition">
+                <button type="submit" id="btnSendChatMessage" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black uppercase transition shadow-lg shadow-sky-600/30 flex items-center gap-1.5 flex-shrink-0" title="<%= t('profile.chat.send', {}, 'Enviar') %>">
+                    <span class="material-symbols-outlined text-[18px]">send</span>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</section>
+
+<!-- ================= MODAL 1: ENVIAR ENDEREÇO DA SALA & INSTÂNCIA DO SERVIDOR NO CHAT ================= -->
+<div id="modalShareRoomChat" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-indigo-500/30 rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                    <span class="material-symbols-outlined text-[20px]">dns</span>
+                </div>
+                <div>
+                    <h4 class="text-sm font-black uppercase text-white">Compartilhar Endereço de Sala &amp; Servidor</h4>
+                    <p class="text-[11px] text-zinc-400">Envie o IP/Porta e a Instância ativa (`servers`) para seus amigos entrarem direto</p>
+                </div>
+            </div>
+            <button type="button" class="btn-close-share-room-modal p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-400 hover:text-white">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+
+        <form id="formShareRoomInChat" class="space-y-4">
+            <!-- Escolha da Conversa de Destino -->
+            <div>
+                <label class="block text-[11px] font-black uppercase text-zinc-400 mb-1">Enviar na Conversa (Canal / Grupo / DM)</label>
+                <select id="selectShareRoomTargetChat" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-indigo-500">
+                    <option value="">Carregando conversas...</option>
+                </select>
+            </div>
+
+            <!-- Escolha da Sala 3D -->
+            <div>
+                <label class="block text-[11px] font-black uppercase text-zinc-400 mb-1">Selecione a Sala 3D</label>
+                <select id="selectShareRoomId" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-indigo-500">
+                    <option value="">Carregando salas...</option>
+                </select>
+            </div>
+
+            <!-- Instâncias Ativas na Tabela `servers` da Sala Selecionada -->
+            <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-white/10 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-black uppercase text-indigo-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Instâncias na Tabela <code class="text-sky-400">servers</code></span>
+                    </span>
+                    <span id="lblShareRoomInstancesSummary" class="text-[10px] font-bold text-zinc-400">0 instâncias</span>
+                </div>
+
+                <div id="shareRoomServerInstancesList" class="space-y-1.5 max-h-44 overflow-y-auto">
+                    <div class="text-xs text-zinc-500 text-center py-2">Selecione uma sala acima para ver as instâncias do servidor.</div>
+                </div>
+
+                <label class="flex items-center gap-2 pt-1.5 border-t border-white/5 cursor-pointer text-[11px] text-amber-300 font-bold">
+                    <input type="checkbox" id="chkShareForceNewReplica" class="rounded bg-slate-900 border-white/20 text-indigo-600 focus:ring-0">
+                    <span>➕ Forçar abertura de uma Nova Instância Replicada ao enviar convite</span>
+                </label>
+            </div>
+
+            <!-- Mensagem Personalizada -->
+            <div>
+                <label class="block text-[11px] font-black uppercase text-zinc-400 mb-1">Mensagem de Convite (Opcional)</label>
+                <input type="text" id="inputShareRoomCustomText" maxlength="300" placeholder="Ex: Pessoal, entrem aqui na minha sala na Instância #1!"
+                       class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" class="btn-close-share-room-modal px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-zinc-300">
+                    Cancelar
+                </button>
+                <button type="submit" id="btnConfirmSendRoomInvite" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-600/30 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">send</span>
+                    <span>Enviar Endereço da Sala</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================= MODAL 2: GERENCIAR & REPLICAR INSTÂNCIAS DO SERVIDOR (`servers`) DA SALA ================= -->
+<div id="modalRoomServerInstances" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-sky-500/30 rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                    <i class="fa-solid fa-network-wired text-lg"></i>
+                </div>
+                <div>
+                    <h4 id="modalInstancesRoomTitle" class="text-sm sm:text-base font-black uppercase text-white">Instâncias do Servidor da Sala</h4>
+                    <p class="text-[11px] text-zinc-400">Sempre que uma instância enche (`playersCount &gt;= maxPlayers`), o servidor cria outra réplica automaticamente</p>
+                </div>
+            </div>
+            <button type="button" class="btn-close-room-instances-modal p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-400 hover:text-white">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+
+        <input type="hidden" id="modalInstancesRoomId" value="">
+        <input type="hidden" id="modalInstancesRoomName" value="">
+
+        <!-- Resumo de Telemetria da Sala no Servidor -->
+        <div class="grid grid-cols-3 gap-2.5 text-center">
+            <div class="p-3 rounded-2xl bg-slate-950 border border-white/5">
+                <div class="text-[10px] font-bold uppercase text-zinc-400">Instâncias Ativas</div>
+                <div id="lblModalInstancesCount" class="text-base font-black text-sky-400 mt-0.5">0</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-950 border border-white/5">
+                <div class="text-[10px] font-bold uppercase text-zinc-400">Jogadores Online</div>
+                <div id="lblModalInstancesPlayers" class="text-base font-black text-emerald-400 mt-0.5">0 / 0</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-950 border border-white/5">
+                <div class="text-[10px] font-bold uppercase text-zinc-400">Auto-Replicação</div>
+                <div class="text-xs font-black text-amber-400 mt-1">⚡ Ativa (Ao Lotar)</div>
+            </div>
+        </div>
+
+        <!-- Lista de Instâncias (`servers`) -->
+        <div id="modalRoomInstancesListContainer" class="space-y-2.5 max-h-72 overflow-y-auto">
+            <div class="p-6 text-center text-xs text-zinc-500">Carregando instâncias da tabela servers...</div>
+        </div>
+
+        <!-- Ações de Replicação e Compartilhamento -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/10">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnSpawnNewRoomReplica" class="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-300 hover:text-white text-[11px] font-black uppercase transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Abrir Nova Réplica</span>
+                </button>
+                <button type="button" id="btnSimulateFullAndReplicate" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 border border-amber-500/40 text-amber-300 hover:text-slate-950 text-[11px] font-black uppercase transition flex items-center gap-1.5" title="Lotar a instância atual e disparar a criação automática de outra sala na tabela servers">
+                    <i class="fa-solid fa-users-rays"></i>
+                    <span>Simular Sala Cheia &amp; Auto-Replicar</span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="button" id="btnShareFromInstancesModal" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-black uppercase transition flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px]">share</span>
+                    <span>Enviar no Chat</span>
+                </button>
+                <button type="button" class="btn-close-room-instances-modal px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 text-xs font-bold">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

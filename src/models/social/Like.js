@@ -6,14 +6,16 @@ module.exports = (sequelize) => {
     {
       id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true},
       postId: { type: DataTypes.INTEGER, allowNull:true },
+      photoId: { type: DataTypes.INTEGER, allowNull:true },
+      commentId: { type: DataTypes.INTEGER, allowNull:true },
+      targetProfileId: { type: DataTypes.INTEGER, allowNull:true },
+      roomId: { type: DataTypes.INTEGER, allowNull:true },
+      reelId: { type: DataTypes.INTEGER, allowNull:true },
       userId: { type: DataTypes.INTEGER, allowNull:true },
       avatarId: { type: DataTypes.INTEGER, allowNull:true },
+      profileId: { type: DataTypes.INTEGER, allowNull:true },
       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
       target_uid:{ type: DataTypes.STRING, allowNull: true, defaultValue: DataTypes.UUIDV4 },
-    //  photoId: { type: DataTypes.INTEGER, defaultValue: 0 },
-    //  commentId: { type: DataTypes.INTEGER, defaultValue: 0 },
-    //  profileId: { type: DataTypes.INTEGER, defaultValue: 0 },
-    //  roomId: { type: DataTypes.INTEGER, defaultValue: 0 },
 
       type: {
         type: DataTypes.ENUM(

@@ -16,6 +16,8 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      profileId: { type: DataTypes.INTEGER, allowNull: true },
+      targetProfileId: { type: DataTypes.INTEGER, allowNull: true },
       userid: { type: DataTypes.STRING, defaultValue: "" },
       targetid: { type: DataTypes.STRING, defaultValue: "" },
       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },

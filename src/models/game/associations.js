@@ -11,131 +11,182 @@ module.exports = (models) => {
     Currency,
     CurrencyRegister,
     Texture,
-    Like
+    Like,
   } = models;
 
-  User.hasMany(Avatar, { foreignKey: "userId" });
+  User.hasMany(Avatar, { foreignKey: "userId", constraints: false });
   Avatar.belongsTo(User, {
     foreignKey: "userId",
-    as : "user",
-    onDelete: "CASCADE",
+    as: "user",
+    constraints: false,
   });
 
   Avatar.hasMany(Inventory, {
     as: "inventory",
     foreignKey: "avatarId",
-    onDelete: "CASCADE",
+    constraints: false,
   });
   Inventory.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
+    as: "avatar",
+    constraints: false,
+  });
+
+  // Associa o item do inventário ao Produto da Loja 3D (ShopContainer)
+  Inventory.belongsTo(ShopContainer, {
+    foreignKey: "itemId",
+    as: "shopItem",
+    constraints: false,
+  });
+  ShopContainer.hasMany(Inventory, {
+    foreignKey: "itemId",
+    as: "ownedInstances",
+    constraints: false,
   });
 
   Avatar.hasMany(AvatarOutfit, {
     as: "outfits",
     foreignKey: "avatarId",
-    onDelete: "CASCADE",
+    constraints: false,
   });
   AvatarOutfit.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
+    as: "avatar",
+    constraints: false,
+  });
+  AvatarOutfit.belongsTo(ShopContainer, {
+    foreignKey: "itemId",
+    as: "shopItem",
+    constraints: false,
   });
 
   Avatar.hasMany(AvatarOutfitStyle, {
     as: "styles",
     foreignKey: "avatarId",
-    onDelete: "CASCADE",
+    constraints: false,
   });
   AvatarOutfitStyle.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
+    as: "avatar",
+    constraints: false,
   });
 
   Avatar.hasOne(Currency, {
     as: "wallet",
     foreignKey: "avatarId",
-    onDelete: "CASCADE",
+    constraints: false,
   });
   Currency.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
+    as: "avatar",
+    constraints: false,
   });
 
   Currency.hasMany(CurrencyRegister, {
     as: "registers",
     foreignKey: "currencyId",
-    onDelete: "CASCADE",
+    constraints: false,
   });
   CurrencyRegister.belongsTo(Currency, {
     foreignKey: "currencyId",
-    as : "currency",
+    as: "currency",
+    constraints: false,
   });
+
+  if (models.CoinOrder) {
+    Avatar.hasMany(models.CoinOrder, {
+      as: "coinOrders",
+      foreignKey: "avatarId",
+      constraints: false,
+    });
+    models.CoinOrder.belongsTo(Avatar, {
+      foreignKey: "avatarId",
+      as: "avatar",
+      constraints: false,
+    });
+  }
 
   Avatar.hasMany(ShopContainer, {
     as: "containers",
     foreignKey: "avatarId",
-    onDelete: "RESTRICT",
-    hooks: true,
+    constraints: false,
   });
   ShopContainer.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
+    as: "avatar",
+    constraints: false,
   });
 
   Avatar.hasMany(Texture, {
     as: "textures",
     foreignKey: "avatarId",
-    onDelete: "RESTRICT",
-    hooks: true,
+    constraints: false,
   });
   Texture.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
-    onDelete: "RESTRICT",
+    as: "avatar",
+    constraints: false,
   });
 
   ShopContainer.hasMany(ShopItem, {
     as: "items",
     foreignKey: "containerId",
-    onDelete: "CASCADE",
+    constraints: false,
   });
   ShopItem.belongsTo(ShopContainer, {
     foreignKey: "containerId",
-    as : "container",
+    as: "container",
+    constraints: false,
   });
 
-  models.RoomModel.belongsTo(models.Avatar, {
+  RoomModel.belongsTo(Avatar, {
     foreignKey: "avatarId",
-    as : "avatar",
+    as: "avatar",
+    constraints: false,
   });
 
-  models.RoomModel.hasMany(models.ObjectModel, {
+  RoomModel.hasMany(models.ObjectModel, {
     foreignKey: "roomId",
-    as : "objects",
-    onDelete: "CASCADE",
+    as: "objects",
+    constraints: false,
   });
 
-  models.ObjectModel.belongsTo(models.RoomModel, {
+  models.ObjectModel.belongsTo(RoomModel, {
     foreignKey: "roomId",
-    as : "room",
+    as: "room",
+    constraints: false,
   });
 
-  models.RoomModel.hasOne(models.Terrain, {
+  RoomModel.hasOne(models.Terrain, {
     foreignKey: "roomId",
-    as : "terrain",
-    onDelete: "CASCADE",
+    as: "terrain",
+    constraints: false,
   });
 
-  models.Terrain.belongsTo(models.RoomModel, {
+  models.Terrain.belongsTo(RoomModel, {
     foreignKey: "roomId",
-    as : "room",
+    as: "room",
+    constraints: false,
   });
 
   if (Like) {
-    models.RoomModel.hasMany(Like, {
+    RoomModel.hasMany(Like, {
       as: "likes",
       foreignKey: "roomId",
-      onDelete: "CASCADE",
+      constraints: false,
+    });
+  }
+
+  if (models.Server) {
+    RoomModel.hasMany(models.Server, {
+      as: "servers",
+      foreignKey: "roomId",
+      constraints: false,
+    });
+    models.Server.belongsTo(RoomModel, {
+      as: "room",
+      foreignKey: "roomId",
+      constraints: false,
     });
   }
 };

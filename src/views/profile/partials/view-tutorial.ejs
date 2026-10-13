@@ -1,0 +1,356 @@
+<!-- ================= VIEW 9: PÁGINA DE TUTORIAL EXPLICATIVA & GUIA DA API GODOT ================= -->
+<section id="view-tutorial" class="view-panel <%= typeof standaloneTutorial !== 'undefined' && standaloneTutorial ? '' : 'hidden' %> p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
+
+    <!-- Hero do Tutorial -->
+    <div class="bg-gradient-to-r from-blue-950/60 via-indigo-950/50 to-purple-950/60 border border-blue-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-4">
+            <div class="space-y-2 max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-xs font-black uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[16px]">school</span>
+                    <span>Central de Conhecimento TFL</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black uppercase italic text-white">
+                    <%= t('profile.tutorial.title', {}, 'Guia & Tutorial Oficial — The Fantasy Life') %>
+                </h2>
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    <%= t('profile.tutorial.subtitle', {}, 'Aprenda passo a passo como usar cada recurso do Portal Web e como tudo se conecta em tempo real com o cliente 3D feito na Godot Engine.') %>
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="/api/v1/endpoints" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/15 text-cyan-400 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition">
+                    <span class="material-symbols-outlined text-[18px]">api</span>
+                    <span>JSON API Spec (/api/v1)</span>
+                </a>
+                <% if (typeof standaloneTutorial === 'undefined' || !standaloneTutorial) { %>
+                <a href="/tutorial" target="_blank" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 transition shadow-lg shadow-blue-600/25">
+                    <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                    <span>Abrir Página /tutorial</span>
+                </a>
+                <% } else { %>
+                <a href="/profile" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 transition shadow-lg shadow-blue-600/25">
+                    <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                    <span>Ir para o Portal</span>
+                </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação Rápida por Tópicos do Tutorial -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        <a href="#tut-avatars" class="p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-center space-y-1 transition">
+            <span class="material-symbols-outlined text-[22px] text-purple-400">theater_comedy</span>
+            <div class="text-[11px] font-black uppercase text-white">1. Avatares</div>
+        </a>
+        <a href="#tut-social" class="p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-center space-y-1 transition">
+            <span class="material-symbols-outlined text-[22px] text-blue-400">public</span>
+            <div class="text-[11px] font-black uppercase text-white">2. Rede Social</div>
+        </a>
+        <a href="#tut-reels" class="p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-center space-y-1 transition">
+            <span class="material-symbols-outlined text-[22px] text-pink-400">bolt</span>
+            <div class="text-[11px] font-black uppercase text-white">3. Reels 6h/24h</div>
+        </a>
+        <a href="#tut-match-chat" class="p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-center space-y-1 transition">
+            <span class="material-symbols-outlined text-[22px] text-emerald-400">forum</span>
+            <div class="text-[11px] font-black uppercase text-white">4. Match & Chat</div>
+        </a>
+        <a href="#tut-economy" class="p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-center space-y-1 transition">
+            <span class="material-symbols-outlined text-[22px] text-amber-400">account_balance_wallet</span>
+            <div class="text-[11px] font-black uppercase text-white">5. Carteira & Pix</div>
+        </a>
+        <a href="#tut-godot-api" class="p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-cyan-500/30 text-center space-y-1 transition">
+            <span class="material-symbols-outlined text-[22px] text-cyan-400">terminal</span>
+            <div class="text-[11px] font-black uppercase text-cyan-300">6. API Godot</div>
+        </a>
+    </div>
+
+    <!-- MÓDULO 1: CONTA VS. AVATARES -->
+    <div id="tut-avatars" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+            <span class="material-symbols-outlined text-[26px] text-purple-400">theater_comedy</span>
+            <div>
+                <h3 class="text-sm sm:text-base font-black uppercase italic text-white">1. Arquitetura Conta vs. Múltiplos Avatares</h3>
+                <p class="text-xs text-zinc-400">Como sua Conta de Usuário gerencia múltiplos personagens independentes no mundo virtual</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5">
+                <div class="font-black text-purple-300 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">manage_accounts</span> Conta Global (User)
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Guarda apenas suas credenciais de segurança (Login, E-mail, Telefone e Token de sessão). Seus dados pessoais nunca ficam expostos para outros jogadores.
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5">
+                <div class="font-black text-blue-300 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">badge</span> Identidade do Avatar
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Cada Avatar possui seu próprio Nome, ID (`#id`), Foto de Perfil, Capa de Fundo, Biografia, Gênero, Roupas (`Outfits`) e Carteira individual.
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5">
+                <div class="font-black text-emerald-300 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">swap_horiz</span> Troca Instantânea
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Na aba <strong>Avatares</strong>, clique em <strong>Ativar</strong> para alternar qual personagem está ativo no Portal e no jogo Godot. Tudo (amigos, chat, carteira e salas) muda automaticamente!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÓDULO 2: REDE SOCIAL, REAÇÕES, COMENTÁRIOS RECURSIVOS & PRIVACIDADE -->
+    <div id="tut-social" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+            <span class="material-symbols-outlined text-[26px] text-blue-400">public</span>
+            <div>
+                <h3 class="text-sm sm:text-base font-black uppercase italic text-white">2. Rede Social "The Fantasy Life", Comentários Recursivos & Privacidade</h3>
+                <p class="text-xs text-zinc-400">Interações ricas em publicações, galeria de fotos, salas 3D e controle total de visibilidade</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-2">
+                <div class="font-black text-blue-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">add_reaction</span> 7 Reações Universais & Comentários Infinitos
+                </div>
+                <ul class="space-y-1.5 text-zinc-400 list-disc list-inside">
+                    <li>Reaja com <strong>👍 Like, ❤️ Amei, 🥰 Carinho, 😂 Haha, 😮 Uau, 😢 Triste, 😡 Grr</strong>.</li>
+                    <li>Você pode curtir/reagir a <strong>Publicações, Fotos da Galeria, Comentários, Salas 3D e até o Perfil</strong> de outro jogador!</li>
+                    <li><strong>Comentários Recursivos</strong>: Responda a qualquer comentário em qualquer nível de profundidade, tanto em posts quanto dentro do Lightbox de Fotos.</li>
+                </ul>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-2">
+                <div class="font-black text-amber-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">shield_lock</span> Privacidade Contextual por Seção
+                </div>
+                <ul class="space-y-1.5 text-zinc-400 list-disc list-inside">
+                    <li>Cada área tem seu próprio seletor rápido de privacidade (<code class="text-white">🌐 Público</code>, <code class="text-white">👥 Amigos</code>, <code class="text-white">🔒 Privado</code>):</li>
+                    <li><strong>Publicações</strong>: configurado na caixa de criar post.</li>
+                    <li><strong>Fotos</strong>: configurado no topo da Galeria de Fotos.</li>
+                    <li><strong>Salas 3D</strong>: configurado no cabeçalho de Salas.</li>
+                    <li><strong>Amigos & Seguidores</strong>: configurado na aba Amigos e na aba Seguidores do seu perfil.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÓDULO 3: MINI REELS (24H) & SENTIMENTOS (6H) -->
+    <div id="tut-reels" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+            <span class="material-symbols-outlined text-[26px] text-pink-400">bolt</span>
+            <div>
+                <h3 class="text-sm sm:text-base font-black uppercase italic text-white">3. Mini Reels (24 Horas) & Sentimentos do Momento (6 Horas)</h3>
+                <p class="text-xs text-zinc-400">Stories efêmeros focados em fotos, frases estilizadas e humor atual (sem vídeos pesados)</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-1.5">
+                <div class="font-black text-amber-300 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">mood</span> Sentimento do Momento — Duração de 6 Horas
+                </div>
+                <p class="text-zinc-300 leading-relaxed">
+                    Compartilhe como você está se sentindo agora (ex: <em>😎 Confiante, 🎮 Jogando, 🔥 No Hype, 💘 Apaixonado</em>). O selo de sentimento aparece no seu Perfil, no Mini Profile e no carrossel por <strong>6 horas</strong> antes de expirar automaticamente.
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-pink-500/10 border border-pink-500/25 space-y-1.5">
+                <div class="font-black text-pink-300 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">auto_stories</span> Mini Reel de Foto ou Texto — Duração de 24 Horas
+                </div>
+                <p class="text-zinc-300 leading-relaxed">
+                    Publique um card vertical com foto ou texto estilizado em gradiente que fica ativo por <strong>24 horas</strong>. Outros avatares podem assistir em tela cheia, reagir com emojis e comentar no seu Mini Reel!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÓDULO 4: SISTEMA DE MATCH, AMIGOS & CHAT REAL-TIME -->
+    <div id="tut-match-chat" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+            <span class="material-symbols-outlined text-[26px] text-emerald-400">forum</span>
+            <div>
+                <h3 class="text-sm sm:text-base font-black uppercase italic text-white">4. Match 💘, Amizades & Chat Real-Time (WebSocket)</h3>
+                <p class="text-xs text-zinc-400">Conecte-se com outros viajantes via DM privada, grupos ou canal global</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5">
+                <div class="font-black text-pink-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">local_fire_department</span> Crush & Match Mútuo
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Clique no ícone de chama/coração no Mini Profile ou Perfil de alguém para enviar um Crush. Quando ambos enviam Crush um ao outro, ocorre um <strong>Match Mútuo 💘</strong> e uma sala privada de DM é criada automaticamente!
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5">
+                <div class="font-black text-sky-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">chat</span> Lista ou Conversa Foco Total
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    O Chat exibe <strong>ou a Lista de Conversas ou a Conversa Ativa</strong>, nunca os dois espremidos. Suporta envio de fotos, áudio, vídeo e indicador "digitando..." em tempo real via WebSocket (<code class="text-sky-300">/ws/chat</code>).
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5">
+                <div class="font-black text-purple-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">group_add</span> Grupos de Chat com Amigos
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Crie grupos personalizados, visualize a lista de participantes com cargos (Dono, Admin, Membro), abra o Mini Profile de qualquer membro e adicione novos amigos ao grupo com 1 clique.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÓDULO 5: ECONOMIA TRIPLA, BOLSA P2P FIFO & PIX -->
+    <div id="tut-economy" class="bg-slate-900/85 border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+            <span class="material-symbols-outlined text-[26px] text-amber-400">account_balance_wallet</span>
+            <div>
+                <h3 class="text-sm sm:text-base font-black uppercase italic text-white">5. Carteira, Conversor & Bolsa de Moedas (Cash, Coins & Chips)</h3>
+                <p class="text-xs text-zinc-400">Como funciona o câmbio oficial, o pote coletivo FIFO e os pagamentos via Pix</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-slate-950 border border-emerald-500/20 space-y-1.5">
+                <div class="font-black text-emerald-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">attach_money</span> Cash ($ USD / Pix)
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Moeda forte lastreada (<code class="text-white">1 Cash = US$ 1.00 = R$ 5,00</code>). Pode ser depositada via QR Code Pix dinâmico (mínimo R$ 10,00) e sacada via Pix para sua conta bancária.
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-amber-500/20 space-y-1.5">
+                <div class="font-black text-yellow-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">toll</span> Coins (Moeda do Mundo)
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Paridade base: <code class="text-white">250 Coins = 1 Cash</code>. Usada para comprar roupas, itens e imóveis 3D. Você pode criar ordens de venda de Coins no <strong>Pote Coletivo FIFO</strong> para receber Cash quando outros jogadores comprarem!
+                </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950 border border-blue-500/20 space-y-1.5">
+                <div class="font-black text-blue-400 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">casino</span> Chips (Fichas de Jogos)
+                </div>
+                <p class="text-zinc-400 leading-relaxed">
+                    Paridade base: <code class="text-white">10 Chips = 1 Coin</code>. Usada nas mesas de minigames e cassino dentro do mundo 3D, conversível instantaneamente de/para Coins no Conversor Rápido.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÓDULO 6: INTEGRAÇÃO COM O JOGO FEITO EM GODOT ENGINE (API REST + WEBSOCKET) -->
+    <div id="tut-godot-api" class="bg-slate-900/90 border border-cyan-500/30 rounded-3xl p-6 shadow-2xl space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[28px] text-cyan-400">terminal</span>
+                <div>
+                    <h3 class="text-sm sm:text-base font-black uppercase italic text-white">6. API Unificada para o Jogo no Godot Engine (/api/v1)</h3>
+                    <p class="text-xs text-zinc-400">Tudo o que é feito no site está disponível via JSON REST e WebSocket para o cliente Godot</p>
+                </div>
+            </div>
+            <span class="px-3 py-1 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-bold">
+                Header: tfl-token + x-profile-id
+            </span>
+        </div>
+
+        <!-- Tabela de Endpoints da API v1 para o Godot -->
+        <div class="overflow-x-auto rounded-2xl border border-white/10">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-950 text-[10px] font-black uppercase tracking-wider text-zinc-400 border-b border-white/10">
+                        <th class="py-2.5 px-3.5">Método</th>
+                        <th class="py-2.5 px-3.5">Endpoint (API Godot & Web)</th>
+                        <th class="py-2.5 px-3.5">Ação no Jogo (Godot Engine)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 font-mono text-[11px] bg-slate-950/50">
+                    <tr>
+                        <td class="py-2 px-3.5 text-emerald-400 font-bold">POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/auth/signin</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Autentica conta, retorna <code class="text-cyan-300">token</code> e lista de <code class="text-cyan-300">profiles</code> (Avatares).</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-sky-400 font-bold">GET</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/account/overview</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Retorna estado completo do jogador (Conta, Avatares, Avatar Ativo, Carteira, Salas e Amigos).</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-emerald-400 font-bold">POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/account/switch-avatar</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Alterna o avatar ativo (<code class="text-cyan-300">{ avatarId }</code>) ou cria/edita em <code class="text-cyan-300">/api/v1/account/avatar/*</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-sky-400 font-bold">GET / POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/social/feed &amp; /api/v1/social/posts</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Lista o Feed Social no HUD do jogo e publica novos posts (texto, foto, sala 3D).</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-emerald-400 font-bold">POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/social/react &amp; /api/v1/social/comment</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Reage com qualquer um dos 7 emojis (post, photo, comment, room, profile, reel) e comenta recursivamente.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-sky-400 font-bold">GET / POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/social/reels &amp; /api/v1/social/gallery</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Carrega/publica Mini Reels (24h), Sentimentos (6h) e Fotos da Galeria.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-emerald-400 font-bold">POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/social/match &amp; /api/v1/social/follow</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Envia Crush/Match 💘 ou segue outro Avatar direto ao clicar nele no mundo 3D.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-sky-400 font-bold">GET / POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/social/friends/* &amp; /api/chats/*</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Lista/busca amigos, envia/aceita convites e gerencia salas de Chat/DM + WebSocket <code class="text-cyan-300">/ws/chat</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-sky-400 font-bold">GET / POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/bank/wallet &amp; /api/v1/bank/market/*</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Consulta saldo, converte moedas, compra/vende Coins na Bolsa FIFO e gera/saca Pix.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3.5 text-sky-400 font-bold">GET / POST</td>
+                        <td class="py-2 px-3.5 text-white">/api/v1/game/rooms &amp; /api/v1/game/room/:id/details</td>
+                        <td class="py-2 px-3.5 font-sans text-zinc-300">Lista, cria, atualiza Salas 3D e baixa a árvore de objetos 3D + terreno para instanciar no Godot.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Exemplo Prático GDScript (Godot 4) -->
+        <div class="space-y-2">
+            <div class="text-xs font-black uppercase text-cyan-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">code</span>
+                <span>Exemplo GDScript (Godot 4) — Autenticação & Chamada à API Unificada</span>
+            </div>
+            <pre class="p-4 rounded-2xl bg-black/90 border border-white/10 text-[11px] font-mono text-zinc-200 overflow-x-auto leading-relaxed"><code>extends Node
+
+const BASE_URL = "http://localhost:5000/api/v1"
+var user_token: String = ""
+var active_avatar_id: int = 0
+
+func get_headers() -> PackedStringArray:
+    return PackedStringArray([
+        "Content-Type: application/json",
+        "Accept: application/json",
+        "tfl-token: " + user_token,
+        "x-profile-id: " + str(active_avatar_id)
+    ])
+
+# Exemplo: Dar Match / Crush ou Curtir Sala 3D de outro jogador dentro do Godot
+func send_reaction_in_game(target_type: String, target_id: int, reaction: String = "love") -> void:
+    var http = HTTPRequest.new()
+    add_child(http)
+    var body = JSON.stringify({
+        "avatarId": active_avatar_id,
+        "targetType": target_type, # "post", "photo", "comment", "room", "profile", "reel"
+        "targetId": target_id,
+        "reactionType": reaction
+    })
+    http.request(BASE_URL + "/social/react", get_headers(), HTTPClient.METHOD_POST, body)</code></pre>
+        </div>
+    </div>
+
+</section>

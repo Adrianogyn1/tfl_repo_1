@@ -7,6 +7,11 @@ const multerMiddleware = multer({ storage: multer.memoryStorage() });
 const router = require("express").Router();
 const { CheckLogin: CheckAuth, auth } = require("../auth");
 const { Op, where } = require("sequelize");
+const {
+  enrichRoomsWithVisitStats,
+  enterRoomWithPassAndVisit,
+  getRoomVisitDetails,
+} = require("../../services/coinMarket.service");
 
 //#region api rotas
 router.use(auth);
@@ -20,6 +25,8 @@ router.put("/room/:id", update);
 router.delete("/room/:id", remove);
 router.post("/room/:id", update); //salva infos da room
 router.post("/room/:id/objects", updatedObjects); //salva os objets
+router.post("/room/:id/enter", enterRoomApi);
+router.get("/room/:id/visits", getRoomVisitsApi);
 //#endregion
 
 
@@ -139,25 +146,58 @@ async function findByPk(req, res)
   try
   {
     const roomId = req.params.id || req.body.id;
-    /*let roomInstance = null;
-    if (roomId == 0) {
-      roomInstance = await repo.RoomModel.findOne({
-        where: { userId: req.userId },
-      });
-    } else {
-      roomInstance = await repo.RoomModel.findByPk(roomId);
-    }
-
-   // if (!roomInstance)
-     // return res.status(404).json({ error: "Room not found", success: false });
-*/
+    const viewerAvatarId = Number(req.query?.avatarId || req.headers?.["x-profile-id"] || 0);
     const all = await __allInfo(roomId);
     if (!all) throw new Error("Room not found info");
 
-    return res.json({ success: true, data: resolveRoom(all) });
+    const [enriched] = await enrichRoomsWithVisitStats([resolveRoom(all)], viewerAvatarId);
+    return res.json({ success: true, data: enriched || resolveRoom(all) });
   } catch (err)
   {
     return res.status(500).json({ error: err.message, success: false });
+  }
+}
+
+async function enterRoomApi(req, res)
+{
+  try
+  {
+    const roomId = Number(req.params.id || req.body?.roomId || 0);
+    let visitorAvatarId = Number(req.body?.avatarId || req.headers?.["x-profile-id"] || 0);
+    if (!visitorAvatarId && req.userId)
+    {
+      const av = await repo.Avatar.findOne({
+        where: { userId: req.userId },
+        order: [["selected", "DESC"], ["id", "ASC"]],
+      });
+      if (av) visitorAvatarId = Number(av.id);
+    }
+
+    const result = await enterRoomWithPassAndVisit({
+      roomId,
+      visitorAvatarId,
+      visitorUserId: req.userId || null,
+      password: req.body?.password || "",
+    });
+    return res.json({ success: true, data: result, ...result });
+  } catch (err)
+  {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+}
+
+async function getRoomVisitsApi(req, res)
+{
+  try
+  {
+    const roomId = Number(req.params.id || 0);
+    const viewerAvatarId = Number(req.query?.avatarId || req.headers?.["x-profile-id"] || 0);
+    const details = await getRoomVisitDetails(roomId, viewerAvatarId);
+    if (!details) return res.status(404).json({ success: false, error: "Room not found" });
+    return res.json({ success: true, data: details });
+  } catch (err)
+  {
+    return res.status(500).json({ success: false, error: err.message });
   }
 }
 
@@ -216,27 +256,27 @@ async function getAll(req, res)
       order: orderCondition,
     });
 
-    const user = req.userData;
-
+    const viewerAvatarId = Number(req.query?.avatarId || req.headers?.["x-profile-id"] || 0);
     let rowsToProcess = roomsResult.rows;
-
 
     const preppedRooms = [];
     for (const roomInstance of rowsToProcess)
     {
-      const room = await __allInfo(roomInstance.id);//roomInstance.get({ plain: true });
+      const room = await __allInfo(roomInstance.id);
       delete room.password;
-      delete room.passoword; // Mantido o tipo original do seu código
+      delete room.passoword;
 
       preppedRooms.push(resolveRoom(room));
     }
+
+    const enrichedRooms = await enrichRoomsWithVisitStats(preppedRooms, viewerAvatarId);
 
     const hasNext = offset + limit < roomsResult.count;
     const nextPageNum = hasNext ? Math.ceil((offset + limit) / limit) + 1 : 0;
 
     return res.json({
       success: true,
-      data: preppedRooms,
+      data: enrichedRooms,
       count: roomsResult.count,
       skip: offset,
       limit: limit,
@@ -244,7 +284,7 @@ async function getAll(req, res)
     });
   } catch (err)
   {
-    console.error(err); // Adicionado para facilitar o seu debug interno
+    console.error(err);
     return res.status(500).json({ error: err.message, success: false });
   }
 }

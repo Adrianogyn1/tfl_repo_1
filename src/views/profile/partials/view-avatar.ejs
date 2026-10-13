@@ -1,0 +1,448 @@
+<!-- ================= VIEW 2: AVATARES, GUARDA-ROUPA 3D & LOJA DE ROUPAS ================= -->
+<%
+    const wData = typeof wardrobeData !== 'undefined' && wardrobeData ? wardrobeData : { equippedBySlot: {}, inventory: [], styles: [], rules: {} };
+    const sData = typeof shopData !== 'undefined' && shopData ? shopData : { items: [], rules: {} };
+    const curWallet = (typeof wallet !== 'undefined' && wallet) ? wallet : ((typeof activeCurrency !== 'undefined' && activeCurrency) ? activeCurrency : { cash: 0, coins: 0, chips: 0 });
+    const slotDefs = (wData.rules && wData.rules.SLOTS) ? wData.rules.SLOTS : {
+        hair:      { key: 'hair',      label: 'Cabelo',         icon: 'fa-user-tie' },
+        head:      { key: 'head',      label: 'Cabeça / Chapéu',icon: 'fa-hat-cowboy' },
+        eyes:      { key: 'eyes',      label: 'Olhos / Óculos', icon: 'fa-glasses' },
+        top:       { key: 'top',       label: 'Torso / Camisa', icon: 'fa-shirt' },
+        bottom:    { key: 'bottom',    label: 'Pernas / Calça', icon: 'fa-person-walking' },
+        fullbody:  { key: 'fullbody',  label: 'Corpo Inteiro',  icon: 'fa-user-astronaut' },
+        shoes:     { key: 'shoes',     label: 'Calçados',       icon: 'fa-shoe-prints' },
+        accessory: { key: 'accessory', label: 'Acessório',      icon: 'fa-gem' }
+    };
+    const wearableSlots = ['hair', 'head', 'eyes', 'top', 'bottom', 'fullbody', 'shoes', 'accessory'];
+    const rarityBadgeMap = {
+        common:    { label: 'Comum',    cls: 'bg-slate-800 text-slate-300 border-white/10' },
+        rare:      { label: 'Raro',     cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+        epic:      { label: 'Épico',    cls: 'bg-purple-500/15 text-purple-300 border-purple-500/30' },
+        legendary: { label: 'Lendário', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' }
+    };
+%>
+<section id="view-avatar" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full space-y-6">
+    <!-- BLOCO SUPERIOR: AVATAR ATIVO + LISTA DE AVATARES DA CONTA -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Card do Avatar Ativo -->
+        <div class="bg-slate-900/80 border border-white/10 rounded-3xl overflow-hidden flex flex-col items-center text-center backdrop-blur-xl">
+            <div class="w-full h-20 bg-gradient-to-r from-blue-900/60 via-indigo-900/50 to-purple-900/60 relative overflow-hidden">
+                <% if (activeAvatar?.coverUrl) { %>
+                    <img src="<%= activeAvatar.coverUrl %>" alt="Capa" class="w-full h-full object-cover">
+                <% } %>
+            </div>
+            <div class="p-5 -mt-12 w-full flex flex-col items-center">
+                <div class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-900 bg-slate-950 mb-2.5 shadow-xl">
+                    <img src="<%= activeAvatar?.thumbnail || user?.avatar || 'https://ui-avatars.com/api/?name=Avatar&background=0284c7' %>" 
+                         alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <h3 class="text-base font-black uppercase italic text-white flex items-center justify-center gap-1.5">
+                    <span><%= activeAvatar?.name %></span>
+                    <% if (activeAvatar?.isVip || vipStatus?.isVip) { %>
+                        <span class="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black not-italic">👑 VIP</span>
+                    <% } %>
+                </h3>
+                <p class="text-xs text-zinc-400 mb-3 line-clamp-2"><%= activeAvatar?.bio || '' %></p>
+                
+                <div class="w-full flex items-center justify-around p-2.5 rounded-2xl bg-slate-950 border border-white/5 text-xs mb-3">
+                    <span class="font-mono text-zinc-400 text-[11px]" title="ID">#<%= activeAvatar?.id %></span>
+                    <span class="text-zinc-600">•</span>
+                    <span class="font-bold text-zinc-300 flex items-center gap-1">
+                        <i class="fa-solid <%= activeAvatar?.gender === 0 ? 'fa-venus text-pink-400' : 'fa-mars text-blue-400' %>"></i>
+                        <%= activeAvatar?.gender === 0 ? t('profile.avatars.female', {}, 'Fem') : t('profile.avatars.male', {}, 'Masc') %>
+                    </span>
+                    <span class="text-zinc-600">•</span>
+                    <span class="font-bold text-emerald-400 text-[11px]" title="Peças no Guarda-Roupa">
+                        <i class="fa-solid fa-shirt mr-1"></i><%= (wData.inventory || []).length %>
+                    </span>
+                </div>
+
+                <button id="btnOpenEditAvatarModal" 
+                        data-id="<%= activeAvatar?.id %>"
+                        data-name="<%= activeAvatar?.name %>"
+                        data-bio="<%= activeAvatar?.bio || '' %>"
+                        data-gender="<%= activeAvatar?.gender %>"
+                        data-thumbnail="<%= activeAvatar?.thumbnail || '' %>"
+                        data-coverurl="<%= activeAvatar?.coverUrl || '' %>"
+                        class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">edit_square</span>
+                    <span><%= t('profile.avatars.editAvatar', {}, 'Editar') %></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Lista de Avatares da Conta -->
+        <div class="md:col-span-2 bg-slate-900/80 border border-white/10 rounded-3xl p-5 backdrop-blur-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] text-purple-400">theater_comedy</span>
+                    <span><%= t('profile.avatars.title', {}, 'Avatares') %> (<%= avatars?.length || 0 %>)</span>
+                </h4>
+                <button id="btnOpenCreateAvatarModal" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <span class="material-symbols-outlined text-[16px]">person_add</span>
+                    <span><%= t('profile.avatars.newAvatar', {}, 'Novo') %></span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <% if (avatars && avatars.length > 0) { %>
+                    <% avatars.forEach(function(av) { %>
+                        <div class="p-3.5 rounded-2xl bg-slate-950 border <%= (activeAvatar?.id === av.id) ? 'border-blue-500/60 ring-1 ring-blue-500/30' : 'border-white/5' %> flex items-center justify-between gap-2.5">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <div class="w-11 h-11 rounded-xl overflow-hidden bg-slate-900 flex-shrink-0">
+                                    <img src="<%= av.thumbnail || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(av.name) + '&background=0284c7' %>" 
+                                         alt="Avatar" class="w-full h-full object-cover">
+                                </div>
+                                <div class="overflow-hidden">
+                                    <h5 class="text-xs font-bold text-white truncate flex items-center gap-1">
+                                        <span><%= av.name %></span>
+                                        <% if (av.isVip) { %><span class="text-amber-400 text-[10px]" title="VIP">👑</span><% } %>
+                                    </h5>
+                                    <span class="text-[10px] text-zinc-500">#<%= av.id %> • <%= av.gender === 0 ? t('profile.avatars.female', {}, 'Fem') : t('profile.avatars.male', {}, 'Masc') %></span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <% if (activeAvatar?.id === av.id) { %>
+                                    <span class="px-2.5 py-1.5 text-[10px] uppercase font-black text-blue-400 bg-blue-500/10 rounded-xl border border-blue-500/20" title="<%= t('profile.avatars.active', {}, 'Ativo') %>">
+                                        <span class="material-symbols-outlined text-[15px]">check_circle</span>
+                                    </span>
+                                <% } else { %>
+                                    <button class="btn-select-avatar px-3 py-1.5 text-xs font-bold text-zinc-300 hover:text-white rounded-xl bg-slate-800 hover:bg-blue-600 transition flex items-center gap-1" data-id="<%= av.id %>" title="<%= t('profile.avatars.activate', {}, 'Ativar') %>">
+                                        <span class="material-symbols-outlined text-[15px]">login</span>
+                                        <span><%= t('profile.avatars.activate', {}, 'Ativar') %></span>
+                                    </button>
+                                <% } %>
+                                <button class="btn-edit-avatar-item p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 hover:text-white text-xs transition"
+                                        data-id="<%= av.id %>"
+                                        data-name="<%= av.name %>"
+                                        data-bio="<%= av.bio || '' %>"
+                                        data-gender="<%= av.gender %>"
+                                        data-thumbnail="<%= av.thumbnail || '' %>"
+                                        data-coverurl="<%= av.coverUrl || '' %>"
+                                        title="<%= t('common.edit', {}, 'Editar') %>">
+                                    <span class="material-symbols-outlined text-[16px]">settings</span>
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================================
+         PALCO INTERATIVO 3D (BABYLON.JS WEBGL + CONTAINER GODOT ENGINE WEB)
+         ============================================================================ -->
+    <div class="bg-slate-900/90 border border-cyan-500/30 rounded-3xl p-5 shadow-2xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] text-cyan-400">view_in_ar</span>
+                    <span>Palco Interativo 3D — <%= activeAvatar?.name || 'Avatar' %></span>
+                    <% if (activeAvatar?.isVip || vipStatus?.isVip) { %>
+                        <span class="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-black not-italic">👑 Aura VIP 3D</span>
+                    <% } %>
+                </h4>
+                <p class="text-[11px] text-zinc-400">
+                    Arraste para girar 360°, use o scroll para zoom e teste poses e iluminação em tempo real no navegador (Babylon.js / Godot Web).
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" class="btn-stage3d-mode px-3 py-1.5 rounded-xl bg-cyan-600 text-white text-[11px] font-black uppercase transition" data-mode="babylon">
+                    🧊 Babylon.js 3D
+                </button>
+                <button type="button" class="btn-stage3d-mode px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 text-[11px] font-bold uppercase transition" data-mode="godot">
+                    🎮 Container Godot WebGL
+                </button>
+                <button type="button" id="btnStage3dActionWave" class="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600 border border-purple-500/30 text-purple-300 hover:text-white text-[11px] font-bold transition">
+                    👋 Acenar / Dançar
+                </button>
+                <button type="button" id="btnStage3dToggleLight" class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 border border-amber-500/30 text-amber-300 hover:text-slate-950 text-[11px] font-bold transition">
+                    💡 Luz Estúdio / Neon
+                </button>
+            </div>
+        </div>
+
+        <!-- Canvas 3D Babylon.js -->
+        <div id="stage3dBabylonWrap" class="relative w-full h-80 rounded-2xl overflow-hidden bg-slate-950 border border-white/10">
+            <canvas id="tflAvatarStage3dCanvas" class="w-full h-full block outline-none cursor-grab active:cursor-grabbing"></canvas>
+            <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-white/10 text-[10px] text-zinc-300 pointer-events-none flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="stage3dStatusLabel">Babylon.js WebGL Ativo • <%= Object.keys(wData.equippedBySlot || {}).length %> peça(s) 3D sincronizadas</span>
+            </div>
+        </div>
+
+        <!-- Container Godot WebGL (Alternativo) -->
+        <div id="stage3dGodotWrap" class="hidden relative w-full h-80 rounded-2xl overflow-hidden bg-slate-950 border border-indigo-500/30 flex flex-col items-center justify-center p-6 text-center space-y-3">
+            <img src="/static/images/Icon_tfl.png" alt="TFL" class="w-12 h-12 object-contain opacity-90">
+            <h5 class="text-sm font-black uppercase text-white">Container Godot Engine WebGL (HTML5 Export)</h5>
+            <p class="text-xs text-zinc-400 max-w-lg">
+                Pronto para receber o build HTML5/WebAssembly do cliente Godot (<code>/static/godot/tfl-web.html</code>) autenticado automaticamente via <code>tfl-token</code> e sincronizado com o avatar <strong>#<%= activeAvatar?.id %></strong>.
+            </p>
+            <button type="button" id="btnTestGodotBridge" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase transition">
+                🔌 Testar Sincronização API Token c/ Godot
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================================
+         BLOCO CENTRAL: MANEQUIM DE SLOTS 3D EQUIPADOS & PRESETS DE LOOKS SALVOS
+         ============================================================================ -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Manequim de Slots 3D Equipados -->
+        <div class="lg:col-span-2 bg-slate-900/80 border border-white/10 rounded-3xl p-5 backdrop-blur-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                <div>
+                    <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px] text-cyan-400">accessibility_new</span>
+                        <span>Slots 3D Equipados em <%= activeAvatar?.name || 'Avatar' %></span>
+                    </h4>
+                    <p class="text-[11px] text-zinc-400">
+                        Regra de Slots: Trajes de <strong>Corpo Inteiro</strong> substituem automaticamente <strong>Torso</strong> e <strong>Pernas</strong> (e vice-versa).
+                    </p>
+                </div>
+                <span class="px-2.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[11px] font-bold">
+                    <%= Object.keys(wData.equippedBySlot || {}).length %> / 8 Slots Ativos
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <% wearableSlots.forEach(function(slotKey) { 
+                    const sDef = slotDefs[slotKey] || { label: slotKey, icon: 'fa-shirt' };
+                    const eq = (wData.equippedBySlot && wData.equippedBySlot[slotKey]) ? wData.equippedBySlot[slotKey] : null;
+                %>
+                    <div class="p-3 rounded-2xl bg-slate-950 border <%= eq ? 'border-cyan-500/40 ring-1 ring-cyan-500/20' : 'border-white/5' %> flex flex-col justify-between gap-2 relative">
+                        <div class="flex items-center justify-between text-[10px] font-bold uppercase text-zinc-400">
+                            <span class="flex items-center gap-1.5 truncate">
+                                <i class="fa-solid <%= sDef.icon %> <%= eq ? 'text-cyan-400' : 'text-zinc-600' %>"></i>
+                                <span><%= sDef.label %></span>
+                            </span>
+                            <% if (eq && eq.customColors && eq.customColors.primary) { %>
+                                <span class="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0" style="background-color: <%= eq.customColors.primary %>" title="Cor Customizada"></span>
+                            <% } %>
+                        </div>
+
+                        <% if (eq && eq.item) { %>
+                            <div class="flex items-center gap-2.5 my-1">
+                                <img src="<%= eq.item.thumbnail %>" alt="<%= eq.item.itemName %>" class="w-10 h-10 rounded-xl object-cover bg-slate-900 border border-white/10 flex-shrink-0">
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-xs font-bold text-white truncate" title="<%= eq.item.itemName %>"><%= eq.item.itemName %></div>
+                                    <div class="text-[10px] text-cyan-400 font-semibold">Equipado</div>
+                                </div>
+                            </div>
+                            <button type="button"
+                                    class="btn-toggle-equip-3d w-full py-1.5 rounded-xl bg-red-500/15 hover:bg-red-600 text-red-300 hover:text-white text-[10px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1"
+                                    data-inventory-id="<%= eq.inventoryId || '' %>"
+                                    data-shop-item-id="<%= eq.shopItemId %>"
+                                    data-equip="false">
+                                <i class="fa-solid fa-xmark"></i>
+                                <span>Despir</span>
+                            </button>
+                        <% } else { %>
+                            <div class="py-4 text-center text-[11px] text-zinc-600 italic">
+                                Slot Vazio
+                            </div>
+                            <button type="button"
+                                    class="btn-filter-slot-shortcut w-full py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-zinc-400 hover:text-white text-[10px] font-bold uppercase tracking-wider transition"
+                                    data-slot="<%= slotKey %>">
+                                Escolher Peça
+                            </button>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Looks / Estilos Salvos (AvatarOutfitStyle) -->
+        <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-5 backdrop-blur-xl flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <h4 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px] text-pink-400">style</span>
+                        <span>Meus Looks 3D (<%= (wData.styles || []).length %>/10)</span>
+                    </h4>
+                </div>
+
+                <form id="formSaveOutfitStyle" class="flex gap-2">
+                    <input type="text" id="inputOutfitStyleName" maxlength="32" required
+                           placeholder="Nome do Look (ex: Festa Neon)..."
+                           class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+                    <button type="submit" class="px-3.5 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition flex items-center gap-1 flex-shrink-0" title="Salvar combinação atual de roupas">
+                        <span class="material-symbols-outlined text-[16px]">bookmark_add</span>
+                        <span>Salvar</span>
+                    </button>
+                </form>
+
+                <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    <% if (!wData.styles || wData.styles.length === 0) { %>
+                        <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/5 text-center text-xs text-zinc-500">
+                            Vista seu avatar nos slots ao lado e salve combinações completas para trocar de roupa com 1 clique!
+                        </div>
+                    <% } else { %>
+                        <% wData.styles.forEach(function(st) { 
+                            const pieceCount = Array.isArray(st.items) ? st.items.length : 0;
+                        %>
+                            <div class="p-3 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <div class="text-xs font-bold text-white truncate"><%= st.name %></div>
+                                    <div class="text-[10px] text-zinc-500"><%= pieceCount %> peça(s) salva(s)</div>
+                                </div>
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                    <button type="button" class="btn-apply-outfit-style px-2.5 py-1.5 rounded-xl bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white text-[10px] font-bold uppercase transition flex items-center gap-1" data-style-id="<%= st.id %>">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                        <span>Vestir</span>
+                                    </button>
+                                    <button type="button" class="btn-delete-outfit-style p-1.5 rounded-xl bg-slate-800 hover:bg-red-600 text-zinc-400 hover:text-white text-xs transition" data-style-id="<%= st.id %>" title="Excluir Look">
+                                        <i class="fa-solid fa-trash-can text-[11px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Resumo Rápido das Regras do Sistema 3D -->
+            <div class="p-3 rounded-2xl bg-slate-950/90 border border-white/5 text-[11px] text-zinc-400 space-y-1">
+                <div class="font-bold text-zinc-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-scale-balanced text-amber-400"></i>
+                    <span>Regras Oficiais do Guarda-Roupa & Shop 3D</span>
+                </div>
+                <ul class="list-disc list-inside space-y-0.5 text-[10px] text-zinc-400">
+                    <li>Cada peça ocupa 1 slot 3D e permite customizar cores primária/secundária.</li>
+                    <li>Peças são exclusivas por gênero (<strong>Masc</strong>, <strong>Fem</strong>) ou <strong>Universal</strong>.</li>
+                    <li>Criadores de roupas 3D recebem <strong>70% de comissão</strong> automática em cada venda.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================================
+         BLOCO INFERIOR: GUARDA-ROUPA 3D DO AVATAR (LOJA SEPARADA NO MÓDULO "LOJA")
+         ============================================================================ -->
+    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-5 backdrop-blur-xl space-y-5">
+        <!-- Cabeçalho do Guarda-Roupa + Botão para abrir o Módulo Loja -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div class="flex items-center gap-2.5">
+                <div class="px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider bg-blue-600 text-white shadow-lg shadow-blue-600/25 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">checkroom</span>
+                    <span>Meu Guarda-Roupa 3D (<%= (wData.inventory || []).length %>)</span>
+                </div>
+                <button type="button" class="btn-open-shop-module px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">storefront</span>
+                    <span>Ir para a Loja 3D</span>
+                </button>
+            </div>
+
+            <!-- Saldos Rápidos do Avatar -->
+            <div class="flex items-center gap-2.5 bg-slate-950 border border-white/10 rounded-2xl px-3.5 py-2 text-xs">
+                <span class="flex items-center gap-1 font-bold text-amber-400" title="Saldo de Coins">
+                    <i class="fa-solid fa-coins"></i>
+                    <span><%= Number(curWallet?.coins || 0).toLocaleString('pt-BR') %> Coins</span>
+                </span>
+                <span class="text-zinc-700">|</span>
+                <span class="flex items-center gap-1 font-bold text-emerald-400" title="Saldo de Cash">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                    <span><%= Number(curWallet?.cash || 0).toFixed(2) %> Cash</span>
+                </span>
+                <span class="text-zinc-700">|</span>
+                <span class="flex items-center gap-1 font-bold text-purple-400" title="Saldo de Chips">
+                    <i class="fa-solid fa-dice"></i>
+                    <span><%= Number(curWallet?.chips || 0).toLocaleString('pt-BR') %> Chips</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Filtro de Slots 3D do Guarda-Roupa -->
+        <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" class="btn-slot-filter px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase transition bg-cyan-600 text-white" data-slot="all">
+                Todos os Slots
+            </button>
+            <% wearableSlots.forEach(function(slotKey) { 
+                const sDef = slotDefs[slotKey] || { label: slotKey, icon: 'fa-shirt' };
+            %>
+                <button type="button" class="btn-slot-filter px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase transition bg-slate-950 hover:bg-slate-800 text-zinc-400 hover:text-white border border-white/5 flex items-center gap-1.5" data-slot="<%= slotKey %>">
+                    <i class="fa-solid <%= sDef.icon %> text-[11px]"></i>
+                    <span><%= sDef.label %></span>
+                </button>
+            <% }); %>
+        </div>
+
+        <!-- ==================== MEU GUARDA-ROUPA 3D ==================== -->
+        <div id="panel-wardrobe-3d" class="closet-subpanel space-y-4">
+            <% if (!wData.inventory || wData.inventory.length === 0) { %>
+                <div class="p-8 rounded-3xl bg-slate-950/60 border border-white/5 text-center space-y-3">
+                    <span class="material-symbols-outlined text-4xl text-zinc-600">checkroom</span>
+                    <p class="text-sm font-bold text-zinc-300">Seu Guarda-Roupa 3D ainda está vazio!</p>
+                    <p class="text-xs text-zinc-500">Acesse o módulo <strong>Loja</strong> no menu lateral para adquirir ou criar novos itens 3D para o seu avatar.</p>
+                    <button type="button" class="btn-open-shop-module px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider transition">
+                        Abrir Loja 3D
+                    </button>
+                </div>
+            <% } else { %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <% wData.inventory.forEach(function(inv) { 
+                        const sDef = slotDefs[inv.slot] || { label: inv.slot, icon: 'fa-shirt' };
+                        const rar = rarityBadgeMap[inv.rarity] || rarityBadgeMap.common;
+                        const primaryColor = (inv.customColors && inv.customColors.primary) ? inv.customColors.primary : '#3b82f6';
+                        const secondaryColor = (inv.customColors && inv.customColors.secondary) ? inv.customColors.secondary : '#1e293b';
+                    %>
+                        <div class="closet-item-card p-4 rounded-2xl bg-slate-950 border <%= inv.equipped ? 'border-cyan-500/60 ring-1 ring-cyan-500/30' : 'border-white/5' %> flex flex-col justify-between gap-3 transition"
+                             data-slot="<%= inv.slot %>">
+                            <div>
+                                <div class="relative w-full h-36 rounded-xl overflow-hidden bg-slate-900 mb-3 border border-white/5">
+                                    <img src="<%= inv.thumbnail %>" alt="<%= inv.itemName %>" class="w-full h-full object-cover">
+                                    <span class="absolute top-2 left-2 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase border <%= rar.cls %>">
+                                        <%= rar.label %>
+                                    </span>
+                                    <% if (inv.equipped) { %>
+                                        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-cyan-500 text-slate-950 text-[10px] font-black uppercase">
+                                            Em Uso
+                                        </span>
+                                    <% } %>
+                                </div>
+
+                                <div class="flex items-center justify-between text-[10px] text-zinc-400 mb-1">
+                                    <span class="font-bold uppercase text-cyan-400 flex items-center gap-1">
+                                        <i class="fa-solid <%= sDef.icon %>"></i>
+                                        <%= sDef.label %>
+                                    </span>
+                                    <span><%= inv.gender %></span>
+                                </div>
+                                <h5 class="text-xs font-black text-white truncate" title="<%= inv.itemName %>"><%= inv.itemName %></h5>
+                                <p class="text-[11px] text-zinc-400 line-clamp-2 mt-0.5"><%= inv.description || '' %></p>
+                            </div>
+
+                            <div class="space-y-2.5 pt-2 border-t border-white/5">
+                                <!-- Seletores de Cor 3D (Primary & Secondary) -->
+                                <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                                    <span>Cores 3D:</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <input type="color" value="<%= primaryColor %>"
+                                               class="input-cloth-color-primary w-6 h-6 rounded cursor-pointer bg-transparent border-0"
+                                               data-inventory-id="<%= inv.inventoryId %>"
+                                               title="Cor Principal da Peça">
+                                        <input type="color" value="<%= secondaryColor %>"
+                                               class="input-cloth-color-secondary w-6 h-6 rounded cursor-pointer bg-transparent border-0"
+                                               data-inventory-id="<%= inv.inventoryId %>"
+                                               title="Cor Secundária / Detalhe">
+                                    </div>
+                                </div>
+
+                                <button type="button"
+                                        class="btn-toggle-equip-3d w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider transition flex items-center justify-center gap-1.5 <%= inv.equipped ? 'bg-slate-800 hover:bg-red-600 text-zinc-200 hover:text-white' : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/20' %>"
+                                        data-inventory-id="<%= inv.inventoryId %>"
+                                        data-shop-item-id="<%= inv.shopItemId %>"
+                                        data-equip="<%= inv.equipped ? 'false' : 'true' %>">
+                                    <span class="material-symbols-outlined text-[16px]"><%= inv.equipped ? 'close' : 'checkroom' %></span>
+                                    <span><%= inv.equipped ? 'Despir Peça' : 'Vestir no Avatar' %></span>
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>

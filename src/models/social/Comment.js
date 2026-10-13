@@ -6,10 +6,12 @@ module.exports = (sequelize) => {
     {
       id: {type: DataTypes.INTEGER,primaryKey: true,autoIncrement: true, },
       userId: { type: DataTypes.INTEGER, allowNull: true },
+      profileId: { type: DataTypes.INTEGER, allowNull: true },
       postId: { type: DataTypes.INTEGER, allowNull: true },
       photoId: { type: DataTypes.INTEGER, allowNull: true },
       commentId: { type: DataTypes.INTEGER, allowNull: true },
-      text: { type: DataTypes.STRING, defaultValue: "" },
+      reelId: { type: DataTypes.INTEGER, allowNull: true },
+      text: { type: DataTypes.TEXT, defaultValue: "" },
     },
     {
       tableName: "comments",

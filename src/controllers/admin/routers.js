@@ -5,9 +5,9 @@ const db = require("../../repositories/repository");
 const fs = require("fs");
 
 const sendPage = function(page, res){
-    const caminho = path.resolve(__dirname, `../views/paginas/admin/${page}.html`);
+    const caminho = path.resolve(__dirname, `../../views/admin/${page}.html`);
     if(!fs.existsSync(caminho)){
-        return res.status(404);
+        return res.status(404).send("Página administrativa não encontrada: " + page);
     }
     return res.sendFile(caminho);
 }
@@ -70,7 +70,7 @@ router.use("/db", async (req, res) => {
 router.use("/prefab", async (req, res) => {
     sendPage("prefab", res);
 });
-router.get('/assas', async (req, res) =>
+router.get(['/assas', '/asaas'], async (req, res) =>
 {
     sendPage("assas", res);
 });

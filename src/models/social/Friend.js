@@ -9,6 +9,16 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      // O Avatar (Profile) é o dono dos amigos
+      profileId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      targetProfileId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      // Mantidos por compatibilidade com rotas legadas/C#
       userId: {
         type: DataTypes.STRING,
         defaultValue: "",
@@ -20,7 +30,7 @@ module.exports = (sequelize) => {
         field: "targetId",
       },
       uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },
-      status: { type: DataTypes.STRING, defaultValue: "pending" },
+      status: { type: DataTypes.STRING, defaultValue: "pending" }, // 'pending' | 'accepted' | 'blocked'
     },
     {
       tableName: "friends",
