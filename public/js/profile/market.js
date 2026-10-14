@@ -500,7 +500,7 @@
         });
 
         // 12. Transferência P2P de Moeda do Jogo (Coins) entre Jogadores (Somente Coins, nunca Cash)
-        const P2P_FEE_PCT = Number(CFG.p2pCoinsTransferFeePercent ?? 2.0);
+        const P2P_FEE_PCT = Number(cfg.p2pCoinsTransferFeePercent ?? 2.0);
         $(document).on('input', '#inputTransferCoinsAmount', function () {
             const gross = Math.max(0, parseFloat($(this).val()) || 0);
             const fee = Number(((gross * P2P_FEE_PCT) / 100.0).toFixed(4));
@@ -542,12 +542,13 @@
                 amountCoins,
                 note
             }, function (res) {
-                $btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Transferir Coins');
+                $btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Confirmar Transferência');
                 if (res && res.success) {
                     TFL.toast.success(res.message || 'Coins transferidas com sucesso!', 'Transferência Concluída');
                     $('#inputTransferRecipient').val('');
                     $('#inputTransferCoinsAmount').val('').trigger('input');
                     $('#inputTransferNote').val('');
+                    $('.wallet-submodal').addClass('hidden');
                     if (typeof TFL.refreshPartial === 'function') {
                         TFL.refreshPartial('view-market');
                         TFL.refreshPartial('sidebar');
@@ -556,12 +557,150 @@
                     TFL.toast.error(res?.error || 'Não foi possível transferir Coins.');
                 }
             }).fail(function (xhr) {
-                $btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Transferir Coins');
+                $btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Confirmar Transferência');
                 TFL.toast.error(xhr.responseJSON?.error || 'Erro ao transferir Coins.');
             });
         });
 
-        // 13. Filtro do Extrato Completo da Carteira (wallet_ledger)
+        // 13. Abertura / Fechamento de Modais da Carteira & Paginação de 20 itens por página
+        const walletPaginationState = {
+            ledger: { page: 1, currency: '' },
+            orders: { page: 1 },
+            transactions: { page: 1 }
+        };
+
+        $(document).on('click', '[data-open-wallet-modal]', function () {
+            const modalId = $(this).data('open-wallet-modal');
+            if (!modalId) return;
+            $('.wallet-submodal').addClass('hidden');
+            $('#' + modalId).removeClass('hidden');
+
+            if (modalId === 'modalWalletLedger') {
+                loadWalletPaginated('ledger', walletPaginationState.ledger.page, walletPaginationState.ledger.currency);
+            } else if (modalId === 'modalMarketMyOrders') {
+                loadWalletPaginated('orders', walletPaginationState.orders.page);
+            } else if (modalId === 'modalWalletPixHistory') {
+                loadWalletPaginated('transactions', walletPaginationState.transactions.page);
+            }
+        });
+
+        $(document).on('click', '.btn-close-wallet-modal', function () {
+            $(this).closest('.wallet-submodal').addClass('hidden');
+        });
+
+        $(document).on('click', '.wallet-submodal', function (e) {
+            if (e.target === this) {
+                $(this).addClass('hidden');
+            }
+        });
+
+        function loadWalletPaginated(type, page, currency = '') {
+            const avatarId = TFL.getActiveAvatarId();
+            const safePage = Math.max(1, Number(page || 1));
+
+            $.get('/profile/wallet/paginated', {
+                avatarId,
+                type,
+                page: safePage,
+                limit: 20,
+                currency
+            }, function (res) {
+                if (!res || !res.success) return;
+                const items = Array.isArray(res.items) ? res.items : [];
+                const totalPages = Math.max(1, Number(res.totalPages || 1));
+                const currentPage = Number(res.page || 1);
+
+                if (type === 'ledger') {
+                    walletPaginationState.ledger.page = currentPage;
+                    walletPaginationState.ledger.currency = currency;
+                    $('#lblLedgerPageInfo').text(`Página ${currentPage} de ${totalPages} (${res.total || 0} reg. • 20/pág)`);
+                    $('#btnLedgerPrevPage').prop('disabled', currentPage <= 1);
+                    $('#btnLedgerNextPage').prop('disabled', !res.hasMore);
+
+                    if (items.length === 0) {
+                        $('#walletLedgerTableBody').html('<tr><td colspan="7" class="py-8 text-center text-zinc-500">Nenhuma movimentação encontrada nesta página.</td></tr>');
+                        return;
+                    }
+                    const rowsHtml = items.map(function (item) {
+                        const amt = Number(item.amount || 0);
+                        const fee = Number(item.feeAmount || 0);
+                        const bal = Number(item.balanceAfter || 0);
+                        const isPos = amt >= 0;
+                        const currClass = item.currencyType === 'Cash' ? 'text-emerald-400' : (item.currencyType === 'Chips' ? 'text-sky-400' : 'text-amber-400');
+                        return `
+                            <tr class="hover:bg-slate-800/30 transition ledger-row" data-currency="${item.currencyType}">
+                                <td class="py-2.5 px-3 text-zinc-400 whitespace-nowrap">${new Date(item.createdAt).toLocaleString('pt-BR')}</td>
+                                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 border border-white/10 text-[10px] font-black text-zinc-300">${item.category}</span></td>
+                                <td class="py-2.5 px-3 text-zinc-200 max-w-xs">${item.description || ''}</td>
+                                <td class="py-2.5 px-3 font-bold ${currClass}">${item.currencyType}</td>
+                                <td class="py-2.5 px-3 font-black ${isPos ? 'text-emerald-400' : 'text-rose-400'}">${isPos ? '+' : ''}${amt.toFixed(2)}</td>
+                                <td class="py-2.5 px-3 text-zinc-400">${fee > 0 ? '-' + fee.toFixed(2) : '—'}</td>
+                                <td class="py-2.5 px-3 text-right font-bold text-white">${bal.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                    $('#walletLedgerTableBody').html(rowsHtml);
+                } else if (type === 'orders') {
+                    walletPaginationState.orders.page = currentPage;
+                    $('#lblOrdersPageInfo').text(`Página ${currentPage} de ${totalPages} (${res.total || 0} ordens • 20/pág)`);
+                    $('#btnOrdersPrevPage').prop('disabled', currentPage <= 1);
+                    $('#btnOrdersNextPage').prop('disabled', !res.hasMore);
+
+                    if (items.length === 0) {
+                        $('#walletOrdersTableBody').html('<tr><td colspan="8" class="py-8 text-center text-zinc-500">Nenhuma ordem encontrada.</td></tr>');
+                        return;
+                    }
+                    const rowsHtml = items.map(function (ord) {
+                        const canCancel = ['OPEN', 'PARTIAL'].includes(ord.status) && Number(ord.remainingCoins) > 0;
+                        return `
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-2.5 px-3 font-mono font-bold text-zinc-400">#${ord.id}</td>
+                                <td class="py-2.5 px-3 text-zinc-400">${new Date(ord.createdAt).toLocaleDateString('pt-BR')}</td>
+                                <td class="py-2.5 px-3 font-bold text-white">${ord.initialCoins} 🪙</td>
+                                <td class="py-2.5 px-3 font-bold text-yellow-400">${ord.remainingCoins} 🪙</td>
+                                <td class="py-2.5 px-3 text-red-400">-$${Number(ord.paidFeeCash || 0).toFixed(4)}</td>
+                                <td class="py-2.5 px-3 font-bold text-emerald-400">$${Number(ord.earnedCash || 0).toFixed(4)}</td>
+                                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-zinc-300 font-bold text-[10px]">${ord.status}</span></td>
+                                <td class="py-2.5 px-3 text-right">
+                                    ${canCancel ? `<button class="btn-cancel-order px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-[10px]" data-id="${ord.id}">Cancelar</button>` : '<span class="text-zinc-600">—</span>'}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                    $('#walletOrdersTableBody').html(rowsHtml);
+                } else if (type === 'transactions') {
+                    walletPaginationState.transactions.page = currentPage;
+                    $('#lblPixPageInfo').text(`Página ${currentPage} de ${totalPages} (${res.total || 0} reg. • 20/pág)`);
+                    $('#btnPixPrevPage').prop('disabled', currentPage <= 1);
+                    $('#btnPixNextPage').prop('disabled', !res.hasMore);
+
+                    if (items.length === 0) {
+                        $('#walletPixTableBody').html('<tr><td colspan="7" class="py-8 text-center text-zinc-500">Nenhuma transação encontrada.</td></tr>');
+                        return;
+                    }
+                    const rowsHtml = items.map(function (tx) {
+                        const canCancel = tx.type === 'Withdraw' && ['WAITING_APPROVAL', 'PENDING'].includes(tx.status);
+                        const cashVal = Number(tx.cash_amount || (Number(tx.value || 0) / USD_BRL_RATE)).toFixed(2);
+                        return `
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-2.5 px-3 font-mono font-bold text-zinc-400">#${tx.id}</td>
+                                <td class="py-2.5 px-3">${tx.type === 'Buy' ? '<span class="text-emerald-400 font-bold">Compra</span>' : '<span class="text-blue-400 font-bold">Saque</span>'}</td>
+                                <td class="py-2.5 px-3 font-bold text-white">$${cashVal}</td>
+                                <td class="py-2.5 px-3 font-bold text-emerald-300">R$ ${Number(tx.value || 0).toFixed(2)}</td>
+                                <td class="py-2.5 px-3 text-zinc-400 truncate max-w-[180px]">${tx.pix_key ? (tx.pix_key_type + ': ' + tx.pix_key) : (tx.description || '—')}</td>
+                                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-zinc-300 font-bold text-[10px]">${tx.status}</span></td>
+                                <td class="py-2.5 px-3 text-right">
+                                    ${canCancel ? `<button class="btn-cancel-withdraw px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-[10px]" data-id="${tx.id}">Cancelar</button>` : '<span class="text-zinc-600">—</span>'}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                    $('#walletPixTableBody').html(rowsHtml);
+                }
+            });
+        }
+
+        // Filtro por Moeda + Paginação 20/pág do Extrato
         $(document).on('click', '.btn-filter-ledger', function () {
             const currency = $(this).data('currency') || '';
             $('.btn-filter-ledger')
@@ -571,10 +710,34 @@
                 .removeClass('bg-slate-800 text-zinc-300')
                 .addClass('bg-sky-600 text-white');
 
-            $('#walletLedgerTableBody .ledger-row').each(function () {
-                const rowCurr = String($(this).data('currency') || '');
-                $(this).toggleClass('hidden', Boolean(currency && rowCurr !== currency));
-            });
+            loadWalletPaginated('ledger', 1, currency);
+        });
+
+        $(document).on('click', '#btnLedgerPrevPage', function () {
+            if (walletPaginationState.ledger.page > 1) {
+                loadWalletPaginated('ledger', walletPaginationState.ledger.page - 1, walletPaginationState.ledger.currency);
+            }
+        });
+        $(document).on('click', '#btnLedgerNextPage', function () {
+            loadWalletPaginated('ledger', walletPaginationState.ledger.page + 1, walletPaginationState.ledger.currency);
+        });
+
+        $(document).on('click', '#btnOrdersPrevPage', function () {
+            if (walletPaginationState.orders.page > 1) {
+                loadWalletPaginated('orders', walletPaginationState.orders.page - 1);
+            }
+        });
+        $(document).on('click', '#btnOrdersNextPage', function () {
+            loadWalletPaginated('orders', walletPaginationState.orders.page + 1);
+        });
+
+        $(document).on('click', '#btnPixPrevPage', function () {
+            if (walletPaginationState.transactions.page > 1) {
+                loadWalletPaginated('transactions', walletPaginationState.transactions.page - 1);
+            }
+        });
+        $(document).on('click', '#btnPixNextPage', function () {
+            loadWalletPaginated('transactions', walletPaginationState.transactions.page + 1);
         });
 
         // 14. Assinatura do Clube VIP (1 Semana, 1 Mês, 3 Meses em Cash ou Coins)
@@ -617,18 +780,18 @@
             });
         });
 
-        // 15. Central de Notificações em Tempo Real (Sino 🔔 na Sidebar)
+        // 15. Bag de Notificações em Tempo Real (Sidebar + Bag Flutuante)
         $(document).on('click', '#btnToggleNotifications', function () {
             $('#notificationsDropdownPanel').toggleClass('hidden');
         });
 
-        $(document).on('click', '#btnMarkAllNotificationsRead', function () {
+        $(document).on('click', '#btnMarkAllNotificationsRead, #btnFloatingBagMarkRead', function () {
             const avatarId = TFL.getActiveAvatarId();
             $.post('/profile/notifications/read', { avatarId }, function (res) {
                 if (res && res.success) {
-                    $('#badgeNotificationsUnread').addClass('hidden').text('0');
-                    $('#notificationsListContainer > div').removeClass('bg-amber-500/10 border-amber-500/30').addClass('bg-slate-900/50 border-white/5 text-zinc-400');
-                    TFL.toast.info('Todas as notificações foram marcadas como lidas.', 'Notificações');
+                    $('#badgeNotificationsUnread, #floatingBagUnreadBadge, #floatingChatTabBagBadge').addClass('hidden').text('0');
+                    $('#notificationsListContainer > div, #floatingBagNotificationsList > div').removeClass('bg-amber-500/10 border-amber-500/30').addClass('bg-slate-900/50 border-white/5 text-zinc-400');
+                    TFL.toast.info('Todas as notificações da Bag foram marcadas como lidas.', 'Bag de Notificações');
                 }
             });
         });

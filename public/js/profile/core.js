@@ -214,11 +214,12 @@
 
     /**
      * Atualização dinâmica de qualquer Partial EJS via AJAX sem recarregar toda a página
-     * Exemplo: TFL.refreshPartial('view-friends') ou TFL.refreshPartial('view-market')
+     * Exemplo: TFL.refreshPartial('view-friends') ou TFL.refreshPartial(['view-diary', 'sidebar'])
      */
     TFL.refreshPartial = function (partialName, callback) {
         const selectorMap = {
             'sidebar': '#appSidebar',
+            'header-profile': '#appSidebar',
             'view-social': '#view-social',
             'view-user-profile': '#view-user-profile',
             'view-avatar': '#view-avatar',
@@ -226,22 +227,40 @@
             'view-salas': '#view-salas',
             'view-account': '#view-profile',
             'view-market': '#view-market',
+            'view-vip': '#view-vip',
+            'view-cassino': '#view-cassino',
+            'view-diary': '#view-diary',
             'view-friends': '#view-friends',
             'view-chat': '#view-chat'
         };
-        const targetSelector = selectorMap[partialName];
-        if (!targetSelector) return;
+
+        if (Array.isArray(partialName)) {
+            const uniqueNames = Array.from(new Set(partialName.map(n => n === 'header-profile' ? 'sidebar' : n)));
+            return Promise.all(uniqueNames.map(name => TFL.refreshPartial(name)));
+        }
+
+        const resolvedName = partialName === 'header-profile' ? 'sidebar' : partialName;
+        const targetSelector = selectorMap[resolvedName];
+        if (!targetSelector) return Promise.resolve(null);
 
         const wasHidden = $(targetSelector).hasClass('hidden');
 
-        $.get(`/profile/partial/${partialName}`, function (html) {
-            if (!html) return;
-            const $newEl = $(html);
-            if (!wasHidden) {
-                $newEl.removeClass('hidden');
-            }
-            $(targetSelector).replaceWith($newEl);
-            if (typeof callback === 'function') callback($newEl);
+        return new Promise((resolve) => {
+            $.get(`/profile/partial/${resolvedName}`, function (html) {
+                if (!html) {
+                    resolve(null);
+                    return;
+                }
+                const $newEl = $(html);
+                if (!wasHidden) {
+                    $newEl.removeClass('hidden');
+                }
+                $(targetSelector).replaceWith($newEl);
+                if (typeof callback === 'function') callback($newEl);
+                resolve($newEl);
+            }).fail(function () {
+                resolve(null);
+            });
         });
     };
 
@@ -259,17 +278,83 @@
             }
         });
 
-        // 2. Navegação entre Views
+        // Helper universal de paginação de 20 itens por página para containers DOM
+        TFL.applyPagination20 = function (containerSelector, itemSelector, pageSize = 20) {
+            const $container = $(containerSelector);
+            if ($container.length === 0) return;
+            const $items = itemSelector ? $container.find(itemSelector) : $container.children();
+            const total = $items.length;
+            const pagerId = 'tflPager20_' + String(containerSelector).replace(/[^a-zA-Z0-9]/g, '_');
+            $('#' + pagerId).remove();
+
+            if (total <= pageSize) {
+                $items.removeClass('hidden-by-pager20').show();
+                return;
+            }
+
+            let currentPage = 1;
+            const totalPages = Math.ceil(total / pageSize);
+
+            function renderPage(p) {
+                currentPage = Math.max(1, Math.min(totalPages, p));
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                $items.each(function (idx) {
+                    if (idx >= start && idx < end) {
+                        $(this).removeClass('hidden-by-pager20').show();
+                    } else {
+                        $(this).addClass('hidden-by-pager20').hide();
+                    }
+                });
+                $(`#${pagerId} .lbl-pager20`).text(`Página ${currentPage} de ${totalPages} (${total} itens • ${pageSize}/pág)`);
+                $(`#${pagerId} .btn-prev-pager20`).prop('disabled', currentPage <= 1);
+                $(`#${pagerId} .btn-next-pager20`).prop('disabled', currentPage >= totalPages);
+            }
+
+            const pagerHtml = `
+                <div id="${pagerId}" class="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                    <span class="lbl-pager20 text-zinc-400 font-bold">Página 1 de ${totalPages}</span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="btn-prev-pager20 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-200 font-bold disabled:opacity-40">← Anterior</button>
+                        <button type="button" class="btn-next-pager20 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-200 font-bold disabled:opacity-40">Próxima →</button>
+                    </div>
+                </div>
+            `;
+            $container.after(pagerHtml);
+            $(document).off('click', `#${pagerId} .btn-prev-pager20`).on('click', `#${pagerId} .btn-prev-pager20`, function () {
+                renderPage(currentPage - 1);
+            });
+            $(document).off('click', `#${pagerId} .btn-next-pager20`).on('click', `#${pagerId} .btn-next-pager20`, function () {
+                renderPage(currentPage + 1);
+            });
+            renderPage(1);
+        };
+
+        // 2. Navegação entre Views (Chat abre na Gaveta Flutuante WhatsApp sem sair da página atual)
+        $(document).on('click', '#navBtnChat', function (e) {
+            e.preventDefault();
+            if (typeof TFL.toggleFloatingChatWindow === 'function') {
+                TFL.toggleFloatingChatWindow('chats');
+            }
+        });
+
         $(document).on('click', '.nav-item', function () {
             const targetView = $(this).data('view');
             if (!targetView) return;
+
+            if (targetView === 'view-chat') {
+                if (typeof TFL.toggleFloatingChatWindow === 'function') {
+                    TFL.toggleFloatingChatWindow('chats');
+                }
+                return;
+            }
 
             $('.nav-item').removeClass('bg-blue-600 text-white shadow-lg shadow-blue-600/30')
                           .addClass('text-zinc-400 hover:text-white hover:bg-slate-800/60');
             $(this).addClass('bg-blue-600 text-white shadow-lg shadow-blue-600/30')
                    .removeClass('text-zinc-400 hover:text-white hover:bg-slate-800/60');
 
-            $('.view-panel').addClass('hidden');
+            $('.view-panel, .view-section').addClass('hidden');
             $('#' + targetView).removeClass('hidden');
 
             if (targetView === 'view-social') {

@@ -296,6 +296,35 @@
             "title": "Guia & Tutorial Oficial",
             "subtitle": "Como funciona o ecossistema Web + Jogo 3D (Godot Engine)"
         },
+        "careers": {
+            "title": "Carreiras & Selos de Conquista",
+            "subtitle": "Evolua seu avatar no metaverso e desbloqueie selos exclusivos de reputação",
+            "equipped": "Selo Equipado",
+            "equipAction": "Equipar Selo",
+            "level": "Nível {{level}}",
+            "xp": "{{current}} / {{next}} XP",
+            "explorer": "Explorador Dimensional",
+            "writer": "Escriba do Diário",
+            "trader": "Magnata P2P",
+            "socialite": "Estrela Social",
+            "host": "Grande Anfitrião"
+        },
+        "financialHealth": {
+            "title": "Saúde Financeira da Plataforma",
+            "subtitle": "Auditoria de solvência, passivos de Cash de usuários e despesas operacionais",
+            "cashLiabilities": "Passivo Total de Cash",
+            "liabilitiesBrl": "Exigível em Reais",
+            "activeWallets": "Carteiras com Saldo",
+            "operationalExpenses": "Despesas Operacionais",
+            "paidExpenses": "Despesas Pagas",
+            "pendingExpenses": "Despesas Pendentes",
+            "solvencyRatio": "Índice de Cobertura / Solvência",
+            "addExpense": "Registrar Despesa",
+            "category": "Categoria",
+            "amountBrl": "Valor (R$)",
+            "date": "Data",
+            "status": "Status"
+        },
         "errors": {
             "tokenInvalid": "Este link de confirmação é inválido",
             "tokenExpired": "Este link expirou. Solicite um novo e-mail"

@@ -1,170 +1,240 @@
-<!-- ================= VIEW 7: CENTRAL DE CHAT & MENSAGENS (ICON-FIRST & I18N) ================= -->
-<section id="view-chat" class="view-panel hidden p-4 sm:p-6 max-w-4xl mx-auto w-full h-[calc(100vh-32px)] flex flex-col">
-    <div class="flex-1 bg-slate-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[540px]">
+<!-- ================= SISTEMA DE CHAT FLUTUANTE ESTILO WHATSAPP + BAG DE NOTIFICAÇÕES ================= -->
+<%
+    const isChatVip = Boolean(vipStatus?.isVip || activeAvatar?.isVip);
+    const cDmUsed = Number(vipStatus?.usageToday?.dmOpens || 0);
+    const cImgUsed = Number(vipStatus?.usageToday?.imagesSent || 0);
+    const cAudUsed = Number(vipStatus?.usageToday?.audioSent || 0);
+    const cMaxDm = Number(marketStats?.basicMaxChatOpensPerDay ?? 3);
+    const cMaxImg = Number(marketStats?.basicMaxChatImagesPerDay ?? 2);
+    const cMaxAud = Number(marketStats?.basicMaxChatAudioPerDay ?? 2);
+    const bagUnreadCount = Number(notificationsData?.unreadCount || 0);
+    const bagNotifItems = Array.isArray(notificationsData?.notifications) ? notificationsData.notifications : [];
+%>
+
+<!-- 1. BALÃO FLUTUANTE ARRASTÁVEL (O USUÁRIO POSICIONA ONDE ACHAR MELHOR) -->
+<div id="tflFloatingChatBubble"
+     class="fixed bottom-6 right-6 z-50 select-none touch-none cursor-grab active:cursor-grabbing group"
+     title="Arraste para posicionar onde preferir • Clique para abrir/fechar o Chat & Bag">
+    <div class="relative flex items-center">
+        <!-- Botão Secundário acoplado: Bag de Notificações com Contador -->
+        <button type="button" id="btnFloatingBubbleOpenBag"
+                class="-mr-2 z-10 w-10 h-10 rounded-full bg-slate-900 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border-2 border-amber-500/50 shadow-xl flex items-center justify-center transition transform hover:scale-105"
+                title="Bag de Notificações">
+            <i class="fa-solid fa-bag-shopping text-sm"></i>
+            <span id="floatingBagUnreadBadge"
+                  class="<%= bagUnreadCount > 0 ? '' : 'hidden' %> absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center shadow">
+                <%= bagUnreadCount %>
+            </span>
+        </button>
+
+        <!-- Balão Principal Estilo WhatsApp -->
+        <button type="button" id="btnFloatingBubbleToggleChat"
+                class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-2xl shadow-emerald-600/40 border-2 border-white/20 flex items-center justify-center transition transform group-hover:scale-105">
+            <i id="floatingBubbleMainIcon" class="fa-brands fa-whatsapp text-2xl"></i>
+            <!-- Contador de Mensagens Não Lidas no Balão -->
+            <span id="floatingChatUnreadBadge"
+                  class="hidden absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-slate-950 shadow-lg animate-bounce">
+                0
+            </span>
+        </button>
+    </div>
+</div>
+
+<!-- 2. JANELA FLUTUANTE ESTILO WHATSAPP (ABRE E FECHA SEM ATRAPALHAR A NAVEGAÇÃO) -->
+<aside id="tflWhatsappChatWindow"
+       class="hidden fixed bottom-24 right-6 z-50 w-[370px] sm:w-[410px] h-[560px] max-h-[80vh] max-w-[94vw] bg-[#0b141a] border border-emerald-500/30 rounded-3xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-2xl">
+
+    <!-- Topo WhatsApp: Abas Conversas & Bag de Notificações + Controles -->
+    <div id="tflWhatsappWindowHeader" class="px-3.5 py-2.5 bg-[#111b21] border-b border-white/10 flex items-center justify-between gap-2 select-none">
+        <div class="flex items-center gap-1.5">
+            <!-- Aba 1: Conversas WhatsApp -->
+            <button type="button" id="btnFloatingTabChats"
+                    class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-emerald-600 text-white flex items-center gap-1.5 transition">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>Conversas</span>
+                <span id="floatingChatTabUnreadBadge" class="hidden px-1.5 py-0.2 rounded-full bg-white text-emerald-950 text-[10px] font-black">0</span>
+            </button>
+
+            <!-- Aba 2: Bag de Notificações -->
+            <button type="button" id="btnFloatingTabBag"
+                    class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-800/80 hover:bg-slate-800 text-zinc-300 flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-bag-shopping text-amber-400"></i>
+                <span>Bag</span>
+                <span id="floatingChatTabBagBadge" class="<%= bagUnreadCount > 0 ? '' : 'hidden' %> px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">
+                    <%= bagUnreadCount %>
+                </span>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+            <span id="wsStatusDot" class="w-2 h-2 rounded-full bg-amber-400" title="Status Tempo Real"></span>
+            <span id="wsStatusText" class="hidden text-[9px] text-zinc-400">...</span>
+
+            <button type="button" id="btnOpenCreateGroupModal"
+                    class="p-1.5 rounded-xl bg-slate-800 hover:bg-emerald-600 text-zinc-300 hover:text-white transition"
+                    title="Criar Novo Grupo">
+                <span class="material-symbols-outlined text-[17px]">group_add</span>
+            </button>
+            <button type="button" id="btnMinimizeFloatingChat"
+                    class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 hover:text-white transition"
+                    title="Minimizar / Fechar janela">
+                <span class="material-symbols-outlined text-[17px]">close_fullscreen</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO ABA 1: CONVERSAS ESTILO WHATSAPP -->
+    <div id="floatingChatTabContent" class="flex-1 flex flex-col overflow-hidden">
 
         <!-- TELA 1: LISTA DE CONVERSAS -->
-        <div id="chatListScreen" class="flex-1 flex flex-col bg-slate-950/60 h-full overflow-hidden">
-            <div class="p-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 bg-slate-950/80">
-                <div class="flex items-center gap-2.5">
-                    <span class="material-symbols-outlined text-[22px] text-sky-400">forum</span>
-                    <div>
-                        <h3 class="text-sm sm:text-base font-black uppercase italic text-white"><%= t('profile.chat.title', {}, 'Conversas') %></h3>
-                        <div class="flex items-center gap-1.5">
-                            <span id="wsStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-                            <span id="wsStatusText" class="text-[10px] text-zinc-400">...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <button type="button" id="btnOpenCreateGroupModal" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-sky-600/20" title="<%= t('profile.chat.newGroup', {}, 'Grupo') %>">
-                    <span class="material-symbols-outlined text-[18px]">group_add</span>
-                    <span><%= t('profile.chat.newGroup', {}, 'Grupo') %></span>
+        <div id="chatListScreen" class="flex-1 flex flex-col bg-[#0b141a] h-full overflow-hidden">
+            <!-- Filtros compactos estilo WhatsApp -->
+            <div class="px-3 py-2 border-b border-white/5 bg-[#111b21]/70 flex items-center gap-1.5 overflow-x-auto">
+                <button type="button" class="btn-chat-list-filter px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-600 text-white transition" data-filter="all">
+                    Todas
+                </button>
+                <button type="button" class="btn-chat-list-filter px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition" data-filter="private">
+                    DMs
+                </button>
+                <button type="button" class="btn-chat-list-filter px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition" data-filter="group">
+                    Grupos
+                </button>
+                <button type="button" class="btn-chat-list-filter px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-slate-900 text-zinc-400 hover:text-white transition" data-filter="global">
+                    Global
                 </button>
             </div>
 
-            <!-- Filtros da Lista de Conversas -->
-            <div class="px-4 py-2 border-b border-white/5 bg-slate-900/60 flex items-center gap-1.5 overflow-x-auto">
-                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-sky-600 text-white transition flex items-center gap-1" data-filter="all">
-                    <span class="material-symbols-outlined text-[15px]">all_inbox</span>
-                    <span><%= t('profile.chat.all', {}, 'Todas') %></span>
-                </button>
-                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-950 text-zinc-400 hover:text-white transition flex items-center gap-1" data-filter="private">
-                    <span class="material-symbols-outlined text-[15px] text-emerald-400">person</span>
-                    <span><%= t('profile.chat.dms', {}, 'DMs') %></span>
-                </button>
-                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-950 text-zinc-400 hover:text-white transition flex items-center gap-1" data-filter="group">
-                    <span class="material-symbols-outlined text-[15px] text-purple-400">groups</span>
-                    <span><%= t('profile.chat.groups', {}, 'Grupos') %></span>
-                </button>
-                <button type="button" class="btn-chat-list-filter px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-950 text-zinc-400 hover:text-white transition flex items-center gap-1" data-filter="global">
-                    <span class="material-symbols-outlined text-[15px] text-sky-400">public</span>
-                    <span><%= t('profile.chat.global', {}, 'Global') %></span>
-                </button>
-            </div>
-
-            <!-- Lista de Salas / Conversas -->
-            <div id="chatRoomsListContainer" class="flex-1 overflow-y-auto p-3.5 space-y-2">
+            <!-- Lista de Conversas (Paginada 20 itens) -->
+            <div id="chatRoomsListContainer" class="flex-1 overflow-y-auto p-2.5 space-y-1.5">
                 <div class="p-8 text-center text-xs text-zinc-500">
-                    <i class="fa-solid fa-spinner fa-spin text-sky-400 text-lg"></i>
+                    <i class="fa-solid fa-spinner fa-spin text-emerald-400 text-lg"></i>
                 </div>
             </div>
         </div>
 
-        <!-- TELA 2: JANELA DE MENSAGENS DA CONVERSA ATIVA -->
-        <div id="chatConversationScreen" class="hidden flex-1 flex flex-col bg-slate-900/40 h-full overflow-hidden">
-            <div class="px-4 py-3 border-b border-white/10 bg-slate-950/80 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5 overflow-hidden">
-                    <button type="button" id="btnBackToChatList" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white transition flex-shrink-0" title="<%= t('common.back', {}, 'Voltar') %>">
+        <!-- TELA 2: CONVERSA ATIVA (ESTILO WHATSAPP) -->
+        <div id="chatConversationScreen" class="hidden flex-1 flex flex-col bg-[#0b141a] h-full overflow-hidden">
+            <!-- Cabeçalho da Conversa Ativa -->
+            <div class="px-3 py-2 border-b border-white/10 bg-[#1f2c34] flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <button type="button" id="btnBackToChatList" class="p-1.5 rounded-xl bg-slate-900/70 hover:bg-slate-800 text-zinc-200 hover:text-white transition flex-shrink-0" title="Voltar para Conversas">
                         <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                     </button>
 
-                    <button type="button" id="btnChatHeaderAction" class="flex items-center gap-2.5 overflow-hidden text-left group">
-                        <div id="chatActiveAvatarBox" class="w-9 h-9 rounded-xl bg-sky-600/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-black flex-shrink-0 overflow-hidden">
-                            <span class="material-symbols-outlined text-[18px]">public</span>
+                    <button type="button" id="btnChatHeaderAction" class="flex items-center gap-2 overflow-hidden text-left group">
+                        <div id="chatActiveAvatarBox" class="w-8 h-8 rounded-full bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-black flex-shrink-0 overflow-hidden">
+                            <span class="material-symbols-outlined text-[16px]">public</span>
                         </div>
                         <div class="overflow-hidden">
-                            <h4 id="chatActiveHeaderTitle" class="text-xs sm:text-sm font-black text-white group-hover:text-sky-400 transition truncate">Chat</h4>
+                            <h4 id="chatActiveHeaderTitle" class="text-xs font-black text-white group-hover:text-emerald-400 transition truncate">Chat</h4>
                             <p id="chatActiveHeaderSub" class="text-[10px] text-zinc-400 truncate"></p>
                         </div>
                     </button>
                 </div>
 
-                <!-- Ações Direitas do Cabeçalho por Ícones -->
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <div id="chatTypingIndicator" class="hidden text-[11px] font-semibold text-sky-400 italic animate-pulse mr-1">...</div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    <div id="chatTypingIndicator" class="hidden text-[10px] font-semibold text-emerald-400 italic animate-pulse mr-1">digitando...</div>
 
-                    <button type="button" id="btnChatHeaderMiniProfile" class="hidden p-2 rounded-xl bg-slate-900 hover:bg-sky-600 border border-white/10 text-zinc-300 hover:text-white transition items-center justify-center" title="Mini Profile">
-                        <span class="material-symbols-outlined text-[18px] text-sky-400">badge</span>
+                    <button type="button" id="btnChatHeaderMiniProfile" class="hidden p-1.5 rounded-lg bg-slate-900/80 hover:bg-emerald-600 text-zinc-300 hover:text-white transition items-center justify-center" title="Mini Profile">
+                        <span class="material-symbols-outlined text-[16px]">badge</span>
                     </button>
-                    <button type="button" id="btnChatHeaderFullProfile" class="hidden p-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-400 hover:text-white transition items-center justify-center" title="Perfil">
-                        <span class="material-symbols-outlined text-[18px]">person</span>
+                    <button type="button" id="btnChatHeaderFullProfile" class="hidden p-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white transition items-center justify-center" title="Perfil">
+                        <span class="material-symbols-outlined text-[16px]">person</span>
                     </button>
-
-                    <button type="button" id="btnOpenGroupParticipants" class="hidden px-2.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600 border border-purple-500/30 text-purple-300 hover:text-white text-xs font-bold transition items-center gap-1" title="<%= t('profile.chat.participants', {}, 'Membros') %>">
-                        <span class="material-symbols-outlined text-[16px]">groups</span>
-                        <span id="labelGroupParticipantsBtn" class="hidden sm:inline"><%= t('profile.chat.participants', {}, 'Membros') %></span>
+                    <button type="button" id="btnOpenGroupParticipants" class="hidden px-2 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-[10px] font-bold transition items-center gap-1" title="Membros">
+                        <span class="material-symbols-outlined text-[14px]">groups</span>
+                        <span id="labelGroupParticipantsBtn" class="hidden">Membros</span>
                     </button>
-                    <button type="button" id="btnOpenGroupAddFriends" class="hidden p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition items-center justify-center shadow-md shadow-emerald-600/20" title="<%= t('profile.friends.add', {}, 'Adicionar') %>">
-                        <span class="material-symbols-outlined text-[18px]">person_add</span>
+                    <button type="button" id="btnOpenGroupAddFriends" class="hidden p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition items-center justify-center" title="Adicionar">
+                        <span class="material-symbols-outlined text-[16px]">person_add</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Barra de Status VIP & Cotas Diárias do Chat -->
-            <%
-                const isChatVip = Boolean(vipStatus?.isVip || activeAvatar?.isVip);
-                const cDmUsed = Number(vipStatus?.usageToday?.dmOpens || 0);
-                const cImgUsed = Number(vipStatus?.usageToday?.imagesSent || 0);
-                const cAudUsed = Number(vipStatus?.usageToday?.audioSent || 0);
-                const cMaxDm = Number(marketStats?.basicMaxChatOpensPerDay ?? 3);
-                const cMaxImg = Number(marketStats?.basicMaxChatImagesPerDay ?? 2);
-                const cMaxAud = Number(marketStats?.basicMaxChatAudioPerDay ?? 2);
-            %>
-            <div id="chatVipQuotaBanner" class="px-4 py-2 border-b border-white/5 bg-slate-950/90 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                <div class="flex flex-wrap items-center gap-3">
+            <!-- Faixa Compacta de Cota VIP -->
+            <div id="chatVipQuotaBanner" class="px-3 py-1 border-b border-white/5 bg-[#111b21] flex items-center justify-between gap-2 text-[10px]">
+                <div class="truncate text-zinc-400">
                     <% if (isChatVip) { %>
-                        <span class="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[10px]">👑 VIP ATIVO</span>
-                        <span class="text-zinc-300">DMs Livres • 📷 Fotos e 🎤 Voz Liberados</span>
+                        <span class="text-amber-400 font-black">👑 VIP</span> • Voz &amp; Fotos ilimitados
                     <% } else { %>
-                        <span class="px-2 py-0.5 rounded-md bg-slate-800 text-zinc-300 font-bold text-[10px]">Membro Básico (DMs apenas c/ Amigos)</span>
-                        <span class="text-zinc-400">Hoje: 💬 DMs <strong id="lblChatQuotaDm" class="text-white"><%= cDmUsed %>/<%= cMaxDm %></strong> • 📷 Fotos <strong id="lblChatQuotaImg" class="text-white"><%= cImgUsed %>/<%= cMaxImg %></strong> • 🎤 Voz <strong id="lblChatQuotaAud" class="text-white"><%= cAudUsed %>/<%= cMaxAud %></strong></span>
+                        DMs <strong id="lblChatQuotaDm" class="text-white"><%= cDmUsed %>/<%= cMaxDm %></strong> • 📷 <strong id="lblChatQuotaImg" class="text-white"><%= cImgUsed %>/<%= cMaxImg %></strong> • 🎤 <strong id="lblChatQuotaAud" class="text-white"><%= cAudUsed %>/<%= cMaxAud %></strong>
                     <% } %>
                 </div>
                 <% if (!isChatVip) { %>
-                    <button type="button" class="nav-item px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 font-black text-[10px] uppercase transition" data-view="view-vip">
-                        👑 Ser VIP ($<%= Number(marketStats?.vipPrice1MonthCash ?? 2).toFixed(2) %>)
-                    </button>
+                    <button type="button" class="nav-item text-amber-400 hover:underline font-black text-[10px] flex-shrink-0" data-view="view-vip">👑 VIP</button>
                 <% } %>
             </div>
 
-            <!-- Histórico de Mensagens -->
-            <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#070709]/60"></div>
+            <!-- Histórico de Mensagens (Fundo escuro estilo WhatsApp) -->
+            <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-3 space-y-2.5 bg-[#0b141a]"></div>
 
-            <!-- Barra de Gravação de Voz Ativa (Oculta por padrão) -->
-            <div id="voiceRecordingBar" class="hidden px-4 py-2.5 border-t border-rose-500/30 bg-rose-950/40 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2 text-xs font-bold text-rose-300">
-                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                    <span>Gravando mensagem de voz... <strong id="voiceRecordingTimer">00:00</strong></span>
+            <!-- Barra de Gravação de Voz Ativa -->
+            <div id="voiceRecordingBar" class="hidden px-3 py-2 border-t border-rose-500/30 bg-rose-950/60 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 text-[11px] font-bold text-rose-300">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                    <span>Gravando... <strong id="voiceRecordingTimer">00:00</strong></span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" id="btnCancelVoiceRecord" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-zinc-300 text-[11px] font-bold">
-                        Cancelar
-                    </button>
-                    <button type="button" id="btnStopAndSendVoice" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black uppercase">
-                        Enviar Voz 🎤
-                    </button>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" id="btnCancelVoiceRecord" class="px-2.5 py-1 rounded-lg bg-slate-800 text-zinc-300 text-[10px] font-bold">Cancelar</button>
+                    <button type="button" id="btnStopAndSendVoice" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-black uppercase">Enviar 🎤</button>
                 </div>
             </div>
 
-            <!-- Barra de Envio de Mensagem / Imagem / Voz / Endereço de Sala -->
-            <form id="formSendChatMessage" class="p-3 border-t border-white/10 bg-slate-950/80 flex items-center gap-2">
+            <!-- Barra Inferior de Envio estilo WhatsApp -->
+            <form id="formSendChatMessage" class="p-2 border-t border-white/10 bg-[#1f2c34] flex items-center gap-1.5">
                 <input type="hidden" id="activeChatRoomUid" value="">
                 <input type="file" id="fileChatMedia" class="hidden" accept="image/*,audio/*,video/*">
                 <input type="file" id="fileChatImageOnly" class="hidden" accept="image/*">
                 <input type="file" id="fileChatAudioOnly" class="hidden" accept="audio/*">
 
-                <button type="button" id="btnAttachChatImage" class="p-2.5 rounded-xl bg-slate-800 hover:bg-sky-600 text-sky-400 hover:text-white transition flex-shrink-0" title="Enviar Imagem / Foto no Chat">
+                <button type="button" id="btnAttachChatImage" class="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-sky-400 transition flex-shrink-0" title="Enviar Foto">
                     <span class="material-symbols-outlined text-[18px]">photo_camera</span>
                 </button>
-                <button type="button" id="btnRecordChatVoice" class="p-2.5 rounded-xl bg-slate-800 hover:bg-amber-500 text-amber-400 hover:text-slate-950 transition flex-shrink-0" title="Gravar ou Enviar Mensagem de Voz (Áudio)">
+                <button type="button" id="btnRecordChatVoice" class="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-amber-400 transition flex-shrink-0" title="Gravar Voz">
                     <span class="material-symbols-outlined text-[18px]">mic</span>
                 </button>
-                <button type="button" id="btnShareRoomInChat" class="px-2.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-300 hover:text-white transition flex items-center gap-1 flex-shrink-0 text-[11px] font-black uppercase" title="Enviar Endereço de Sala 3D e Instância do Servidor no Chat">
-                    <span class="material-symbols-outlined text-[17px]">meeting_room</span>
-                    <span class="hidden sm:inline">Sala</span>
+                <button type="button" id="btnShareRoomInChat" class="p-2 rounded-full hover:bg-white/10 text-indigo-300 hover:text-indigo-200 transition flex-shrink-0" title="Enviar Endereço de Sala 3D">
+                    <span class="material-symbols-outlined text-[18px]">meeting_room</span>
                 </button>
-                <input type="text" id="inputChatMessageText" autocomplete="off" placeholder="<%= t('profile.chat.typeMessage', {}, 'Mensagem...') %>"
-                       class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 transition">
-                <button type="submit" id="btnSendChatMessage" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black uppercase transition shadow-lg shadow-sky-600/30 flex items-center gap-1.5 flex-shrink-0" title="<%= t('profile.chat.send', {}, 'Enviar') %>">
-                    <span class="material-symbols-outlined text-[18px]">send</span>
+                <input type="text" id="inputChatMessageText" autocomplete="off" placeholder="Mensagem..."
+                       class="flex-1 bg-[#2a3942] border border-white/5 rounded-full px-3.5 py-2 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-emerald-500">
+                <button type="submit" id="btnSendChatMessage" class="w-9 h-9 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                    <span class="material-symbols-outlined text-[17px]">send</span>
                 </button>
             </form>
         </div>
-
     </div>
-</section>
 
-<!-- ================= MODAL 1: ENVIAR ENDEREÇO DA SALA & INSTÂNCIA DO SERVIDOR NO CHAT ================= -->
+    <!-- CONTEÚDO ABA 2: BAG DE NOTIFICAÇÕES COM CONTADOR -->
+    <div id="floatingBagTabContent" class="hidden flex-1 flex flex-col bg-[#0b141a] overflow-hidden">
+        <div class="px-3.5 py-2.5 border-b border-white/10 bg-[#111b21] flex items-center justify-between">
+            <span class="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-bag-shopping"></i> Bag de Notificações
+            </span>
+            <button type="button" id="btnFloatingBagMarkRead" class="text-[10px] font-bold text-emerald-400 hover:underline">
+                Marcar todas lidas
+            </button>
+        </div>
+
+        <div id="floatingBagNotificationsList" class="flex-1 overflow-y-auto p-3 space-y-2">
+            <% if (bagNotifItems.length === 0) { %>
+                <div class="text-xs text-zinc-500 text-center py-10">Sua Bag de Notificações está vazia.</div>
+            <% } else { %>
+                <% bagNotifItems.slice(0, 20).forEach(function(n) { %>
+                    <div class="p-3 rounded-2xl border <%= n.isRead ? 'bg-slate-900/50 border-white/5 text-zinc-400' : 'bg-amber-500/10 border-amber-500/30 text-zinc-100' %> text-xs space-y-1">
+                        <div class="font-black text-white flex items-center justify-between gap-2">
+                            <span><%= n.title %></span>
+                            <% if (!n.isRead) { %><span class="w-2 h-2 rounded-full bg-amber-400"></span><% } %>
+                        </div>
+                        <p class="text-[11px] leading-snug text-zinc-300"><%= n.message %></p>
+                    </div>
+                <% }); %>
+            <% } %>
+        </div>
+    </div>
+</aside>
+
+<!-- ================= MODAL 1: ENDEREÇO DA SALA & INSTÂNCIA DO SERVIDOR NO CHAT ================= -->
 <div id="modalShareRoomChat" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-indigo-500/30 rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -174,7 +244,7 @@
                 </div>
                 <div>
                     <h4 class="text-sm font-black uppercase text-white">Compartilhar Endereço de Sala &amp; Servidor</h4>
-                    <p class="text-[11px] text-zinc-400">Envie o IP/Porta e a Instância ativa (`servers`) para seus amigos entrarem direto</p>
+                    <p class="text-[11px] text-zinc-400">Envie o IP/Porta e a Instância ativa para seus amigos entrarem direto</p>
                 </div>
             </div>
             <button type="button" class="btn-close-share-room-modal p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-400 hover:text-white">
@@ -183,7 +253,6 @@
         </div>
 
         <form id="formShareRoomInChat" class="space-y-4">
-            <!-- Escolha da Conversa de Destino -->
             <div>
                 <label class="block text-[11px] font-black uppercase text-zinc-400 mb-1">Enviar na Conversa (Canal / Grupo / DM)</label>
                 <select id="selectShareRoomTargetChat" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-indigo-500">
@@ -191,7 +260,6 @@
                 </select>
             </div>
 
-            <!-- Escolha da Sala 3D -->
             <div>
                 <label class="block text-[11px] font-black uppercase text-zinc-400 mb-1">Selecione a Sala 3D</label>
                 <select id="selectShareRoomId" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-indigo-500">
@@ -199,12 +267,11 @@
                 </select>
             </div>
 
-            <!-- Instâncias Ativas na Tabela `servers` da Sala Selecionada -->
             <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-white/10 space-y-2.5">
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-[11px] font-black uppercase text-indigo-300 flex items-center gap-1.5">
                         <i class="fa-solid fa-server"></i>
-                        <span>Instâncias na Tabela <code class="text-sky-400">servers</code></span>
+                        <span>Instâncias Ativas da Sala</span>
                     </span>
                     <span id="lblShareRoomInstancesSummary" class="text-[10px] font-bold text-zinc-400">0 instâncias</span>
                 </div>
@@ -219,7 +286,6 @@
                 </label>
             </div>
 
-            <!-- Mensagem Personalizada -->
             <div>
                 <label class="block text-[11px] font-black uppercase text-zinc-400 mb-1">Mensagem de Convite (Opcional)</label>
                 <input type="text" id="inputShareRoomCustomText" maxlength="300" placeholder="Ex: Pessoal, entrem aqui na minha sala na Instância #1!"
@@ -239,7 +305,7 @@
     </div>
 </div>
 
-<!-- ================= MODAL 2: GERENCIAR & REPLICAR INSTÂNCIAS DO SERVIDOR (`servers`) DA SALA ================= -->
+<!-- ================= MODAL 2: GERENCIAR & REPLICAR INSTÂNCIAS DO SERVIDOR DA SALA ================= -->
 <div id="modalRoomServerInstances" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-sky-500/30 rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -249,7 +315,7 @@
                 </div>
                 <div>
                     <h4 id="modalInstancesRoomTitle" class="text-sm sm:text-base font-black uppercase text-white">Instâncias do Servidor da Sala</h4>
-                    <p class="text-[11px] text-zinc-400">Sempre que uma instância enche (`playersCount &gt;= maxPlayers`), o servidor cria outra réplica automaticamente</p>
+                    <p class="text-[11px] text-zinc-400">Sempre que uma instância enche, o servidor cria outra réplica automaticamente</p>
                 </div>
             </div>
             <button type="button" class="btn-close-room-instances-modal p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-400 hover:text-white">
@@ -260,7 +326,6 @@
         <input type="hidden" id="modalInstancesRoomId" value="">
         <input type="hidden" id="modalInstancesRoomName" value="">
 
-        <!-- Resumo de Telemetria da Sala no Servidor -->
         <div class="grid grid-cols-3 gap-2.5 text-center">
             <div class="p-3 rounded-2xl bg-slate-950 border border-white/5">
                 <div class="text-[10px] font-bold uppercase text-zinc-400">Instâncias Ativas</div>
@@ -276,19 +341,17 @@
             </div>
         </div>
 
-        <!-- Lista de Instâncias (`servers`) -->
         <div id="modalRoomInstancesListContainer" class="space-y-2.5 max-h-72 overflow-y-auto">
-            <div class="p-6 text-center text-xs text-zinc-500">Carregando instâncias da tabela servers...</div>
+            <div class="p-6 text-center text-xs text-zinc-500">Carregando instâncias da sala...</div>
         </div>
 
-        <!-- Ações de Replicação e Compartilhamento -->
         <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/10">
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" id="btnSpawnNewRoomReplica" class="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-300 hover:text-white text-[11px] font-black uppercase transition flex items-center gap-1.5">
                     <i class="fa-solid fa-plus"></i>
                     <span>Abrir Nova Réplica</span>
                 </button>
-                <button type="button" id="btnSimulateFullAndReplicate" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 border border-amber-500/40 text-amber-300 hover:text-slate-950 text-[11px] font-black uppercase transition flex items-center gap-1.5" title="Lotar a instância atual e disparar a criação automática de outra sala na tabela servers">
+                <button type="button" id="btnSimulateFullAndReplicate" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 border border-amber-500/40 text-amber-300 hover:text-slate-950 text-[11px] font-black uppercase transition flex items-center gap-1.5">
                     <i class="fa-solid fa-users-rays"></i>
                     <span>Simular Sala Cheia &amp; Auto-Replicar</span>
                 </button>
@@ -299,7 +362,7 @@
                     <span class="material-symbols-outlined text-[15px]">share</span>
                     <span>Enviar no Chat</span>
                 </button>
-                <button type="button" class="btn-close-room-instances-modal px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 text-xs font-bold">
+                <button type="button" id="btn-close-room-instances-modal" class="btn-close-room-instances-modal px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 text-xs font-bold">
                     Fechar
                 </button>
             </div>

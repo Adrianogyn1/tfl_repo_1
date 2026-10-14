@@ -71,6 +71,19 @@ module.exports = (models) => {
     constraints: false,
   });
 
+  if (models.AvatarCareer) {
+    Avatar.hasMany(models.AvatarCareer, {
+      as: "careers",
+      foreignKey: "avatarId",
+      constraints: false,
+    });
+    models.AvatarCareer.belongsTo(Avatar, {
+      foreignKey: "avatarId",
+      as: "avatar",
+      constraints: false,
+    });
+  }
+
   Avatar.hasOne(Currency, {
     as: "wallet",
     foreignKey: "avatarId",
@@ -139,6 +152,11 @@ module.exports = (models) => {
     constraints: false,
   });
 
+  Avatar.hasMany(RoomModel, {
+    foreignKey: "avatarId",
+    as: "rooms",
+    constraints: false,
+  });
   RoomModel.belongsTo(Avatar, {
     foreignKey: "avatarId",
     as: "avatar",

@@ -222,84 +222,182 @@ async function safeSum(model, field, where = {}) {
   }
 }
 
-async function getPlatformStats() {
-  const t0 = Date.now();
-  let dbStatus = 'online';
+async function safeRawCount(sql) {
   try {
-    await repo.sequelize.query('SELECT 1');
+    const [rows] = await repo.sequelize.query(sql);
+    return Number(rows?.[0]?.cnt || 0);
   } catch (_) {
-    dbStatus = 'degraded';
+    return 0;
   }
-  const dbLatencyMs = Math.max(1, Date.now() - t0);
+}
+
+function clearVisitTelemetry() {
+  visitTelemetry.totalPageViews = 0;
+  visitTelemetry.visitorsLastSeen.clear();
+  visitTelemetry.regionCounts.clear();
+  visitTelemetry.pageCounts.clear();
+  visitTelemetry.recentLogs.length = 0;
+  cachedDbStats = null;
+  lastStatsCacheTime = 0;
+  return { cleared: true, timestamp: new Date().toISOString() };
+}
+
+// ============================================================================
+// CACHE COM TTL DE 60 SEGUNDOS PARA ESTANCAR CONSUMO DE DISK I/O NO BANCO
+// ============================================================================
+let cachedDbStats = null;
+let lastStatsCacheTime = 0;
+const STATS_CACHE_TTL_MS = 60 * 1000; // 60 segundos de TTL
+
+async function getPlatformStats(options = {}) {
+  const force = Boolean(options && (options.force === true || options === true));
+  const now = new Date();
+  const nowMs = Date.now();
+
+  const isCacheValid = !force && cachedDbStats && (nowMs - lastStatsCacheTime < STATS_CACHE_TTL_MS);
+
+  let dbStats = cachedDbStats;
+  let dbStatus = 'online';
+  let dbLatencyMs = cachedDbStats?.dbLatencyMs || 1;
+
+  if (!isCacheValid) {
+    const t0 = Date.now();
+    try {
+      await repo.sequelize.query('SELECT 1');
+    } catch (_) {
+      dbStatus = 'degraded';
+    }
+    dbLatencyMs = Math.max(1, Date.now() - t0);
+
+    const Op = repo.Sequelize.Op;
+    const [
+      usersCount,
+      avatarsCount,
+      onlineAvatarsCount,
+      vipAvatarsCount,
+      postsCount,
+      photosCount,
+      activeReelsCount,
+      likesCount,
+      commentsCount,
+      friendsAcceptedCount,
+      friendsPendingCount,
+      followsCount,
+      matchesMutualCount,
+      crushesCount,
+      roomsCount,
+      serversCount,
+      activeServersCount,
+      objectsCount,
+      chatRoomsCount,
+      chatMessagesCount,
+      totalCashInWallets,
+      totalCoinsInWallets,
+      totalChipsInWallets,
+      transactionsCount,
+      pendingApprovalsCount,
+      diaryPagesCount,
+      diaryPublicCount,
+      diaryCommentsCount,
+      ledgerEntriesCount,
+      marketStats,
+    ] = await Promise.all([
+      safeCount(repo.User),
+      safeCount(repo.Avatar),
+      safeCount(repo.Avatar, { online: true }),
+      safeCount(repo.Avatar, { vip: true }),
+      safeCount(repo.Post),
+      safeCount(repo.Photo),
+      safeCount(repo.MiniReel, { expiresAt: { [Op.gt]: now } }),
+      safeCount(repo.Like),
+      safeCount(repo.Comment),
+      safeCount(repo.Friend, { status: 'accepted' }),
+      safeCount(repo.Friend, { status: 'pending' }),
+      safeCount(repo.Follow),
+      safeCount(repo.MatchProfile, { status: 'matched' }),
+      safeCount(repo.MatchProfile, { status: 'liked' }),
+      safeCount(repo.RoomModel),
+      safeCount(repo.Server),
+      safeCount(repo.Server, { isClosed: false }),
+      safeCount(repo.ObjectModel),
+      safeCount(repo.ChatRoom),
+      safeCount(repo.ChatMessage),
+      safeSum(repo.Currency, 'cash'),
+      safeSum(repo.Currency, 'coins'),
+      safeSum(repo.Currency, 'chips'),
+      safeCount(repo.PaymentBank),
+      safeCount(repo.PaymentBank, { status: 'WAITING_APPROVAL' }),
+      safeRawCount('SELECT COUNT(*)::int AS cnt FROM public.diary_pages'),
+      safeRawCount('SELECT COUNT(*)::int AS cnt FROM public.diary_pages WHERE "isPublicAnonymous" = true'),
+      safeRawCount('SELECT COUNT(*)::int AS cnt FROM public.diary_comments'),
+      safeRawCount('SELECT COUNT(*)::int AS cnt FROM public.wallet_ledger'),
+      getMarketStats().catch(() => ({ totalCoinsInPool: 0, totalActiveOrders: 0, rateCoinsPerCash: 250 })),
+    ]);
+
+    cachedDbStats = {
+      dbStatus,
+      dbLatencyMs,
+      community: {
+        usersCount,
+        avatarsCount,
+        onlineAvatarsCount,
+        vipAvatarsCount,
+        friendsAcceptedCount,
+        friendsPendingCount,
+        followsCount,
+        matchesMutualCount: Math.floor(matchesMutualCount / 2) || matchesMutualCount,
+        crushesCount,
+      },
+      social: {
+        postsCount,
+        photosCount,
+        activeReelsCount,
+        likesCount,
+        commentsCount,
+        diaryPagesCount,
+        diaryPublicCount,
+        diaryCommentsCount,
+      },
+      metaverse: {
+        roomsCount,
+        serversCount,
+        activeServersCount,
+        objectsCount,
+        chatRoomsCount,
+        chatMessagesCount,
+      },
+      economy: {
+        totalCashInWallets: Number(totalCashInWallets.toFixed(2)),
+        totalCoinsInWallets: Math.floor(totalCoinsInWallets),
+        totalChipsInWallets: Math.floor(totalChipsInWallets),
+        poolCoins: Number(marketStats?.totalCoinsInPool || 0),
+        activeOrdersCount: Number(marketStats?.totalActiveOrders || 0),
+        rateCoinsPerCash: Number(marketStats?.rateCoinsPerCash || 250),
+        transactionsCount,
+        pendingApprovalsCount,
+        ledgerEntriesCount,
+        rules: marketStats,
+      },
+    };
+    lastStatsCacheTime = nowMs;
+  }
 
   const mem = process.memoryUsage();
   const rssMb = Number((mem.rss / (1024 * 1024)).toFixed(1));
   const heapUsedMb = Number((mem.heapUsed / (1024 * 1024)).toFixed(1));
   const heapTotalMb = Number((mem.heapTotal / (1024 * 1024)).toFixed(1));
   const heapUsagePercent = heapTotalMb > 0 ? Math.min(100, Math.round((heapUsedMb / heapTotalMb) * 100)) : 0;
-
-  const Op = repo.Sequelize.Op;
-  const now = new Date();
-
-  const [
-    usersCount,
-    avatarsCount,
-    onlineAvatarsCount,
-    postsCount,
-    photosCount,
-    activeReelsCount,
-    likesCount,
-    commentsCount,
-    friendsAcceptedCount,
-    friendsPendingCount,
-    followsCount,
-    matchesMutualCount,
-    crushesCount,
-    roomsCount,
-    objectsCount,
-    chatRoomsCount,
-    chatMessagesCount,
-    totalCashInWallets,
-    totalCoinsInWallets,
-    totalChipsInWallets,
-    transactionsCount,
-    pendingApprovalsCount,
-    marketStats,
-  ] = await Promise.all([
-    safeCount(repo.User),
-    safeCount(repo.Avatar),
-    safeCount(repo.Avatar, { online: true }),
-    safeCount(repo.Post),
-    safeCount(repo.Photo),
-    safeCount(repo.MiniReel, { expiresAt: { [Op.gt]: now } }),
-    safeCount(repo.Like),
-    safeCount(repo.Comment),
-    safeCount(repo.Friend, { status: 'accepted' }),
-    safeCount(repo.Friend, { status: 'pending' }),
-    safeCount(repo.Follow),
-    safeCount(repo.MatchProfile, { status: 'matched' }),
-    safeCount(repo.MatchProfile, { status: 'liked' }),
-    safeCount(repo.RoomModel),
-    safeCount(repo.ObjectModel),
-    safeCount(repo.ChatRoom),
-    safeCount(repo.ChatMessage),
-    safeSum(repo.Currency, 'cash'),
-    safeSum(repo.Currency, 'coins'),
-    safeSum(repo.Currency, 'chips'),
-    safeCount(repo.PaymentBank),
-    safeCount(repo.PaymentBank, { status: 'WAITING_APPROVAL' }),
-    getMarketStats().catch(() => ({ totalCoinsInPool: 0, totalActiveOrders: 0, rateCoinsPerCash: 250 })),
-  ]);
-
   const cpuCores = os.cpus()?.length || 1;
   const loadAvg1m = Number((os.loadavg()?.[0] || 0).toFixed(2));
 
   return {
     timestamp: now.toISOString(),
+    isCached: isCacheValid,
+    cacheAgeSeconds: Math.floor((nowMs - lastStatsCacheTime) / 1000),
     visits: getVisitStatsSnapshot(),
     server: {
-      status: dbStatus,
-      dbLatencyMs,
+      status: cachedDbStats?.dbStatus || dbStatus,
+      dbLatencyMs: cachedDbStats?.dbLatencyMs || dbLatencyMs,
       uptimeSeconds: Math.floor(process.uptime()),
       uptimeFormatted: formatUptime(process.uptime()),
       rssMb,
@@ -311,40 +409,10 @@ async function getPlatformStats() {
       nodeVersion: process.version,
       platform: process.platform,
     },
-    community: {
-      usersCount,
-      avatarsCount,
-      onlineAvatarsCount,
-      friendsAcceptedCount,
-      friendsPendingCount,
-      followsCount,
-      matchesMutualCount: Math.floor(matchesMutualCount / 2) || matchesMutualCount,
-      crushesCount,
-    },
-    social: {
-      postsCount,
-      photosCount,
-      activeReelsCount,
-      likesCount,
-      commentsCount,
-    },
-    metaverse: {
-      roomsCount,
-      objectsCount,
-      chatRoomsCount,
-      chatMessagesCount,
-    },
-    economy: {
-      totalCashInWallets: Number(totalCashInWallets.toFixed(2)),
-      totalCoinsInWallets: Math.floor(totalCoinsInWallets),
-      totalChipsInWallets: Math.floor(totalChipsInWallets),
-      poolCoins: Number(marketStats?.totalCoinsInPool || 0),
-      activeOrdersCount: Number(marketStats?.totalActiveOrders || 0),
-      rateCoinsPerCash: Number(marketStats?.rateCoinsPerCash || 250),
-      transactionsCount,
-      pendingApprovalsCount,
-      rules: marketStats,
-    },
+    community: { ...cachedDbStats?.community },
+    social: { ...cachedDbStats?.social },
+    metaverse: { ...cachedDbStats?.metaverse },
+    economy: { ...cachedDbStats?.economy },
   };
 }
 
@@ -352,4 +420,5 @@ module.exports = {
   getPlatformStats,
   recordSiteVisit,
   getVisitStatsSnapshot,
+  clearVisitTelemetry,
 };

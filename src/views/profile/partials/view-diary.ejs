@@ -1,0 +1,677 @@
+<!-- VIEW: DIÁRIO SECRETO & CANTINHO DE DESABAFO ANÔNIMO -->
+<%
+  const dData = typeof diaryData !== 'undefined' && diaryData ? diaryData : {};
+  const dMoods = Array.isArray(dData.moods) ? dData.moods : [];
+  const dCategories = Array.isArray(dData.categories) ? dData.categories : [];
+  const dReactions = Array.isArray(dData.reactions) ? dData.reactions : [
+    { type: 'hug', emoji: '🫂', label: 'Abraço' },
+    { type: 'heart', emoji: '❤️', label: 'Acolher' },
+    { type: 'relate', emoji: '🤝', label: 'Te entendo' },
+    { type: 'strength', emoji: '🌟', label: 'Força' },
+    { type: 'peace', emoji: '🕯️', label: 'Paz' },
+  ];
+  const rewardRules = dData.rewardRules || {
+    minReadSeconds: 30,
+    readerRewardPerPageCoins: 0.25,
+    authorRewardPerReadCoins: 0.5,
+    authorBonusPer10MinCoins: 5.0,
+    readerDailyLimitPages: 20,
+  };
+  const dStats = dData.stats || {
+    myTotalPages: 0,
+    myPublicPages: 0,
+    myPrivatePages: 0,
+    myTotalReadsReceived: 0,
+    myTotalMinutesReadReceived: 0,
+    myTotalAuthorCoinsEarned: 0,
+    myReaderRewardedToday: 0,
+    myReaderRemainingToday: 20,
+    myTotalReaderCoinsEarned: 0,
+  };
+  const myPages = Array.isArray(dData.myPages) ? dData.myPages : [];
+  const publicFeed = Array.isArray(dData.publicFeed) ? dData.publicFeed : [];
+  const totalDiaryCoinsEarned = Number((Number(dStats.myTotalAuthorCoinsEarned || 0) + Number(dStats.myTotalReaderCoinsEarned || 0)).toFixed(2));
+%>
+<section id="view-diary" class="view-section hidden p-6 md:p-10 max-w-6xl mx-auto space-y-6">
+    <!-- Banner Principal do Diário & Cantinho Anônimo -->
+    <div class="glass-card rounded-3xl p-6 border border-violet-500/25 bg-gradient-to-br from-violet-950/35 via-zinc-900/90 to-fuchsia-950/25 relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-violet-500/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-12 -bottom-12 w-56 h-56 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+            <div class="space-y-1.5 max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[11px] font-semibold">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                    <span>Refúgio Pessoal & Comunidade 100% Anônima • Leitura Premiada em Coins</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-extrabold text-white flex items-center gap-2.5">
+                    <span>📔 Diário Secreto & Cantinho de Desabafo</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                    Escreva sobre seus acontecimentos, pensamentos e sentimentos em páginas <strong>100% privadas</strong> ou escolha compartilhar páginas selecionadas de forma <strong>totalmente anônima</strong> para receber acolhimento e ganhar <strong>Coins por tempo de leitura</strong>.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button type="button" onclick="window.TFLDiary && window.TFLDiary.openEditorModal()"
+                    class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-violet-600/25 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-feather-pointed"></i>
+                    <span>Escrever Nova Página</span>
+                </button>
+                <button type="button" onclick="window.TFLDiary && window.TFLDiary.refreshOverview()"
+                    class="px-3.5 py-2.5 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700/80 flex items-center gap-1.5 transition"
+                    title="Atualizar mural e estatísticas">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span class="hidden sm:inline">Atualizar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- KPIs de Leitura Premiada & Ganhos do Diário -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5 relative z-10">
+            <div class="p-3.5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                    <i class="fa-solid fa-book-open-reader text-base"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[11px] text-zinc-400">Leituras Premiadas Hoje</p>
+                    <p class="text-sm font-extrabold text-white">
+                        <span id="diaryStatReaderToday"><%= dStats.myReaderRewardedToday || 0 %></span> / <%= rewardRules.readerDailyLimitPages %> págs
+                    </p>
+                    <p class="text-[10px] text-amber-400 font-medium">
+                        +<%= Number(rewardRules.readerRewardPerPageCoins).toFixed(2) %> Coins a cada <%= rewardRules.minReadSeconds %>s de leitura
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+                    <i class="fa-solid fa-pen-nib text-base"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[11px] text-zinc-400">Recompensa ao Autor Anônimo</p>
+                    <p class="text-sm font-extrabold text-white">
+                        +<%= Number(rewardRules.authorRewardPerReadCoins).toFixed(2) %> Coins <span class="text-[11px] font-normal text-zinc-400">/ leitor</span>
+                    </p>
+                    <p class="text-[10px] text-violet-300 font-medium">
+                        +<%= Number(rewardRules.authorBonusPer10MinCoins).toFixed(2) %> Coins bônus a cada 10 min lidos
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                    <i class="fa-solid fa-coins text-base"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[11px] text-zinc-400">Meus Ganhos no Diário</p>
+                    <p class="text-sm font-extrabold text-emerald-400" id="diaryStatTotalCoins">
+                        +<%= totalDiaryCoinsEarned.toFixed(2) %> Coins
+                    </p>
+                    <p class="text-[10px] text-zinc-400 truncate">
+                        Autor: <%= Number(dStats.myTotalAuthorCoinsEarned || 0).toFixed(2) %> • Leitor: <%= Number(dStats.myTotalReaderCoinsEarned || 0).toFixed(2) %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-fuchsia-500/15 border border-fuchsia-500/30 flex items-center justify-center text-fuchsia-400 shrink-0">
+                    <i class="fa-solid fa-hourglass-half text-base"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[11px] text-zinc-400">Minhas Páginas & Tempo Lido</p>
+                    <p class="text-sm font-extrabold text-white">
+                        <%= dStats.myTotalPages || 0 %> págs <span class="text-xs font-normal text-zinc-400">(<%= dStats.myPrivatePages || 0 %> 🔒 • <%= dStats.myPublicPages || 0 %> 🎭)</span>
+                    </p>
+                    <p class="text-[10px] text-fuchsia-300 font-medium">
+                        <%= dStats.myTotalMinutesReadReceived || 0 %> min de leitura (<%= dStats.myTotalReadsReceived || 0 %> leitores)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegação entre Sub-Abas -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-zinc-800/80 relative z-10">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnDiarySubtabPublic" onclick="window.TFLDiary && window.TFLDiary.switchSubtab('public')"
+                    class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-violet-600 text-white shadow-md shadow-violet-600/20">
+                    <span>🎭 Cantinho de Desabafo & Leitura Anônima</span>
+                    <span class="px-2 py-0.5 rounded-full bg-black/30 text-[10px]"><%= publicFeed.length %></span>
+                </button>
+                <button type="button" id="btnDiarySubtabMine" onclick="window.TFLDiary && window.TFLDiary.switchSubtab('mine')"
+                    class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-zinc-900/90 text-zinc-400 hover:text-white border border-zinc-800">
+                    <span>🔒 Meu Diário Secreto (Privado & Publicados)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-zinc-800 text-[10px]"><%= myPages.length %></span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 text-[11px] text-zinc-400">
+                <i class="fa-solid fa-user-secret text-violet-400"></i>
+                <span>Privacidade blindada: páginas públicas nunca revelam seu nome, avatar ou conta.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SUB-ABA 1: CANTINHO DE DESABAFO & LEITURA ANÔNIMA (MURAL PÚBLICO ANÔNIMO) -->
+    <!-- ========================================================================= -->
+    <div id="diarySubtabPublic" class="space-y-4">
+        <!-- Barra de Filtros do Mural Anônimo -->
+        <div class="glass-card rounded-2xl p-4 border border-zinc-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <!-- Categorias -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="diaryCategoryFilterBar">
+                <button type="button" data-category="ALL" onclick="window.TFLDiary && window.TFLDiary.setFilterCategory('ALL')"
+                    class="diary-cat-pill px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-600 text-white shrink-0 transition">
+                    ✨ Todos
+                </button>
+                <% dCategories.forEach(cat => { %>
+                    <button type="button" data-category="<%= cat.key %>" onclick="window.TFLDiary && window.TFLDiary.setFilterCategory('<%= cat.key %>')"
+                        class="diary-cat-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 shrink-0 transition flex items-center gap-1.5">
+                        <i class="fa-solid <%= cat.icon %> text-[11px] text-violet-400"></i>
+                        <span><%= cat.label %></span>
+                    </button>
+                <% }) %>
+            </div>
+
+            <!-- Sentimento & Ordenação -->
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <select id="diaryFilterMood" onchange="window.TFLDiary && window.TFLDiary.applyFeedFilters()"
+                    class="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-violet-500">
+                    <option value="ALL">🎭 Todos os sentimentos</option>
+                    <% dMoods.forEach(m => { %>
+                        <option value="<%= m.key %>"><%= m.emoji %> <%= m.label %></option>
+                    <% }) %>
+                </select>
+
+                <select id="diaryFilterSort" onchange="window.TFLDiary && window.TFLDiary.applyFeedFilters()"
+                    class="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-violet-500">
+                    <option value="recent">🕒 Mais Recentes</option>
+                    <option value="popular">❤️ Mais Acolhidos</option>
+                    <option value="most_read">📖 Mais Lidos</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Grid de Páginas Públicas Anônimas -->
+        <div id="diaryPublicFeedGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <% if (publicFeed.length === 0) { %>
+                <div class="col-span-full glass-card rounded-3xl p-10 text-center border border-zinc-800/80">
+                    <div class="w-14 h-14 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-2xl mx-auto mb-3">
+                        🎭
+                    </div>
+                    <h3 class="text-base font-bold text-white">Nenhuma página anônima publicada ainda</h3>
+                    <p class="text-xs text-zinc-400 max-w-md mx-auto mt-1 mb-4">
+                        Seja o primeiro a compartilhar um desabafo, reflexão ou história de forma 100% anônima e receba Coins a cada leitura!
+                    </p>
+                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.openEditorModal({ isPublicAnonymous: true })"
+                        class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition">
+                        ✍️ Escrever Desabafo Anônimo
+                    </button>
+                </div>
+            <% } else { %>
+                <% publicFeed.forEach(page => {
+                    const moodInfo = page.moodInfo || { emoji: '🌧️', label: 'Desabafo' };
+                    const catInfo = page.categoryInfo || { label: 'Desabafo', icon: 'fa-cloud-rain' };
+                    const readState = page.viewerReadState || { secondsRead: 0, rewarded: false };
+                    const isRewarded = Boolean(readState.rewarded);
+                %>
+                    <article class="diary-public-card glass-card rounded-3xl p-5 border border-zinc-800/80 hover:border-violet-500/40 transition flex flex-col justify-between gap-4 relative overflow-hidden"
+                        data-page-id="<%= page.id %>"
+                        data-category="<%= page.category %>"
+                        data-mood="<%= page.moodKey %>"
+                        data-created="<%= new Date(page.createdAt).getTime() %>"
+                        data-reactions="<%= page.totalReactions || 0 %>"
+                        data-reads="<%= page.uniqueReadersCount || 0 %>">
+
+                        <div>
+                            <!-- Topo do Card: Pseudônimo Anônimo + Humor + Tempo de Leitura -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 border border-violet-500/30 flex items-center justify-center text-base shrink-0">
+                                        <%= moodInfo.emoji %>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <span class="text-xs font-bold text-violet-200"><%= page.anonymousAlias %></span>
+                                            <% if (page.isMine) { %>
+                                                <span class="px-2 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/40 text-[10px] font-bold text-violet-300" title="Apenas você vê este aviso. Para todos os outros seu texto é 100% anônimo.">
+                                                    Sua Página (Anônima)
+                                                </span>
+                                            <% } %>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[10px] text-zinc-400">
+                                            <span><%= moodInfo.emoji %> <%= moodInfo.label %></span>
+                                            <span>•</span>
+                                            <span><%= catInfo.label %></span>
+                                            <span>•</span>
+                                            <span><%= new Date(page.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) %></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Badge de Leitura Premiada -->
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-2.5 py-1 rounded-xl bg-zinc-900/90 border border-zinc-800 text-[10px] text-zinc-300 font-semibold flex items-center gap-1">
+                                        <i class="fa-regular fa-clock text-violet-400"></i>
+                                        ~<%= page.estimatedReadMinutes || 1 %> min
+                                    </span>
+                                    <% if (page.isMine) { %>
+                                        <span class="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-300 font-bold">
+                                            +<%= Number(page.totalAuthorCoinsEarned || 0).toFixed(2) %> Coins
+                                        </span>
+                                    <% } else if (isRewarded) { %>
+                                        <span class="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-300 font-bold flex items-center gap-1">
+                                            <i class="fa-solid fa-circle-check"></i> Lido & Premiado
+                                        </span>
+                                    <% } else { %>
+                                        <span class="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-[10px] text-amber-300 font-bold flex items-center gap-1" title="Leia por <%= rewardRules.minReadSeconds %>s para ganhar Coins">
+                                            <i class="fa-solid fa-coins"></i> +<%= Number(rewardRules.readerRewardPerPageCoins).toFixed(2) %> Coins
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Título e Trecho do Desabafo -->
+                            <h3 class="text-base font-bold text-white mb-2 leading-snug hover:text-violet-300 cursor-pointer transition"
+                                onclick="window.TFLDiary && window.TFLDiary.openReaderModal(<%= page.id %>)">
+                                <%= page.title %>
+                            </h3>
+                            <p class="text-xs text-zinc-300 leading-relaxed line-clamp-4 whitespace-pre-line mb-3">
+                                <%= page.content %>
+                            </p>
+                        </div>
+
+                        <div class="space-y-3 pt-3 border-t border-zinc-800/80">
+                            <!-- Barra de Reações Empáticas Anônimas -->
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <% dReactions.forEach(r => {
+                                    const count = Number((page.reactionsSummary && page.reactionsSummary[r.type]) || 0);
+                                    const isMyReaction = page.myReaction === r.type;
+                                %>
+                                    <button type="button"
+                                        onclick="window.TFLDiary && window.TFLDiary.reactToPage(<%= page.id %>, '<%= r.type %>', this)"
+                                        class="diary-react-btn px-2.5 py-1 rounded-xl text-[11px] font-semibold border transition flex items-center gap-1 <%= isMyReaction ? 'bg-violet-600/30 border-violet-400 text-white' : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-700' %>"
+                                        title="<%= r.label %> (Anônimo)">
+                                        <span><%= r.emoji %></span>
+                                        <span class="text-[10px] text-zinc-400"><%= r.label %></span>
+                                        <span class="diary-react-count font-bold <%= count > 0 ? 'text-violet-300' : 'text-zinc-500' %>"><%= count %></span>
+                                    </button>
+                                <% }) %>
+                            </div>
+
+                            <!-- Rodapé do Card: Abrir Leitor Imersivo & Comentários -->
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-3 text-[11px] text-zinc-400">
+                                    <span title="Leitores únicos que acolheram esta página">
+                                        <i class="fa-solid fa-eye text-violet-400 mr-1"></i><%= page.uniqueReadersCount || 0 %> leituras
+                                    </span>
+                                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.openReaderModal(<%= page.id %>, true)"
+                                        class="hover:text-white transition flex items-center gap-1">
+                                        <i class="fa-regular fa-comment-dots text-fuchsia-400"></i>
+                                        <span><%= page.commentsCount || 0 %> apoios anônimos</span>
+                                    </button>
+                                </div>
+
+                                <button type="button" onclick="window.TFLDiary && window.TFLDiary.openReaderModal(<%= page.id %>)"
+                                    class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-violet-600/90 to-fuchsia-600/90 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                                    <i class="fa-solid fa-book-open"></i>
+                                    <span><%= (!page.isMine && !isRewarded) ? 'Ler & Ganhar Coins' : 'Ler Página Completa' %></span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SUB-ABA 2: MEU DIÁRIO SECRETO (PÁGINAS PRIVADAS & PUBLICADAS)             -->
+    <!-- ========================================================================= -->
+    <div id="diarySubtabMine" class="space-y-4 hidden">
+        <div class="glass-card rounded-2xl p-4 border border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <button type="button" data-myfilter="ALL" onclick="window.TFLDiary && window.TFLDiary.filterMyPages('ALL')"
+                    class="diary-myfilter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-600 text-white transition">
+                    📔 Todas (<%= myPages.length %>)
+                </button>
+                <button type="button" data-myfilter="PRIVATE" onclick="window.TFLDiary && window.TFLDiary.filterMyPages('PRIVATE')"
+                    class="diary-myfilter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800 transition">
+                    🔒 Só Privadas (<%= dStats.myPrivatePages || 0 %>)
+                </button>
+                <button type="button" data-myfilter="PUBLIC" onclick="window.TFLDiary && window.TFLDiary.filterMyPages('PUBLIC')"
+                    class="diary-myfilter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800 transition">
+                    🎭 Publicadas Anonimamente (<%= dStats.myPublicPages || 0 %>)
+                </button>
+            </div>
+
+            <button type="button" onclick="window.TFLDiary && window.TFLDiary.openEditorModal()"
+                class="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-plus"></i>
+                <span>Nova Página no Meu Diário</span>
+            </button>
+        </div>
+
+        <div id="diaryMyPagesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <% if (myPages.length === 0) { %>
+                <div class="col-span-full glass-card rounded-3xl p-10 text-center border border-zinc-800/80">
+                    <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-2xl mx-auto mb-3">
+                        📔
+                    </div>
+                    <h3 class="text-base font-bold text-white">Seu Diário Secreto ainda está em branco</h3>
+                    <p class="text-xs text-zinc-400 max-w-md mx-auto mt-1 mb-4">
+                        Comece a registrar seus dias, metas, segredos ou desabafos. Você decide página por página o que fica guardado a sete chaves (`🔒 Privado`) e o que vai para o mural anônimo (`🎭 Público Anônimo`).
+                    </p>
+                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.openEditorModal()"
+                        class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition">
+                        ✍️ Escrever Minha Primeira Página
+                    </button>
+                </div>
+            <% } else { %>
+                <% myPages.forEach(page => {
+                    const moodInfo = page.moodInfo || { emoji: '🌧️', label: 'Desabafo' };
+                    const catInfo = page.categoryInfo || { label: 'Desabafo' };
+                    const isPub = Boolean(page.isPublicAnonymous);
+                %>
+                    <article class="diary-mine-card glass-card rounded-3xl p-5 border <%= isPub ? 'border-violet-500/35' : 'border-zinc-800/80' %> flex flex-col justify-between gap-4"
+                        data-page-id="<%= page.id %>"
+                        data-visibility="<%= isPub ? 'PUBLIC' : 'PRIVATE' %>">
+
+                        <div>
+                            <!-- Barra de Status de Privacidade + Ações Rápidas -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <div class="flex items-center gap-2">
+                                    <% if (isPub) { %>
+                                        <span class="px-2.5 py-1 rounded-xl bg-violet-500/20 border border-violet-500/40 text-violet-300 text-[11px] font-bold flex items-center gap-1.5">
+                                            <i class="fa-solid fa-mask"></i>
+                                            <span>Público Anônimo</span>
+                                        </span>
+                                        <span class="text-[10px] text-zinc-400" title="Seu pseudônimo nesta página">
+                                            (<%= page.anonymousAlias %>)
+                                        </span>
+                                    <% } else { %>
+                                        <span class="px-2.5 py-1 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 text-[11px] font-bold flex items-center gap-1.5">
+                                            <i class="fa-solid fa-lock text-amber-400"></i>
+                                            <span>Privado (Só Eu Vejo)</span>
+                                        </span>
+                                    <% } %>
+                                </div>
+
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button"
+                                        onclick="window.TFLDiary && window.TFLDiary.togglePageVisibility(<%= page.id %>, <%= !isPub %>)"
+                                        class="px-2.5 py-1 rounded-xl text-[10px] font-bold border transition <%= isPub ? 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800' : 'bg-violet-600/20 border-violet-500/40 text-violet-300 hover:bg-violet-600/30' %>"
+                                        title="<%= isPub ? 'Tornar página 100% privada novamente' : 'Publicar página de forma 100% anônima no Cantinho de Desabafo' %>">
+                                        <% if (isPub) { %>
+                                            <i class="fa-solid fa-lock mr-1"></i>Tornar Privado
+                                        <% } else { %>
+                                            <i class="fa-solid fa-mask mr-1"></i>Tornar Público Anônimo
+                                        <% } %>
+                                    </button>
+                                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.openEditorModalById(<%= page.id %>)"
+                                        class="p-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs transition" title="Editar página">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.deletePage(<%= page.id %>)"
+                                        class="p-1.5 rounded-xl bg-zinc-900 hover:bg-rose-950/60 text-rose-400 border border-zinc-800 text-xs transition" title="Excluir página">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Metadados e Texto -->
+                            <div class="flex items-center gap-2 text-[11px] text-zinc-400 mb-1.5">
+                                <span><%= moodInfo.emoji %> <%= moodInfo.label %></span>
+                                <span>•</span>
+                                <span><%= catInfo.label %></span>
+                                <span>•</span>
+                                <span><%= new Date(page.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+                            </div>
+
+                            <h3 class="text-base font-bold text-white mb-2"><%= page.title %></h3>
+                            <p class="text-xs text-zinc-300 leading-relaxed line-clamp-4 whitespace-pre-line">
+                                <%= page.content %>
+                            </p>
+                        </div>
+
+                        <!-- Rodapé com Estatísticas da Página -->
+                        <div class="pt-3 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                            <div class="flex flex-wrap items-center gap-3 text-zinc-400">
+                                <span><i class="fa-solid fa-eye text-violet-400 mr-1"></i><%= page.uniqueReadersCount || 0 %> leitores</span>
+                                <span><i class="fa-regular fa-clock text-fuchsia-400 mr-1"></i><%= Math.round((Number(page.totalReadSeconds || 0) / 60) * 10) / 10 %> min lidos</span>
+                                <span><i class="fa-solid fa-heart text-rose-400 mr-1"></i><%= page.totalReactions || 0 %> reações</span>
+                                <span><i class="fa-regular fa-comments text-sky-400 mr-1"></i><%= page.commentsCount || 0 %> comentários</span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-[10px]">
+                                    +<%= Number(page.totalAuthorCoinsEarned || 0).toFixed(2) %> Coins ganhos
+                                </span>
+                                <button type="button" onclick="window.TFLDiary && window.TFLDiary.openReaderModal(<%= page.id %>)"
+                                    class="px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition">
+                                    Abrir Página
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 1: ESCREVER / EDITAR PÁGINA DO DIÁRIO                               -->
+    <!-- ========================================================================= -->
+    <div id="modalDiaryEditor" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-2xl w-full p-6 border border-violet-500/30 bg-zinc-950/95 shadow-2xl my-8">
+            <div class="flex items-center justify-between gap-3 pb-4 border-b border-zinc-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-300">
+                        <i class="fa-solid fa-feather-pointed text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 id="diaryEditorModalTitle" class="text-base sm:text-lg font-extrabold text-white">Escrever Nova Página no Diário</h3>
+                        <p class="text-[11px] text-zinc-400">Guarde apenas para você ou publique anonimamente no Cantinho de Desabafo.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.TFLDiary && window.TFLDiary.closeEditorModal()"
+                    class="w-8 h-8 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="formDiaryPage" onsubmit="window.TFLDiary && window.TFLDiary.submitPageForm(event)" class="space-y-4 mt-4">
+                <input type="hidden" id="diaryInputPageId" value="">
+
+                <!-- Título da Página -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-300 mb-1.5">Título da Página ou Capítulo</label>
+                    <input type="text" id="diaryInputTitle" maxlength="140" required
+                        placeholder="Ex.: O que eu nunca tive coragem de dizer em voz alta..."
+                        class="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-2xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none">
+                </div>
+
+                <!-- Humor / Sentimento & Categoria -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Como você está se sentindo?</label>
+                        <select id="diaryInputMood"
+                            class="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-2xl px-3.5 py-2.5 text-xs text-white focus:outline-none">
+                            <% dMoods.forEach(m => { %>
+                                <option value="<%= m.key %>"><%= m.emoji %> <%= m.label %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Categoria da Página</label>
+                        <select id="diaryInputCategory"
+                            class="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-2xl px-3.5 py-2.5 text-xs text-white focus:outline-none">
+                            <% dCategories.forEach(c => { %>
+                                <option value="<%= c.key %>"><%= c.label %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Conteúdo da Página -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-bold text-zinc-300">Seu relato, desabafo ou anotação</label>
+                        <span id="diaryEditorCharInfo" class="text-[11px] text-zinc-400">0 palavras • ~1 min de leitura</span>
+                    </div>
+                    <textarea id="diaryInputContent" rows="7" maxlength="12000" required
+                        oninput="window.TFLDiary && window.TFLDiary.updateEditorWordCount()"
+                        placeholder="Escreva livremente... Este espaço é seu."
+                        class="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-2xl p-4 text-sm text-zinc-100 placeholder-zinc-500 leading-relaxed focus:outline-none resize-y"></textarea>
+                </div>
+
+                <!-- Escolha de Privacidade: Privado vs Público Anônimo -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diaryVisibilityRadio" id="diaryVisPrivate" value="private" class="peer sr-only" checked>
+                        <div class="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/70 peer-checked:border-amber-500/60 peer-checked:bg-amber-500/10 transition">
+                            <div class="flex items-center gap-2 text-xs font-bold text-white mb-1">
+                                <i class="fa-solid fa-lock text-amber-400"></i>
+                                <span>🔒 Guardar Só Para Mim (Privado)</span>
+                            </div>
+                            <p class="text-[11px] text-zinc-400 leading-snug">
+                                Apenas você poderá ler esta página no seu Diário Secreto.
+                            </p>
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diaryVisibilityRadio" id="diaryVisPublic" value="public" class="peer sr-only">
+                        <div class="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/70 peer-checked:border-violet-500 peer-checked:bg-violet-500/15 transition">
+                            <div class="flex items-center gap-2 text-xs font-bold text-white mb-1">
+                                <i class="fa-solid fa-mask text-violet-400"></i>
+                                <span>🎭 Publicar no Cantinho Anônimo</span>
+                            </div>
+                            <p class="text-[11px] text-zinc-300 leading-snug">
+                                Totalmente anônimo (sem seu nome ou avatar). Ganhe <strong>+<%= Number(rewardRules.authorRewardPerReadCoins).toFixed(2) %> Coins</strong> por leitor!
+                            </p>
+                        </div>
+                    </label>
+                </div>
+
+                <label class="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input type="checkbox" id="diaryInputAllowComments" checked class="rounded bg-zinc-900 border-zinc-700 text-violet-600 focus:ring-violet-500">
+                    <span>Permitir comentários e mensagens de apoio anônimas caso a página seja pública</span>
+                </label>
+
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-800">
+                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.closeEditorModal()"
+                        class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnDiarySaveSubmit"
+                        class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs font-bold shadow-lg shadow-violet-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Salvar Página do Diário</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 2: LEITOR IMERSIVO + CRONÔMETRO DE LEITURA PREMIADA + COMENTÁRIOS   -->
+    <!-- ========================================================================= -->
+    <div id="modalDiaryReader" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-3xl w-full border border-violet-500/30 bg-zinc-950/95 shadow-2xl my-auto overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Barra Superior Fixa: Pseudônimo + Cronômetro de Leitura Premiada -->
+            <div class="p-4 sm:p-5 bg-zinc-900/90 border-b border-zinc-800 flex flex-col gap-3 shrink-0">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div id="diaryReaderMoodIcon" class="w-10 h-10 rounded-2xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-lg shrink-0">
+                            🌧️
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span id="diaryReaderAlias" class="text-xs sm:text-sm font-extrabold text-violet-300 truncate">Viajante Anônimo</span>
+                                <span id="diaryReaderPrivacyBadge" class="px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 text-[10px] font-bold">🎭 Anônimo</span>
+                            </div>
+                            <p id="diaryReaderMeta" class="text-[11px] text-zinc-400">Desabafo • ~1 min de leitura</p>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="window.TFLDiary && window.TFLDiary.closeReaderModal()"
+                        class="w-9 h-9 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Barra de Progresso do Cronômetro de Leitura Premiada -->
+                <div id="diaryReaderTimerBox" class="p-3 rounded-2xl bg-zinc-950/90 border border-amber-500/30 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span id="diaryReaderTimerLabel" class="font-bold text-amber-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-hourglass-start animate-pulse"></i>
+                            <span>Lendo página... Permaneça lendo para receber sua recompensa em Coins!</span>
+                        </span>
+                        <span id="diaryReaderTimerCounter" class="font-mono font-bold text-white">0s / <%= rewardRules.minReadSeconds %>s</span>
+                    </div>
+                    <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+                        <div id="diaryReaderTimerProgress" class="h-full bg-gradient-to-r from-amber-500 via-violet-500 to-emerald-400 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Corpo da Página do Diário + Reações + Comentários Anônimos -->
+            <div class="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
+                <!-- Título e Texto da Página -->
+                <div class="space-y-4">
+                    <h2 id="diaryReaderTitle" class="text-lg sm:text-2xl font-extrabold text-white leading-snug"></h2>
+                    <div id="diaryReaderContent" class="text-sm sm:text-base text-zinc-200 leading-relaxed whitespace-pre-line font-normal bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800/70"></div>
+                </div>
+
+                <!-- Reações Empáticas Anônimas no Leitor -->
+                <div class="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-zinc-300">Envie um gesto de acolhimento anônimo:</span>
+                        <span class="text-[11px] text-zinc-400">100% anônimo</span>
+                    </div>
+                    <div id="diaryReaderReactionsBar" class="flex flex-wrap items-center gap-2"></div>
+                </div>
+
+                <!-- Seção de Comentários de Apoio Anônimos -->
+                <div id="diaryReaderCommentsSection" class="space-y-4 pt-2 border-t border-zinc-800">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-regular fa-comments text-fuchsia-400"></i>
+                            <span>Mensagens de Apoio Anônimas (<span id="diaryReaderCommentsCount">0</span>)</span>
+                        </h4>
+                        <span class="text-[11px] text-zinc-400">Sua identidade nunca é exibida</span>
+                    </div>
+
+                    <!-- Formulário de Novo Comentário Anônimo -->
+                    <form id="formDiaryComment" onsubmit="window.TFLDiary && window.TFLDiary.submitComment(event)" class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="diaryCommentInput" maxlength="600" required
+                            placeholder="Escreva uma mensagem gentil ou conselho (seu nome será ocultado)..."
+                            class="flex-1 bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none">
+                        <button type="submit" id="btnDiaryCommentSubmit"
+                            class="px-4 py-2.5 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold shrink-0 flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Enviar Anonimamente</span>
+                        </button>
+                    </form>
+
+                    <!-- Lista de Comentários -->
+                    <div id="diaryReaderCommentsList" class="space-y-2.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado inicial serializado para o módulo JS -->
+    <script id="tflDiaryInitialData" type="application/json">
+        <%- JSON.stringify({
+            moods: dMoods,
+            categories: dCategories,
+            reactions: dReactions,
+            rewardRules,
+            stats: dStats,
+            myPages,
+            publicFeed
+        }).replace(/</g, '\\u003c') %>
+    </script>
+</section>

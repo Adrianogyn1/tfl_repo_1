@@ -11,6 +11,9 @@ description: Regra obrigatória para ler e atualizar o arquivo PROJECT_MEMORY_LO
    - A responsabilidade de cada módulo.
    - O histórico do que já foi implementado.
 
-2. **Atualização Obrigatória**: Sempre que concluir uma tarefa que crie, altere ou remova funcionalidades, rotas, views ou serviços:
-   - Adicione uma nova entrada `[LOG #XX - DATA]` na seção `5. HISTÓRICO DE LOGS E IMPLEMENTAÇÕES` de `/media/not/Projetos/WebSite/PROJECT_MEMORY_LOG.txt` descrevendo o que foi feito e quais arquivos foram alterados.
-   - Caso tenha criado ou alterado um módulo estrutural, atualize também a seção `4. DESCRIÇÃO DETALHADA DE CADA MÓDULO` no mesmo arquivo.
+2. **Atualização Obrigatória & Economia de Contexto**: Sempre que concluir uma tarefa que crie, altere ou remova funcionalidades, rotas, views ou serviços:
+   - Adicione uma nova entrada compacta `[LOG #XX - DATA]` na seção `5. HISTÓRICO DE LOGS E IMPLEMENTAÇÕES` de `/media/not/Projetos/WebSite/PROJECT_MEMORY_LOG.txt` descrevendo **apenas o que foi feito** (mantenha apenas as implementações ativas recentes neste arquivo).
+   - Registre a lista de arquivos criados / modificados exclusivamente em `/media/not/Projetos/WebSite/docs/historico/arquivos_modificados.md`.
+   - Caso precise consultar histórico profundo de dias anteriores, consulte os arquivos arquivados em `/media/not/Projetos/WebSite/docs/historico/logs/YYYY-MM-DD.md`.
+   - Caso tenha criado ou alterado um módulo estrutural, atualize também a seção `4. DESCRIÇÃO DETALHADA DE CADA MÓDULO` em `PROJECT_MEMORY_LOG.txt`.
+

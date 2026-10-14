@@ -7,6 +7,7 @@ module.exports = (sequelize) => {
     avatarId: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
     onnerId: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     title: { type: DataTypes.STRING, allowNull: false, defaultValue: "Item 3D" },
+    itemName: { type: DataTypes.STRING, allowNull: true, defaultValue: "Item 3D" },
     description: { type: DataTypes.TEXT, allowNull: true, defaultValue: "" },
     slot: { type: DataTypes.STRING, allowNull: false, defaultValue: "top" },
     category: { type: DataTypes.STRING, allowNull: true, defaultValue: "clothing" },

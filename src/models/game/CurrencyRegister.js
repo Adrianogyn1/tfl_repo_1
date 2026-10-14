@@ -5,6 +5,7 @@ module.exports = (sequelize) => {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     userId: { type: DataTypes.INTEGER },
     ownerId: { type: DataTypes.INTEGER, defaultValue: 0 },
+    currencyId: { type: DataTypes.INTEGER, allowNull: true },
     type: { type: DataTypes.ENUM("Coins", "Cash", "Chips", "None"), defaultValue: "None" },
     transactionType: { type: DataTypes.ENUM("Deposit", "Withdraw", "Buy", "Sell", "Bonus", "Rewards","Transfer", "None"), defaultValue: "None" },
     value: { type: DataTypes.FLOAT, defaultValue: 0 },

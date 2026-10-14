@@ -14,7 +14,7 @@ const PaymentBankModel = (sequelize) => {
         reference_id: { type: DataTypes.STRING, allowNull: true },    // produto (compra) ou externalReference (saque)
         customer_id: { type: DataTypes.STRING, allowNull: true },     // customer vindo da API
         status: { type: DataTypes.STRING, allowNull: true },
-        uid: { type: DataTypes.STRING, allowNull: true, unique: true, defaultValue: DataTypes.UUIDV4 },
+        uid: { type: DataTypes.STRING, allowNull: true, defaultValue: DataTypes.UUIDV4 },
         value: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },               // valor em R$ (BRL)
         cash_amount: { type: DataTypes.DECIMAL(12, 4), allowNull: true, defaultValue: 0 },          // valor equivalente em Cash ($ USD)
         pix_key: { type: DataTypes.STRING, allowNull: true },                                       // chave Pix informada no saque
@@ -31,6 +31,7 @@ const PaymentBankModel = (sequelize) => {
             { unique: true, fields: ["provedor", "payment_id"] },
             // Idempotência de saque: um externalReference por tipo
             { unique: true, fields: ["type", "reference_id"] },
+            { unique: true, fields: ["uid"] },
         ],
     });
 
@@ -40,9 +41,9 @@ const PaymentBankModel = (sequelize) => {
 const PaymentWebHookModel = (sequelize) => {
     const Payment_WebHook = sequelize.define("PaymentWebHook", {
         id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-        event_key: { type: DataTypes.STRING, allowNull: false, unique: true }, // substitui seenEvents
+        event_key: { type: DataTypes.STRING, allowNull: false }, // substitui seenEvents
         event: { type: DataTypes.STRING, allowNull: false },
-        uid: { type: DataTypes.STRING, allowNull: true, unique: true, defaultValue: DataTypes.UUIDV4 },
+        uid: { type: DataTypes.STRING, allowNull: true, defaultValue: DataTypes.UUIDV4 },
         payment_id: { type: DataTypes.STRING, allowNull: true },
         payment_bank_id: {
             type: DataTypes.INTEGER,
@@ -56,6 +57,10 @@ const PaymentWebHookModel = (sequelize) => {
     {
         tableName: "bank_webhook",
         timestamps: true,
+        indexes: [
+            { unique: true, fields: ["event_key"] },
+            { unique: true, fields: ["uid"] },
+        ],
     });
 
     return Payment_WebHook;

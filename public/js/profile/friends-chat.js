@@ -132,13 +132,36 @@
 
     function updateTotalUnreadBadge() {
         const total = chatRoomsCache.reduce((acc, r) => acc + (Number(r.unread) || 0), 0);
-        const badge = $('#sidebarChatUnreadBadge');
+        const badges = $('#sidebarChatUnreadBadge, #floatingChatUnreadBadge, #floatingChatTabUnreadBadge');
         if (total > 0) {
-            badge.text(total).removeClass('hidden');
+            badges.text(total).removeClass('hidden');
         } else {
-            badge.addClass('hidden');
+            badges.addClass('hidden');
         }
     }
+
+    TFL.pushBagNotification = function (title, message) {
+        const cur = parseInt($('#floatingBagUnreadBadge').first().text(), 10) || 0;
+        const next = cur + 1;
+        $('#badgeNotificationsUnread, #floatingBagUnreadBadge, #floatingChatTabBagBadge')
+            .text(next)
+            .removeClass('hidden');
+
+        const itemHtml = `
+            <div class="p-3 rounded-2xl border bg-amber-500/10 border-amber-500/30 text-zinc-100 text-xs space-y-1">
+                <div class="font-black text-white flex items-center justify-between gap-2">
+                    <span>${TFL.escapeHtml(title)}</span>
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                </div>
+                <p class="text-[11px] leading-snug text-zinc-300">${TFL.escapeHtml(message)}</p>
+            </div>
+        `;
+        if ($('#floatingBagNotificationsList .text-zinc-500').length) {
+            $('#floatingBagNotificationsList').empty();
+        }
+        $('#floatingBagNotificationsList').prepend(itemHtml);
+        $('#notificationsListContainer').prepend(itemHtml);
+    };
 
     TFL.renderChatRoomsList = function () {
         const container = $('#chatRoomsListContainer');
@@ -172,47 +195,50 @@
                 ? (room.lastMessage.text || ((room.lastMessage.hasImage || room.lastMessage.has_image) ? '📷 Foto enviada' : ((room.lastMessage.hasAudio || room.lastMessage.has_audio) ? '🎤 Mensagem de voz' : '📎 Anexo enviado')))
                 : 'Toque para abrir a conversa';
             const unreadCount = Number(room.unread || 0);
+            const timeLabel = room.updatedAt ? new Date(room.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
             const itemHtml = `
-                <div class="p-3.5 rounded-2xl bg-slate-900/70 hover:bg-slate-900 border border-white/5 hover:border-sky-500/40 transition flex items-center justify-between gap-3">
-                    <button type="button" class="btn-select-chat-room flex items-center gap-3.5 overflow-hidden text-left flex-1"
+                <div class="chat-room-list-item p-2.5 rounded-2xl bg-[#111b21] hover:bg-[#202c33] border border-white/5 hover:border-emerald-500/40 transition flex items-center justify-between gap-2.5">
+                    <button type="button" class="btn-select-chat-room flex items-center gap-3 overflow-hidden text-left flex-1"
                             data-uid="${room.uid}">
-                        <div class="w-12 h-12 rounded-2xl bg-slate-950 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div class="w-11 h-11 rounded-full bg-slate-950 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                             ${info.avatarHtml}
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs sm:text-sm font-bold text-white truncate">${TFL.escapeHtml(info.title)}</span>
-                                <span class="text-[9px] font-black px-2 py-0.5 rounded-md ${info.badgeClass}">${info.badge}</span>
+                            <div class="flex items-center justify-between gap-1">
+                                <div class="flex items-center gap-1.5 overflow-hidden">
+                                    <span class="text-xs font-bold text-white truncate">${TFL.escapeHtml(info.title)}</span>
+                                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded ${info.badgeClass}">${info.badge}</span>
+                                </div>
+                                <span class="text-[9px] text-zinc-500 flex-shrink-0">${timeLabel}</span>
                             </div>
                             <p class="text-[11px] text-zinc-400 truncate mt-0.5">${TFL.escapeHtml(lastMsgText)}</p>
                         </div>
                     </button>
 
-                    <div class="flex items-center gap-2 flex-shrink-0">
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
                         ${info.peerId ? `
-                            <button type="button" class="btn-open-mini-profile p-2 rounded-xl bg-slate-950 hover:bg-sky-600/20 border border-white/10 text-zinc-400 hover:text-sky-400 text-xs transition"
+                            <button type="button" class="btn-open-mini-profile p-1.5 rounded-lg bg-slate-950/80 hover:bg-emerald-600/20 text-zinc-400 hover:text-emerald-400 text-[11px] transition"
                                     data-avatarid="${info.peerId}" title="Ver Mini Profile">
                                 <i class="fa-solid fa-id-badge"></i>
                             </button>
                         ` : ''}
                         ${room.type === 'group' ? `
-                            <button type="button" class="btn-quick-group-members px-2.5 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-[11px] font-bold transition"
-                                    data-uid="${room.uid}" title="Participantes e Adicionar Amigos">
-                                <i class="fa-solid fa-users mr-1"></i>${Array.isArray(room.profiles) ? room.profiles.length : ''}
+                            <button type="button" class="btn-quick-group-members px-2 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-600/30 text-purple-300 text-[10px] font-bold transition"
+                                    data-uid="${room.uid}" title="Participantes">
+                                <i class="fa-solid fa-users mr-0.5"></i>${Array.isArray(room.profiles) ? room.profiles.length : ''}
                             </button>
                         ` : ''}
-                        ${unreadCount > 0 ? `<span class="px-2.5 py-1 rounded-full bg-sky-500 text-slate-950 font-black text-[10px]">${unreadCount}</span>` : ''}
-                        <button type="button" class="btn-select-chat-room px-3 py-2 rounded-xl bg-sky-600/15 hover:bg-sky-600 text-sky-400 hover:text-white text-xs font-bold transition"
-                                data-uid="${room.uid}">
-                            Abrir <i class="fa-solid fa-chevron-right ml-1 text-[10px]"></i>
-                        </button>
+                        ${unreadCount > 0 ? `<span class="min-w-[20px] h-5 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] flex items-center justify-center">${unreadCount}</span>` : ''}
                     </div>
                 </div>
             `;
             container.append(itemHtml);
         });
 
+        if (typeof TFL.applyPagination20 === 'function') {
+            TFL.applyPagination20('#chatRoomsListContainer', '.chat-room-list-item', 20);
+        }
         updateTotalUnreadBadge();
     };
 
@@ -620,8 +646,10 @@
                         badge.text(cur + 1).removeClass('hidden');
                         if (event === 'friend:request') {
                             TFL.toast.info('Você recebeu uma nova solicitação de amizade!', 'Novo Convite');
+                            TFL.pushBagNotification('🤝 Nova Solicitação de Amizade', 'Um jogador enviou um convite de amizade para seu avatar.');
                         } else {
                             TFL.toast.success('Uma solicitação de amizade foi aceita!', 'Novo Amigo');
+                            TFL.pushBagNotification('✅ Amizade Confirmada', 'Sua solicitação de amizade foi aceita!');
                         }
                         if (typeof TFL.refreshPartial === 'function') {
                             TFL.refreshPartial('view-friends');
@@ -876,7 +904,9 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ profileId: targetProfileId }),
                 success: function (room) {
-                    $('#navBtnChat').trigger('click');
+                    if (typeof TFL.openFloatingChatWindow === 'function') {
+                        TFL.openFloatingChatWindow('chats');
+                    }
                     TFL.loadChatRooms(room.uid);
                     TFL.refreshChatVipQuota();
                 },
@@ -1308,9 +1338,13 @@
                             $('#chatMessagesContainer').empty();
                         }
                         TFL.renderMessageItem(res.message);
+                        if (typeof TFL.openFloatingChatWindow === 'function') {
+                            TFL.openFloatingChatWindow('chats');
+                        }
                     } else {
-                        // Abre a aba de chat na conversa para onde foi enviado
-                        $('.nav-item[data-view="view-chat"]').first().trigger('click');
+                        if (typeof TFL.openFloatingChatWindow === 'function') {
+                            TFL.openFloatingChatWindow('chats');
+                        }
                         TFL.loadChatRooms(targetChatUid);
                     }
                 },
@@ -1556,6 +1590,207 @@
                 TFL.toast.error(xhr.responseJSON?.error || 'Erro ao conectar à instância da sala.');
             });
         });
+
+        // =========================================================================
+        // 6. BALÃO FLUTUANTE ARRASTÁVEL + GAVETA WHATSAPP + BAG DE NOTIFICAÇÕES
+        // =========================================================================
+        let bubbleWasDragged = false;
+
+        function positionChatWindowNearBubble() {
+            const $bubble = $('#tflFloatingChatBubble');
+            const $win = $('#tflWhatsappChatWindow');
+            if (!$bubble.length || !$win.length) return;
+
+            const savedRaw = localStorage.getItem('tfl_chat_bubble_pos');
+            if (!savedRaw) return; // usa bottom-24 right-6 padrão
+
+            try {
+                const pos = JSON.parse(savedRaw);
+                if (typeof pos.left !== 'number' || typeof pos.top !== 'number') return;
+
+                const winW = Math.min(410, window.innerWidth - 20);
+                const winH = Math.min(560, Math.floor(window.innerHeight * 0.8));
+
+                // Decide se abre acima ou abaixo do balão e à esquerda ou direita
+                let targetLeft = pos.left - winW + 80;
+                if (targetLeft < 10) targetLeft = Math.min(window.innerWidth - winW - 10, Math.max(10, pos.left));
+                if (targetLeft + winW > window.innerWidth - 10) targetLeft = window.innerWidth - winW - 10;
+
+                let targetTop = pos.top - winH - 12;
+                if (targetTop < 10) {
+                    targetTop = Math.min(window.innerHeight - winH - 10, pos.top + 68);
+                }
+
+                $win.css({
+                    left: `${Math.max(8, targetLeft)}px`,
+                    top: `${Math.max(8, targetTop)}px`,
+                    right: 'auto',
+                    bottom: 'auto'
+                });
+            } catch (_e) { /* ignore */ }
+        }
+
+        TFL.switchFloatingChatTab = function (tab) {
+            if (tab === 'bag') {
+                $('#floatingChatTabContent').addClass('hidden');
+                $('#floatingBagTabContent').removeClass('hidden');
+                $('#btnFloatingTabBag')
+                    .removeClass('bg-slate-800/80 text-zinc-300')
+                    .addClass('bg-amber-500 text-slate-950');
+                $('#btnFloatingTabChats')
+                    .removeClass('bg-emerald-600 text-white')
+                    .addClass('bg-slate-800/80 text-zinc-300');
+            } else {
+                $('#floatingBagTabContent').addClass('hidden');
+                $('#floatingChatTabContent').removeClass('hidden');
+                $('#btnFloatingTabChats')
+                    .removeClass('bg-slate-800/80 text-zinc-300')
+                    .addClass('bg-emerald-600 text-white');
+                $('#btnFloatingTabBag')
+                    .removeClass('bg-amber-500 text-slate-950')
+                    .addClass('bg-slate-800/80 text-zinc-300');
+            }
+        };
+
+        TFL.openFloatingChatWindow = function (tab = 'chats') {
+            const $win = $('#tflWhatsappChatWindow');
+            positionChatWindowNearBubble();
+            $win.removeClass('hidden');
+            $('#floatingBubbleMainIcon').removeClass('fa-brands fa-whatsapp').addClass('fa-solid fa-xmark');
+            TFL.switchFloatingChatTab(tab);
+        };
+
+        TFL.closeFloatingChatWindow = function () {
+            $('#tflWhatsappChatWindow').addClass('hidden');
+            $('#floatingBubbleMainIcon').removeClass('fa-solid fa-xmark').addClass('fa-brands fa-whatsapp');
+        };
+
+        TFL.toggleFloatingChatWindow = function (tab = 'chats') {
+            const $win = $('#tflWhatsappChatWindow');
+            if ($win.hasClass('hidden')) {
+                TFL.openFloatingChatWindow(tab);
+            } else {
+                // Se clicou em outra aba (ex: Bag enquanto estava em Conversas), apenas troca a aba
+                const isBagVisible = !$('#floatingBagTabContent').hasClass('hidden');
+                if ((tab === 'bag' && !isBagVisible) || (tab === 'chats' && isBagVisible)) {
+                    TFL.switchFloatingChatTab(tab);
+                } else {
+                    TFL.closeFloatingChatWindow();
+                }
+            }
+        };
+
+        // Cliques no Balão Flutuante, Botão Bag e Abas do Topo
+        $(document).on('click', '#btnFloatingBubbleToggleChat', function (e) {
+            e.stopPropagation();
+            if (bubbleWasDragged) return;
+            TFL.toggleFloatingChatWindow('chats');
+        });
+
+        $(document).on('click', '#btnFloatingBubbleOpenBag', function (e) {
+            e.stopPropagation();
+            if (bubbleWasDragged) return;
+            TFL.toggleFloatingChatWindow('bag');
+        });
+
+        $(document).on('click', '#btnFloatingTabChats', function () {
+            TFL.switchFloatingChatTab('chats');
+        });
+
+        $(document).on('click', '#btnFloatingTabBag', function () {
+            TFL.switchFloatingChatTab('bag');
+        });
+
+        $(document).on('click', '#btnMinimizeFloatingChat', function () {
+            TFL.closeFloatingChatWindow();
+        });
+
+        // Arrastar e Posicionar o Balão Flutuante onde o usuário achar melhor (Mouse + Touch + Persistência)
+        (function initDraggableChatBubble() {
+            const el = document.getElementById('tflFloatingChatBubble');
+            if (!el) return;
+
+            // Restaura posição salva pelo usuário
+            try {
+                const saved = JSON.parse(localStorage.getItem('tfl_chat_bubble_pos') || 'null');
+                if (saved && typeof saved.left === 'number' && typeof saved.top === 'number') {
+                    const clampedLeft = Math.min(window.innerWidth - 95, Math.max(8, saved.left));
+                    const clampedTop = Math.min(window.innerHeight - 65, Math.max(8, saved.top));
+                    el.style.left = `${clampedLeft}px`;
+                    el.style.top = `${clampedTop}px`;
+                    el.style.right = 'auto';
+                    el.style.bottom = 'auto';
+                }
+            } catch (_e) { /* ignore */ }
+
+            let isDown = false;
+            let startX = 0;
+            let startY = 0;
+            let origLeft = 0;
+            let origTop = 0;
+
+            function onPointerStart(clientX, clientY) {
+                isDown = true;
+                bubbleWasDragged = false;
+                const rect = el.getBoundingClientRect();
+                startX = clientX;
+                startY = clientY;
+                origLeft = rect.left;
+                origTop = rect.top;
+            }
+
+            function onPointerMove(clientX, clientY) {
+                if (!isDown) return;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+                if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+                    bubbleWasDragged = true;
+                }
+                if (!bubbleWasDragged) return;
+
+                const newLeft = Math.min(window.innerWidth - 95, Math.max(8, origLeft + dx));
+                const newTop = Math.min(window.innerHeight - 65, Math.max(8, origTop + dy));
+                el.style.left = `${newLeft}px`;
+                el.style.top = `${newTop}px`;
+                el.style.right = 'auto';
+                el.style.bottom = 'auto';
+
+                if (!$('#tflWhatsappChatWindow').hasClass('hidden')) {
+                    positionChatWindowNearBubble();
+                }
+            }
+
+            function onPointerEnd() {
+                if (!isDown) return;
+                isDown = false;
+                if (bubbleWasDragged) {
+                    const rect = el.getBoundingClientRect();
+                    localStorage.setItem('tfl_chat_bubble_pos', JSON.stringify({
+                        left: Math.round(rect.left),
+                        top: Math.round(rect.top)
+                    }));
+                    setTimeout(() => { bubbleWasDragged = false; }, 80);
+                }
+            }
+
+            el.addEventListener('mousedown', function (e) {
+                onPointerStart(e.clientX, e.clientY);
+            });
+            window.addEventListener('mousemove', function (e) {
+                onPointerMove(e.clientX, e.clientY);
+            });
+            window.addEventListener('mouseup', onPointerEnd);
+
+            el.addEventListener('touchstart', function (e) {
+                const t = e.touches[0];
+                if (t) onPointerStart(t.clientX, t.clientY);
+            }, { passive: true });
+            window.addEventListener('touchmove', function (e) {
+                const t = e.touches[0];
+                if (t) onPointerMove(t.clientX, t.clientY);
+            }, { passive: true });
+            window.addEventListener('touchend', onPointerEnd);
+        })();
 
         // Inicializa Salas de Chat e WebSocket
         TFL.loadChatRooms();

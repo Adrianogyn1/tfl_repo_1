@@ -763,19 +763,27 @@
         $('#modalMiniReelViewer').removeClass('hidden');
     };
 
-    // ================= 4. GALERIA DE FOTOS =================
-    TFL.carregarGaleriaFotos = function () {
+    // ================= 4. GALERIA DE FOTOS (PAGINADA 20 ITENS POR PÁGINA) =================
+    let currentGalleryPage = 1;
+    TFL.carregarGaleriaFotos = function (page = 1) {
         const grid = $('#socialPhotoGalleryGrid');
         if (!grid.length) return;
         const ACTIVE_AVATAR_ID = TFL.getActiveAvatarId();
+        currentGalleryPage = Math.max(1, Number(page || 1));
 
-        grid.html('<div class="col-span-full p-8 text-center text-xs text-zinc-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Carregando fotos da galeria...</div>');
+        grid.html('<div class="col-span-full p-8 text-center text-xs text-zinc-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Carregando fotos da galeria (20/pág)...</div>');
 
-        $.get('/profile/social/gallery', { avatarId: ACTIVE_AVATAR_ID, filter: currentGalleryFilter }, function (res) {
+        $.get('/profile/social/gallery', {
+            avatarId: ACTIVE_AVATAR_ID,
+            filter: currentGalleryFilter,
+            page: currentGalleryPage,
+            limit: 20
+        }, function (res) {
             grid.empty();
+            $('#galleryPaginationBar').remove();
             const photos = res?.photos || [];
             if (photos.length === 0) {
-                grid.html('<div class="col-span-full p-8 rounded-2xl bg-slate-950/60 border border-dashed border-white/10 text-center text-xs text-zinc-500">Nenhuma foto encontrada neste filtro da galeria. Clique em "+ Adicionar Foto na Galeria" para enviar!</div>');
+                grid.html('<div class="col-span-full p-8 rounded-2xl bg-slate-950/60 border border-dashed border-white/10 text-center text-xs text-zinc-500">Nenhuma foto encontrada neste filtro da galeria. Clique em "+ Nova Foto" para enviar!</div>');
                 return;
             }
 
@@ -808,8 +816,29 @@
                     </div>
                 `);
             });
+
+            const totalPages = Math.max(1, Number(res.totalPages || 1));
+            const totalItems = Number(res.total || photos.length);
+            if (totalPages > 1) {
+                grid.after(`
+                    <div id="galleryPaginationBar" class="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-zinc-400 font-bold">Página ${currentGalleryPage} de ${totalPages} (${totalItems} fotos • 20/pág)</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btnGalleryPrevPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-200 font-bold disabled:opacity-40" ${currentGalleryPage <= 1 ? 'disabled' : ''}>← Anterior</button>
+                            <button type="button" id="btnGalleryNextPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-200 font-bold disabled:opacity-40" ${!res.hasMore ? 'disabled' : ''}>Próxima →</button>
+                        </div>
+                    </div>
+                `);
+            }
         });
     };
+
+    $(document).on('click', '#btnGalleryPrevPage', function () {
+        if (currentGalleryPage > 1) TFL.carregarGaleriaFotos(currentGalleryPage - 1);
+    });
+    $(document).on('click', '#btnGalleryNextPage', function () {
+        TFL.carregarGaleriaFotos(currentGalleryPage + 1);
+    });
 
     // ================= 5. FEED DE PUBLICAÇÕES =================
     TFL.buildPostCardHtml = function (post) {
@@ -991,14 +1020,131 @@
         `;
     };
 
+    // ================= SISTEMA DE POOL DE POSTS (20 POR LOTE EM MEMÓRIA) =================
+    TFL.postPool = {
+        buffer: [],
+        renderedIds: new Set(),
+        nextCursorId: null,
+        latestPostId: null,
+        hasMore: false,
+        isFetching: false,
+        batchSize: 20,
+        renderChunkSize: 10
+    };
+
+    function renderPostPoolStatusBar() {
+        const container = $('#postsFeedContainer');
+        if (!container.length) return;
+        $('#postPoolStatusBar').remove();
+
+        const bufferedCount = TFL.postPool.buffer.length;
+        const canLoadMore = bufferedCount > 0 || TFL.postPool.hasMore;
+
+        if (!canLoadMore) {
+            if (TFL.postPool.renderedIds.size > 0) {
+                container.append(`
+                    <div id="postPoolStatusBar" class="py-4 text-center text-[11px] text-zinc-500">
+                        <span class="px-3 py-1 rounded-full bg-slate-900/70 border border-white/5">
+                            ✔ Todas as publicações do pool foram exibidas (${TFL.postPool.renderedIds.size} posts)
+                        </span>
+                    </div>
+                `);
+            }
+            return;
+        }
+
+        container.append(`
+            <div id="postPoolStatusBar" class="pt-2 pb-4 flex flex-col items-center gap-2">
+                <button type="button" id="btnFlushPostPool"
+                        class="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-sky-500/30 text-sky-300 text-xs font-bold transition flex items-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Carregar mais publicações do Pool ${bufferedCount > 0 ? `(${bufferedCount} prontas em cache)` : ''}</span>
+                </button>
+            </div>
+        `);
+    }
+
+    TFL.flushPostPoolBatch = function (count) {
+        const container = $('#postsFeedContainer');
+        if (!container.length) return;
+        const takeCount = count || TFL.postPool.renderChunkSize || 10;
+
+        $('#postPoolStatusBar').remove();
+
+        let renderedNow = 0;
+        while (TFL.postPool.buffer.length > 0 && renderedNow < takeCount) {
+            const post = TFL.postPool.buffer.shift();
+            if (!post || TFL.postPool.renderedIds.has(Number(post.id))) continue;
+            TFL.postPool.renderedIds.add(Number(post.id));
+            container.append(TFL.buildPostCardHtml(post));
+            renderedNow++;
+        }
+
+        renderPostPoolStatusBar();
+
+        // Se o buffer do pool ficou abaixo de 5 itens e ainda há mais no banco, pré-carrega o próximo lote de 20 em background
+        if (TFL.postPool.buffer.length <= 5 && TFL.postPool.hasMore && !TFL.postPool.isFetching) {
+            TFL.refillPostPool();
+        }
+    };
+
+    TFL.refillPostPool = function (callback) {
+        if (TFL.postPool.isFetching || !TFL.postPool.hasMore || !TFL.postPool.nextCursorId) {
+            if (typeof callback === 'function') callback();
+            return;
+        }
+        TFL.postPool.isFetching = true;
+        const ACTIVE_AVATAR_ID = TFL.getActiveAvatarId();
+
+        $.get('/profile/social/feed', {
+            avatarId: ACTIVE_AVATAR_ID,
+            filter: currentFeedFilter,
+            limit: TFL.postPool.batchSize,
+            beforeId: TFL.postPool.nextCursorId
+        }, function (res) {
+            const incoming = res?.posts || [];
+            incoming.forEach(function (p) {
+                if (!TFL.postPool.renderedIds.has(Number(p.id)) && !TFL.postPool.buffer.some(b => Number(b.id) === Number(p.id))) {
+                    TFL.postPool.buffer.push(p);
+                }
+            });
+            const meta = res?.poolMeta || {};
+            TFL.postPool.nextCursorId = meta.nextCursorId || null;
+            TFL.postPool.hasMore = Boolean(meta.hasMore);
+        }).always(function () {
+            TFL.postPool.isFetching = false;
+            renderPostPoolStatusBar();
+            if (typeof callback === 'function') callback();
+        });
+    };
+
     TFL.carregarFeed = function () {
         const container = $('#postsFeedContainer');
         if (!container.length) return;
         const ACTIVE_AVATAR_ID = TFL.getActiveAvatarId();
 
-        $.get('/profile/social/feed', { avatarId: ACTIVE_AVATAR_ID, filter: currentFeedFilter }, function (res) {
+        // Reinicia o Pool para o filtro atual
+        TFL.postPool.buffer = [];
+        TFL.postPool.renderedIds.clear();
+        TFL.postPool.nextCursorId = null;
+        TFL.postPool.latestPostId = null;
+        TFL.postPool.hasMore = false;
+        TFL.postPool.isFetching = true;
+
+        $.get('/profile/social/feed', {
+            avatarId: ACTIVE_AVATAR_ID,
+            filter: currentFeedFilter,
+            limit: TFL.postPool.batchSize
+        }, function (res) {
+            TFL.postPool.isFetching = false;
             container.empty();
             const posts = res?.posts || [];
+            const meta = res?.poolMeta || {};
+
+            TFL.postPool.nextCursorId = meta.nextCursorId || (posts.length > 0 ? posts[posts.length - 1].id : null);
+            TFL.postPool.latestPostId = meta.latestPostId || (posts.length > 0 ? posts[0].id : null);
+            TFL.postPool.hasMore = Boolean(meta.hasMore);
+
             if (posts.length === 0) {
                 container.html(`
                     <div class="bg-slate-900/40 border border-dashed border-white/10 rounded-3xl p-8 text-center text-zinc-500 text-xs space-y-1.5">
@@ -1009,11 +1155,26 @@
                 `);
                 return;
             }
-            posts.forEach(function (post) {
-                container.append(TFL.buildPostCardHtml(post));
-            });
+
+            // Abastece o Pool com os 20 posts buscados e exibe o lote inicial imediatamente
+            TFL.postPool.buffer = posts.slice();
+            TFL.flushPostPoolBatch(20);
+        }).fail(function () {
+            TFL.postPool.isFetching = false;
         });
     };
+
+    $(document).on('click', '#btnFlushPostPool', function () {
+        if (TFL.postPool.buffer.length > 0) {
+            TFL.flushPostPoolBatch(10);
+        } else if (TFL.postPool.hasMore) {
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Buscando próximo lote do Pool...');
+            TFL.refillPostPool(function () {
+                TFL.flushPostPoolBatch(10);
+            });
+        }
+    });
 
     // ================= EVENT LISTENERS DELEGADOS =================
     $(document).ready(function () {

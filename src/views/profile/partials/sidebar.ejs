@@ -13,10 +13,10 @@
                 <span class="text-xs font-black uppercase tracking-widest text-zinc-300"><%= t('profile.nav.menu', {}, 'Menu') %></span>
             </div>
             <div class="flex items-center gap-1.5">
-                <!-- SINO DE NOTIFICAÇÕES EM TEMPO REAL -->
+                <!-- BAG DE NOTIFICAÇÕES COM CONTADOR EM TEMPO REAL -->
                 <div class="relative">
-                    <button type="button" id="btnToggleNotifications" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-zinc-300 hover:text-amber-400 transition relative" title="Central de Notificações">
-                        <span class="material-symbols-outlined text-[18px]">notifications</span>
+                    <button type="button" id="btnToggleNotifications" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-zinc-300 hover:text-amber-400 transition relative" title="Bag de Notificações">
+                        <span class="material-symbols-outlined text-[18px]">shopping_bag</span>
                         <span id="badgeNotificationsUnread" class="<%= notifUnread > 0 ? '' : 'hidden' %> absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black flex items-center justify-center">
                             <%= notifUnread %>
                         </span>
@@ -29,14 +29,14 @@
             </div>
         </div>
 
-        <!-- PAINEL RETRÁTIL DE NOTIFICAÇÕES -->
+        <!-- PAINEL RETRÁTIL: BAG DE NOTIFICAÇÕES -->
         <div id="notificationsDropdownPanel" class="hidden mx-2.5 mt-2 p-3 rounded-2xl bg-slate-950 border border-amber-500/30 shadow-2xl space-y-2.5 max-h-80 overflow-y-auto">
             <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <span class="text-[10px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
-                    <i class="fa-solid fa-bell"></i> Notificações
+                <span class="text-[10px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bag-shopping"></i> Bag de Notificações
                 </span>
                 <button type="button" id="btnMarkAllNotificationsRead" class="text-[10px] font-bold text-sky-400 hover:text-sky-300">
-                    Marcar lidas
+                    Limpar Bag
                 </button>
             </div>
             <div id="notificationsListContainer" class="space-y-2">
@@ -82,8 +82,10 @@
             </div>
         </div>
 
-        <!-- Menus Principais -->
+        <!-- Menus Principais: Tudo relacionado ao Profile antes de Mercado & Economia -->
         <nav class="p-2.5 space-y-1">
+            <div class="sidebar-text px-2 pt-1 pb-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500">Perfil & Mundo</div>
+
             <!-- THE FANTASY LIFE (HOME DO MUNDO / REDE SOCIAL) -->
             <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition bg-blue-600 text-white shadow-lg shadow-blue-600/30" data-view="view-social" title="<%= t('profile.nav.social', {}, 'The Fantasy Life') %>">
                 <img src="/static/images/Icon_tfl.png" alt="The Fantasy Life" class="w-5 h-5 object-contain flex-shrink-0">
@@ -94,12 +96,6 @@
             <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-avatar" title="<%= t('profile.nav.avatars', {}, 'Avatares') %>">
                 <span class="material-symbols-outlined text-[20px] w-5 text-center text-purple-400">theater_comedy</span>
                 <span class="sidebar-text truncate"><%= t('profile.nav.avatars', {}, 'Avatares') %></span>
-            </button>
-
-            <!-- LOJA 3D (MÓDULO SHOP INDEPENDENTE) -->
-            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-shop" title="<%= t('profile.nav.shop', {}, 'Loja') %>">
-                <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">storefront</span>
-                <span class="sidebar-text truncate"><%= t('profile.nav.shop', {}, 'Loja') %></span>
             </button>
 
             <!-- SALAS -->
@@ -123,19 +119,13 @@
                 <% } %>
             </button>
 
-            <!-- CHAT -->
-            <button id="navBtnChat" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-chat" title="<%= t('profile.nav.chat', {}, 'Chat') %>">
+            <!-- DIÁRIO SECRETO & CANTINHO DE DESABAFO ANÔNIMO -->
+            <button class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-diary" title="Diário Secreto & Desabafo Anônimo">
                 <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-sky-400">forum</span>
-                    <span class="sidebar-text truncate"><%= t('profile.nav.chat', {}, 'Chat') %></span>
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-violet-400">menu_book</span>
+                    <span class="sidebar-text truncate">Diário & Desabafo</span>
                 </div>
-                <span id="sidebarChatUnreadBadge" class="hidden sidebar-text px-2 py-0.5 text-[10px] font-black rounded-full bg-sky-500 text-slate-950">0</span>
-            </button>
-
-            <!-- CARTEIRA -->
-            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-market" title="<%= t('profile.nav.wallet', {}, 'Carteira') %>">
-                <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">account_balance_wallet</span>
-                <span class="sidebar-text truncate"><%= t('profile.nav.wallet', {}, 'Carteira') %></span>
+                <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-violet-500/20 text-violet-300 border border-violet-500/30">🎭</span>
             </button>
 
             <!-- CLUBE VIP -->
@@ -147,6 +137,35 @@
                 <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">👑</span>
             </button>
 
+            <!-- CONTA -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-profile" title="<%= t('profile.nav.account', {}, 'Conta') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-zinc-300">manage_accounts</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.account', {}, 'Conta') %></span>
+            </button>
+
+            <!-- CHAT FLUTUANTE (ATALHO SIDEBAR -> ABRE GAVETA WHATSAPP) -->
+            <button id="navBtnChat" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-chat" title="<%= t('profile.nav.chat', {}, 'Chat Flutuante') %>">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-emerald-400">chat</span>
+                    <span class="sidebar-text truncate"><%= t('profile.nav.chat', {}, 'Chat') %></span>
+                </div>
+                <span id="sidebarChatUnreadBadge" class="hidden sidebar-text px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500 text-slate-950">0</span>
+            </button>
+
+            <div class="sidebar-text px-2 pt-3 pb-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500 border-t border-white/5">Carteira & Mercado</div>
+
+            <!-- CARTEIRA & MERCADO -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-market" title="<%= t('profile.nav.wallet', {}, 'Carteira') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">account_balance_wallet</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.wallet', {}, 'Carteira') %></span>
+            </button>
+
+            <!-- LOJA 3D (MÓDULO SHOP INDEPENDENTE) -->
+            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-shop" title="<%= t('profile.nav.shop', {}, 'Loja') %>">
+                <span class="material-symbols-outlined text-[20px] w-5 text-center text-amber-400">storefront</span>
+                <span class="sidebar-text truncate"><%= t('profile.nav.shop', {}, 'Loja') %></span>
+            </button>
+
             <!-- CASSINO TFL -->
             <button class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-cassino" title="Cassino TFL">
                 <div class="flex items-center gap-3">
@@ -154,12 +173,6 @@
                     <span class="sidebar-text truncate">Cassino</span>
                 </div>
                 <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-pink-500/20 text-pink-300 border border-pink-500/30">🎲</span>
-            </button>
-
-            <!-- CONTA -->
-            <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-profile" title="<%= t('profile.nav.account', {}, 'Conta') %>">
-                <span class="material-symbols-outlined text-[20px] w-5 text-center text-zinc-300">manage_accounts</span>
-                <span class="sidebar-text truncate"><%= t('profile.nav.account', {}, 'Conta') %></span>
             </button>
         </nav>
     </div>

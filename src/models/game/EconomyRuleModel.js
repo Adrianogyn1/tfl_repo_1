@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
     "EconomyRule",
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-      key: { type: DataTypes.STRING, unique: true, defaultValue: "default" },
+      key: { type: DataTypes.STRING, defaultValue: "default" },
 
       // ================= TAXAS DE SPREAD DO MERCADO (BOLSA DE COINS) =================
       // Taxa cobrada sobre a venda de Coins (padrão: 0.5%)
@@ -128,6 +128,9 @@ module.exports = (sequelize) => {
     {
       tableName: "economy_rules",
       timestamps: true,
+      indexes: [
+        { unique: true, fields: ["key"] },
+      ],
     }
   );
 

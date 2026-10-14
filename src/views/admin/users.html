@@ -431,7 +431,7 @@
             renderUserForm(res?.data ?? {}, false);
         } catch (err) {
             console.error('Erro ao carregar usuário:', err);
-            alert('Erro ao carregar o usuário.');
+            if (typeof window.showToast === 'function') window.showToast('Erro ao carregar o usuário.', 'error');
         }
     }
 

@@ -4,6 +4,7 @@ module.exports = (sequelize) => {
   const Terrain = sequelize.define("Terrain", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, defaultValue: "" },
+    roomId: { type: DataTypes.INTEGER, allowNull: true },
     image: { type: DataTypes.STRING, defaultValue: "" },
     description: { type: DataTypes.STRING, defaultValue: "" },
     uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },

@@ -1,304 +1,418 @@
-<!-- ================= VIEW 5: BOLSA DE MOEDAS & MERCADO DE COINS (ICON-FIRST & I18N) ================= -->
+<!-- ================= VIEW 5: CARTEIRA DO PERFIL & MERCADO DE COINS (MODAL-FIRST, ICON-FIRST & PAGINADO 20/PÁG) ================= -->
+<%
+    const isWalletVip = Boolean(vipStatus?.isVip || activeAvatar?.isVip);
+    const ledgerTotalCount = Array.isArray(walletLedger) ? walletLedger.length : 0;
+    const ordersTotalCount = Array.isArray(myOrders) ? myOrders.length : 0;
+    const pixTotalCount = Array.isArray(myTransactions) ? myTransactions.length : 0;
+%>
 <section id="view-market" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
-    <!-- Header Compacto do Mercado -->
-    <div class="bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border border-amber-500/20 rounded-3xl p-5 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-        <div class="relative z-10 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <h2 class="text-lg sm:text-xl font-black text-white italic uppercase tracking-wider flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[24px] text-amber-400">account_balance_wallet</span>
-                    <span><%= t('profile.market.title', {}, 'Carteira & Bolsa') %></span>
-                </h2>
-                <div class="flex flex-wrap items-center gap-2">
-                    <button id="btnOpenDepositModalMarket" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center gap-1.5 transition" title="<%= t('profile.market.buyPix', {}, 'Depositar Pix') %>">
-                        <i class="fa-brands fa-pix"></i>
-                        <span><%= t('profile.market.buyPix', {}, 'Depositar Pix') %></span>
-                    </button>
-                    <button id="btnOpenWithdrawModalMarket" type="button" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 flex items-center gap-1.5 transition" title="<%= t('profile.market.withdrawPix', {}, 'Sacar Pix') %>">
-                        <span class="material-symbols-outlined text-[16px]">payments</span>
-                        <span><%= t('profile.market.withdrawPix', {}, 'Sacar Pix') %></span>
-                    </button>
+
+    <!-- =========================================================================
+         PARTE 1: MINHA CARTEIRA & RECURSOS DO PERFIL (ANTES DO MERCADO)
+         ========================================================================= -->
+    <div class="bg-gradient-to-br from-slate-900 via-slate-900/95 to-blue-950/30 border border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
+        <!-- Cabeçalho Compacto do Perfil Financeiro -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl overflow-hidden border-2 <%= isWalletVip ? 'border-amber-400 shadow-lg shadow-amber-500/20' : 'border-blue-500/40' %> bg-slate-950 flex-shrink-0">
+                    <img src="<%= activeAvatar?.thumbnail || user?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(activeAvatar?.name || 'Player') + '&background=0284c7&color=fff' %>"
+                         alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-black text-white uppercase tracking-wider">
+                            Carteira de <%= activeAvatar?.name || 'Avatar' %>
+                        </h2>
+                        <% if (isWalletVip) { %>
+                            <span class="px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 text-[10px] font-black uppercase">👑 VIP</span>
+                        <% } %>
+                    </div>
+                    <p class="text-[11px] text-zinc-400">
+                        Avatar #<%= activeAvatar?.id || 1 %> • Clique em qualquer ferramenta para abrir em modal
+                    </p>
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-2 text-[11px]">
-                <div class="px-2.5 py-1 rounded-xl bg-slate-950/70 border border-white/10 flex items-center gap-1.5" title="Cotação">
-                    <span class="material-symbols-outlined text-[14px] text-amber-400">currency_exchange</span>
-                    <span class="font-bold text-amber-300"><%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins = $1 (R$ <%= Number(marketStats?.usdBrlRate || 5).toFixed(2) %>)</span>
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="btnOpenDepositModalMarket" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center gap-1.5 transition">
+                    <i class="fa-brands fa-pix"></i>
+                    <span>Depositar Pix</span>
+                </button>
+                <button id="btnOpenWithdrawModalMarket" type="button" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 flex items-center gap-1.5 transition">
+                    <span class="material-symbols-outlined text-[16px]">payments</span>
+                    <span>Sacar Pix</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Saldos do Perfil (3 Moedas) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div class="bg-slate-950/80 border border-emerald-500/25 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400 block">Saldo Cash (USD)</span>
+                    <div class="text-2xl font-black text-emerald-400 mt-0.5">
+                        $<span id="marketMyCash"><%= Number(wallet?.cash || 0).toFixed(2) %></span>
+                    </div>
+                    <span class="text-[10px] text-zinc-500">≈ R$ <%= (Number(wallet?.cash || 0) * Number(marketStats?.usdBrlRate || 5.0)).toFixed(2) %></span>
                 </div>
-                <div class="px-2.5 py-1 rounded-xl bg-slate-950/70 border border-white/10 flex items-center gap-1.5" title="Spreads Compra/Venda">
-                    <span class="material-symbols-outlined text-[14px] text-emerald-400">percent</span>
-                    <span class="font-bold text-emerald-400">↓ <%= Number(marketStats?.buySpreadPercent ?? 0.1) %>%</span>
-                    <span class="text-zinc-600">|</span>
-                    <span class="font-bold text-amber-400">↑ <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%</span>
+                <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                    <span class="material-symbols-outlined text-[24px]">attach_money</span>
                 </div>
-                <div class="px-2.5 py-1 rounded-xl bg-slate-950/70 border border-white/10 flex items-center gap-1.5" title="Mínimo Pix">
-                    <i class="fa-brands fa-pix text-emerald-400"></i>
-                    <span class="font-bold text-white">Min R$ <%= Number(marketStats?.minPurchaseBrl || 10).toFixed(2) %></span>
+            </div>
+
+            <div class="bg-slate-950/80 border border-amber-500/25 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400 block">Moeda do Jogo (Coins)</span>
+                    <div class="text-2xl font-black text-yellow-400 mt-0.5">
+                        <span id="marketMyCoins"><%= Number(wallet?.coins || 0).toLocaleString('pt-BR') %></span>
+                    </div>
+                    <span class="text-[10px] text-zinc-500">🪙 Economia In-Game</span>
                 </div>
+                <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <span class="material-symbols-outlined text-[24px]">toll</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/80 border border-sky-500/25 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400 block">Fichas (Chips)</span>
+                    <div class="text-2xl font-black text-sky-400 mt-0.5">
+                        <span id="marketMyChips"><%= Math.floor(wallet?.chips || 0).toLocaleString('pt-BR') %></span>
+                    </div>
+                    <span class="text-[10px] text-zinc-500">🎲 Cassino &amp; Jogos</span>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                    <span class="material-symbols-outlined text-[24px]">casino</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Atalhos da Carteira Pessoal (Abrem em Modal para manter tela limpa) -->
+        <div>
+            <div class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2.5 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px] text-blue-400">person</span>
+                Ferramentas da Minha Carteira (Abrir em Modal)
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <!-- Transferir Coins P2P -->
+                <button type="button" data-open-wallet-modal="modalWalletTransferP2P"
+                        class="group p-4 rounded-2xl bg-slate-950/70 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/40 text-left transition flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300">
+                            Taxa <%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2) %>%
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-white group-hover:text-amber-300">Enviar Coins P2P</div>
+                        <div class="text-[10px] text-zinc-500">Para amigos ou #ID</div>
+                    </div>
+                </button>
+
+                <!-- Conversor de Moedas -->
+                <button type="button" data-open-wallet-modal="modalWalletConverter"
+                        class="group p-4 rounded-2xl bg-slate-950/70 hover:bg-blue-500/10 border border-white/10 hover:border-blue-500/40 text-left transition flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-300">
+                            Instantâneo
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-white group-hover:text-blue-300">Conversor Rápido</div>
+                        <div class="text-[10px] text-zinc-500">Cash ⇄ Coins ⇄ Chips</div>
+                    </div>
+                </button>
+
+                <!-- Extrato da Carteira (Paginado 20/pág) -->
+                <button type="button" data-open-wallet-modal="modalWalletLedger"
+                        class="group p-4 rounded-2xl bg-slate-950/70 hover:bg-sky-500/10 border border-white/10 hover:border-sky-500/40 text-left transition flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300">
+                            20 / pág
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-white group-hover:text-sky-300">Extrato da Carteira</div>
+                        <div class="text-[10px] text-zinc-500">Movimentações &amp; Bônus</div>
+                    </div>
+                </button>
+
+                <!-- Histórico Pix (Paginado 20/pág) -->
+                <button type="button" data-open-wallet-modal="modalWalletPixHistory"
+                        class="group p-4 rounded-2xl bg-slate-950/70 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/40 text-left transition flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                            <i class="fa-brands fa-pix"></i>
+                        </span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300">
+                            <%= pixTotalCount %> reg.
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-white group-hover:text-emerald-300">Histórico Pix</div>
+                        <div class="text-[10px] text-zinc-500">Depósitos &amp; Saques</div>
+                    </div>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Cards de Status do Pote & Carteira -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
-            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
-                <span><%= t('profile.market.poolCoins', {}, 'Pote Coins') %></span>
-                <span class="material-symbols-outlined text-[16px] text-amber-400">savings</span>
-            </div>
-            <div class="text-xl font-black text-amber-400">
-                <span id="marketTotalPoolCoins"><%= Number(marketStats?.totalCoinsInPool || 0).toLocaleString('pt-BR') %></span>
-            </div>
-            <p class="text-[10px] text-zinc-500">≈ $<%= marketStats?.totalCashEquivalent || '0.00' %></p>
-        </div>
-        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
-            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
-                <span><%= t('profile.market.activeOrders', {}, 'Ordens FIFO') %></span>
-                <span class="material-symbols-outlined text-[16px] text-sky-400">Dynamic_Feed</span>
-            </div>
-            <div class="text-xl font-black text-white">
-                <span id="marketTotalPoolOrders"><%= marketStats?.totalActiveOrders || 0 %></span>
-            </div>
-            <p class="text-[10px] text-zinc-500">P2P Queue</p>
-        </div>
-        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
-            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
-                <span><%= t('profile.market.myCash', {}, 'Saldo Cash') %></span>
-                <span class="material-symbols-outlined text-[16px] text-emerald-400">attach_money</span>
-            </div>
-            <div class="text-xl font-black text-emerald-400">
-                $<span id="marketMyCash"><%= Number(wallet?.cash || 0).toFixed(2) %></span>
-            </div>
-            <p class="text-[10px] text-zinc-500">≈ R$ <%= (Number(wallet?.cash || 0) * Number(marketStats?.usdBrlRate || 5.0)).toFixed(2) %></p>
-        </div>
-        <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-4 shadow-lg space-y-1">
-            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-zinc-400">
-                <span><%= t('profile.market.myCoins', {}, 'Saldo Coins') %></span>
-                <span class="material-symbols-outlined text-[16px] text-yellow-400">toll</span>
-            </div>
-            <div class="text-xl font-black text-yellow-400">
-                <span id="marketMyCoins"><%= Number(wallet?.coins || 0).toLocaleString('pt-BR') %></span>
-            </div>
-            <p class="text-[10px] text-zinc-500">🪙 Coins</p>
-        </div>
-    </div>
-
-    <!-- Terminal de Negociação (Sem travas de pacotes + Taxa de Spread) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- COMPRA DE COINS COM CASH (SPREAD 0.1%) -->
-        <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 flex flex-col justify-between">
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
-                        <i class="fa-solid fa-cart-shopping text-emerald-400"></i>
-                        Comprar Coins (Consumir Pote)
+    <!-- =========================================================================
+         PARTE 2: MERCADO & BOLSA DE COINS (DEPOIS DO PERFIL)
+         ========================================================================= -->
+    <div class="bg-slate-900/90 border border-amber-500/20 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+            <div class="flex items-center gap-2.5">
+                <span class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <span class="material-symbols-outlined text-[22px]">candlestick_chart</span>
+                </span>
+                <div>
+                    <h3 class="text-sm sm:text-base font-black text-white uppercase tracking-wider">
+                        Mercado &amp; Bolsa de Coins (Pote Coletivo P2P)
                     </h3>
-                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                        Taxa Spread: <%= Number(marketStats?.buySpreadPercent ?? 0.1) %>%
+                    <p class="text-[11px] text-zinc-400">
+                        Cotação: <strong><%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins = $1 Cash</strong> • Spread Compra <%= Number(marketStats?.buySpreadPercent ?? 0.1) %>% | Venda <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+                <div class="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 flex items-center gap-1.5">
+                    <span class="text-zinc-400 text-[11px]">Pote:</span>
+                    <strong id="marketTotalPoolCoins" class="text-amber-400"><%= Number(marketStats?.totalCoinsInPool || 0).toLocaleString('pt-BR') %> 🪙</strong>
+                </div>
+                <div class="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 flex items-center gap-1.5">
+                    <span class="text-zinc-400 text-[11px]">Fila:</span>
+                    <strong id="marketTotalPoolOrders" class="text-sky-400"><%= marketStats?.totalActiveOrders || 0 %> ordens</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação do Mercado (Todos em Modal) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <!-- Comprar Coins -->
+            <button type="button" data-open-wallet-modal="modalMarketBuyCoins"
+                    class="group p-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-left transition flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </span>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300">
+                        <%= Number(marketStats?.buySpreadPercent ?? 0.1) %>%
                     </span>
                 </div>
-                <p class="text-xs text-zinc-400 leading-relaxed">
-                    Compre qualquer quantidade de Coins. O sistema consome primeiro as ordens de venda do pote coletivo; se faltar, emite a diferença.
-                </p>
-
-                <div class="space-y-4 pt-2">
-                    <div>
-                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Quantidade de Coins Desejada</label>
-                        <div class="relative">
-                            <input type="number" id="inputBuyCoins" min="1" step="any" placeholder="Digite qualquer quantidade (ex: 100, 250, 1500)..."
-                                   class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 transition">
-                            <span class="absolute right-4 top-3 text-xs text-zinc-500 font-bold">Coins 🪙</span>
-                        </div>
-                    </div>
-
-                    <div class="p-3.5 rounded-xl bg-slate-950/80 border border-white/5 space-y-1.5 text-xs">
-                        <div class="flex justify-between items-center text-zinc-400 text-[11px]">
-                            <span>Valor Base (<%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins = $1):</span>
-                            <span id="labelBuyBaseCash" class="font-semibold text-zinc-300">$0.0000 Cash</span>
-                        </div>
-                        <div class="flex justify-between items-center text-zinc-400 text-[11px]">
-                            <span>Spread de Compra (<%= Number(marketStats?.buySpreadPercent ?? 0.1) %>%):</span>
-                            <span id="labelBuyFeeCash" class="font-semibold text-amber-400">+$0.0000 Cash</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-1.5 border-t border-white/5 text-zinc-300">
-                            <span class="font-bold">Total a Debitar em Cash:</span>
-                            <span id="labelBuyCashCost" class="font-black text-emerald-400 text-sm">$0.0000 Cash</span>
-                        </div>
-                    </div>
+                <div>
+                    <div class="text-xs font-black text-white group-hover:text-emerald-300">Comprar Coins</div>
+                    <div class="text-[10px] text-zinc-400">Consumir Pote c/ Cash</div>
                 </div>
-            </div>
-
-            <button id="btnSubmitBuyCoins" type="button" class="mt-4 w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-check"></i>
-                Confirmar Compra de Coins
             </button>
-        </div>
 
-        <!-- VENDA DE COINS (CRIAR ORDEM NO POTE - SPREAD 0.5%) -->
-        <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 flex flex-col justify-between">
-            <div class="space-y-3">
+            <!-- Vender Coins -->
+            <button type="button" data-open-wallet-modal="modalMarketSellCoins"
+                    class="group p-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-left transition flex flex-col justify-between gap-2">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
-                        <i class="fa-solid fa-money-bill-transfer text-amber-400"></i>
-                        Vender Coins (Inserir no Pote)
-                    </h3>
-                    <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
-                        Taxa Spread: <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%
+                    <span class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                    </span>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
+                        <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%
                     </span>
                 </div>
-                <p class="text-xs text-zinc-400 leading-relaxed">
-                    Coloque seus Coins à venda no pote comum. O sistema reserva as moedas e, conforme forem compradas, credita o Cash líquido (descontado o spread de <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%) na sua carteira.
-                </p>
-
-                <div class="space-y-4 pt-2">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="text-xs font-bold text-zinc-400 uppercase">Quantidade de Coins para Vender</label>
-                            <button type="button" id="btnMaxSellCoins" class="text-[10px] font-bold text-amber-400 hover:underline">
-                                Máximo (<%= Math.floor(wallet?.coins || 0) %>)
-                            </button>
-                        </div>
-                        <div class="relative">
-                            <input type="number" id="inputSellCoins" min="1" step="any" max="<%= Math.floor(wallet?.coins || 0) %>" placeholder="Digite qualquer quantidade (ex: 100, 250, 1000)..."
-                                   class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-amber-500 transition">
-                            <span class="absolute right-4 top-3 text-xs text-zinc-500 font-bold">Coins 🪙</span>
-                        </div>
-                    </div>
-
-                    <div class="p-3.5 rounded-xl bg-slate-950/80 border border-white/5 space-y-1.5 text-xs">
-                        <div class="flex justify-between items-center text-zinc-400 text-[11px]">
-                            <span>Valor Bruto Equivalente:</span>
-                            <span id="labelSellGrossCash" class="font-semibold text-zinc-300">$0.0000 Cash</span>
-                        </div>
-                        <div class="flex justify-between items-center text-zinc-400 text-[11px]">
-                            <span>Spread de Venda (<%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%):</span>
-                            <span id="labelSellFeeCash" class="font-semibold text-red-400">-$0.0000 Cash</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-1.5 border-t border-white/5 text-zinc-300">
-                            <span class="font-bold">Líquido a Receber em Cash:</span>
-                            <span id="labelSellCashYield" class="font-black text-emerald-400 text-sm">$0.0000 Cash</span>
-                        </div>
-                    </div>
+                <div>
+                    <div class="text-xs font-black text-white group-hover:text-amber-300">Vender Coins</div>
+                    <div class="text-[10px] text-zinc-400">Inserir Ordem na Fila</div>
                 </div>
-            </div>
+            </button>
 
-            <button id="btnSubmitSellCoins" type="button" class="mt-4 w-full py-3.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-600/30 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-plus"></i>
-                Publicar Ordem de Venda
+            <!-- Minhas Ordens no Pote (Paginado 20/pág) -->
+            <button type="button" data-open-wallet-modal="modalMarketMyOrders"
+                    class="group p-4 rounded-2xl bg-slate-950/70 hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/40 text-left transition flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </span>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300">
+                        <%= ordersTotalCount %> ordens
+                    </span>
+                </div>
+                <div>
+                    <div class="text-xs font-black text-white group-hover:text-purple-300">Minhas Ordens</div>
+                    <div class="text-[10px] text-zinc-500">Gerenciar / Cancelar</div>
+                </div>
+            </button>
+
+            <!-- Tabela Oficial de Taxas -->
+            <button type="button" data-open-wallet-modal="modalMarketFeeTable"
+                    class="group p-4 rounded-2xl bg-slate-950/70 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/40 text-left transition flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </span>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300">
+                        Oficial
+                    </span>
+                </div>
+                <div>
+                    <div class="text-xs font-black text-white group-hover:text-amber-300">Tabela de Taxas</div>
+                    <div class="text-[10px] text-zinc-500">Tarifas &amp; Recompensas</div>
+                </div>
             </button>
         </div>
     </div>
 
-    <!-- ================= CONVERSOR RÁPIDO DE MOEDAS (CASH ➔ COINS | COINS ⇄ CHIPS | COINS ➔ CASH COM 30% DESÁGIO) ================= -->
-    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
-            <div>
-                <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+    <!-- =========================================================================
+         MODAIS DA CARTEIRA E DO MERCADO (POUCO TEXTO NA TELA PRINCIPAL)
+         ========================================================================= -->
+
+    <!-- MODAL 1: TRANSFERIR COINS P2P -->
+    <div id="modalWalletTransferP2P" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/30 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 relative">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-amber-400"></i>
+                    Transferir Coins (P2P)
+                </h3>
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <p class="text-xs text-zinc-400">
+                Envie <strong>Coins (moeda do jogo)</strong> para qualquer jogador informando o Nome do Avatar ou <code>#ID</code>.
+                <span class="text-amber-300 block mt-1 font-semibold">Taxa: <%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2.0) %>% • Somente Coins são transferíveis entre jogadores.</span>
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Avatar Destinatário (Nome ou #ID)</label>
+                    <input type="text" id="inputTransferRecipient" placeholder="Ex: Luna ou #12"
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Quantidade de Coins</label>
+                        <input type="number" id="inputTransferCoinsAmount" min="1" step="any" placeholder="Ex: 50"
+                               class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Mensagem (Opcional)</label>
+                        <input type="text" id="inputTransferNote" maxlength="100" placeholder="Ex: Presente..."
+                               class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 space-y-1.5 text-xs">
+                <div class="flex justify-between text-zinc-400">
+                    <span>Valor Debitado:</span>
+                    <strong id="lblTransferGrossCoins" class="text-white">0.00 Coins</strong>
+                </div>
+                <div class="flex justify-between text-zinc-400">
+                    <span>Taxa (<%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2.0) %>%):</span>
+                    <strong id="lblTransferFeeCoins" class="text-rose-400">-0.00 Coins</strong>
+                </div>
+                <div class="flex justify-between pt-1.5 border-t border-white/5 text-zinc-200">
+                    <span class="font-bold">Destinatário Recebe:</span>
+                    <strong id="lblTransferNetCoins" class="text-emerald-400 text-sm">0.00 Coins 🪙</strong>
+                </div>
+            </div>
+
+            <button type="button" id="btnSubmitTransferCoins"
+                    class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i>
+                Confirmar Transferência
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CONVERSOR RÁPIDO DE MOEDAS -->
+    <div id="modalWalletConverter" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-blue-500/30 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
                     <i class="fa-solid fa-arrows-rotate text-blue-400"></i>
                     Conversor Rápido de Moedas
                 </h3>
-                <p class="text-xs text-zinc-400">
-                    Converta instantaneamente entre <strong>Cash ➔ Coins</strong>, <strong>Coins ➔ Chips</strong> e <strong>Chips ➔ Coins</strong>.
-                    A conversão direta <strong>Coins ➔ Cash</strong> fora da Bolsa possui deságio de <strong class="text-red-400"><%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>%</strong> para proteger o mercado.
-                </p>
-            </div>
-            <div class="flex items-center gap-2 text-[11px] font-bold">
-                <span class="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-zinc-300">
-                    1 Cash = <%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins
-                </span>
-                <span class="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-zinc-300">
-                    1 Coin = <%= Number(marketStats?.rateChipsPerCoin || 10) %> Chips 🎰
-                </span>
-            </div>
-        </div>
-
-        <!-- Seletor de Modalidade de Conversão -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <button type="button" class="btn-convert-mode p-3.5 rounded-2xl border border-blue-500 bg-blue-600/15 text-left transition space-y-1" data-mode="CASH_TO_COINS">
-                <div class="flex items-center justify-between text-xs font-black text-white">
-                    <span>💵 Cash ➔ 🪙 Coins</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">0% Taxa</span>
-                </div>
-                <p class="text-[11px] text-zinc-400">1 Cash = <%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins</p>
-            </button>
-
-            <button type="button" class="btn-convert-mode p-3.5 rounded-2xl border border-white/10 bg-slate-950/60 hover:border-white/20 text-left transition space-y-1" data-mode="COINS_TO_CHIPS">
-                <div class="flex items-center justify-between text-xs font-black text-white">
-                    <span>🪙 Coins ➔ 🎰 Chips</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">Cassino</span>
-                </div>
-                <p class="text-[11px] text-zinc-400">1 Coin = <%= Number(marketStats?.rateChipsPerCoin || 10) %> Chips</p>
-            </button>
-
-            <button type="button" class="btn-convert-mode p-3.5 rounded-2xl border border-white/10 bg-slate-950/60 hover:border-white/20 text-left transition space-y-1" data-mode="CHIPS_TO_COINS">
-                <div class="flex items-center justify-between text-xs font-black text-white">
-                    <span>🎰 Chips ➔ 🪙 Coins</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">Resgate</span>
-                </div>
-                <p class="text-[11px] text-zinc-400"><%= Number(marketStats?.rateChipsPerCoin || 10) %> Chips = 1 Coin</p>
-            </button>
-
-            <% if (marketStats?.allowInstantCoinsToCash !== false) { %>
-            <button type="button" class="btn-convert-mode p-3.5 rounded-2xl border border-white/10 bg-slate-950/60 hover:border-red-500/40 text-left transition space-y-1" data-mode="COINS_TO_CASH">
-                <div class="flex items-center justify-between text-xs font-black text-white">
-                    <span>🪙 Coins ➔ 💵 Cash</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400">-<%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>% Taxa</span>
-                </div>
-                <p class="text-[11px] text-zinc-400">Liquidez imediata c/ perda</p>
-            </button>
-            <% } else { %>
-            <div class="p-3.5 rounded-2xl border border-white/5 bg-slate-950/30 opacity-60 text-left space-y-1 cursor-not-allowed" title="Desativado para proteger o livro de ordens da Bolsa">
-                <div class="flex items-center justify-between text-xs font-black text-zinc-500">
-                    <span>🪙 Coins ➔ 💵 Cash</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">Só na Bolsa</span>
-                </div>
-                <p class="text-[11px] text-zinc-600">Use a Ordem de Venda acima</p>
-            </div>
-            <% } %>
-        </div>
-
-        <!-- Alerta de Deságio quando COINS_TO_CASH está selecionado -->
-        <div id="alertConvertPenalty" class="hidden p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-xs text-red-300 flex items-start gap-3">
-            <i class="fa-solid fa-triangle-exclamation text-red-400 text-base mt-0.5"></i>
-            <div>
-                <strong class="text-red-400 uppercase">Atenção — Taxa de Desincentivo de <%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>%!</strong>
-                <p class="text-[11px] text-zinc-300 mt-0.5">
-                    A conversão direta de <strong>Coins para Cash</strong> desconta <strong><%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>%</strong> do valor para não atrapalhar o livro de ofertas.
-                    Se quiser receber <strong><%= (100 - Number(marketStats?.sellSpreadPercent ?? 0.5)).toFixed(1) %>%</strong> do valor (taxa de apenas <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%), utilize o painel <strong>"Vender Coins (Inserir no Pote)"</strong> logo acima!
-                </p>
-            </div>
-        </div>
-
-        <!-- Formulário e Simulação de Conversão -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end pt-1">
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <label id="labelConvertInputTitle" class="text-xs font-bold text-zinc-400 uppercase">Valor para Converter (Cash)</label>
-                    <button type="button" id="btnMaxConvert" class="text-[10px] font-bold text-blue-400 hover:underline">
-                        Usar Saldo Máximo
-                    </button>
-                </div>
-                <div class="relative">
-                    <input type="hidden" id="selectedConvertMode" value="CASH_TO_COINS">
-                    <input type="number" id="inputConvertAmount" min="0.01" step="any" placeholder="Digite a quantidade..."
-                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500 transition">
-                    <span id="labelConvertFromUnit" class="absolute right-4 top-3 text-xs text-zinc-500 font-bold">Cash 💵</span>
-                </div>
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
 
-            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-white/5 space-y-1 text-xs">
-                <div class="flex justify-between items-center text-[11px] text-zinc-400">
-                    <span>Taxa Aplicada:</span>
-                    <span id="labelConvertFeeInfo" class="font-bold text-emerald-400">0% (Sem perda)</span>
-                </div>
-                <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                    <span class="text-zinc-300 font-bold">Você Receberá:</span>
-                    <span id="labelConvertReceivePreview" class="font-black text-blue-400 text-sm">0 Coins 🪙</span>
-                </div>
+            <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" class="btn-convert-mode p-3 rounded-2xl border border-blue-500 bg-blue-600/15 text-left transition space-y-0.5" data-mode="CASH_TO_COINS">
+                    <div class="flex items-center justify-between text-xs font-black text-white">
+                        <span>💵 Cash ➔ 🪙 Coins</span>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">0%</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-400">1 Cash = <%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins</p>
+                </button>
+
+                <button type="button" class="btn-convert-mode p-3 rounded-2xl border border-white/10 bg-slate-950/60 hover:border-white/20 text-left transition space-y-0.5" data-mode="COINS_TO_CHIPS">
+                    <div class="flex items-center justify-between text-xs font-black text-white">
+                        <span>🪙 Coins ➔ 🎰 Chips</span>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">Cassino</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-400">1 Coin = <%= Number(marketStats?.rateChipsPerCoin || 10) %> Chips</p>
+                </button>
+
+                <button type="button" class="btn-convert-mode p-3 rounded-2xl border border-white/10 bg-slate-950/60 hover:border-white/20 text-left transition space-y-0.5" data-mode="CHIPS_TO_COINS">
+                    <div class="flex items-center justify-between text-xs font-black text-white">
+                        <span>🎰 Chips ➔ 🪙 Coins</span>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">Resgate</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-400"><%= Number(marketStats?.rateChipsPerCoin || 10) %> Chips = 1 Coin</p>
+                </button>
+
+                <% if (marketStats?.allowInstantCoinsToCash !== false) { %>
+                <button type="button" class="btn-convert-mode p-3 rounded-2xl border border-white/10 bg-slate-950/60 hover:border-red-500/40 text-left transition space-y-0.5" data-mode="COINS_TO_CASH">
+                    <div class="flex items-center justify-between text-xs font-black text-white">
+                        <span>🪙 Coins ➔ 💵 Cash</span>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">-<%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>%</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-400">Liquidez imediata</p>
+                </button>
+                <% } %>
             </div>
 
-            <div>
-                <button type="button" id="btnSubmitConvert" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+            <div id="alertConvertPenalty" class="hidden p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-xs text-red-300">
+                <strong class="text-red-400 uppercase block">Atenção — Deságio de <%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30) %>%</strong>
+                Na Bolsa de Moedas a taxa é de apenas <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%.
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label id="labelConvertInputTitle" class="text-xs font-bold text-zinc-400 uppercase">Valor para Converter (Cash)</label>
+                        <button type="button" id="btnMaxConvert" class="text-[10px] font-bold text-blue-400 hover:underline">Usar Saldo Máximo</button>
+                    </div>
+                    <div class="relative">
+                        <input type="hidden" id="selectedConvertMode" value="CASH_TO_COINS">
+                        <input type="number" id="inputConvertAmount" min="0.01" step="any" placeholder="Digite a quantidade..."
+                               class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500">
+                        <span id="labelConvertFromUnit" class="absolute right-4 top-2.5 text-xs text-zinc-500 font-bold">Cash 💵</span>
+                    </div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-slate-950 border border-white/5 space-y-1 text-xs">
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>Taxa Aplicada:</span>
+                        <span id="labelConvertFeeInfo" class="font-bold text-emerald-400">0% (Sem perda)</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 border-t border-white/5">
+                        <span class="text-zinc-300 font-bold">Você Receberá:</span>
+                        <span id="labelConvertReceivePreview" class="font-black text-blue-400 text-sm">0 Coins 🪙</span>
+                    </div>
+                </div>
+
+                <button type="button" id="btnSubmitConvert" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-arrows-rotate"></i>
                     Converter Agora
                 </button>
@@ -306,473 +420,370 @@
         </div>
     </div>
 
-    <!-- ================= TRANSFERÊNCIA DE MOEDA DO JOGO (COINS) ENTRE JOGADORES (TAXA CONFIGURADA) ================= -->
-    <div class="bg-slate-900/80 border border-amber-500/25 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
-            <div>
-                <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane text-amber-400"></i>
-                    Transferir Moeda do Jogo (Coins) para Outro Jogador
+    <!-- MODAL 3: COMPRAR COINS NA BOLSA -->
+    <div id="modalMarketBuyCoins" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 relative">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cart-shopping text-emerald-400"></i>
+                    Comprar Coins (Pote)
                 </h3>
-                <p class="text-xs text-zinc-400 mt-0.5">
-                    Envie <strong>Coins (moeda do jogo)</strong> para qualquer amigo ou jogador informando o Nome do Avatar ou <code>#ID</code>.
-                    <span class="text-amber-300 font-semibold">Regra Oficial: Não há transferência de valores reais (Cash / R$) entre contas — apenas moeda do jogo (Coins).</span>
-                </p>
-            </div>
-            <span class="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-black uppercase">
-                Taxa de Transferência: <%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2.0).toLocaleString('pt-BR') %>%
-            </span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            <div class="md:col-span-4">
-                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Avatar Destinatário (Nome ou #ID)</label>
-                <input type="text" id="inputTransferRecipient" placeholder="Ex: Luna ou #12"
-                       class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-amber-500 transition">
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
 
-            <div class="md:col-span-3">
-                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Quantidade de Coins</label>
-                <div class="relative">
-                    <input type="number" id="inputTransferCoinsAmount" min="1" step="any" placeholder="Ex: 50"
-                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-amber-500 transition">
-                    <span class="absolute right-3 top-3 text-xs text-amber-400 font-bold">🪙</span>
-                </div>
-            </div>
-
-            <div class="md:col-span-5">
-                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Mensagem / Motivo (Opcional)</label>
-                <input type="text" id="inputTransferNote" maxlength="100" placeholder="Ex: Presente, pagamento de evento, parceria..."
-                       class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition">
-            </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-950/80 border border-white/5 text-xs">
-            <div class="flex flex-wrap items-center gap-4">
+            <div class="space-y-4">
                 <div>
-                    <span class="text-zinc-400">Valor Debitado:</span>
-                    <strong id="lblTransferGrossCoins" class="text-white ml-1">0.00 Coins</strong>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Quantidade de Coins Desejada</label>
+                    <div class="relative">
+                        <input type="number" id="inputBuyCoins" min="1" step="any" placeholder="Ex: 250, 1000..."
+                               class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                        <span class="absolute right-4 top-2.5 text-xs text-zinc-500 font-bold">Coins 🪙</span>
+                    </div>
                 </div>
-                <span class="text-zinc-700">|</span>
-                <div>
-                    <span class="text-zinc-400">Taxa (<%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2.0) %>%):</span>
-                    <strong id="lblTransferFeeCoins" class="text-rose-400 ml-1">-0.00 Coins</strong>
-                </div>
-                <span class="text-zinc-700">|</span>
-                <div>
-                    <span class="text-zinc-400">Destinatário Recebe Líquido:</span>
-                    <strong id="lblTransferNetCoins" class="text-emerald-400 text-sm ml-1">0.00 Coins 🪙</strong>
-                </div>
-            </div>
 
-            <button type="button" id="btnSubmitTransferCoins"
-                    class="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i>
-                Transferir Coins
-            </button>
+                <div class="p-3.5 rounded-xl bg-slate-950 border border-white/5 space-y-1.5 text-xs">
+                    <div class="flex justify-between text-zinc-400">
+                        <span>Valor Base (<%= Number(marketStats?.rateCoinsPerCash || 250) %> Coins = $1):</span>
+                        <span id="labelBuyBaseCash" class="font-semibold text-zinc-300">$0.0000 Cash</span>
+                    </div>
+                    <div class="flex justify-between text-zinc-400">
+                        <span>Spread (<%= Number(marketStats?.buySpreadPercent ?? 0.1) %>%):</span>
+                        <span id="labelBuyFeeCash" class="font-semibold text-amber-400">+$0.0000 Cash</span>
+                    </div>
+                    <div class="flex justify-between pt-1.5 border-t border-white/5 text-zinc-200">
+                        <span class="font-bold">Total em Cash:</span>
+                        <span id="labelBuyCashCost" class="font-black text-emerald-400 text-sm">$0.0000 Cash</span>
+                    </div>
+                </div>
+
+                <button id="btnSubmitBuyCoins" type="button" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i>
+                    Confirmar Compra de Coins
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Tabela de Ordens do Avatar Ativo -->
-    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
-            <div>
-                <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-amber-400"></i>
-                    Minhas Ordens de Venda no Pote
+    <!-- MODAL 4: VENDER COINS NA FILA -->
+    <div id="modalMarketSellCoins" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 relative">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+                    <i class="fa-solid fa-money-bill-transfer text-amber-400"></i>
+                    Vender Coins na Fila P2P
                 </h3>
-                <p class="text-xs text-zinc-400">Acompanhe suas ordens ativas e cancele a qualquer momento para estornar os Coins não vendidos.</p>
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="text-xs font-bold text-zinc-400 uppercase">Quantidade para Vender</label>
+                        <button type="button" id="btnMaxSellCoins" class="text-[10px] font-bold text-amber-400 hover:underline">
+                            Máximo (<%= Math.floor(wallet?.coins || 0) %>)
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="inputSellCoins" min="1" step="any" max="<%= Math.floor(wallet?.coins || 0) %>" placeholder="Ex: 250, 1000..."
+                               class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-amber-500">
+                        <span class="absolute right-4 top-2.5 text-xs text-zinc-500 font-bold">Coins 🪙</span>
+                    </div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-slate-950 border border-white/5 space-y-1.5 text-xs">
+                    <div class="flex justify-between text-zinc-400">
+                        <span>Valor Bruto Equivalente:</span>
+                        <span id="labelSellGrossCash" class="font-semibold text-zinc-300">$0.0000 Cash</span>
+                    </div>
+                    <div class="flex justify-between text-zinc-400">
+                        <span>Spread (<%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%):</span>
+                        <span id="labelSellFeeCash" class="font-semibold text-red-400">-$0.0000 Cash</span>
+                    </div>
+                    <div class="flex justify-between pt-1.5 border-t border-white/5 text-zinc-200">
+                        <span class="font-bold">Líquido a Receber:</span>
+                        <span id="labelSellCashYield" class="font-black text-emerald-400 text-sm">$0.0000 Cash</span>
+                    </div>
+                </div>
+
+                <button id="btnSubmitSellCoins" type="button" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-600/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    Publicar Ordem de Venda
+                </button>
             </div>
         </div>
+    </div>
 
-        <% if (myOrders && myOrders.length > 0) { %>
-            <div class="overflow-x-auto">
+    <!-- MODAL 5: EXTRATO DETALHADO DA CARTEIRA (PAGINADO 20 POR PÁGINA) -->
+    <div id="modalWalletLedger" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-sky-500/30 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-4 relative max-h-[90vh] flex flex-col">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                <div>
+                    <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-sky-400"></i>
+                        Extrato da Carteira (20 por página)
+                    </h3>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" class="btn-filter-ledger px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-sky-600 text-white" data-currency="">Todos</button>
+                    <button type="button" class="btn-filter-ledger px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-slate-800 text-zinc-300" data-currency="Coins">Coins 🪙</button>
+                    <button type="button" class="btn-filter-ledger px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-slate-800 text-zinc-300" data-currency="Cash">Cash 💵</button>
+                    <button type="button" class="btn-filter-ledger px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-slate-800 text-zinc-300" data-currency="Chips">Chips 🎲</button>
+                    <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1 ml-2">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto overflow-y-auto flex-1">
                 <table class="w-full text-left text-xs">
-                    <thead>
+                    <thead class="sticky top-0 bg-slate-950 z-10">
                         <tr class="text-zinc-500 border-b border-white/5 uppercase text-[10px] tracking-wider">
-                            <th class="py-3 px-3">ID</th>
-                            <th class="py-3 px-3">Data</th>
-                            <th class="py-3 px-3">Qtd Inicial</th>
-                            <th class="py-3 px-3">No Pote</th>
-                            <th class="py-3 px-3">Spread (<%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%)</th>
-                            <th class="py-3 px-3">Cash Líquido Ganho</th>
-                            <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3 text-right">Ação</th>
+                            <th class="py-2.5 px-3">Data</th>
+                            <th class="py-2.5 px-3">Categoria</th>
+                            <th class="py-2.5 px-3">Descrição</th>
+                            <th class="py-2.5 px-3">Moeda</th>
+                            <th class="py-2.5 px-3">Valor</th>
+                            <th class="py-2.5 px-3">Taxa</th>
+                            <th class="py-2.5 px-3 text-right">Saldo Após</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/5">
-                        <% myOrders.forEach(function(ord) { %>
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-3.5 px-3 font-mono font-bold text-zinc-400">#<%= ord.id %></td>
-                                <td class="py-3.5 px-3 text-zinc-400"><%= new Date(ord.createdAt).toLocaleDateString() %></td>
-                                <td class="py-3.5 px-3 font-bold text-white"><%= ord.initialCoins %> 🪙</td>
-                                <td class="py-3.5 px-3 font-bold text-yellow-400"><%= ord.remainingCoins %> 🪙</td>
-                                <td class="py-3.5 px-3 text-red-400">-$<%= Number(ord.paidFeeCash || 0).toFixed(4) %></td>
-                                <td class="py-3.5 px-3 font-bold text-emerald-400">$<%= Number(ord.earnedCash || 0).toFixed(4) %></td>
-                                <td class="py-3.5 px-3">
-                                    <% if (ord.status === 'OPEN') { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-[10px]">Aberta</span>
-                                    <% } else if (ord.status === 'PARTIAL') { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-[10px]">Parcial</span>
-                                    <% } else if (ord.status === 'COMPLETED') { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[10px]">Liquidada ✔</span>
-                                    <% } else { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-zinc-800 border border-white/10 text-zinc-400 font-bold text-[10px]">Cancelada</span>
-                                    <% } %>
-                                </td>
-                                <td class="py-3.5 px-3 text-right">
-                                    <% if (['OPEN', 'PARTIAL'].includes(ord.status) && ord.remainingCoins > 0) { %>
-                                        <button class="btn-cancel-order px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-[11px] transition"
-                                                data-id="<%= ord.id %>">
-                                            Cancelar
-                                        </button>
-                                    <% } else { %>
-                                        <span class="text-zinc-600 text-[11px]">—</span>
-                                    <% } %>
-                                </td>
+                    <tbody id="walletLedgerTableBody" class="divide-y divide-white/5">
+                        <% if (typeof walletLedger !== 'undefined' && Array.isArray(walletLedger) && walletLedger.length > 0) { %>
+                            <% walletLedger.slice(0, 20).forEach(function(item) {
+                                const amt = Number(item.amount || 0);
+                                const fee = Number(item.feeAmount || 0);
+                                const bal = Number(item.balanceAfter || 0);
+                                const isPositive = amt >= 0;
+                            %>
+                                <tr class="hover:bg-slate-800/30 transition ledger-row" data-currency="<%= item.currencyType %>">
+                                    <td class="py-2.5 px-3 text-zinc-400 whitespace-nowrap"><%= new Date(item.createdAt).toLocaleString('pt-BR') %></td>
+                                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 border border-white/10 text-[10px] font-black text-zinc-300"><%= item.category %></span></td>
+                                    <td class="py-2.5 px-3 text-zinc-200 max-w-xs"><%= item.description %></td>
+                                    <td class="py-2.5 px-3 font-bold <%= item.currencyType === 'Cash' ? 'text-emerald-400' : (item.currencyType === 'Chips' ? 'text-sky-400' : 'text-amber-400') %>"><%= item.currencyType %></td>
+                                    <td class="py-2.5 px-3 font-black <%= isPositive ? 'text-emerald-400' : 'text-rose-400' %>"><%= isPositive ? '+' : '' %><%= amt.toFixed(2) %></td>
+                                    <td class="py-2.5 px-3 text-zinc-400"><%= fee > 0 ? '-' + fee.toFixed(2) : '—' %></td>
+                                    <td class="py-2.5 px-3 text-right font-bold text-white"><%= bal.toFixed(2) %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" class="py-8 text-center text-zinc-500">Nenhuma movimentação registrada ainda.</td>
                             </tr>
-                        <% }); %>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
-        <% } else { %>
-            <div class="p-8 rounded-2xl bg-slate-950/40 border border-dashed border-white/5 text-center text-xs text-zinc-500 space-y-2">
-                <i class="fa-solid fa-receipt text-3xl text-zinc-600 block"></i>
-                <p class="font-bold text-zinc-400">Você ainda não possui ordens de venda no mercado.</p>
-                <p>Coloque seus Coins à venda no formulário acima para ganhar Cash quando outros jogadores comprarem.</p>
+
+            <!-- Barra de Paginação (20 itens por página) -->
+            <div class="flex items-center justify-between border-t border-white/10 pt-3 text-xs">
+                <span id="lblLedgerPageInfo" class="text-zinc-400 font-bold">Página 1 (20 itens/pág)</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnLedgerPrevPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 font-bold disabled:opacity-40" disabled>← Anterior</button>
+                    <button type="button" id="btnLedgerNextPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 font-bold">Próxima →</button>
+                </div>
             </div>
-        <% } %>
+        </div>
     </div>
 
-    <!-- ================= EXTRATO COMPLETO DA CARTEIRA (WALLET LEDGER: SALAS, 1K VISITAS, P2P, LOJA 3D, VIP, CASSINO) ================= -->
-    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
-            <div>
-                <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
-                    <i class="fa-solid fa-file-invoice-dollar text-sky-400"></i>
-                    Extrato Detalhado da Carteira (Todas as Moedas &amp; Taxas)
+    <!-- MODAL 6: MINHAS ORDENS DE VENDA NO POTE (PAGINADO 20 POR PÁGINA) -->
+    <div id="modalMarketMyOrders" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-purple-500/30 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-4 relative max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-purple-400"></i>
+                    Minhas Ordens na Fila P2P (20 por página)
                 </h3>
-                <p class="text-xs text-zinc-400">
-                    Histórico completo de Passe 24h de Salas, Bônus por 1k Visitas, Transferências de Coins, Loja 3D, Clube VIP, Cassino e Conversões.
-                </p>
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
-            <div class="flex items-center gap-1.5">
-                <button type="button" class="btn-filter-ledger px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-sky-600 text-white transition" data-currency="">Todos</button>
-                <button type="button" class="btn-filter-ledger px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-800 text-zinc-300 hover:text-white transition" data-currency="Coins">Coins 🪙</button>
-                <button type="button" class="btn-filter-ledger px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-800 text-zinc-300 hover:text-white transition" data-currency="Cash">Cash 💵</button>
-                <button type="button" class="btn-filter-ledger px-3 py-1.5 rounded-xl text-[11px] font-black uppercase bg-slate-800 text-zinc-300 hover:text-white transition" data-currency="Chips">Chips 🎲</button>
-            </div>
-        </div>
 
-        <div class="overflow-x-auto max-h-96 overflow-y-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="sticky top-0 bg-slate-950 z-10">
-                    <tr class="text-zinc-500 border-b border-white/5 uppercase text-[10px] tracking-wider">
-                        <th class="py-3 px-3">Data</th>
-                        <th class="py-3 px-3">Categoria</th>
-                        <th class="py-3 px-3">Descrição</th>
-                        <th class="py-3 px-3">Moeda</th>
-                        <th class="py-3 px-3">Movimentação</th>
-                        <th class="py-3 px-3">Taxa Retida</th>
-                        <th class="py-3 px-3 text-right">Saldo Após</th>
-                    </tr>
-                </thead>
-                <tbody id="walletLedgerTableBody" class="divide-y divide-white/5">
-                    <% if (typeof walletLedger !== 'undefined' && Array.isArray(walletLedger) && walletLedger.length > 0) { %>
-                        <% walletLedger.forEach(function(item) {
-                            const amt = Number(item.amount || 0);
-                            const fee = Number(item.feeAmount || 0);
-                            const bal = Number(item.balanceAfter || 0);
-                            const isPositive = amt >= 0;
-                        %>
-                            <tr class="hover:bg-slate-800/30 transition ledger-row" data-currency="<%= item.currencyType %>">
-                                <td class="py-3 px-3 text-zinc-400 whitespace-nowrap"><%= new Date(item.createdAt).toLocaleString('pt-BR') %></td>
-                                <td class="py-3 px-3">
-                                    <span class="px-2 py-0.5 rounded bg-slate-800 border border-white/10 text-[10px] font-black text-zinc-300"><%= item.category %></span>
-                                </td>
-                                <td class="py-3 px-3 text-zinc-200 max-w-xs"><%= item.description %></td>
-                                <td class="py-3 px-3 font-bold <%= item.currencyType === 'Cash' ? 'text-emerald-400' : (item.currencyType === 'Chips' ? 'text-sky-400' : 'text-amber-400') %>">
-                                    <%= item.currencyType %>
-                                </td>
-                                <td class="py-3 px-3 font-black <%= isPositive ? 'text-emerald-400' : 'text-rose-400' %>">
-                                    <%= isPositive ? '+' : '' %><%= amt.toFixed(2) %>
-                                </td>
-                                <td class="py-3 px-3 text-zinc-400">
-                                    <%= fee > 0 ? '-' + fee.toFixed(2) : '—' %>
-                                </td>
-                                <td class="py-3 px-3 text-right font-bold text-white">
-                                    <%= bal.toFixed(2) %>
-                                </td>
-                            </tr>
-                        <% }); %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="7" class="py-8 text-center text-zinc-500">
-                                Nenhuma movimentação registrada no extrato detalhado ainda.
-                            </td>
+            <div class="overflow-x-auto overflow-y-auto flex-1">
+                <table class="w-full text-left text-xs">
+                    <thead class="sticky top-0 bg-slate-950 z-10">
+                        <tr class="text-zinc-500 border-b border-white/5 uppercase text-[10px] tracking-wider">
+                            <th class="py-2.5 px-3">ID</th>
+                            <th class="py-2.5 px-3">Data</th>
+                            <th class="py-2.5 px-3">Qtd Inicial</th>
+                            <th class="py-2.5 px-3">No Pote</th>
+                            <th class="py-2.5 px-3">Spread</th>
+                            <th class="py-2.5 px-3">Cash Ganho</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3 text-right">Ação</th>
                         </tr>
-                    <% } %>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="walletOrdersTableBody" class="divide-y divide-white/5">
+                        <% if (myOrders && myOrders.length > 0) { %>
+                            <% myOrders.slice(0, 20).forEach(function(ord) { %>
+                                <tr class="hover:bg-slate-800/30 transition">
+                                    <td class="py-2.5 px-3 font-mono font-bold text-zinc-400">#<%= ord.id %></td>
+                                    <td class="py-2.5 px-3 text-zinc-400"><%= new Date(ord.createdAt).toLocaleDateString('pt-BR') %></td>
+                                    <td class="py-2.5 px-3 font-bold text-white"><%= ord.initialCoins %> 🪙</td>
+                                    <td class="py-2.5 px-3 font-bold text-yellow-400"><%= ord.remainingCoins %> 🪙</td>
+                                    <td class="py-2.5 px-3 text-red-400">-$<%= Number(ord.paidFeeCash || 0).toFixed(4) %></td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-400">$<%= Number(ord.earnedCash || 0).toFixed(4) %></td>
+                                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-zinc-300 font-bold text-[10px]"><%= ord.status %></span></td>
+                                    <td class="py-2.5 px-3 text-right">
+                                        <% if (['OPEN', 'PARTIAL'].includes(ord.status) && ord.remainingCoins > 0) { %>
+                                            <button class="btn-cancel-order px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-[10px]" data-id="<%= ord.id %>">Cancelar</button>
+                                        <% } else { %>
+                                            <span class="text-zinc-600">—</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr><td colspan="8" class="py-8 text-center text-zinc-500">Nenhuma ordem registrada.</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-white/10 pt-3 text-xs">
+                <span id="lblOrdersPageInfo" class="text-zinc-400 font-bold">Página 1 (20 itens/pág)</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnOrdersPrevPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 font-bold disabled:opacity-40" disabled>← Anterior</button>
+                    <button type="button" id="btnOrdersNextPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 font-bold">Próxima →</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Tabela de Compras e Saques Pix (Asaas) -->
-    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
-            <div>
-                <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+    <!-- MODAL 7: HISTÓRICO PIX COMPRAS & SAQUES (PAGINADO 20 POR PÁGINA) -->
+    <div id="modalWalletPixHistory" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/30 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-4 relative max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
                     <i class="fa-brands fa-pix text-emerald-400"></i>
-                    Histórico de Compras & Saques (Pix Asaas)
+                    Histórico de Compras &amp; Saques Pix (20 por página)
                 </h3>
-                <p class="text-xs text-zinc-400">
-                    Modo de aprovação atual —
-                    Compra: <strong class="text-emerald-400"><%= marketStats?.buyApprovalMode === 'AUTO' ? 'Automático (até R$ ' + Number(marketStats?.maxAutoBuyBrl || 500).toFixed(2) + ')' : 'Manual (Admin)' %></strong> |
-                    Saque: <strong class="text-blue-400"><%= marketStats?.withdrawApprovalMode === 'AUTO' ? 'Automático (até $' + Number(marketStats?.maxAutoWithdrawCash || 20).toFixed(2) + ' Cash)' : 'Manual (Admin)' %></strong>
-                </p>
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
-        </div>
 
-        <% if (typeof myTransactions !== 'undefined' && myTransactions && myTransactions.length > 0) { %>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto overflow-y-auto flex-1">
                 <table class="w-full text-left text-xs">
-                    <thead>
+                    <thead class="sticky top-0 bg-slate-950 z-10">
                         <tr class="text-zinc-500 border-b border-white/5 uppercase text-[10px] tracking-wider">
-                            <th class="py-3 px-3">ID</th>
-                            <th class="py-3 px-3">Operação</th>
-                            <th class="py-3 px-3">Cash</th>
-                            <th class="py-3 px-3">Valor (R$)</th>
-                            <th class="py-3 px-3">Chave Pix / Info</th>
-                            <th class="py-3 px-3">Aprovação</th>
-                            <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3 text-right">Ações</th>
+                            <th class="py-2.5 px-3">ID</th>
+                            <th class="py-2.5 px-3">Operação</th>
+                            <th class="py-2.5 px-3">Cash</th>
+                            <th class="py-2.5 px-3">Valor (R$)</th>
+                            <th class="py-2.5 px-3">Chave Pix / Info</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3 text-right">Ações</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/5">
-                        <% myTransactions.forEach(function(tx) { %>
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-3.5 px-3 font-mono font-bold text-zinc-400">#<%= tx.id %></td>
-                                <td class="py-3.5 px-3">
-                                    <% if (tx.type === 'Buy') { %>
-                                        <span class="text-emerald-400 font-bold"><i class="fa-solid fa-arrow-down mr-1"></i>Compra</span>
-                                    <% } else { %>
-                                        <span class="text-blue-400 font-bold"><i class="fa-solid fa-arrow-up mr-1"></i>Saque</span>
-                                    <% } %>
-                                </td>
-                                <td class="py-3.5 px-3 font-bold text-white">$<%= Number(tx.cash_amount || (Number(tx.value) / Number(marketStats?.usdBrlRate || 5))).toFixed(2) %></td>
-                                <td class="py-3.5 px-3 font-bold text-emerald-300">R$ <%= Number(tx.value || 0).toFixed(2) %></td>
-                                <td class="py-3.5 px-3 text-zinc-400 truncate max-w-[180px]"><%= tx.pix_key ? (tx.pix_key_type + ': ' + tx.pix_key) : (tx.description || '—') %></td>
-                                <td class="py-3.5 px-3">
-                                    <span class="px-2 py-0.5 rounded bg-slate-800 text-zinc-300 text-[10px] font-bold"><%= tx.approval_mode || 'AUTO' %></span>
-                                </td>
-                                <td class="py-3.5 px-3">
-                                    <% if (['CONFIRMED', 'RECEIVED', 'APPROVED_AUTO', 'APPROVED_ADMIN', 'DONE'].includes(tx.status)) { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[10px]">
-                                            <%= tx.status === 'APPROVED_AUTO' ? 'Aprovado Automático ✔' : (tx.status === 'APPROVED_ADMIN' ? 'Aprovado Admin ✔' : 'Concluído ✔') %>
-                                        </span>
-                                    <% } else if (tx.status === 'WAITING_APPROVAL') { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-[10px]">
-                                            Aguardando Admin ⏳
-                                        </span>
-                                    <% } else if (tx.status === 'PENDING') { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-[10px]">
-                                            Aguardando Pix
-                                        </span>
-                                    <% } else { %>
-                                        <span class="px-2 py-0.5 rounded-md bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-[10px]">
-                                            <%= tx.status %>
-                                        </span>
-                                    <% } %>
-                                </td>
-                                <td class="py-3.5 px-3 text-right space-x-1">
-                                    <% if (tx.type === 'Withdraw' && ['WAITING_APPROVAL', 'PENDING'].includes(tx.status)) { %>
-                                        <button class="btn-cancel-withdraw px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-[10px] transition"
-                                                data-id="<%= tx.id %>" title="Cancelar e estornar Cash">
-                                            Cancelar
-                                        </button>
-                                    <% } else { %>
-                                        <span class="text-zinc-600 text-[11px]">—</span>
-                                    <% } %>
-                                </td>
-                            </tr>
-                        <% }); %>
+                    <tbody id="walletPixTableBody" class="divide-y divide-white/5">
+                        <% if (typeof myTransactions !== 'undefined' && myTransactions && myTransactions.length > 0) { %>
+                            <% myTransactions.slice(0, 20).forEach(function(tx) { %>
+                                <tr class="hover:bg-slate-800/30 transition">
+                                    <td class="py-2.5 px-3 font-mono font-bold text-zinc-400">#<%= tx.id %></td>
+                                    <td class="py-2.5 px-3">
+                                        <% if (tx.type === 'Buy') { %>
+                                            <span class="text-emerald-400 font-bold">Compra</span>
+                                        <% } else { %>
+                                            <span class="text-blue-400 font-bold">Saque</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="py-2.5 px-3 font-bold text-white">$<%= Number(tx.cash_amount || (Number(tx.value) / Number(marketStats?.usdBrlRate || 5))).toFixed(2) %></td>
+                                    <td class="py-2.5 px-3 font-bold text-emerald-300">R$ <%= Number(tx.value || 0).toFixed(2) %></td>
+                                    <td class="py-2.5 px-3 text-zinc-400 truncate max-w-[180px]"><%= tx.pix_key ? (tx.pix_key_type + ': ' + tx.pix_key) : (tx.description || '—') %></td>
+                                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-zinc-300 font-bold text-[10px]"><%= tx.status %></span></td>
+                                    <td class="py-2.5 px-3 text-right">
+                                        <% if (tx.type === 'Withdraw' && ['WAITING_APPROVAL', 'PENDING'].includes(tx.status)) { %>
+                                            <button class="btn-cancel-withdraw px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-[10px]" data-id="<%= tx.id %>">Cancelar</button>
+                                        <% } else { %>
+                                            <span class="text-zinc-600">—</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr><td colspan="7" class="py-8 text-center text-zinc-500">Nenhuma operação Pix registrada.</td></tr>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
-        <% } else { %>
-            <div class="p-6 rounded-2xl bg-slate-950/40 border border-dashed border-white/5 text-center text-xs text-zinc-500">
-                Nenhuma operação de Compra ou Saque registrada ainda.
+
+            <div class="flex items-center justify-between border-t border-white/10 pt-3 text-xs">
+                <span id="lblPixPageInfo" class="text-zinc-400 font-bold">Página 1 (20 itens/pág)</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnPixPrevPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 font-bold disabled:opacity-40" disabled>← Anterior</button>
+                    <button type="button" id="btnPixNextPage" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 font-bold">Próxima →</button>
+                </div>
             </div>
-        <% } %>
+        </div>
     </div>
 
-    <!-- ========================================================================
-         TABELA OFICIAL DE TAXAS: CARTEIRA, CONVERSÕES, COMPRA/VENDA, SHOP & SALAS
-         ======================================================================== -->
-    <div class="bg-slate-900/80 border border-amber-500/20 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
-            <div>
-                <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+    <!-- MODAL 8: TABELA OFICIAL DE TAXAS & RECOMPENSAS -->
+    <div id="modalMarketFeeTable" class="wallet-submodal hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/30 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-4 relative max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
                     <i class="fa-solid fa-scale-balanced text-amber-400"></i>
-                    Tabela Oficial de Taxas, Conversões, Loja 3D &amp; Salas
+                    Tabela Oficial de Taxas, Conversões, Loja 3D, Salas &amp; Diário
                 </h3>
-                <p class="text-xs text-zinc-400">
-                    Transparência completa sobre tarifas de carteira, conversões entre moedas, criação de itens 3D e repasses de Salas.
-                </p>
+                <button type="button" class="btn-close-wallet-modal text-zinc-400 hover:text-white p-1">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
-            <span class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider text-amber-300">
-                Regras Ativas em Tempo Real
-            </span>
-        </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead>
-                    <tr class="text-zinc-400 border-b border-white/10 uppercase text-[10px] tracking-wider bg-slate-950/60">
-                        <th class="py-3 px-3.5 rounded-tl-xl">Categoria</th>
-                        <th class="py-3 px-3.5">Operação / Serviço</th>
-                        <th class="py-3 px-3.5">Taxa / Valor Cobrado</th>
-                        <th class="py-3 px-3.5">Repasse / Destino</th>
-                        <th class="py-3 px-3.5 rounded-tr-xl">Regra &amp; Validade</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5">
-                    <!-- 1. Carteira & Pix -->
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-emerald-400"><i class="fa-solid fa-wallet mr-1.5"></i>Carteira &amp; Pix</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Depósito / Compra de Cash (Pix)</td>
-                        <td class="py-3 px-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-black text-[10px]">0% (Isento)</span></td>
-                        <td class="py-3 px-3.5 text-zinc-300">100% creditado na Carteira Cash</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Mínimo R$ <%= Number(marketStats?.minDepositBrl ?? 10).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %></td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-emerald-400"><i class="fa-solid fa-wallet mr-1.5"></i>Carteira &amp; Pix</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Saque de Cash via Pix</td>
-                        <td class="py-3 px-3.5 font-bold text-amber-400">
-                            <%= Number(marketStats?.withdrawFeePercent ?? 0).toLocaleString('pt-BR') %>%
-                            <% if (Number(marketStats?.withdrawFixedFeeCash ?? 0) > 0) { %>
-                                + $<%= Number(marketStats?.withdrawFixedFeeCash).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Cash
-                            <% } %>
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-300">Transferência direta para Chave Pix</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Mínimo $<%= Number(marketStats?.minWithdrawCash ?? 2).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Cash</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition bg-amber-500/5">
-                        <td class="py-3 px-3.5 font-black text-amber-400"><i class="fa-solid fa-paper-plane mr-1.5"></i>Transferência P2P</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Transferência de Coins entre Jogadores</td>
-                        <td class="py-3 px-3.5 font-bold text-rose-400">
-                            <%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2).toLocaleString('pt-BR') %>%
-                        </td>
-                        <td class="py-3 px-3.5 font-bold text-emerald-400">
-                            <%= (100 - Number(marketStats?.p2pCoinsTransferFeePercent ?? 2)).toLocaleString('pt-BR') %>% líquido p/ o destinatário
-                        </td>
-                        <td class="py-3 px-3.5 text-amber-300 font-semibold">Somente moeda do jogo (Coins)</td>
-                    </tr>
-
-                    <!-- 2. Conversões, Compra e Venda -->
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-blue-400"><i class="fa-solid fa-arrows-rotate mr-1.5"></i>Compra &amp; Venda</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Compra de Coins (Cash → Coins)</td>
-                        <td class="py-3 px-3.5 font-bold text-amber-400">
-                            <%= Number(marketStats?.cashToCoinsFeePercent ?? 0).toLocaleString('pt-BR') %>%
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-300">Liquida Fila P2P de jogadores ou Reserva</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Cotação: $<%= Number(marketStats?.coinPriceInCash || 0.01).toFixed(4) %> Cash/Coin</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-blue-400"><i class="fa-solid fa-arrows-rotate mr-1.5"></i>Compra &amp; Venda</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Ordem de Venda na Fila P2P (Coins → Cash)</td>
-                        <td class="py-3 px-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-black text-[10px]">0% na Fila</span></td>
-                        <td class="py-3 px-3.5 text-zinc-300">100% do valor de recompra ao vendedor</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Recompra: $<%= Number(marketStats?.buybackPriceInCash || 0.009).toFixed(4) %> Cash/Coin</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-blue-400"><i class="fa-solid fa-arrows-rotate mr-1.5"></i>Conversões</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Venda Instantânea p/ Reserva (Coins → Cash)</td>
-                        <td class="py-3 px-3.5 font-bold text-rose-400"><%= Number(marketStats?.instantCoinsToCashFeePercent ?? 10).toLocaleString('pt-BR') %>%</td>
-                        <td class="py-3 px-3.5 text-zinc-300"><%= (100 - Number(marketStats?.instantCoinsToCashFeePercent ?? 10)).toLocaleString('pt-BR') %>% líquido imediato em Cash</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Sem fila de espera</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-blue-400"><i class="fa-solid fa-arrows-rotate mr-1.5"></i>Conversões</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Conversão Coins → Chips (Fichas)</td>
-                        <td class="py-3 px-3.5 font-bold text-amber-400"><%= Number(marketStats?.coinsToChipsFeePercent ?? 5).toLocaleString('pt-BR') %>%</td>
-                        <td class="py-3 px-3.5 text-zinc-300">Crédito imediato em Fichas (Chips)</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Paridade 1:1 antes da taxa</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-blue-400"><i class="fa-solid fa-arrows-rotate mr-1.5"></i>Conversões</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Conversão Chips → Coins</td>
-                        <td class="py-3 px-3.5 font-bold text-rose-400"><%= Number(marketStats?.chipsToCoinsFeePercent ?? 10).toLocaleString('pt-BR') %>%</td>
-                        <td class="py-3 px-3.5 text-zinc-300">Crédito imediato em Coins</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Paridade 1:1 antes da taxa</td>
-                    </tr>
-
-                    <!-- 3. Loja 3D & Estúdio UGC -->
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-cyan-400"><i class="fa-solid fa-shirt mr-1.5"></i>Loja 3D (UGC)</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Upload de Imagem / Textura no Shop</td>
-                        <td class="py-3 px-3.5 font-black text-amber-400">
-                            Taxa Fixa: <%= Number(marketStats?.shopTextureUploadFixedFeeCoins ?? 1).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coin
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-300">Reserva de Economia da Plataforma</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Cobrado por arquivo enviado</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-cyan-400"><i class="fa-solid fa-shirt mr-1.5"></i>Loja 3D (UGC)</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Publicação de Novo Item 3D no Catálogo</td>
-                        <td class="py-3 px-3.5 font-black text-amber-400">
-                            Taxa Fixa: <%= Number(marketStats?.shopCreationFixedFeeCoins ?? 5).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coins
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-300">Reserva de Economia da Plataforma</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Cobrado na publicação inicial</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-cyan-400"><i class="fa-solid fa-shirt mr-1.5"></i>Loja 3D (UGC)</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Venda / Presente de Roupa Criada por Jogador</td>
-                        <td class="py-3 px-3.5 font-bold text-rose-400">
-                            <%= Number(marketStats?.shopSalePlatformFeePercent ?? 30).toLocaleString('pt-BR') %>%
-                        </td>
-                        <td class="py-3 px-3.5 font-bold text-emerald-400">
-                            <%= (100 - Number(marketStats?.shopSalePlatformFeePercent ?? 30)).toLocaleString('pt-BR') %>% repassado ao Criador
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-400">Repasse automático a cada venda/presente</td>
-                    </tr>
-
-                    <!-- 4. Salas 3D: Passe 24h, Impulsionar 24h & Prêmio por 1k Visitas Únicas -->
-                    <tr class="hover:bg-slate-800/30 transition bg-amber-500/5">
-                        <td class="py-3 px-3.5 font-black text-purple-400"><i class="fa-solid fa-door-open mr-1.5"></i>Salas 3D</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Passe de Entrada da Sala (Definido pelo Dono)</td>
-                        <td class="py-3 px-3.5 font-bold text-rose-400">
-                            <%= Number(marketStats?.roomEntryPlatformFeePercent ?? 15).toLocaleString('pt-BR') %>% sobre a entrada
-                        </td>
-                        <td class="py-3 px-3.5 font-black text-emerald-400">
-                            <%= (100 - Number(marketStats?.roomEntryPlatformFeePercent ?? 15)).toLocaleString('pt-BR') %>% repassado ao Dono da Sala
-                        </td>
-                        <td class="py-3 px-3.5 text-amber-300 font-bold">
-                            Vale por <%= Number(marketStats?.roomPassDurationHours ?? 24) %> horas (Passe Diário)
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="py-3 px-3.5 font-black text-purple-400"><i class="fa-solid fa-rocket mr-1.5"></i>Salas 3D</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Impulsionar Sala no Topo (Boost 24h)</td>
-                        <td class="py-3 px-3.5 font-black text-amber-400">
-                            Taxa Fixa: <%= Number(marketStats?.roomBoost24hFeeCoins ?? 20).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coins
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-300">Destaque no topo do Explorador Público</td>
-                        <td class="py-3 px-3.5 text-zinc-400">Duração de 24 horas por impulso</td>
-                    </tr>
-                    <tr class="hover:bg-slate-800/30 transition bg-emerald-500/5">
-                        <td class="py-3 px-3.5 font-black text-purple-400"><i class="fa-solid fa-trophy mr-1.5"></i>Salas 3D</td>
-                        <td class="py-3 px-3.5 font-bold text-white">Prêmio por Tráfego (A cada 1.000 Visitas Únicas/Mês)</td>
-                        <td class="py-3 px-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black text-[10px]">BÔNUS PAGO PELO SISTEMA</span></td>
-                        <td class="py-3 px-3.5 font-black text-emerald-400">
-                            +<%= Number(marketStats?.roomVisitsPayoutPer1kCoins ?? 50).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %> Coins p/ o Dono da Sala
-                        </td>
-                        <td class="py-3 px-3.5 text-zinc-300">Visitas únicas/mês por conta (Anti-Farm ativo)</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="overflow-x-auto overflow-y-auto flex-1">
+                <table class="w-full text-left text-xs">
+                    <thead class="sticky top-0 bg-slate-950 z-10">
+                        <tr class="text-zinc-400 border-b border-white/10 uppercase text-[10px] tracking-wider">
+                            <th class="py-2.5 px-3">Categoria</th>
+                            <th class="py-2.5 px-3">Operação / Serviço</th>
+                            <th class="py-2.5 px-3">Taxa / Valor</th>
+                            <th class="py-2.5 px-3">Repasse / Destino</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        <tr>
+                            <td class="py-2.5 px-3 font-black text-emerald-400">Carteira &amp; Pix</td>
+                            <td class="py-2.5 px-3 text-white font-bold">Depósito / Compra de Cash (Pix)</td>
+                            <td class="py-2.5 px-3 text-emerald-400 font-black">0% (Isento)</td>
+                            <td class="py-2.5 px-3 text-zinc-300">Mínimo R$ <%= Number(marketStats?.minDepositBrl ?? 10).toFixed(2) %></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2.5 px-3 font-black text-amber-400">Transferência P2P</td>
+                            <td class="py-2.5 px-3 text-white font-bold">Transferência de Coins entre Jogadores</td>
+                            <td class="py-2.5 px-3 text-rose-400 font-bold"><%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2) %>%</td>
+                            <td class="py-2.5 px-3 text-emerald-400 font-bold"><%= (100 - Number(marketStats?.p2pCoinsTransferFeePercent ?? 2)) %>% líquido p/ destinatário</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2.5 px-3 font-black text-blue-400">Bolsa de Coins</td>
+                            <td class="py-2.5 px-3 text-white font-bold">Compra / Venda no Pote Coletivo</td>
+                            <td class="py-2.5 px-3 text-amber-400 font-bold">Compra <%= Number(marketStats?.buySpreadPercent ?? 0.1) %>% | Venda <%= Number(marketStats?.sellSpreadPercent ?? 0.5) %>%</td>
+                            <td class="py-2.5 px-3 text-zinc-300">Liquidação FIFO entre jogadores</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2.5 px-3 font-black text-cyan-400">Loja 3D (UGC)</td>
+                            <td class="py-2.5 px-3 text-white font-bold">Upload Textura / Publicação / Venda</td>
+                            <td class="py-2.5 px-3 text-amber-400 font-bold"><%= Number(marketStats?.shopTextureUploadFixedFeeCoins ?? 1) %> Coin / <%= Number(marketStats?.shopCreationFixedFeeCoins ?? 5) %> Coins / <%= Number(marketStats?.shopSalePlatformFeePercent ?? 30) %>%</td>
+                            <td class="py-2.5 px-3 text-emerald-400 font-bold"><%= (100 - Number(marketStats?.shopSalePlatformFeePercent ?? 30)) %>% ao Criador</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2.5 px-3 font-black text-purple-400">Salas 3D</td>
+                            <td class="py-2.5 px-3 text-white font-bold">Passe 24h &amp; Prêmio por 1k Visitas Únicas/Mês</td>
+                            <td class="py-2.5 px-3 text-rose-400 font-bold">Taxa Passe: <%= Number(marketStats?.roomEntryPlatformFeePercent ?? 15) %>%</td>
+                            <td class="py-2.5 px-3 text-emerald-400 font-bold">+<%= Number(marketStats?.roomVisitsPayoutPer1kCoins ?? 50) %> Coins / 1k visitas</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2.5 px-3 font-black text-violet-400">Diário Anônimo</td>
+                            <td class="py-2.5 px-3 text-white font-bold">Recompensa por Tempo de Leitura</td>
+                            <td class="py-2.5 px-3 text-emerald-300 font-bold">Bônus Pago pelo Sistema</td>
+                            <td class="py-2.5 px-3 text-emerald-400 font-bold">+<%= Number(marketStats?.diaryReaderRewardPerPageCoins ?? 0.25) %> Coins Leitor / +<%= Number(marketStats?.diaryAuthorRewardPerReadCoins ?? 0.50) %> Autor</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </section>

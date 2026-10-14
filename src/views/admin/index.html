@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo — The Fantasy Life</title>
+    <title>Central de Comando Admin — The Fantasy Life</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -15,60 +15,83 @@
             vertical-align: middle;
             line-height: 1;
         }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
 
-    <!-- SIDEBAR DO ADMIN -->
+    <!-- ================= SIDEBAR DA CENTRAL DE COMANDO ADMIN ================= -->
     <aside class="w-64 bg-slate-900 border-r border-white/10 flex flex-col justify-between flex-shrink-0">
         <div>
             <div class="p-5 border-b border-white/10 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600/30 to-cyan-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-lg">
                     <span class="material-symbols-outlined text-[22px]">shield_person</span>
                 </div>
                 <div>
-                    <h1 class="text-sm font-black uppercase italic tracking-wider text-white">Painel Admin</h1>
-                    <p id="adminRoleLabel" class="text-[10px] text-emerald-400 font-bold uppercase">Acesso Protegido</p>
+                    <h1 class="text-sm font-black uppercase italic tracking-wider text-white">TFL Command</h1>
+                    <p id="adminRoleLabel" class="text-[10px] text-emerald-400 font-bold uppercase truncate max-w-[145px]">Acesso Protegido</p>
                 </div>
             </div>
 
-            <!-- Navegação de Abas Internas do Admin -->
+            <!-- Navegação de Abas do Admin -->
             <nav class="p-3 space-y-1">
-                <p class="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500">Controle Principal</p>
+                <p class="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500">Monitoramento & Gestão</p>
+
                 <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition bg-blue-600 text-white shadow-lg shadow-blue-600/25" data-tab="tab-visits-stats">
                     <span class="material-symbols-outlined text-[18px]">monitoring</span>
                     <span>Visitas, Regiões & Stats</span>
                 </button>
+
+                <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-users-avatars">
+                    <span class="material-symbols-outlined text-[18px] text-purple-400">manage_accounts</span>
+                    <span>Contas, VIP & Carteiras</span>
+                </button>
+
                 <button type="button" class="admin-tab-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-economy">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-[18px] text-amber-400">currency_exchange</span>
-                        <span>Economia & Fila Pix</span>
+                        <span>Economia, Taxas & Pix</span>
                     </div>
                     <span id="badgePendingPixCount" class="hidden px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">0</span>
                 </button>
+
+                <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-rooms-servers">
+                    <span class="material-symbols-outlined text-[18px] text-indigo-400">dns</span>
+                    <span>Salas & Servidores</span>
+                </button>
+
+                <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-moderation">
+                    <span class="material-symbols-outlined text-[18px] text-rose-400">campaign</span>
+                    <span>Moderação & Avisos</span>
+                </button>
+
                 <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-shop-3d">
                     <span class="material-symbols-outlined text-[18px] text-cyan-400">checkroom</span>
                     <span>Loja 3D & Roupas</span>
                 </button>
+
                 <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-bots">
-                    <span class="material-symbols-outlined text-[18px] text-purple-400">smart_toy</span>
-                    <span>Simulador de Bots</span>
+                    <span class="material-symbols-outlined text-[18px] text-emerald-400">build_circle</span>
+                    <span>Bots & Manutenção</span>
                 </button>
-                <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-modules">
-                    <span class="material-symbols-outlined text-[18px] text-emerald-400">apps</span>
-                    <span>Gestão & Banco (ERD)</span>
-                </button>
-                <a href="/admin/assas" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-600/30 border border-emerald-500/20 mt-2">
-                    <span class="material-symbols-outlined text-[18px] text-emerald-400">account_balance</span>
-                    <span>Central Asaas & Pix</span>
-                </a>
+
+                <div class="pt-2 mt-2 border-t border-white/10">
+                    <p class="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500">Integrações Externas</p>
+                    <a href="/admin/assas" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-600/30 border border-emerald-500/20">
+                        <span class="material-symbols-outlined text-[18px] text-emerald-400">account_balance</span>
+                        <span>Central Asaas & Pix</span>
+                    </a>
+                </div>
             </nav>
         </div>
 
         <div class="p-4 border-t border-white/10 space-y-2">
             <a href="/profile" class="w-full px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition">
                 <span class="material-symbols-outlined text-[16px]">person</span>
-                <span>Voltar ao Site (/profile)</span>
+                <span>Voltar ao Portal (/profile)</span>
             </a>
             <a href="/api/auth/admin/signup" class="w-full px-3 py-2 rounded-xl bg-red-500/15 hover:bg-red-600 text-red-400 hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition">
                 <span class="material-symbols-outlined text-[16px]">logout</span>
@@ -77,33 +100,33 @@
         </div>
     </aside>
 
-    <!-- CONTEÚDO PRINCIPAL DO ADMIN -->
+    <!-- ================= CONTEÚDO PRINCIPAL DO ADMIN ================= -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Topbar -->
-        <header class="h-16 bg-slate-900/90 border-b border-white/10 px-6 flex items-center justify-between">
+        <header class="h-16 bg-slate-900/90 border-b border-white/10 px-6 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-3">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span id="adminTopTitle" class="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
-                    Monitoramento de Visitas por Região & Desempenho do Sistema
+                    Central de Comando Administrativo — Visão Geral & Telemetria
                 </span>
             </div>
             <div class="flex items-center gap-3">
                 <span id="adminLastUpdate" class="text-xs font-mono text-slate-400">--:--:--</span>
                 <button type="button" id="btnRefreshAdminStats" class="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-wider transition flex items-center gap-1.5 shadow-lg shadow-cyan-600/20">
                     <span class="material-symbols-outlined text-[16px]">refresh</span>
-                    <span>Atualizar Dados</span>
+                    <span>Sincronizar Tudo</span>
                 </button>
             </div>
         </header>
 
         <!-- Corpo Scrollável -->
-        <main class="flex-1 overflow-y-auto p-6 space-y-6 max-w-7xl mx-auto w-full">
+        <main class="flex-1 overflow-y-auto p-6 space-y-6 max-w-[1440px] mx-auto w-full">
 
             <!-- =========================================================================
-                 ABA 1: ESTATÍSTICAS DE VISITAS AO SITE, REGIÕES DE ACESSO & SAÚDE DO SISTEMA
+                 ABA 1: VISITAS AO SITE, REGIÕES DE ACESSO & MATRIZ DE MÓDULOS
                  ========================================================================= -->
             <section id="tab-visits-stats" class="admin-tab-panel space-y-6">
-                <!-- Cards Principais: Visitas, Visitantes Únicos, Online, Latência DB, RAM e Uptime -->
+                <!-- Cards Principais -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
                     <div class="bg-slate-900 border border-white/10 rounded-2xl p-4 space-y-1">
                         <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400">
@@ -138,7 +161,7 @@
                             <span class="material-symbols-outlined text-[18px] text-cyan-400">speed</span>
                         </div>
                         <div id="admDbLatency" class="text-2xl font-black text-cyan-400">1 ms</div>
-                        <p class="text-[10px] text-slate-500">SQL Query Ping</p>
+                        <p class="text-[10px] text-slate-500">PostgreSQL Ping</p>
                     </div>
 
                     <div class="bg-slate-900 border border-white/10 rounded-2xl p-4 space-y-1">
@@ -160,31 +183,31 @@
                     </div>
                 </div>
 
-                <!-- Grid Duplo: VISITAS POR REGIÃO / ESTADO / PAÍS + PÁGINAS MAIS ACESSADAS -->
+                <!-- Grid Duplo: VISITAS POR REGIÃO + ROTAS MAIS VISITADAS -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Tabela de Visitas por Região -->
                     <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
                         <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex items-center justify-between">
                             <h2 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[18px] text-emerald-400">public</span>
-                                <span>Estatísticas de Visitas por Região / Localidade</span>
+                                <span>Distribuição de Visitas por Região / Estado / País</span>
                             </h2>
-                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400">Geo / Fuso</span>
+                            <button type="button" class="btn-adm-maintenance text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300" data-action="CLEAR_TELEMETRY">
+                                Limpar Log
+                            </button>
                         </div>
                         <div id="admRegionsList" class="p-5 space-y-3 max-h-80 overflow-y-auto text-xs">
                             <p class="text-slate-500 text-center py-4">Carregando distribuição regional...</p>
                         </div>
                     </div>
 
-                    <!-- Páginas Mais Visitadas & Últimos Acessos -->
                     <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-xl flex flex-col justify-between">
                         <div>
                             <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex items-center justify-between">
                                 <h2 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
                                     <span class="material-symbols-outlined text-[18px] text-blue-400">travel_explore</span>
-                                    <span>Rotas Mais Visitadas & Últimos Acessos</span>
+                                    <span>Rotas Mais Visitadas & Acessos em Tempo Real</span>
                                 </h2>
-                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-500/15 text-blue-400">Live Log</span>
+                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-500/15 text-blue-400">Live Telemetry</span>
                             </div>
                             <div id="admPagesList" class="p-4 border-b border-white/5 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs"></div>
                             <div class="max-h-52 overflow-y-auto">
@@ -192,8 +215,8 @@
                                     <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px]">
                                         <tr>
                                             <th class="py-2 px-3">Hora</th>
-                                            <th class="py-2 px-3">Página</th>
-                                            <th class="py-2 px-3">Região Detectada</th>
+                                            <th class="py-2 px-3">Rota</th>
+                                            <th class="py-2 px-3">Região</th>
                                             <th class="py-2 px-3">Dispositivo</th>
                                         </tr>
                                     </thead>
@@ -204,67 +227,71 @@
                     </div>
                 </div>
 
-                <!-- TABELA GERAL DE INDICADORES DO BANCO DE DADOS -->
+                <!-- MATRIZ DE SAÚDE E VOLUME DE TODOS OS MÓDULOS DO PROJETO -->
                 <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
                     <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex items-center justify-between">
                         <h2 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
                             <span class="material-symbols-outlined text-[18px] text-cyan-400">table_chart</span>
-                            <span>Tabela Geral de Desempenho e Volume dos Módulos</span>
+                            <span>Visão Geral da Arquitetura & Volume dos Módulos (Banco PostgreSQL)</span>
                         </h2>
-                        <span class="text-[11px] text-slate-400">Atualizado via API Admin</span>
+                        <span class="text-[11px] text-slate-400">10 Módulos Integrados</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-white/10">
                                 <tr>
                                     <th class="py-3 px-4">Módulo</th>
-                                    <th class="py-3 px-4">Indicador</th>
+                                    <th class="py-3 px-4">Tabelas & Indicadores</th>
                                     <th class="py-3 px-4 text-right">Volume Atual</th>
-                                    <th class="py-3 px-4 text-center">Status</th>
+                                    <th class="py-3 px-4 text-center">Atalho de Gestão</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5">
                                 <tr>
-                                    <td class="py-3 px-4 font-bold text-purple-400">Comunidade</td>
-                                    <td class="py-3 px-4">Contas Registradas (Users) / Avatares Criados</td>
-                                    <td id="admTbUsersAvatars" class="py-3 px-4 text-right font-black text-white">0 / 0</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">OK</span></td>
+                                    <td class="py-3 px-4 font-bold text-purple-400">1. Comunidade & Clube VIP</td>
+                                    <td class="py-3 px-4">Contas (`users`) / Avatares (`avatars`) / Assinantes VIP (`👑`)</td>
+                                    <td id="admTbUsersAvatars" class="py-3 px-4 text-right font-black text-white">0 / 0 / 0 VIP</td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button type="button" class="btn-jump-tab px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 text-[10px] font-bold" data-target="tab-users-avatars">Gerenciar Contas</button>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 px-4 font-bold text-emerald-400">Conexões Sociais</td>
-                                    <td class="py-3 px-4">Amizades Aceitas / Solicitações Pendentes / Seguidores</td>
-                                    <td id="admTbFriendsFollows" class="py-3 px-4 text-right font-black text-emerald-400">0 / 0 / 0</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Ativo</span></td>
+                                    <td class="py-3 px-4 font-bold text-emerald-400">2. Grafo Social & Match</td>
+                                    <td class="py-3 px-4">Amizades Aceitas / Pendentes / Seguidores / Matches Mútuos 💘</td>
+                                    <td id="admTbFriendsFollows" class="py-3 px-4 text-right font-black text-emerald-400">0 / 0 / 0 / 0</td>
+                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Sincronizado</span></td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 px-4 font-bold text-pink-400">Match & Crush</td>
-                                    <td class="py-3 px-4">Matches Mútuos 💘 / Crushes Enviados 🔥</td>
-                                    <td id="admTbMatches" class="py-3 px-4 text-right font-black text-pink-400">0 / 0</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 text-[10px] font-bold">Real-Time</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3 px-4 font-bold text-blue-400">Conteúdo Social</td>
-                                    <td class="py-3 px-4">Publicações no Feed / Fotos na Galeria / Mini Reels Ativos (6h/24h)</td>
+                                    <td class="py-3 px-4 font-bold text-blue-400">3. Feed Social (Pool 20) & Reels</td>
+                                    <td class="py-3 px-4">Posts (`posts`) / Fotos (`photos`) / Mini Reels Ativos / Reações & Comentários</td>
                                     <td id="admTbContent" class="py-3 px-4 text-right font-black text-white">0 / 0 / 0</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] font-bold">OK</span></td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button type="button" class="btn-jump-tab px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-[10px] font-bold" data-target="tab-moderation">Moderar Feed</button>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 px-4 font-bold text-rose-400">Engajamento</td>
-                                    <td class="py-3 px-4">Curtidas & Reações / Comentários & Respostas Recursivas</td>
-                                    <td id="admTbEngagement" class="py-3 px-4 text-right font-black text-rose-400">0 / 0</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">Ativo</span></td>
+                                    <td class="py-3 px-4 font-bold text-amber-300">4. Diário & Cantinho Anônimo</td>
+                                    <td class="py-3 px-4">Folhas no Caderno (`diary_pages`) / Públicas Anônimas / Bilhetes (`diary_comments`)</td>
+                                    <td id="admTbDiary" class="py-3 px-4 text-right font-black text-amber-300">0 folhas (0 públicas) • 0 bilhetes</td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button type="button" class="btn-jump-tab px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-[10px] font-bold" data-target="tab-moderation">Moderar Diário</button>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 px-4 font-bold text-indigo-400">Salas & Chat</td>
-                                    <td class="py-3 px-4">Salas Criadas / Objetos / Canais de Chat / Mensagens Enviadas</td>
-                                    <td id="admTbWorldChat" class="py-3 px-4 text-right font-black text-indigo-300">0 / 0 / 0 / 0</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 text-[10px] font-bold">WebSocket</span></td>
+                                    <td class="py-3 px-4 font-bold text-indigo-400">5. Salas 3D & Servidores (`servers`)</td>
+                                    <td class="py-3 px-4">Salas (`rooms`) / Instâncias Replicadas (`servers`) / Objetos 3D / Mensagens Chat</td>
+                                    <td id="admTbWorldChat" class="py-3 px-4 text-right font-black text-indigo-300">0 Salas / 0 Instâncias / 0 Msgs</td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button type="button" class="btn-jump-tab px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 text-[10px] font-bold" data-target="tab-rooms-servers">Gerenciar Cluster</button>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 px-4 font-bold text-amber-400">Economia & Bolsa</td>
-                                    <td class="py-3 px-4">Saldos em Carteiras (Cash / Coins / Chips) & Pote Coletivo FIFO</td>
+                                    <td class="py-3 px-4 font-bold text-amber-400">6. Carteira, Bolsa P2P & Livro-Razão</td>
+                                    <td class="py-3 px-4">Saldos em Carteiras (`currencies`), Pote FIFO (`coin_orders`) e Auditoria (`wallet_ledger`)</td>
                                     <td id="admTbEconomy" class="py-3 px-4 text-right font-black text-amber-300">$0.00 • 0 Coins • 0 Chips</td>
-                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-bold">Auditado</span></td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button type="button" class="btn-jump-tab px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-[10px] font-bold" data-target="tab-economy">Taxas & Auditoria</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -273,22 +300,104 @@
             </section>
 
             <!-- =========================================================================
-                 ABA 2: GESTÃO ECONÔMICA, REGRAS DA BOLSA & APROVAÇÃO MANUAL DE PIX/SAQUES
+                 ABA 2: GESTÃO COMPLETA DE CONTAS, AVATARES, CLUBE VIP & CARTEIRAS
+                 ========================================================================= -->
+            <section id="tab-users-avatars" class="admin-tab-panel hidden space-y-6">
+                <!-- Barra de Busca, Filtros e Botão Criar Conta -->
+                <div class="bg-slate-900 border border-purple-500/25 rounded-3xl p-5 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                        <div class="relative flex-1 min-w-[220px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                            <input type="text" id="admUsersSearchInput" placeholder="Buscar por nome, @login, e-mail ou ID..."
+                                class="w-full bg-slate-950 border border-white/10 focus:border-purple-500 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none">
+                        </div>
+
+                        <select id="admUsersRoleFilter" class="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 font-bold">
+                            <option value="ALL">Todas as Roles</option>
+                            <option value="player">Jogadores (player)</option>
+                            <option value="admin">Administradores (admin)</option>
+                            <option value="owner">Proprietários (owner)</option>
+                        </select>
+
+                        <select id="admUsersVipFilter" class="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-yellow-300 font-bold">
+                            <option value="ALL">Todos (VIP & Básico)</option>
+                            <option value="VIP">👑 Somente Membros VIP</option>
+                            <option value="BASIC">Somente Membros Básicos</option>
+                        </select>
+
+                        <button type="button" id="btnAdmFilterUsers" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase">
+                            Filtrar
+                        </button>
+                    </div>
+
+                    <button type="button" id="btnOpenCreateUserModal" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg">
+                        <span class="material-symbols-outlined text-[18px]">person_add</span>
+                        <span>+ Criar Conta & Avatar</span>
+                    </button>
+                </div>
+
+                <!-- Tabela Paginada (20 por página) de Usuários, Avatares, VIP e Carteiras -->
+                <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
+                    <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex items-center justify-between">
+                        <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-400">group</span>
+                            <span>Contas Registradas, Avatares, Assinatura VIP & Saldos de Carteira</span>
+                        </h3>
+                        <span id="admUsersTotalCountLabel" class="text-xs text-slate-400 font-bold">0 contas</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-white/10">
+                                <tr>
+                                    <th class="py-3 px-4">ID / Conta</th>
+                                    <th class="py-3 px-4">Role</th>
+                                    <th class="py-3 px-4">Avatar Principal</th>
+                                    <th class="py-3 px-4">Clube VIP</th>
+                                    <th class="py-3 px-4">Carteira ($ Cash / Coins / Chips)</th>
+                                    <th class="py-3 px-4 text-right">Ações Administrativas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admUsersTableBody" class="divide-y divide-white/5">
+                                <tr><td colspan="6" class="py-8 text-center text-slate-500">Carregando usuários...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação 20 por página -->
+                    <div class="px-5 py-3 bg-slate-950/80 border-t border-white/10 flex items-center justify-between text-xs">
+                        <button type="button" id="btnAdmUsersPrev" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold disabled:opacity-40">
+                            ← Anterior
+                        </button>
+                        <span id="admUsersPageInfo" class="text-slate-400 font-bold">Página 1 de 1</span>
+                        <button type="button" id="btnAdmUsersNext" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold disabled:opacity-40">
+                            Próxima →
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================================
+                 ABA 3: ECONOMIA, REGRAS DA BOLSA, FILA PIX & AUDITORIA DO LIVRO-RAZÃO
                  ========================================================================= -->
             <section id="tab-economy" class="admin-tab-panel hidden space-y-6">
-                <!-- Formulário de Regras da Economia -->
+                <!-- Formulário Completo das 33 Regras Econômicas -->
                 <div class="bg-slate-900 border border-amber-500/25 rounded-3xl p-6 shadow-xl space-y-5">
                     <div class="flex items-center justify-between border-b border-white/10 pb-4">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-[24px] text-amber-400">tune</span>
                             <div>
-                                <h2 class="text-sm sm:text-base font-black uppercase italic text-white">Configuração de Regras Econômicas & Spread da Bolsa</h2>
-                                <p class="text-xs text-slate-400">Exclusivo para Administradores. Altera imediatamente as taxas do site.</p>
+                                <h2 class="text-sm sm:text-base font-black uppercase italic text-white">Tabela Global de Taxas, Recompensas & Regras Econômicas (`economy_rules`)</h2>
+                                <p class="text-xs text-slate-400">Altera instantaneamente todas as taxas de Carteira, Conversor, Salas, Loja 3D, VIP e Diário Premiado.</p>
                             </div>
                         </div>
                     </div>
 
                     <form id="formAdminEconomyRules" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                        <!-- Grupo 1: Câmbio e Conversões -->
+                        <div class="sm:col-span-2 lg:col-span-4 pt-1">
+                            <p class="text-[11px] font-black uppercase tracking-widest text-amber-400 border-b border-white/10 pb-1">1. Câmbio, Spread da Bolsa & Taxas de Conversão</p>
+                        </div>
                         <div>
                             <label class="block text-slate-400 font-bold mb-1">Cotação Dólar (R$ por $1 Cash)</label>
                             <input type="number" step="0.01" id="ruleUsdBrlRate" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
@@ -321,37 +430,10 @@
                             <label class="block text-slate-400 font-bold mb-1">Taxa Conversão Chips→Coins (%)</label>
                             <input type="number" step="0.01" id="ruleChipsToCoinsFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-rose-400 font-bold">
                         </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Taxa Fixa Upload Imagem Shop (Coins)</label>
-                            <input type="number" step="0.01" id="ruleShopTextureUploadFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-400 font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Taxa Fixa Criação Item Shop (Coins)</label>
-                            <input type="number" step="0.01" id="ruleShopCreationFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-400 font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Comissão Venda Item UGC Shop (%)</label>
-                            <input type="number" step="0.01" id="ruleShopSaleFeePercent" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-400 font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Taxa Passe Entrada Sala 24h (%)</label>
-                            <input type="number" step="0.01" id="ruleRoomEntryFeePercent" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-purple-400 font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Duração Passe Entrada Sala (Horas)</label>
-                            <input type="number" step="1" id="ruleRoomPassHours" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-purple-400 font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Prêmio Sala / 1k Visitas Únicas Mês (Coins)</label>
-                            <input type="number" step="0.01" id="ruleRoomPayout1kCoins" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-emerald-400 font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Taxa Saque Pix (%)</label>
-                            <input type="number" step="0.01" id="ruleWithdrawFeePercent" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 font-bold mb-1">Taxa Fixa Saque Pix ($ Cash)</label>
-                            <input type="number" step="0.01" id="ruleWithdrawFixedFeeCash" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+
+                        <!-- Grupo 2: Pix, Saques e P2P -->
+                        <div class="sm:col-span-2 lg:col-span-4 pt-2">
+                            <p class="text-[11px] font-black uppercase tracking-widest text-emerald-400 border-b border-white/10 pb-1">2. Depósito Pix, Saques & Transferência P2P entre Jogadores</p>
                         </div>
                         <div>
                             <label class="block text-slate-400 font-bold mb-1">Aprovação de Compra Pix</label>
@@ -376,19 +458,61 @@
                             <input type="number" step="1" id="ruleMaxAutoWithdrawCash" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
                         </div>
                         <div>
+                            <label class="block text-slate-400 font-bold mb-1">Taxa Saque Pix (%)</label>
+                            <input type="number" step="0.01" id="ruleWithdrawFeePercent" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Taxa Fixa Saque Pix ($ Cash)</label>
+                            <input type="number" step="0.01" id="ruleWithdrawFixedFeeCash" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                        </div>
+                        <div>
                             <label class="block text-slate-400 font-bold mb-1">Taxa Transf. P2P Coins (%)</label>
                             <input type="number" step="0.01" id="ruleP2pCoinsTransferFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-amber-400 font-bold">
+                        </div>
+
+                        <!-- Grupo 3: Loja 3D & Salas -->
+                        <div class="sm:col-span-2 lg:col-span-4 pt-2">
+                            <p class="text-[11px] font-black uppercase tracking-widest text-cyan-400 border-b border-white/10 pb-1">3. Loja 3D (UGC) & Monetização de Salas 3D</p>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Taxa Upload Textura Shop (Coins)</label>
+                            <input type="number" step="0.01" id="ruleShopTextureUploadFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Taxa Criação Item Shop (Coins)</label>
+                            <input type="number" step="0.01" id="ruleShopCreationFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Comissão Venda UGC Shop (%)</label>
+                            <input type="number" step="0.01" id="ruleShopSaleFeePercent" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Taxa Passe Entrada Sala (%)</label>
+                            <input type="number" step="0.01" id="ruleRoomEntryFeePercent" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-purple-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Duração Passe Sala (Horas)</label>
+                            <input type="number" step="1" id="ruleRoomPassHours" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-purple-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Prêmio Sala / 1k Visitas Mês (Coins)</label>
+                            <input type="number" step="0.01" id="ruleRoomPayout1kCoins" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-emerald-400 font-bold">
                         </div>
                         <div>
                             <label class="block text-slate-400 font-bold mb-1">Impulsionar Sala 24h (Coins)</label>
                             <input type="number" step="0.01" id="ruleRoomBoost24hFee" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-purple-400 font-bold">
+                        </div>
+
+                        <!-- Grupo 4: Clube VIP, Chat e Diário Premiado -->
+                        <div class="sm:col-span-2 lg:col-span-4 pt-2">
+                            <p class="text-[11px] font-black uppercase tracking-widest text-yellow-400 border-b border-white/10 pb-1">4. Clube VIP, Cotas de Chat Básico & Leitura Premiada no Diário</p>
                         </div>
                         <div>
                             <label class="block text-slate-400 font-bold mb-1">VIP 1 Semana ($ Cash)</label>
                             <input type="number" step="0.01" id="ruleVipPrice1Week" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-yellow-400 font-bold">
                         </div>
                         <div>
-                            <label class="block text-slate-400 font-bold mb-1">VIP 1 Mês ($ Cash - Padrão $2)</label>
+                            <label class="block text-slate-400 font-bold mb-1">VIP 1 Mês ($ Cash)</label>
                             <input type="number" step="0.01" id="ruleVipPrice1Month" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-yellow-400 font-bold">
                         </div>
                         <div>
@@ -407,22 +531,44 @@
                             <label class="block text-slate-400 font-bold mb-1">Básico: Máx Áudios Voz/Dia</label>
                             <input type="number" step="1" id="ruleBasicMaxChatAudio" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-sky-400 font-bold">
                         </div>
-                        <div class="sm:col-span-2 lg:col-span-4 flex justify-end pt-2">
-                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-wider transition flex items-center gap-2">
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Diário: Tempo Mín. Leitura (s)</label>
+                            <input type="number" step="1" id="ruleDiaryMinReadSeconds" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-violet-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Diário: Prêmio Leitor/Pág (Coins)</label>
+                            <input type="number" step="0.01" id="ruleDiaryReaderRewardCoins" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-violet-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Diário: Prêmio Autor/Leitura (Coins)</label>
+                            <input type="number" step="0.01" id="ruleDiaryAuthorRewardCoins" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-violet-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Diário: Bônus Autor / 10min (Coins)</label>
+                            <input type="number" step="0.01" id="ruleDiaryAuthorBonus10MinCoins" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-violet-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Diário: Limite Págs Premiadas/Dia</label>
+                            <input type="number" step="1" id="ruleDiaryReaderDailyLimit" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-violet-400 font-bold">
+                        </div>
+
+                        <div class="sm:col-span-2 lg:col-span-4 flex justify-end pt-3 border-t border-white/10">
+                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-wider transition flex items-center gap-2 shadow-lg">
                                 <span class="material-symbols-outlined text-[18px]">save</span>
-                                <span>Salvar Todas as Taxas &amp; Regras Econômicas</span>
+                                <span>Salvar Todas as 33 Regras Econômicas</span>
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Fila de Transações Pix / Saques para Revisão Admin -->
+                <!-- Fila de Transações Pix / Saques -->
                 <div class="bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
                     <div class="flex items-center justify-between border-b border-white/10 pb-3">
                         <h3 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
                             <i class="fa-brands fa-pix text-emerald-400"></i>
-                            <span>Transações Pix & Fila de Aprovação Manual</span>
+                            <span>Fila de Aprovação Manual de Compras & Saques Pix (`PaymentBank`)</span>
                         </h3>
+                        <a href="/admin/assas" class="text-xs font-bold text-emerald-400 hover:underline">Abrir Conciliação Asaas →</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
@@ -442,124 +588,231 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Grid Duplo: Livro de Ofertas da Bolsa P2P + Auditoria Global do Livro-Razão -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <!-- Ordens Ativas na Bolsa P2P -->
+                    <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-400">candlestick_chart</span>
+                                <span>Ordens de Venda Ativas na Bolsa P2P (`coin_orders`)</span>
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto max-h-80">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
+                                    <tr>
+                                        <th class="py-2 px-3">Ordem</th>
+                                        <th class="py-2 px-3">Vendedor</th>
+                                        <th class="py-2 px-3">Restante / Total</th>
+                                        <th class="py-2 px-3 text-right">Ação Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admActiveOrdersBody" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Livro-Razão Global (wallet_ledger) -->
+                    <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-cyan-400">receipt_long</span>
+                                <span>Auditoria Global do Livro-Razão (`wallet_ledger`)</span>
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto max-h-80">
+                            <table class="w-full text-left text-[11px]">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
+                                    <tr>
+                                        <th class="py-2 px-2.5">Data</th>
+                                        <th class="py-2 px-2.5">Jogador</th>
+                                        <th class="py-2 px-2.5">Tipo / Descrição</th>
+                                        <th class="py-2 px-2.5 text-right">Delta</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admGlobalLedgerBody" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- =========================================================================
-                 ABA 3: SIMULADOR DE BOTS AUTÔNOMOS (EXCLUSIVO ADMIN)
+                 ABA 4: SALAS 3D & CLUSTER DE SERVIDORES MULTI-INSTÂNCIA (`rooms` & `servers`)
                  ========================================================================= -->
-            <section id="tab-bots" class="admin-tab-panel hidden space-y-6">
-                <div class="bg-slate-900 border border-purple-500/30 rounded-3xl p-6 shadow-xl space-y-5">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                                <span class="material-symbols-outlined text-[28px]">smart_toy</span>
-                            </div>
-                            <div>
-                                <h2 class="text-base font-black uppercase italic text-white">Simulador de Bots de Teste</h2>
-                                <p class="text-xs text-slate-400">
-                                    Cria N bots que registram conta, criam avatar, foto/capa, sala, postam fotos, reels/sentimentos, reagem, comentam recursivamente, dão match, fazem amizade e conversam no Chat Global.
-                                </p>
-                            </div>
+            <section id="tab-rooms-servers" class="admin-tab-panel hidden space-y-6">
+                <!-- Tabela de Salas 3D -->
+                <div class="bg-slate-900 border border-indigo-500/30 rounded-3xl overflow-hidden shadow-xl">
+                    <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-indigo-400">meeting_room</span>
+                                <span>Gestão de Salas 3D, Passes de Entrada 24h & Visitas Únicas Mensais (`rooms`)</span>
+                            </h2>
+                            <p class="text-[11px] text-slate-400">Edite preço de entrada, capacidade, impulsione salas ou dispare novas réplicas de servidor.</p>
                         </div>
+                        <button type="button" id="btnReloadRoomsServers" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">
+                            Recarregar Salas & Servidores
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-white/10">
+                                <tr>
+                                    <th class="py-3 px-4">ID / Sala</th>
+                                    <th class="py-3 px-4">Cena / Mapa</th>
+                                    <th class="py-3 px-4">Passe Entrada 24h</th>
+                                    <th class="py-3 px-4">Visitas Únicas (Mês)</th>
+                                    <th class="py-3 px-4">Réplicas Ativas</th>
+                                    <th class="py-3 px-4 text-right">Ações Admin na Sala & Servidor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admRoomsTableBody" class="divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
 
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div class="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-2">
-                                <label class="text-[11px] font-bold uppercase text-slate-400">Bots:</label>
-                                <input id="admBotCount" type="number" min="1" max="25" value="6" class="w-12 bg-transparent text-sm font-black text-white text-center focus:outline-none">
-                            </div>
-                            <div class="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-2">
-                                <label class="text-[11px] font-bold uppercase text-slate-400">Rodadas:</label>
-                                <input id="admBotRounds" type="number" min="1" max="10" value="2" class="w-12 bg-transparent text-sm font-black text-white text-center focus:outline-none">
-                            </div>
-                            <button type="button" id="btnAdminRunBots" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-black uppercase tracking-wider transition shadow-lg shadow-purple-600/25 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[18px]">play_arrow</span>
-                                <span>Executar Simulação Agora</span>
+                <!-- Tabela de Instâncias do Servidor (servers) -->
+                <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
+                    <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex items-center justify-between">
+                        <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-emerald-400">dns</span>
+                            <span>Cluster de Instâncias de Servidor (`servers` — Auto-Replicação)</span>
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-white/10">
+                                <tr>
+                                    <th class="py-3 px-4">Instância ID</th>
+                                    <th class="py-3 px-4">Room ID / Nome</th>
+                                    <th class="py-3 px-4">Endereço (IP:Porta Pública)</th>
+                                    <th class="py-3 px-4">Lotação Atual</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Controles</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admServersTableBody" class="divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================================
+                 ABA 5: MODERAÇÃO SOCIAL, DIÁRIO ANÔNIMO & COMUNICADOS GLOBAIS (BAG)
+                 ========================================================================= -->
+            <section id="tab-moderation" class="admin-tab-panel hidden space-y-6">
+                <!-- Disparador de Comunicado Global + Presente na Bag de Todos os Jogadores -->
+                <div class="bg-slate-900 border border-rose-500/30 rounded-3xl p-6 shadow-xl space-y-4">
+                    <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+                        <span class="material-symbols-outlined text-[24px] text-rose-400">campaign</span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-black uppercase italic text-white">Disparo de Comunicado Oficial & Presente Global na Bag (`Broadcast`)</h2>
+                            <p class="text-xs text-slate-400">Envia uma notificação oficial na Bag de todos os jogadores (ou de 1 usuário específico) e pode creditar Coins/Fichas de evento!</p>
+                        </div>
+                    </div>
+
+                    <form id="formAdminBroadcast" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+                        <div class="sm:col-span-2">
+                            <label class="block text-slate-400 font-bold mb-1">Título do Comunicado Oficial *</label>
+                            <input type="text" id="bcTitle" required placeholder="Ex: 🎉 Evento de Fim de Semana no The Fantasy Life!" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Presente Global (+Coins)</label>
+                            <input type="number" min="0" step="1" id="bcGiftCoins" value="0" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-amber-400 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Presente Global (+Fichas Cassino)</label>
+                            <input type="number" min="0" step="1" id="bcGiftChips" value="0" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-pink-400 font-bold">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label class="block text-slate-400 font-bold mb-1">Mensagem para os Jogadores *</label>
+                            <input type="text" id="bcMessage" required placeholder="Escreva o aviso que aparecerá na Bag de Notificações..." class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white">
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <input type="number" id="bcTargetUserId" placeholder="ID User (vazio=Todos)" class="w-28 bg-slate-950 border border-white/10 rounded-xl px-2.5 py-2 text-white text-center" title="Deixe em branco para enviar a TODOS os usuários">
+                            <button type="submit" class="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black uppercase tracking-wider transition flex items-center justify-center gap-1.5 shadow-lg">
+                                <span class="material-symbols-outlined text-[16px]">send</span>
+                                <span>Disparar</span>
                             </button>
                         </div>
+                    </form>
+                </div>
+
+                <!-- Grid Duplo de Moderação: Folhas do Diário Anônimo + Publicações do Feed Social -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <!-- Moderação do Diário & Cantinho de Desabafo -->
+                    <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-400">menu_book</span>
+                                <span>Moderação do Caderno & Desabafo Anônimo (`diary_pages`)</span>
+                            </h3>
+                        </div>
+                        <div id="admModDiaryList" class="space-y-2.5 max-h-96 overflow-y-auto pr-1 text-xs"></div>
                     </div>
 
-                    <div id="admBotReportBox" class="bg-slate-950 border border-white/10 rounded-2xl p-4 text-xs font-mono text-slate-300 max-h-96 overflow-y-auto">
-                        Clique em "Executar Simulação Agora" ou execute <code class="text-purple-400">npm run bots</code> no terminal para iniciar.
+                    <!-- Moderação de Posts e Mini Reels do Feed Social -->
+                    <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-400">dynamic_feed</span>
+                                <span>Moderação do Feed Social & Mini Reels (`posts` & `mini_reels`)</span>
+                            </h3>
+                        </div>
+                        <div id="admModSocialList" class="space-y-2.5 max-h-96 overflow-y-auto pr-1 text-xs"></div>
                     </div>
                 </div>
             </section>
 
             <!-- =========================================================================
-                 ABA 4: MÓDULOS DE GESTÃO DE TABELAS & DIAGRAMA ERD DO BANCO
-                 ========================================================================= -->
-            <section id="tab-modules" class="admin-tab-panel hidden space-y-6">
-                <div class="bg-slate-900 border border-white/10 rounded-3xl p-6 space-y-4">
-                    <h2 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-emerald-400">apps</span>
-                        <span>Ferramentas Administrativas e Inspeção de Dados</span>
-                    </h2>
-                    <div id="link-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 text-xs font-bold">
-                        <button type="button" class="link-card p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3" data-path="/admin/users">
-                            <span class="material-symbols-outlined text-blue-400">group</span>
-                            <span>Usuários</span>
-                        </button>
-                        <button type="button" class="link-card p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3" data-path="/admin/avatars">
-                            <span class="material-symbols-outlined text-purple-400">theater_comedy</span>
-                            <span>Avatares</span>
-                        </button>
-                        <button type="button" class="link-card p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3" data-path="/admin/rooms">
-                            <span class="material-symbols-outlined text-indigo-400">meeting_room</span>
-                            <span>Salas</span>
-                        </button>
-                        <button type="button" class="link-card p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3" data-path="/admin/wallets">
-                            <span class="material-symbols-outlined text-amber-400">account_balance_wallet</span>
-                            <span>Carteiras</span>
-                        </button>
-                        <a href="/admin/db" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
-                            <span class="material-symbols-outlined text-cyan-400">schema</span>
-                            <span>Diagrama Banco (ERD)</span>
-                        </a>
-                        <a href="/admin/assas" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
-                            <i class="fa-brands fa-pix text-emerald-400 text-lg"></i>
-                            <span>Configurar Asaas</span>
-                        </a>
-                        <a href="/admin/prefab" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
-                            <span class="material-symbols-outlined text-pink-400">view_in_ar</span>
-                            <span>Prefabs & Objetos</span>
-                        </a>
-                        <a href="/admin/arquivos" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
-                            <span class="material-symbols-outlined text-amber-400">folder_open</span>
-                            <span>Gerenciador de Arquivos</span>
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            <!-- =========================================================================
-                 ABA 5: LOJA DE ROUPAS 3D & GUARDA-ROUPA (TABELA SHOP_CONTAINERS + REGRAS)
+                 ABA 6: LOJA DE ROUPAS 3D & GUARDA-ROUPA (`shop_containers` + GRANT ITEM)
                  ========================================================================= -->
             <section id="tab-shop-3d" class="admin-tab-panel hidden space-y-6">
-                <!-- Resumo de Regras e Métricas do Catálogo 3D -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-slate-900 border border-cyan-500/20 rounded-2xl p-4 flex items-center justify-between">
                         <div>
-                            <div class="text-[10px] font-bold uppercase text-slate-400">Itens no Catálogo 3D (shop_containers)</div>
+                            <div class="text-[10px] font-bold uppercase text-slate-400">Itens no Catálogo 3D (`shop_containers`)</div>
                             <div id="admShopCatalogCount" class="text-2xl font-black text-cyan-400 mt-1">0</div>
                         </div>
                         <span class="material-symbols-outlined text-3xl text-cyan-400/50">storefront</span>
                     </div>
                     <div class="bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-between">
                         <div>
-                            <div class="text-[10px] font-bold uppercase text-slate-400">Peças nos Guarda-Roupas (avatar_inventories)</div>
+                            <div class="text-[10px] font-bold uppercase text-slate-400">Peças nos Guarda-Roupas (`avatar_inventories`)</div>
                             <div id="admShopOwnedCount" class="text-2xl font-black text-emerald-400 mt-1">0</div>
                         </div>
                         <span class="material-symbols-outlined text-3xl text-emerald-400/50">checkroom</span>
                     </div>
                     <div class="bg-slate-900 border border-pink-500/20 rounded-2xl p-4 flex items-center justify-between">
                         <div>
-                            <div class="text-[10px] font-bold uppercase text-slate-400">Slots 3D Equipados Agora (avatar_outfits)</div>
+                            <div class="text-[10px] font-bold uppercase text-slate-400">Slots 3D Equipados Agora (`avatar_outfits`)</div>
                             <div id="admShopEquippedCount" class="text-2xl font-black text-pink-400 mt-1">0</div>
                         </div>
                         <span class="material-symbols-outlined text-3xl text-pink-400/50">accessibility_new</span>
                     </div>
                 </div>
 
-                <!-- Formulário Admin para Criar / Editar Roupa 3D na Tabela shop_containers -->
+                <!-- Enviar Roupa 3D de Presente para qualquer Avatar -->
+                <div class="bg-slate-900 border border-emerald-500/25 rounded-3xl p-5 shadow-xl">
+                    <form id="formAdminGrantShopItem" class="flex flex-col sm:flex-row sm:items-end gap-3 text-xs">
+                        <div class="flex-1">
+                            <label class="block text-emerald-400 font-black uppercase mb-1">🎁 Enviar Roupa 3D de Presente para Guarda-Roupa de Jogador</label>
+                            <select id="grantShopItemSelect" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold"></select>
+                        </div>
+                        <div class="w-full sm:w-48">
+                            <label class="block text-slate-400 font-bold mb-1">ID do Avatar Destino *</label>
+                            <input type="number" id="grantTargetAvatarId" required placeholder="Ex: 1" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                        </div>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider transition">
+                            Entregar no Guarda-Roupa
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Formulário Admin para Criar / Editar Roupa 3D -->
                 <div class="bg-slate-900 border border-cyan-500/30 rounded-3xl p-6 shadow-xl space-y-4">
                     <div class="flex items-center justify-between border-b border-white/10 pb-3">
                         <div class="flex items-center gap-2.5">
@@ -656,12 +909,12 @@
                     </form>
                 </div>
 
-                <!-- Tabela Completa da Loja 3D (shop_containers) -->
+                <!-- Tabela Completa da Loja 3D -->
                 <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
                     <div class="px-5 py-4 border-b border-white/10 bg-slate-950/60 flex items-center justify-between">
                         <h3 class="text-xs sm:text-sm font-black uppercase italic text-white flex items-center gap-2">
                             <span class="material-symbols-outlined text-[18px] text-cyan-400">table_view</span>
-                            <span>Tabela de Roupas e Acessórios 3D (`shop_containers`)</span>
+                            <span>Catálogo de Roupas e Acessórios 3D (`shop_containers`)</span>
                         </h3>
                         <button type="button" id="btnReloadAdminShopTable" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">
                             Recarregar Tabela
@@ -689,17 +942,277 @@
                 </div>
             </section>
 
+            <!-- =========================================================================
+                 ABA 7: SIMULADOR DE BOTS, MANUTENÇÃO DO BANCO & UTILITÁRIOS DE SISTEMA
+                 ========================================================================= -->
+            <section id="tab-bots" class="admin-tab-panel hidden space-y-6">
+                <!-- Simulador de Bots -->
+                <div class="bg-slate-900 border border-purple-500/30 rounded-3xl p-6 shadow-xl space-y-5">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                                <span class="material-symbols-outlined text-[28px]">smart_toy</span>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-black uppercase italic text-white">Simulador de Bots Autônomos de Teste</h2>
+                                <p class="text-xs text-slate-400">
+                                    Cria N bots que registram conta, avatar, foto/capa, sala, postam fotos, reels/sentimentos, reagem, comentam e movimentam o Chat Global.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-2">
+                                <label class="text-[11px] font-bold uppercase text-slate-400">Bots:</label>
+                                <input id="admBotCount" type="number" min="1" max="25" value="6" class="w-12 bg-transparent text-sm font-black text-white text-center focus:outline-none">
+                            </div>
+                            <div class="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-2">
+                                <label class="text-[11px] font-bold uppercase text-slate-400">Rodadas:</label>
+                                <input id="admBotRounds" type="number" min="1" max="10" value="2" class="w-12 bg-transparent text-sm font-black text-white text-center focus:outline-none">
+                            </div>
+                            <button type="button" id="btnAdminRunBots" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-black uppercase tracking-wider transition shadow-lg shadow-purple-600/25 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                                <span>Executar Simulação Agora</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="admBotReportBox" class="bg-slate-950 border border-white/10 rounded-2xl p-4 text-xs font-mono text-slate-300 max-h-96 overflow-y-auto">
+                        Clique em "Executar Simulação Agora" ou execute <code class="text-purple-400">npm run bots</code> no terminal para iniciar.
+                    </div>
+                </div>
+
+                <!-- Ferramentas de Manutenção do Sistema & Banco de Dados -->
+                <div class="bg-slate-900 border border-emerald-500/25 rounded-3xl p-6 space-y-4">
+                    <h2 class="text-sm font-black uppercase italic text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-emerald-400">build</span>
+                        <span>Rotinas de Manutenção, Limpeza & Ferramentas Avançadas de Banco</span>
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs font-bold">
+                        <button type="button" class="btn-adm-maintenance p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-emerald-500/30 text-left transition flex items-center gap-3" data-action="SYNC_DB">
+                            <span class="material-symbols-outlined text-emerald-400">sync</span>
+                            <div>
+                                <div class="text-white">Sincronizar Banco (Sync)</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Verifica e atualiza esquemas SQL</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="btn-adm-maintenance p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-amber-500/30 text-left transition flex items-center gap-3" data-action="CLEAN_EXPIRED_REELS">
+                            <span class="material-symbols-outlined text-amber-400">auto_delete</span>
+                            <div>
+                                <div class="text-white">Limpar Reels Expirados</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Remove status/reels vencidos</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="btn-adm-maintenance p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-indigo-500/30 text-left transition flex items-center gap-3" data-action="CLEAN_CLOSED_SERVERS">
+                            <span class="material-symbols-outlined text-indigo-400">dns</span>
+                            <div>
+                                <div class="text-white">Limpar Réplicas Fechadas</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Purga instâncias encerradas</div>
+                            </div>
+                        </button>
+
+                        <button type="button" class="btn-adm-maintenance p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-rose-500/30 text-left transition flex items-center gap-3" data-action="CLEAR_TELEMETRY">
+                            <span class="material-symbols-outlined text-rose-400">restart_alt</span>
+                            <div>
+                                <div class="text-white">Zerar Log de Visitas</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Reinicia contadores em memória</div>
+                            </div>
+                        </button>
+
+                        <a href="/admin/db" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
+                            <span class="material-symbols-outlined text-cyan-400">schema</span>
+                            <div>
+                                <div class="text-white">Diagrama ERD do Banco</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Mapa relacional interativo</div>
+                            </div>
+                        </a>
+
+                        <a href="/admin/assas" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
+                            <i class="fa-brands fa-pix text-emerald-400 text-lg"></i>
+                            <div>
+                                <div class="text-white">Gateway Financeiro Asaas</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Chaves Pix, Webhooks e Saldos</div>
+                            </div>
+                        </a>
+
+                        <a href="/admin/prefab" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
+                            <span class="material-symbols-outlined text-pink-400">view_in_ar</span>
+                            <div>
+                                <div class="text-white">Editor de Prefabs 3D</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Objetos e assets do motor</div>
+                            </div>
+                        </a>
+
+                        <a href="/admin/arquivos" target="_blank" class="p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-left transition flex items-center gap-3">
+                            <span class="material-symbols-outlined text-amber-400">folder_open</span>
+                            <div>
+                                <div class="text-white">Gerenciador de Arquivos</div>
+                                <div class="text-[10px] text-slate-400 font-normal">Uploads e mídias do servidor</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
-    <!-- Modal para visualização das tabelas de gestão -->
-    <div id="adminModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-4xl w-full max-h-[85vh] overflow-y-auto p-6 space-y-4">
+    <!-- =========================================================================
+         MODAL 1: EDITAR / CRIAR CONTA, AVATAR, CLUBE VIP & AJUSTAR CARTEIRA
+         ========================================================================= -->
+    <div id="modalAdminUserAction" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-purple-500/35 rounded-3xl max-w-2xl w-full p-6 space-y-5 my-8 shadow-2xl">
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                <h3 id="adminModalTitle" class="text-sm font-black uppercase text-white">Detalhes</h3>
-                <button type="button" id="btnCloseAdminModal" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white">✕</button>
+                <h3 id="modalAdminUserTitle" class="text-sm sm:text-base font-black uppercase italic text-white">Gerenciar Conta & Avatar</h3>
+                <button type="button" class="btn-close-user-modal px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white">✕</button>
             </div>
-            <div id="adminModalBody" class="text-xs"></div>
+
+            <!-- Formulário de Edição de Conta & Avatar -->
+            <form id="formAdminEditUser" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                <input type="hidden" id="editUserId" value="">
+                <input type="hidden" id="editAvatarId" value="">
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Nome da Conta (`userName`) *</label>
+                    <input type="text" id="editUserName" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Login de Acesso (`login`) *</label>
+                    <input type="text" id="editUserLogin" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">E-mail</label>
+                    <input type="email" id="editUserEmail" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Nível de Permissão (`role`)</label>
+                    <select id="editUserRole" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-purple-300 font-bold">
+                        <option value="player">player (Jogador Padrão)</option>
+                        <option value="admin">admin (Administrador)</option>
+                        <option value="owner">owner (Proprietário)</option>
+                        <option value="desenvolvedor">desenvolvedor (Dev)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Nome do Avatar Principal</label>
+                    <input type="text" id="editAvatarName" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-300 font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Redefinir Senha (deixe vazio p/ manter)</label>
+                    <input type="password" id="editUserPassword" placeholder="Nova senha..." class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-slate-400 font-bold mb-1">Biografia do Avatar</label>
+                    <input type="text" id="editAvatarBio" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200">
+                </div>
+
+                <div class="sm:col-span-2 flex justify-end gap-2 pt-2">
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black uppercase tracking-wider">
+                        Salvar Dados da Conta & Avatar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Bloco de Concessão / Revogação Rápida de Clube VIP -->
+            <div id="boxAdminUserVip" class="p-4 rounded-2xl bg-slate-950 border border-yellow-500/30 space-y-2.5 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="font-black uppercase text-yellow-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-crown"></i> Controle de Assinatura Clube VIP
+                    </span>
+                    <span id="labelAdminUserVipStatus" class="text-slate-400 font-bold">Status: Básico</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" class="btn-adm-grant-vip px-3 py-1.5 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 font-bold" data-days="7">+7 Dias VIP</button>
+                    <button type="button" class="btn-adm-grant-vip px-3 py-1.5 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 font-bold" data-days="30">+30 Dias VIP</button>
+                    <button type="button" class="btn-adm-grant-vip px-3 py-1.5 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 font-bold" data-days="90">+90 Dias VIP</button>
+                    <button type="button" class="btn-adm-grant-vip px-3 py-1.5 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 font-bold" data-days="365">+1 Ano VIP</button>
+                    <button type="button" class="btn-adm-grant-vip px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-bold ml-auto" data-days="0">Revogar VIP</button>
+                </div>
+            </div>
+
+            <!-- Bloco de Ajuste Rápido de Carteira (Cash, Coins, Chips) -->
+            <form id="formAdminAdjustWallet" class="p-4 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="font-black uppercase text-amber-400 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+                        <span>Ajuste Direto de Carteira (Gera Registro no Livro-Razão)</span>
+                    </span>
+                    <span id="labelAdminUserWalletCurrent" class="font-mono text-slate-300 font-bold">$0.00 • 0 Coins • 0 Chips</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                    <select id="adjWalletOperation" class="bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                        <option value="ADD">➕ Creditar (+)</option>
+                        <option value="SUB">➖ Debitar (-)</option>
+                        <option value="SET">🎯 Definir Saldo (=)</option>
+                    </select>
+                    <select id="adjWalletCurrency" class="bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-amber-300 font-bold">
+                        <option value="Coins">🪙 Coins (Moeda)</option>
+                        <option value="Cash">💵 Cash ($ Forte)</option>
+                        <option value="Chips">🎰 Chips (Fichas)</option>
+                    </select>
+                    <input type="number" step="0.01" min="0" id="adjWalletAmount" required placeholder="Valor..." class="bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase">
+                        Aplicar Saldo
+                    </button>
+                </div>
+                <input type="text" id="adjWalletReason" placeholder="Motivo do lançamento (Ex: Premiação de evento, reembolso, bônus)..." class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-slate-200">
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL 2: CRIAR NOVA CONTA + AVATAR + CARTEIRA PELO ADMIN
+         ========================================================================= -->
+    <div id="modalAdminCreateUser" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/35 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="text-sm sm:text-base font-black uppercase italic text-white">Criar Nova Conta, Avatar & Carteira</h3>
+                <button type="button" class="btn-close-create-user-modal px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white">✕</button>
+            </div>
+            <form id="formAdminCreateUser" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Nome do Usuário *</label>
+                    <input type="text" id="newUserName" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Login *</label>
+                    <input type="text" id="newUserLogin" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">E-mail</label>
+                    <input type="email" id="newUserEmail" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Senha Inicial *</label>
+                    <input type="password" id="newUserPassword" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Nome do Avatar</label>
+                    <input type="text" id="newAvatarName" placeholder="Igual ao nome se vazio" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-cyan-300 font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Role / Permissão</label>
+                    <select id="newUserRole" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                        <option value="player">player</option>
+                        <option value="admin">admin</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Coins Iniciais</label>
+                    <input type="number" id="newInitialCoins" value="250" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-amber-400 font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Dias de VIP Inicial</label>
+                    <input type="number" id="newVipDays" value="0" min="0" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-yellow-400 font-bold">
+                </div>
+                <div class="sm:col-span-2 flex justify-end gap-2 pt-2">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider">
+                        Criar Conta Completa
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -709,6 +1222,8 @@
                 if (window.TFL && window.TFL.toast) {
                     const fn = window.TFL.toast[type] || window.TFL.toast.info;
                     fn(msg, title);
+                } else if (typeof window.showToast === 'function') {
+                    window.showToast(msg, type);
                 }
             };
 
@@ -720,7 +1235,7 @@
                     .replace(/"/g, '&quot;');
             }
 
-            // Carrega todas as estatísticas do painel Admin via JS chamando /admin/api/stats
+            // ================= 1. DASHBOARD STATS & TELEMETRIA =================
             function loadAdminDashboard(showNotification) {
                 $.get('/admin/api/stats', function (res) {
                     if (!res || !res.success || !res.stats) return;
@@ -734,7 +1249,6 @@
                         $('#adminLastUpdate').text(new Date(st.timestamp).toLocaleTimeString('pt-BR'));
                     }
 
-                    // 1. Cards de Visitas e Saúde
                     $('#admTotalVisits').text(v.totalPageViews || 0);
                     $('#admUniqueVisitors').text(v.uniqueVisitors || 0);
                     $('#admOnlineNow').text(v.onlineNow || 1);
@@ -744,12 +1258,11 @@
                     $('#admUptime').text(st.server?.uptimeFormatted || '00h 00m');
                     $('#admCpuInfo').text(`CPU Load: ${st.server?.loadAvg1m ?? '0.00'} (${st.server?.cpuCores || 1} cores)`);
 
-                    // 2. Distribuição de Visitas por Região / País / Estado
                     const regions = Array.isArray(v.byRegion) ? v.byRegion : [];
                     if (regions.length === 0) {
-                        $('#admRegionsList').html('<p class="text-slate-500 text-center py-4">Nenhuma visita registrada ainda.</p>');
+                        $('#admRegionsList').html('<p class="text-slate-500 text-center py-4">Nenhuma visita registrada na sessão atual.</p>');
                     } else {
-                        const regHtml = regions.map(r => `
+                        $('#admRegionsList').html(regions.map(r => `
                             <div class="space-y-1">
                                 <div class="flex items-center justify-between text-xs">
                                     <span class="font-bold text-white flex items-center gap-1.5">
@@ -762,11 +1275,9 @@
                                     <div class="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full" style="width: ${Math.max(4, r.percent)}%"></div>
                                 </div>
                             </div>
-                        `).join('');
-                        $('#admRegionsList').html(regHtml);
+                        `).join(''));
                     }
 
-                    // 3. Páginas mais visitadas e Log de Acessos Recentes
                     const pages = Array.isArray(v.byPage) ? v.byPage : [];
                     $('#admPagesList').html(pages.map(p => `
                         <div class="p-2.5 rounded-xl bg-slate-950 border border-white/5 flex items-center justify-between">
@@ -785,20 +1296,19 @@
                         </tr>
                     `).join(''));
 
-                    // 4. Tabela Geral de Indicadores
-                    $('#admTbUsersAvatars').text(`${st.community?.usersCount || 0} Contas / ${st.community?.avatarsCount || 0} Avatares`);
-                    $('#admTbFriendsFollows').text(`${st.community?.friendsAcceptedCount || 0} Amigos / ${st.community?.friendsPendingCount || 0} Pend. / ${st.community?.followsCount || 0} Seguidores`);
-                    $('#admTbMatches').text(`${st.community?.matchesMutualCount || 0} Mútuos 💘 / ${st.community?.crushesCount || 0} Crushes`);
-                    $('#admTbContent').text(`${st.social?.postsCount || 0} Posts / ${st.social?.photosCount || 0} Fotos / ${st.social?.activeReelsCount || 0} Reels`);
-                    $('#admTbEngagement').text(`${st.social?.likesCount || 0} Reações / ${st.social?.commentsCount || 0} Comentários`);
-                    $('#admTbWorldChat').text(`${st.metaverse?.roomsCount || 0} Salas / ${st.metaverse?.objectsCount || 0} Obj / ${st.metaverse?.chatRoomsCount || 0} Chats / ${st.metaverse?.chatMessagesCount || 0} Msgs`);
+                    // Matriz de Módulos
+                    $('#admTbUsersAvatars').text(`${st.community?.usersCount || 0} Contas / ${st.community?.avatarsCount || 0} Avatares / ${st.community?.vipAvatarsCount || 0} VIP 👑`);
+                    $('#admTbFriendsFollows').text(`${st.community?.friendsAcceptedCount || 0} Amigos / ${st.community?.friendsPendingCount || 0} Pend. / ${st.community?.followsCount || 0} Seg. / ${st.community?.matchesMutualCount || 0} Matches 💘`);
+                    $('#admTbContent').text(`${st.social?.postsCount || 0} Posts / ${st.social?.photosCount || 0} Fotos / ${st.social?.activeReelsCount || 0} Reels / ${st.social?.likesCount || 0} Reações`);
+                    $('#admTbDiary').text(`${st.social?.diaryPagesCount || 0} folhas (${st.social?.diaryPublicCount || 0} públicas) • ${st.social?.diaryCommentsCount || 0} bilhetes`);
+                    $('#admTbWorldChat').text(`${st.metaverse?.roomsCount || 0} Salas / ${st.metaverse?.activeServersCount || 0} Instâncias Ativas / ${st.metaverse?.chatMessagesCount || 0} Msgs`);
                     $('#admTbEconomy').text(
                         `$${Number(st.economy?.totalCashInWallets || 0).toFixed(2)} Cash • ` +
                         `${Number(st.economy?.totalCoinsInWallets || 0).toLocaleString('pt-BR')} Coins • ` +
-                        `${Number(st.economy?.totalChipsInWallets || 0).toLocaleString('pt-BR')} Chips (Pote: ${st.economy?.poolCoins || 0} Coins)`
+                        `${Number(st.economy?.totalChipsInWallets || 0).toLocaleString('pt-BR')} Chips (${st.economy?.ledgerEntriesCount || 0} logs)`
                     );
 
-                    // 5. Regras Econômicas e Fila de Pagamentos Pix
+                    // Preencher 33 Regras Econômicas
                     const rules = res.economyRules || st.economy?.rules || {};
                     $('#ruleUsdBrlRate').val(rules.usdBrlRate ?? 5.0);
                     $('#ruleRateCoinsPerCash').val(rules.rateCoinsPerCash ?? 250);
@@ -828,6 +1338,11 @@
                     $('#ruleBasicMaxChatOpens').val(rules.basicMaxChatOpensPerDay ?? 3);
                     $('#ruleBasicMaxChatImages').val(rules.basicMaxChatImagesPerDay ?? 2);
                     $('#ruleBasicMaxChatAudio').val(rules.basicMaxChatAudioPerDay ?? 2);
+                    $('#ruleDiaryMinReadSeconds').val(rules.diaryMinReadSeconds ?? 30);
+                    $('#ruleDiaryReaderRewardCoins').val(rules.diaryReaderRewardPerPageCoins ?? 0.25);
+                    $('#ruleDiaryAuthorRewardCoins').val(rules.diaryAuthorRewardPerReadCoins ?? 0.50);
+                    $('#ruleDiaryAuthorBonus10MinCoins').val(rules.diaryAuthorBonusPer10MinCoins ?? 5.0);
+                    $('#ruleDiaryReaderDailyLimit').val(rules.diaryReaderDailyLimitPages ?? 20);
 
                     const payments = Array.isArray(res.payments) ? res.payments : [];
                     const waitingCount = payments.filter(p => p.status === 'WAITING_APPROVAL').length;
@@ -862,12 +1377,260 @@
                     }
 
                     if (showNotification) {
-                        notify('Dados de visitas, regiões e servidor sincronizados!', 'success', 'Painel Admin');
+                        notify('Central de Comando sincronizada com sucesso!', 'success', 'Admin');
                     }
                 });
             }
 
-            // Carrega a tabela da Loja 3D (shop_containers)
+            // ================= 2. CONTAS, AVATARES, VIP & CARTEIRAS =================
+            let admUsersCache = [];
+            let admUsersPage = 1;
+            let admUsersTotalPages = 1;
+
+            function loadAdminUsers(page) {
+                admUsersPage = page || admUsersPage || 1;
+                const search = $('#admUsersSearchInput').val() || '';
+                const role = $('#admUsersRoleFilter').val() || 'ALL';
+                const vip = $('#admUsersVipFilter').val() || 'ALL';
+
+                $.get('/admin/api/users', { page: admUsersPage, limit: 20, search, role, vip }, function (res) {
+                    if (!res || !res.success) return;
+                    admUsersCache = Array.isArray(res.users) ? res.users : [];
+                    admUsersTotalPages = res.totalPages || 1;
+
+                    $('#admUsersTotalCountLabel').text(`${res.total || admUsersCache.length} contas registradas`);
+                    $('#admUsersPageInfo').text(`Página ${res.page} de ${admUsersTotalPages}`);
+                    $('#btnAdmUsersPrev').prop('disabled', res.page <= 1);
+                    $('#btnAdmUsersNext').prop('disabled', res.page >= admUsersTotalPages);
+
+                    if (admUsersCache.length === 0) {
+                        $('#admUsersTableBody').html('<tr><td colspan="6" class="py-8 text-center text-slate-500">Nenhum usuário encontrado para este filtro.</td></tr>');
+                        return;
+                    }
+
+                    $('#admUsersTableBody').html(admUsersCache.map(u => {
+                        const av = u.activeAvatar || {};
+                        const w = u.wallet || { cash: 0, coins: 0, chips: 0 };
+                        const vipBadge = u.isVip
+                            ? `<span class="px-2.5 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 text-[10px] font-black">👑 VIP (${u.vipExpiresAt ? new Date(u.vipExpiresAt).toLocaleDateString('pt-BR') : 'Ativo'})</span>`
+                            : `<span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-semibold">Básico</span>`;
+
+                        return `
+                            <tr class="hover:bg-slate-800/40">
+                                <td class="py-3 px-4">
+                                    <div class="font-bold text-white">#${u.id} — ${escapeHtml(u.userName)}</div>
+                                    <div class="text-[11px] text-slate-400 font-mono">@${escapeHtml(u.login)} • ${escapeHtml(u.email || '—')}</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${u.role === 'admin' || u.role === 'owner' ? 'bg-purple-500/25 text-purple-300 border border-purple-500/40' : 'bg-slate-800 text-slate-300'}">${escapeHtml(u.role || 'player')}</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="font-bold text-cyan-300">${escapeHtml(av.name || 'Sem Avatar')} ${av.id ? `<span class="text-[10px] text-slate-500">(#${av.id})</span>` : ''}</div>
+                                    <div class="text-[10px] text-slate-400">${u.avatars?.length || 0} avatar(es)</div>
+                                </td>
+                                <td class="py-3 px-4">${vipBadge}</td>
+                                <td class="py-3 px-4 font-mono text-[11px]">
+                                    <span class="text-emerald-400 font-bold">$${Number(w.cash || 0).toFixed(2)}</span> •
+                                    <span class="text-amber-300 font-bold">${Number(w.coins || 0).toLocaleString('pt-BR')} Coins</span> •
+                                    <span class="text-pink-300 font-bold">${Number(w.chips || 0).toLocaleString('pt-BR')} Chips</span>
+                                </td>
+                                <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
+                                    <button type="button" class="btn-adm-open-user px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px]" data-id="${u.id}">
+                                        ⚙️ Gerenciar / Carteira / VIP
+                                    </button>
+                                    <button type="button" class="btn-adm-delete-user px-2.5 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white font-bold text-[11px]" data-id="${u.id}">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join(''));
+                });
+            }
+
+            // ================= 3. AUDITORIA ECONÔMICA (ORDENS P2P & LEDGER) =================
+            function loadAdminEconomyAudit() {
+                $.get('/admin/api/economy/audit', function (res) {
+                    if (!res || !res.success) return;
+                    const orders = Array.isArray(res.activeOrders) ? res.activeOrders : [];
+                    if (orders.length === 0) {
+                        $('#admActiveOrdersBody').html('<tr><td colspan="4" class="py-6 text-center text-slate-500">Nenhuma ordem de venda ativa na Bolsa P2P.</td></tr>');
+                    } else {
+                        $('#admActiveOrdersBody').html(orders.map(o => `
+                            <tr class="hover:bg-slate-800/40">
+                                <td class="py-2.5 px-3 font-mono text-amber-300">#${o.id}</td>
+                                <td class="py-2.5 px-3 text-white font-bold">${escapeHtml(o.sellerAvatarName || 'User #' + o.sellerUserId)}</td>
+                                <td class="py-2.5 px-3 font-mono text-slate-300">${o.remainingCoins} / ${o.totalCoins} Coins</td>
+                                <td class="py-2.5 px-3 text-right">
+                                    <button type="button" class="btn-adm-cancel-order px-2.5 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white font-bold text-[10px]" data-id="${o.id}">
+                                        Cancelar & Reembolsar
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join(''));
+                    }
+
+                    const ledger = Array.isArray(res.ledger?.items) ? res.ledger.items : [];
+                    if (ledger.length === 0) {
+                        $('#admGlobalLedgerBody').html('<tr><td colspan="4" class="py-6 text-center text-slate-500">Nenhum lançamento no Livro-Razão.</td></tr>');
+                    } else {
+                        $('#admGlobalLedgerBody').html(ledger.map(l => {
+                            const delta = Number(l.amountDelta || 0);
+                            return `
+                                <tr class="hover:bg-slate-800/40">
+                                    <td class="py-2 px-2.5 font-mono text-slate-400">${l.createdAt ? new Date(l.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                                    <td class="py-2 px-2.5 text-white font-semibold">${escapeHtml(l.avatarName || l.userName || 'User #' + l.userId)}</td>
+                                    <td class="py-2 px-2.5 text-slate-300 truncate max-w-[220px]" title="${escapeHtml(l.description)}">
+                                        <span class="text-[10px] font-mono text-cyan-400">[${escapeHtml(l.txType)}]</span> ${escapeHtml(l.description || '')}
+                                    </td>
+                                    <td class="py-2 px-2.5 text-right font-mono font-bold ${delta >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                                        ${delta >= 0 ? '+' : ''}${delta} ${escapeHtml(l.currency)}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join(''));
+                    }
+                });
+            }
+
+            // ================= 4. SALAS 3D & CLUSTER DE SERVIDORES =================
+            function loadAdminRoomsServers() {
+                $.get('/admin/api/rooms-servers', function (res) {
+                    if (!res || !res.success) return;
+                    const rooms = Array.isArray(res.rooms) ? res.rooms : [];
+                    const servers = Array.isArray(res.servers) ? res.servers : [];
+
+                    if (rooms.length === 0) {
+                        $('#admRoomsTableBody').html('<tr><td colspan="6" class="py-6 text-center text-slate-500">Nenhuma sala 3D cadastrada.</td></tr>');
+                    } else {
+                        $('#admRoomsTableBody').html(rooms.map(r => `
+                            <tr class="hover:bg-slate-800/40">
+                                <td class="py-3 px-4">
+                                    <div class="font-bold text-white">#${r.id} — ${escapeHtml(r.name)}</div>
+                                    <div class="text-[10px] text-slate-400">Avatar Dono #${r.avatarId || '-'} • Máx ${r.maxPlayers || 20} jog.</div>
+                                </td>
+                                <td class="py-3 px-4 font-mono text-slate-300">${escapeHtml(r.scene || 'Default')}</td>
+                                <td class="py-3 px-4 font-bold ${Number(r.entryFeeCoins) > 0 ? 'text-amber-400' : 'text-emerald-400'}">
+                                    ${Number(r.entryFeeCoins) > 0 ? `${r.entryFeeCoins} Coins (24h)` : 'Gratuita'}
+                                </td>
+                                <td class="py-3 px-4 font-mono text-cyan-300 font-bold">
+                                    ${r.uniqueMonthVisits || 0} visitas únicas/mês (${r.visits || 0} total)
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-[11px]">
+                                        🖧 ${r.replicasCount || 0} instância(s)
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
+                                    <button type="button" class="btn-adm-server-act px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px]" data-action="REPLICATE" data-roomid="${r.id}">
+                                        +Criar Réplica
+                                    </button>
+                                    <button type="button" class="btn-adm-server-act px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px]" data-action="SIMULATE_FULL" data-roomid="${r.id}">
+                                        Simular Lotação
+                                    </button>
+                                    <button type="button" class="btn-adm-boost-room px-2.5 py-1 rounded-lg bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-[10px]" data-roomid="${r.id}">
+                                        🚀 Boost 24h
+                                    </button>
+                                    <button type="button" class="btn-adm-delete-room px-2.5 py-1 rounded-lg bg-red-600/30 hover:bg-red-600 text-red-200 font-bold text-[10px]" data-roomid="${r.id}">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join(''));
+                    }
+
+                    if (servers.length === 0) {
+                        $('#admServersTableBody').html('<tr><td colspan="6" class="py-6 text-center text-slate-500">Nenhuma instância registrada na tabela servers.</td></tr>');
+                    } else {
+                        $('#admServersTableBody').html(servers.map(s => `
+                            <tr class="hover:bg-slate-800/40">
+                                <td class="py-2.5 px-4 font-mono text-slate-400">#${s.id}</td>
+                                <td class="py-2.5 px-4 font-bold text-white">Sala #${s.roomId || '-'} — ${escapeHtml(s.name || 'Server')}</td>
+                                <td class="py-2.5 px-4 font-mono text-cyan-400">${escapeHtml(s.ip || '127.0.0.1')}:${s.publicPort || s.port || 7777}</td>
+                                <td class="py-2.5 px-4 font-bold text-slate-200">${s.playersCount || 0} / ${s.maxPlayers || 20} jogadores</td>
+                                <td class="py-2.5 px-4">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${!s.isClosed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}">
+                                        ${!s.isClosed ? 'ONLINE' : 'FECHADO'}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 px-4 text-right space-x-1">
+                                    <button type="button" class="btn-adm-server-act px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-[10px]" data-action="TOGGLE_CLOSE" data-serverid="${s.id}">
+                                        ${!s.isClosed ? 'Fechar' : 'Reabrir'}
+                                    </button>
+                                    <button type="button" class="btn-adm-server-act px-2.5 py-1 rounded-lg bg-red-600/30 hover:bg-red-600 text-red-200 font-bold text-[10px]" data-action="DELETE" data-serverid="${s.id}">
+                                        Excluir
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join(''));
+                    }
+                });
+            }
+
+            // ================= 5. MODERAÇÃO SOCIAL & DIÁRIO ANÔNIMO =================
+            function loadAdminModeration() {
+                $.get('/admin/api/moderation/overview', function (res) {
+                    if (!res || !res.success) return;
+
+                    const diaryPages = Array.isArray(res.diaryPages) ? res.diaryPages : [];
+                    if (diaryPages.length === 0) {
+                        $('#admModDiaryList').html('<p class="text-slate-500 text-center py-6">Nenhuma folha de diário registrada.</p>');
+                    } else {
+                        $('#admModDiaryList').html(diaryPages.map(p => `
+                            <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/10 flex items-start justify-between gap-3">
+                                <div class="space-y-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="font-bold text-amber-300">#${p.id} — ${escapeHtml(p.title)}</span>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.isPublicAnonymous ? 'bg-violet-500/20 text-violet-300' : 'bg-slate-800 text-slate-400'}">
+                                            ${p.isPublicAnonymous ? `🎭 Público (${escapeHtml(p.anonymousAlias)})` : '🔒 Privado'}
+                                        </span>
+                                        <span class="text-[10px] text-slate-500">Conta: ${escapeHtml(p.userName || 'User #' + p.userId)}</span>
+                                    </div>
+                                    <p class="text-slate-300 line-clamp-2">${escapeHtml(p.content)}</p>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    ${p.isPublicAnonymous ? `
+                                        <button type="button" class="btn-adm-mod-del px-2.5 py-1 rounded-lg bg-amber-600/30 hover:bg-amber-600 text-amber-200 text-[10px] font-bold" data-type="diary_unpublish" data-id="${p.id}" title="Ocultar do mural público">
+                                            🔒 Ocultar
+                                        </button>
+                                    ` : ''}
+                                    <button type="button" class="btn-adm-mod-del px-2.5 py-1 rounded-lg bg-red-600/30 hover:bg-red-600 text-red-200 text-[10px] font-bold" data-type="diary_page" data-id="${p.id}">
+                                        🗑️ Excluir
+                                    </button>
+                                </div>
+                            </div>
+                        `).join(''));
+                    }
+
+                    const posts = Array.isArray(res.posts) ? res.posts : [];
+                    const reels = Array.isArray(res.reels) ? res.reels : [];
+                    const combinedSocial = [
+                        ...posts.map(p => ({ kind: 'post', id: p.id, author: p.profile?.name || 'Avatar #' + p.profileId, text: p.content || '[Foto/Mídia]', createdAt: p.createdAt })),
+                        ...reels.map(r => ({ kind: 'reel', id: r.id, author: r.profile?.name || 'Avatar #' + r.profileId, text: `${r.feelingEmoji || '🎬'} ${r.caption || 'Mini Reel'}`, createdAt: r.createdAt }))
+                    ];
+
+                    if (combinedSocial.length === 0) {
+                        $('#admModSocialList').html('<p class="text-slate-500 text-center py-6">Nenhuma publicação ou Mini Reel recente.</p>');
+                    } else {
+                        $('#admModSocialList').html(combinedSocial.map(item => `
+                            <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/10 flex items-start justify-between gap-3">
+                                <div class="space-y-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${item.kind === 'post' ? 'bg-blue-500/20 text-blue-300' : 'bg-pink-500/20 text-pink-300'}">${item.kind} #${item.id}</span>
+                                        <span class="font-bold text-white">${escapeHtml(item.author)}</span>
+                                    </div>
+                                    <p class="text-slate-300 line-clamp-2">${escapeHtml(item.text)}</p>
+                                </div>
+                                <button type="button" class="btn-adm-mod-del px-2.5 py-1 rounded-lg bg-red-600/30 hover:bg-red-600 text-red-200 text-[10px] font-bold shrink-0" data-type="${item.kind}" data-id="${item.id}">
+                                    🗑️ Remover
+                                </button>
+                            </div>
+                        `).join(''));
+                    }
+                });
+            }
+
+            // ================= 6. LOJA 3D (SHOP_CONTAINERS) =================
             let adminShopItemsCache = [];
             function loadAdminShopTable() {
                 $.get('/admin/api/shop', function (res) {
@@ -877,8 +1640,12 @@
                     $('#admShopOwnedCount').text(res.metrics?.totalOwnedCount || 0);
                     $('#admShopEquippedCount').text(res.metrics?.totalEquippedCount || 0);
 
+                    $('#grantShopItemSelect').html(adminShopItemsCache.map(i => `
+                        <option value="${i.id}">#${i.id} — ${escapeHtml(i.itemName)} (${escapeHtml(i.slot)})</option>
+                    `).join(''));
+
                     if (adminShopItemsCache.length === 0) {
-                        $('#admShopTableBody').html('<tr><td colspan="10" class="py-6 text-center text-slate-500">Nenhuma roupa 3D cadastrada na tabela shop_containers.</td></tr>');
+                        $('#admShopTableBody').html('<tr><td colspan="10" class="py-6 text-center text-slate-500">Nenhuma roupa 3D cadastrada.</td></tr>');
                         return;
                     }
 
@@ -932,44 +1699,381 @@
                 $('#admShopFormTitle').text('Cadastrar Nova Roupa ou Item 3D na Loja (shop_containers)');
             }
 
+            // ================= INICIALIZAÇÃO E EVENT LISTENERS =================
             $(document).ready(function () {
                 loadAdminDashboard(false);
                 loadAdminShopTable();
-                // Atualização automática a cada 15 segundos via JS
+
                 setInterval(function () {
                     loadAdminDashboard(false);
-                }, 15000);
+                }, 45000);
 
-                // Alternar abas do Admin
-                $('.admin-tab-btn').on('click', function () {
-                    const tabId = $(this).data('tab');
+                function activateAdminTab(tabId) {
                     $('.admin-tab-btn').removeClass('bg-blue-600 text-white shadow-lg shadow-blue-600/25')
                                        .addClass('text-slate-400 hover:text-white hover:bg-slate-800');
-                    $(this).addClass('bg-blue-600 text-white shadow-lg shadow-blue-600/25')
-                           .removeClass('text-slate-400 hover:text-white hover:bg-slate-800');
+                    $(`.admin-tab-btn[data-tab="${tabId}"]`)
+                        .addClass('bg-blue-600 text-white shadow-lg shadow-blue-600/25')
+                        .removeClass('text-slate-400 hover:text-white hover:bg-slate-800');
 
                     $('.admin-tab-panel').addClass('hidden');
                     $('#' + tabId).removeClass('hidden');
-                    if (tabId === 'tab-shop-3d') {
-                        loadAdminShopTable();
-                    }
+
+                    if (tabId === 'tab-users-avatars') loadAdminUsers(1);
+                    if (tabId === 'tab-economy') loadAdminEconomyAudit();
+                    if (tabId === 'tab-rooms-servers') loadAdminRoomsServers();
+                    if (tabId === 'tab-moderation') loadAdminModeration();
+                    if (tabId === 'tab-shop-3d') loadAdminShopTable();
+                }
+
+                $('.admin-tab-btn').on('click', function () {
+                    activateAdminTab($(this).data('tab'));
+                });
+
+                $(document).on('click', '.btn-jump-tab', function () {
+                    activateAdminTab($(this).data('target'));
                 });
 
                 $('#btnRefreshAdminStats').on('click', function () {
                     loadAdminDashboard(true);
+                    loadAdminUsers(admUsersPage);
+                    loadAdminEconomyAudit();
+                    loadAdminRoomsServers();
+                    loadAdminModeration();
                     loadAdminShopTable();
                 });
 
+                // Filtros e paginação de usuários
+                $('#btnAdmFilterUsers').on('click', () => loadAdminUsers(1));
+                $('#admUsersSearchInput').on('keydown', (e) => { if (e.key === 'Enter') loadAdminUsers(1); });
+                $('#btnAdmUsersPrev').on('click', () => { if (admUsersPage > 1) loadAdminUsers(admUsersPage - 1); });
+                $('#btnAdmUsersNext').on('click', () => { if (admUsersPage < admUsersTotalPages) loadAdminUsers(admUsersPage + 1); });
+
+                // Abrir modal de gerenciamento de Usuário / Carteira / VIP
+                $(document).on('click', '.btn-adm-open-user', function () {
+                    const uid = Number($(this).data('id'));
+                    const u = admUsersCache.find(item => Number(item.id) === uid);
+                    if (!u) return;
+
+                    const av = u.activeAvatar || {};
+                    const w = u.wallet || { cash: 0, coins: 0, chips: 0 };
+
+                    $('#editUserId').val(u.id);
+                    $('#editAvatarId').val(av.id || '');
+                    $('#editUserName').val(u.userName || '');
+                    $('#editUserLogin').val(u.login || '');
+                    $('#editUserEmail').val(u.email || '');
+                    $('#editUserRole').val(u.role || 'player');
+                    $('#editAvatarName').val(av.name || '');
+                    $('#editAvatarBio').val(av.bio || '');
+                    $('#editUserPassword').val('');
+
+                    $('#modalAdminUserTitle').text(`Gerenciar Conta #${u.id} (${u.userName})`);
+                    $('#labelAdminUserVipStatus').text(u.isVip ? `👑 VIP Ativo até ${u.vipExpiresAt ? new Date(u.vipExpiresAt).toLocaleDateString('pt-BR') : '—'}` : 'Status: Básico');
+                    $('#labelAdminUserWalletCurrent').text(`$${Number(w.cash || 0).toFixed(2)} Cash • ${Number(w.coins || 0).toLocaleString('pt-BR')} Coins • ${Number(w.chips || 0).toLocaleString('pt-BR')} Chips`);
+
+                    $('#modalAdminUserAction').removeClass('hidden').addClass('flex');
+                });
+
+                $('.btn-close-user-modal').on('click', function () {
+                    $('#modalAdminUserAction').addClass('hidden').removeClass('flex');
+                });
+
+                // Salvar Edição de Conta & Avatar
+                $('#formAdminEditUser').on('submit', function (e) {
+                    e.preventDefault();
+                    const payload = {
+                        userId: Number($('#editUserId').val()),
+                        avatarId: Number($('#editAvatarId').val()) || undefined,
+                        userName: $('#editUserName').val(),
+                        login: $('#editUserLogin').val(),
+                        email: $('#editUserEmail').val(),
+                        role: $('#editUserRole').val(),
+                        newPassword: $('#editUserPassword').val(),
+                        avatarName: $('#editAvatarName').val(),
+                        avatarBio: $('#editAvatarBio').val(),
+                    };
+                    $.ajax({
+                        url: '/admin/api/users/update',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Contas');
+                                loadAdminUsers(admUsersPage);
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Erro ao atualizar conta.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Conceder ou Revogar Clube VIP
+                $(document).on('click', '.btn-adm-grant-vip', function () {
+                    const userId = Number($('#editUserId').val());
+                    const avatarId = Number($('#editAvatarId').val()) || undefined;
+                    const days = Number($(this).data('days'));
+                    $.ajax({
+                        url: '/admin/api/users/vip',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ userId, avatarId, days }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Clube VIP');
+                                $('#labelAdminUserVipStatus').text(days > 0 ? `👑 VIP Ativo (+${days}d)` : 'Status: Básico (Revogado)');
+                                loadAdminUsers(admUsersPage);
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Falha ao alterar VIP.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Ajustar Saldo da Carteira (Cash, Coins, Chips)
+                $('#formAdminAdjustWallet').on('submit', function (e) {
+                    e.preventDefault();
+                    const payload = {
+                        userId: Number($('#editUserId').val()),
+                        avatarId: Number($('#editAvatarId').val()) || undefined,
+                        operation: $('#adjWalletOperation').val(),
+                        currency: $('#adjWalletCurrency').val(),
+                        amount: Number($('#adjWalletAmount').val()),
+                        reason: $('#adjWalletReason').val() || 'Ajuste administrativo via Painel Admin',
+                    };
+                    $.ajax({
+                        url: '/admin/api/wallets/adjust',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Carteira');
+                                const w = res.wallet || {};
+                                $('#labelAdminUserWalletCurrent').text(`$${Number(w.cash || 0).toFixed(2)} Cash • ${Number(w.coins || 0).toLocaleString('pt-BR')} Coins • ${Number(w.chips || 0).toLocaleString('pt-BR')} Chips`);
+                                $('#adjWalletAmount').val('');
+                                loadAdminUsers(admUsersPage);
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Erro ao ajustar carteira.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Criar Nova Conta + Avatar + Carteira
+                $('#btnOpenCreateUserModal').on('click', function () {
+                    $('#modalAdminCreateUser').removeClass('hidden').addClass('flex');
+                });
+                $('.btn-close-create-user-modal').on('click', function () {
+                    $('#modalAdminCreateUser').addClass('hidden').removeClass('flex');
+                });
+                $('#formAdminCreateUser').on('submit', function (e) {
+                    e.preventDefault();
+                    const payload = {
+                        userName: $('#newUserName').val(),
+                        login: $('#newUserLogin').val(),
+                        email: $('#newUserEmail').val(),
+                        password: $('#newUserPassword').val(),
+                        avatarName: $('#newAvatarName').val(),
+                        role: $('#newUserRole').val(),
+                        initialCoins: Number($('#newInitialCoins').val() || 0),
+                        vipDays: Number($('#newVipDays').val() || 0),
+                    };
+                    $.ajax({
+                        url: '/admin/api/users/create',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Nova Conta');
+                                $('#modalAdminCreateUser').addClass('hidden').removeClass('flex');
+                                $('#formAdminCreateUser')[0].reset();
+                                loadAdminUsers(1);
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Erro ao criar conta.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Excluir Usuário
+                $(document).on('click', '.btn-adm-delete-user', function () {
+                    const userId = Number($(this).data('id'));
+                    $.ajax({
+                        url: '/admin/api/users/delete',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ userId }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'info', 'Contas');
+                                loadAdminUsers(admUsersPage);
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Não foi possível excluir.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Cancelar Ordem P2P na Bolsa
+                $(document).on('click', '.btn-adm-cancel-order', function () {
+                    const orderId = Number($(this).data('id'));
+                    $.ajax({
+                        url: '/admin/api/economy/order-cancel',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ orderId }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'info', 'Bolsa P2P');
+                                loadAdminEconomyAudit();
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Erro ao cancelar ordem.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Ações em Salas e Servidores
+                $('#btnReloadRoomsServers').on('click', () => loadAdminRoomsServers());
+                $(document).on('click', '.btn-adm-server-act', function () {
+                    const action = $(this).data('action');
+                    const roomId = $(this).data('roomid');
+                    const serverId = $(this).data('serverid');
+                    $.ajax({
+                        url: '/admin/api/servers/action',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ action, roomId, serverId }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Cluster Servers');
+                                loadAdminRoomsServers();
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Erro na ação do servidor.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                $(document).on('click', '.btn-adm-boost-room', function () {
+                    const roomId = $(this).data('roomid');
+                    $.ajax({
+                        url: '/admin/api/rooms/update',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ roomId, boost24h: true }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(`Sala #${roomId} impulsionada por 24h!`, 'success', 'Salas 3D');
+                                loadAdminRoomsServers();
+                            }
+                        }
+                    });
+                });
+
+                $(document).on('click', '.btn-adm-delete-room', function () {
+                    const roomId = $(this).data('roomid');
+                    $.ajax({
+                        url: '/admin/api/rooms/delete',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ roomId }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'info', 'Salas 3D');
+                                loadAdminRoomsServers();
+                                loadAdminDashboard(false);
+                            }
+                        }
+                    });
+                });
+
+                // Broadcast Oficial na Bag + Presentes Globais
+                $('#formAdminBroadcast').on('submit', function (e) {
+                    e.preventDefault();
+                    const payload = {
+                        title: $('#bcTitle').val(),
+                        message: $('#bcMessage').val(),
+                        giftCoins: Number($('#bcGiftCoins').val() || 0),
+                        giftChips: Number($('#bcGiftChips').val() || 0),
+                        targetUserId: $('#bcTargetUserId').val() || undefined,
+                    };
+                    $.ajax({
+                        url: '/admin/api/broadcast',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Comunicado Oficial');
+                                $('#formAdminBroadcast')[0].reset();
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Erro ao enviar comunicado.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Moderação (Excluir Post, Reel ou Folha do Diário)
+                $(document).on('click', '.btn-adm-mod-del', function () {
+                    const targetType = $(this).data('type');
+                    const targetId = $(this).data('id');
+                    $.ajax({
+                        url: '/admin/api/moderation/delete',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ targetType, targetId }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'info', 'Moderação');
+                                loadAdminModeration();
+                                loadAdminDashboard(false);
+                            } else {
+                                notify(res.error || 'Falha ao moderar item.', 'error', 'Erro');
+                            }
+                        }
+                    });
+                });
+
+                // Entregar Roupa 3D de Presente no Guarda-Roupa
+                $('#formAdminGrantShopItem').on('submit', function (e) {
+                    e.preventDefault();
+                    const shopContainerId = Number($('#grantShopItemSelect').val());
+                    const avatarId = Number($('#grantTargetAvatarId').val());
+                    $.ajax({
+                        url: '/admin/api/shop/grant',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ shopContainerId, avatarId }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Guarda-Roupa 3D');
+                                $('#grantTargetAvatarId').val('');
+                                loadAdminShopTable();
+                            } else {
+                                notify(res.error || 'Não foi possível enviar o item.', 'error', 'Loja 3D');
+                            }
+                        }
+                    });
+                });
+
+                // Loja 3D CRUD
                 $('#btnReloadAdminShopTable').on('click', function () {
                     loadAdminShopTable();
-                    notify('Tabela da Loja 3D atualizada!', 'info', 'Loja 3D');
+                    notify('Catálogo 3D recarregado!', 'info', 'Loja 3D');
                 });
+                $('#btnResetAdminShopForm').on('click', resetAdminShopForm);
 
-                $('#btnResetAdminShopForm').on('click', function () {
-                    resetAdminShopForm();
-                });
-
-                // Salvar / Criar / Editar item da Loja 3D
                 $('#formAdminShopItem').on('submit', function (e) {
                     e.preventDefault();
                     const payload = {
@@ -1000,14 +2104,10 @@
                             } else {
                                 notify(res?.error || 'Erro ao salvar item 3D.', 'error', 'Loja 3D');
                             }
-                        },
-                        error: function (xhr) {
-                            notify(xhr.responseJSON?.error || 'Falha ao salvar item 3D.', 'error', 'Loja 3D');
                         }
                     });
                 });
 
-                // Preencher formulário ao clicar em Editar item da Loja 3D
                 $(document).on('click', '.btn-adm-edit-shop', function () {
                     const id = Number($(this).data('id'));
                     const item = adminShopItemsCache.find(i => Number(i.id) === id);
@@ -1029,7 +2129,6 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
 
-                // Excluir item da Loja 3D
                 $(document).on('click', '.btn-adm-delete-shop', function () {
                     const id = Number($(this).data('id'));
                     if (!id) return;
@@ -1049,7 +2148,7 @@
                     });
                 });
 
-                // Salvar regras econômicas
+                // Salvar as 33 Regras Econômicas
                 $('#formAdminEconomyRules').on('submit', function (e) {
                     e.preventDefault();
                     const payload = {
@@ -1081,6 +2180,11 @@
                         basicMaxChatOpensPerDay: Number($('#ruleBasicMaxChatOpens').val()),
                         basicMaxChatImagesPerDay: Number($('#ruleBasicMaxChatImages').val()),
                         basicMaxChatAudioPerDay: Number($('#ruleBasicMaxChatAudio').val()),
+                        diaryMinReadSeconds: Number($('#ruleDiaryMinReadSeconds').val()),
+                        diaryReaderRewardPerPageCoins: Number($('#ruleDiaryReaderRewardCoins').val()),
+                        diaryAuthorRewardPerReadCoins: Number($('#ruleDiaryAuthorRewardCoins').val()),
+                        diaryAuthorBonusPer10MinCoins: Number($('#ruleDiaryAuthorBonus10MinCoins').val()),
+                        diaryReaderDailyLimitPages: Number($('#ruleDiaryReaderDailyLimit').val()),
                     };
 
                     $.ajax({
@@ -1090,7 +2194,7 @@
                         data: JSON.stringify(payload),
                         success: function (res) {
                             if (res.success) {
-                                notify('Regras econômicas atualizadas com sucesso!', 'success', 'Economia');
+                                notify('Todas as 33 regras econômicas foram salvas!', 'success', 'Economia');
                                 loadAdminDashboard(false);
                             } else {
                                 notify(res.error || 'Erro ao salvar regras.', 'error', 'Erro');
@@ -1119,7 +2223,7 @@
                     });
                 });
 
-                // Disparar Simulador de Bots pelo Admin
+                // Simulador de Bots
                 $('#btnAdminRunBots').on('click', function () {
                     const $btn = $(this);
                     const botsCount = Number($('#admBotCount').val()) || 6;
@@ -1162,18 +2266,24 @@
                     });
                 });
 
-                // Modal para os cards de gestão legados (/admin/users, /admin/avatars, etc.)
-                $(document).on('click', '.link-card[data-path]', function () {
-                    const url = $(this).data('path');
-                    const title = $(this).text().trim();
-                    $('#adminModalTitle').text(title);
-                    $('#adminModalBody').html('<p class="text-slate-400">Carregando...</p>');
-                    $('#adminModal').removeClass('hidden');
-                    $('#adminModalBody').load(url);
-                });
-
-                $('#btnCloseAdminModal').on('click', function () {
-                    $('#adminModal').addClass('hidden');
+                // Rotinas de Manutenção do Sistema
+                $(document).on('click', '.btn-adm-maintenance', function () {
+                    const action = $(this).data('action');
+                    $.ajax({
+                        url: '/admin/api/system/maintenance',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ action }),
+                        success: function (res) {
+                            if (res.success) {
+                                notify(res.message, 'success', 'Manutenção');
+                                loadAdminDashboard(false);
+                                loadAdminRoomsServers();
+                            } else {
+                                notify(res.error || 'Erro na manutenção.', 'error', 'Erro');
+                            }
+                        }
+                    });
                 });
             });
         })(jQuery);

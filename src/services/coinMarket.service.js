@@ -125,6 +125,22 @@ async function ensureFeeAndRoomTables() {
         "isRead" BOOLEAN NOT NULL DEFAULT FALSE,
         "createdAt" TIMESTAMPTZ DEFAULT NOW()
       );
+
+      -- ================= ÍNDICES CRÍTICOS POSTGRESQL (BLINDAGEM I/O) =================
+      CREATE INDEX IF NOT EXISTS "idx_wallet_ledger_avatar_id" ON "wallet_ledger" ("avatarId");
+      CREATE INDEX IF NOT EXISTS "idx_wallet_ledger_user_id" ON "wallet_ledger" ("userId");
+      CREATE INDEX IF NOT EXISTS "idx_wallet_ledger_currency_type" ON "wallet_ledger" ("currencyType");
+      CREATE INDEX IF NOT EXISTS "idx_wallet_ledger_created_at" ON "wallet_ledger" ("createdAt" DESC);
+
+      CREATE INDEX IF NOT EXISTS "idx_room_visits_room_id" ON "room_visits" ("roomId");
+      CREATE INDEX IF NOT EXISTS "idx_room_visits_visitor_avatar" ON "room_visits" ("visitorAvatarId");
+      CREATE INDEX IF NOT EXISTS "idx_room_visits_month_key" ON "room_visits" ("monthKey");
+      CREATE INDEX IF NOT EXISTS "idx_room_visits_last_visited" ON "room_visits" ("lastVisitedAt" DESC);
+
+      CREATE INDEX IF NOT EXISTS "idx_user_notifications_user_id" ON "user_notifications" ("userId");
+      CREATE INDEX IF NOT EXISTS "idx_user_notifications_avatar_id" ON "user_notifications" ("avatarId");
+      CREATE INDEX IF NOT EXISTS "idx_user_notifications_is_read" ON "user_notifications" ("isRead");
+      CREATE INDEX IF NOT EXISTS "idx_user_notifications_created_at" ON "user_notifications" ("createdAt" DESC);
     `);
     _feeTablesEnsured = true;
   } catch (err) {
@@ -2020,20 +2036,28 @@ async function recordLedgerEntry({
   }
 }
 
-async function getWalletLedger(avatarId, limit = 40) {
+async function getWalletLedger(avatarIdOrOpts, limitArg = 20) {
   await ensureFeeAndRoomTables();
-  const avId = Number(avatarId || 0);
+  const isObj = avatarIdOrOpts && typeof avatarIdOrOpts === "object";
+  const avId = Number(isObj ? avatarIdOrOpts.avatarId : avatarIdOrOpts) || 0;
+  const limit = Math.min(Math.max(Number(isObj ? avatarIdOrOpts.limit : limitArg) || 20, 1), 100);
+  const page = Math.max(1, Number(isObj ? avatarIdOrOpts.page : 1) || 1);
+  const offset = (page - 1) * limit;
+  const currency = isObj && avatarIdOrOpts.currency ? String(avatarIdOrOpts.currency).trim() : "ALL";
+
   if (!avId) return [];
   try {
+    const currencyFilter =
+      currency && currency !== "ALL" ? `AND UPPER(wl."currencyType") = UPPER(:currency)` : "";
     return await repo.sequelize.query(
       `SELECT wl.*, a."name" AS "relatedAvatarName"
        FROM "wallet_ledger" wl
        LEFT JOIN "avatars" a ON a."id" = wl."relatedAvatarId"
-       WHERE wl."avatarId" = :avatarId
+       WHERE wl."avatarId" = :avatarId ${currencyFilter}
        ORDER BY wl."createdAt" DESC, wl."id" DESC
-       LIMIT :limit`,
+       LIMIT :limit OFFSET :offset`,
       {
-        replacements: { avatarId: avId, limit: Math.min(Math.max(Number(limit) || 40, 1), 200) },
+        replacements: { avatarId: avId, limit, offset, currency },
         type: repo.Sequelize.QueryTypes.SELECT,
       }
     );
@@ -2078,19 +2102,24 @@ async function createNotification({
   }
 }
 
-async function getNotifications(avatarId, limit = 30) {
+async function getNotifications(avatarIdOrOpts, limitArg = 20) {
   await ensureFeeAndRoomTables();
-  const avId = Number(avatarId || 0);
-  if (!avId) return { notifications: [], unreadCount: 0 };
+  const isObj = avatarIdOrOpts && typeof avatarIdOrOpts === "object";
+  const avId = Number(isObj ? avatarIdOrOpts.avatarId : avatarIdOrOpts) || 0;
+  const limit = Math.min(Math.max(Number(isObj ? avatarIdOrOpts.limit : limitArg) || 20, 1), 100);
+  const page = Math.max(1, Number(isObj ? avatarIdOrOpts.page : 1) || 1);
+  const offset = (page - 1) * limit;
+
+  if (!avId) return { notifications: [], unreadCount: 0, page: 1, limit: 20 };
   try {
     const [notifications, unreadRes] = await Promise.all([
       repo.sequelize.query(
         `SELECT * FROM "user_notifications"
          WHERE "avatarId" = :avatarId
          ORDER BY "createdAt" DESC, "id" DESC
-         LIMIT :limit`,
+         LIMIT :limit OFFSET :offset`,
         {
-          replacements: { avatarId: avId, limit: Math.min(Math.max(Number(limit) || 30, 1), 100) },
+          replacements: { avatarId: avId, limit, offset },
           type: repo.Sequelize.QueryTypes.SELECT,
         }
       ),
@@ -2107,15 +2136,19 @@ async function getNotifications(avatarId, limit = 30) {
     return {
       notifications,
       unreadCount: Number(unreadRes[0]?.unreadCount || 0),
+      page,
+      limit,
     };
   } catch (err) {
-    return { notifications: [], unreadCount: 0 };
+    return { notifications: [], unreadCount: 0, page: 1, limit: 20 };
   }
 }
 
-async function markNotificationsRead(avatarId, notificationId = null) {
+async function markNotificationsRead(avatarIdOrOpts, notificationIdArg = null) {
   await ensureFeeAndRoomTables();
-  const avId = Number(avatarId || 0);
+  const isObj = avatarIdOrOpts && typeof avatarIdOrOpts === "object";
+  const avId = Number(isObj ? avatarIdOrOpts.avatarId : avatarIdOrOpts) || 0;
+  const notificationId = isObj ? avatarIdOrOpts.notificationId : notificationIdArg;
   if (!avId) return { success: false };
   if (notificationId) {
     await repo.sequelize.query(

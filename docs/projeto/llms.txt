@@ -1,0 +1,84 @@
+# The Fantasy Life (TFL) — Árvore de Módulos e Regras
+
+> Mundo virtual 3D + rede social de avatares + economia virtual (Cash/Coins/Chips).
+> Cada pasta em `app/` é um módulo e tem um `regras.md`. Este arquivo é o ponto de entrada para modelos de IA (LLMs).
+
+## Protocolo de leitura (obrigatório)
+1. Leia `/PROJECT_MEMORY_LOG.txt` (histórico e regras gerais do repositório).
+2. Ache o módulo alvo na árvore abaixo.
+3. Leia **todos** os `regras.md` do caminho, da raiz até o alvo (ex.: `app` → `user` → `avatar` → `salas` → `permissoes`).
+4. **Precedência:** a regra do pai sempre vale. O filho só especializa. Em caso de conflito, vale o pai e o conflito deve ser apontado ao usuário.
+5. Status: ✅ implementado · 🟡 parcial · ⏳ planejado. Em ⏳/🟡 não suponha que o código existe: confira em `src/`.
+6. Ao alterar um módulo, atualize o `regras.md` dele (seção "Implementação atual" e status) e adicione um `[LOG #XX]` no `PROJECT_MEMORY_LOG.txt`.
+
+## Regras globais (resumo de app/regras.md)
+- Nunca expor a engine do jogo, a API interna ou detalhes técnicos em páginas do jogador (`/`, `/profile`, `/tutorial`).
+- `/tutorial` e o seletor de idioma ficam só no `footer.ejs`. Telemetria e ferramentas de admin ficam só no `/admin`.
+- Nunca usar `alert()`; usar `window.showToast`.
+- Paginação de 20. `pt-BR` é o fallback. Índices Sequelize em `options.indexes`. Cache com TTL para leituras frequentes.
+- Somente `Coins` são transferíveis entre jogadores. `Cash` nunca.
+
+## Árvore
+- [app](app/regras.md) — Core, infra, I/O e SEO
+  - [shop](app/shop/regras.md) — Vitrine geral / marketplace
+    - [loja](app/shop/loja/regras.md) — Lojas de usuários (rolagem infinita + pool)
+      - [catalogo](app/shop/loja/catalogo/regras.md) — Catálogo de itens
+        - [item](app/shop/loja/catalogo/item/regras.md) — Unidade comercializável
+          - [roupas](app/shop/loja/catalogo/item/roupas/regras.md) — Roupas, calçados, cabelos e acessórios
+          - [animais](app/shop/loja/catalogo/item/animais/regras.md) — Pets domésticos
+          - [veiculos](app/shop/loja/catalogo/item/veiculos/regras.md) — Transporte urbano
+          - [decoracao](app/shop/loja/catalogo/item/decoracao/regras.md) — Móveis e decoração de salas
+  - [infra_e_sistemas](app/infra_e_sistemas/regras.md) — Orquestrador, presença, portas, SEO e cache
+    - [servidores](app/infra_e_sistemas/servidores/regras.md) — Pool de instâncias, health check, UDP
+    - [presenca_global](app/infra_e_sistemas/presenca_global/regras.md) — Heartbeat em RAM, TTL 45 s
+    - [crawling_e_seo](app/infra_e_sistemas/crawling_e_seo/regras.md) — Público indexável vs privado
+  - [economia](app/economia/regras.md) — Regras monetárias e auditoria
+    - [moedas](app/economia/moedas/regras.md) — Cash, Coins e Chips
+    - [regras_fiscais](app/economia/regras_fiscais/regras.md) — Taxas (P2P taxa zero ⚠️)
+    - [ledger_auditoria](app/economia/ledger_auditoria/regras.md) — SHA-256 e atomicidade
+  - [user](app/user/regras.md) — Conta, autenticação e credenciais
+    - [avatar](app/user/avatar/regras.md) — Persona ativa e privacidade
+      - [visual](app/user/avatar/visual/regras.md) — Morfologia e vestuário
+        - [blendshapes](app/user/avatar/visual/blendshapes/regras.md) — Morph targets faciais/corporais
+        - [slots_roupas](app/user/avatar/visual/slots_roupas/regras.md) — 10 slots anatômicos
+          - [hair](app/user/avatar/visual/slots_roupas/hair/regras.md) — Cabelo
+          - [head](app/user/avatar/visual/slots_roupas/head/regras.md) — Cabeça
+          - [eyes](app/user/avatar/visual/slots_roupas/eyes/regras.md) — Olhos
+          - [top](app/user/avatar/visual/slots_roupas/top/regras.md) — Torso
+          - [bottom](app/user/avatar/visual/slots_roupas/bottom/regras.md) — Pernas
+          - [fullbody](app/user/avatar/visual/slots_roupas/fullbody/regras.md) — Traje inteiro
+          - [shoes](app/user/avatar/visual/slots_roupas/shoes/regras.md) — Calçados
+          - [accessory](app/user/avatar/visual/slots_roupas/accessory/regras.md) — Acessórios
+          - [skin](app/user/avatar/visual/slots_roupas/skin/regras.md) — Pele
+          - [animation](app/user/avatar/visual/slots_roupas/animation/regras.md) — Animação/Poses
+      - [lojas_proprias](app/user/avatar/lojas_proprias/regras.md) — Gestão das lojas do avatar
+        - [items](app/user/avatar/lojas_proprias/items/regras.md) — Gestão de itens à venda
+          - [roupas](app/user/avatar/lojas_proprias/items/roupas/regras.md) — Roupas UGC
+          - [animais](app/user/avatar/lojas_proprias/items/animais/regras.md) — Pets à venda
+          - [veiculos](app/user/avatar/lojas_proprias/items/veiculos/regras.md) — Veículos à venda
+          - [decoracao](app/user/avatar/lojas_proprias/items/decoracao/regras.md) — Móveis à venda
+      - [veiculos](app/user/avatar/veiculos/regras.md) — Garagem
+      - [animais](app/user/avatar/animais/regras.md) — Pets do avatar
+      - [carteira](app/user/avatar/carteira/regras.md) — Saldos multi-moeda
+        - [registros](app/user/avatar/carteira/registros/regras.md) — Extrato ledger
+      - [diario](app/user/avatar/diario/regras.md) — Caderno físico e sentimentos
+        - [paginas](app/user/avatar/diario/paginas/regras.md) — Páginas e leitura premiada
+      - [conquistas](app/user/avatar/conquistas/regras.md) — Selos e carreiras
+      - [salas](app/user/avatar/salas/regras.md) — Ambientes 3D
+        - [layout](app/user/avatar/salas/layout/regras.md) — Planta baixa e mobília
+          - [items](app/user/avatar/salas/layout/items/regras.md) — Mobília e decoração
+        - [configuracao](app/user/avatar/salas/configuracao/regras.md) — Nome, lotação e entrada
+        - [permissoes](app/user/avatar/salas/permissoes/regras.md) — Pública, amigos e privada
+      - [blog](app/user/avatar/blog/regras.md) — Feed, amigos e chat
+        - [amigos](app/user/avatar/blog/amigos/regras.md) — Relações sociais
+          - [lista_amigos](app/user/avatar/blog/amigos/lista_amigos/regras.md) — Amigos aceitos
+          - [pedidos_pendentes](app/user/avatar/blog/amigos/pedidos_pendentes/regras.md) — Pedidos pendentes
+          - [ignorados](app/user/avatar/blog/amigos/ignorados/regras.md) — Bloqueados
+        - [chats](app/user/avatar/blog/chats/regras.md) — Bate-papo em tempo real
+          - [mensagens](app/user/avatar/blog/chats/mensagens/regras.md) — Texto, fotos e convites
+            - [avatares](app/user/avatar/blog/chats/mensagens/avatares/regras.md) — Emissores e participantes
+
+## Referências
+- [tree.md](tree.md) — Árvore conceitual original (fonte desta estrutura)
+- [../PROJECT_ARCHITECTURE_AND_API.md](../PROJECT_ARCHITECTURE_AND_API.md) — Arquitetura e endpoints da API
+- [../agent_knowledge/ARVORE_PROJETO_E_MODULOS.md](../agent_knowledge/ARVORE_PROJETO_E_MODULOS.md) — Árvore física do repositório

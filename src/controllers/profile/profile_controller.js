@@ -45,6 +45,19 @@ const {
   applyOutfitStyle,
   deleteOutfitStyle,
 } = require('../../services/shop3d.service');
+const {
+  DIARY_MOODS,
+  DIARY_CATEGORIES,
+  DIARY_REACTIONS,
+  getDiaryOverview,
+  saveDiaryPage,
+  toggleDiaryPageVisibility,
+  deleteDiaryPage,
+  reactToDiaryPage,
+  commentOnDiaryPage,
+  deleteDiaryComment,
+  recordDiaryReadingProgress,
+} = require('../../services/diary.service');
 const i18n = require('../../locales/i18n');
 const { chatWs } = require('../social/chat_controller');
 
@@ -116,14 +129,14 @@ async function loadAvatarFriendsData(activeAvatarId) {
     }
   }
 
-  // Sugestões de avatares que ainda não têm vínculo de amizade com este avatar
+  // Sugestões de avatares que ainda não têm vínculo de amizade com este avatar (padrão 20 por página)
   const suggestedRaw = await repo.Avatar.findAll({
     where: {
       id: { [Op.notIn]: Array.from(relatedAvatarIds) },
     },
     attributes: ["id", "name", "thumbnail", "gender", "bio", "uid"],
     order: [["id", "DESC"]],
-    limit: 12,
+    limit: 20,
   });
 
   return {
@@ -281,7 +294,7 @@ async function buildProfileViewPayload(user, req) {
     avatars.push(activeAvatar);
   }
 
-  // 2. Busca salas do avatar ativo
+  // 2. Busca salas do avatar ativo (padrão até 20 por página inicial)
   const rooms = await repo.RoomModel.findAll({
     where: {
       [repo.Sequelize.Op.or]: [
@@ -289,7 +302,8 @@ async function buildProfileViewPayload(user, req) {
         { userId: user.id }
       ]
     },
-    order: [["id", "DESC"]]
+    order: [["id", "DESC"]],
+    limit: 20
   });
 
   // 3. Busca a carteira (Currency) do avatar ativo
@@ -313,11 +327,11 @@ async function buildProfileViewPayload(user, req) {
     });
   }
 
-  // 4. Busca ordens ativas do avatar, transações (Compras/Saques) e regras do mercado
+  // 4. Busca ordens ativas do avatar, transações (Compras/Saques) e regras do mercado (paginação padrão de 20 itens)
   const myOrders = await repo.CoinOrder.findAll({
     where: { avatarId: activeAvatar.id },
     order: [["createdAt", "DESC"]],
-    limit: 15
+    limit: 20
   });
 
   const myTransactions = await repo.PaymentBank.findAll({
@@ -329,7 +343,7 @@ async function buildProfileViewPayload(user, req) {
       type: { [repo.Sequelize.Op.in]: ['Buy', 'Withdraw'] }
     },
     order: [["createdAt", "DESC"]],
-    limit: 15
+    limit: 20
   });
 
   const [
@@ -342,6 +356,7 @@ async function buildProfileViewPayload(user, req) {
     walletLedger,
     publicRooms,
     notificationsData,
+    diaryData,
   ] = await Promise.all([
     getMarketStats(),
     loadAvatarFriendsData(activeAvatar.id),
@@ -349,9 +364,18 @@ async function buildProfileViewPayload(user, req) {
     getAvatarWardrobe(activeAvatar.id).catch(() => ({ avatarId: activeAvatar.id, inventory: [], equippedBySlot: {}, styles: [], rules: SHOP_3D_RULES })),
     enrichRoomsWithVisitStats(rooms, activeAvatar.id).catch(() => rooms.map(r => r.get({ plain: true }))),
     getVipStatus(activeAvatar.id, user.id).catch(() => ({ isVip: false, badge: null, usageToday: { dmOpens: 0, imagesSent: 0, audioSent: 0 }, limits: { maxChatOpensPerDay: 3, maxChatImagesPerDay: 2, maxChatAudioPerDay: 2, basicFriendsOnlyDm: true } })),
-    getWalletLedger({ avatarId: activeAvatar.id, userId: user.id, limit: 50 }).catch(() => []),
-    getPublicRoomsExplorer({ viewerAvatarId: activeAvatar.id, limit: 24 }).catch(() => []),
-    getNotifications({ avatarId: activeAvatar.id, userId: user.id, limit: 25 }).catch(() => ({ notifications: [], unreadCount: 0 })),
+    getWalletLedger({ avatarId: activeAvatar.id, userId: user.id, limit: 20 }).catch(() => []),
+    getPublicRoomsExplorer({ viewerAvatarId: activeAvatar.id, limit: 20 }).catch(() => []),
+    getNotifications({ avatarId: activeAvatar.id, userId: user.id, limit: 20 }).catch(() => ({ notifications: [], unreadCount: 0 })),
+    getDiaryOverview({ userId: user.id, avatarId: activeAvatar.id }).catch(() => ({
+      moods: DIARY_MOODS,
+      categories: DIARY_CATEGORIES,
+      reactions: DIARY_REACTIONS,
+      rewardRules: { minReadSeconds: 30, readerRewardPerPageCoins: 0.25, authorRewardPerReadCoins: 0.5, authorBonusPer10MinCoins: 5.0, readerDailyLimitPages: 20 },
+      stats: { myTotalPages: 0, myPublicPages: 0, myPrivatePages: 0, myTotalReadsReceived: 0, myTotalMinutesReadReceived: 0, myTotalAuthorCoinsEarned: 0, myReaderRewardedToday: 0, myReaderRemainingToday: 20, myTotalReaderCoinsEarned: 0 },
+      myPages: [],
+      publicFeed: [],
+    })),
   ]);
 
   const plainAvatars = await enrichAvatarsWithVip(avatars.map(a => a.get({ plain: true }))).catch(() => avatars.map(a => a.get({ plain: true })));
@@ -381,7 +405,8 @@ async function buildProfileViewPayload(user, req) {
     marketStats,
     friendsData,
     shopData,
-    wardrobeData
+    wardrobeData,
+    diaryData,
   };
 }
 
@@ -418,6 +443,15 @@ router.get('/', async (req, res) =>
       friendsData: { friendsList: [], pendingReceived: [], pendingSent: [], suggestedAvatars: [] },
       shopData: { rules: SHOP_3D_RULES, items: [] },
       wardrobeData: { avatarId: 0, inventory: [], equippedBySlot: {}, styles: [], rules: SHOP_3D_RULES },
+      diaryData: {
+        moods: DIARY_MOODS,
+        categories: DIARY_CATEGORIES,
+        reactions: DIARY_REACTIONS,
+        rewardRules: { minReadSeconds: 30, readerRewardPerPageCoins: 0.25, authorRewardPerReadCoins: 0.5, authorBonusPer10MinCoins: 5.0, readerDailyLimitPages: 20 },
+        stats: { myTotalPages: 0, myPublicPages: 0, myPrivatePages: 0, myTotalReadsReceived: 0, myTotalMinutesReadReceived: 0, myTotalAuthorCoinsEarned: 0, myReaderRewardedToday: 0, myReaderRemainingToday: 20, myTotalReaderCoinsEarned: 0 },
+        myPages: [],
+        publicFeed: [],
+      },
       marketStats: {
         totalCoinsInPool: 0,
         totalActiveOrders: 0,
@@ -486,6 +520,96 @@ router.get('/wallet', async (req, res) => {
   }
 });
 
+// ================= PAGINAÇÃO UNIVERSAL DA CARTEIRA (EXTRATO, ORDENS E PIX — PADRÃO 20 ITENS/PÁGINA) =================
+router.get('/wallet/paginated', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: "Não autorizado" });
+
+  const avatarId = Number(req.query.avatarId || req.headers['x-profile-id'] || 0);
+  const type = String(req.query.type || 'ledger').toLowerCase();
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+  const offset = (page - 1) * limit;
+  const currency = String(req.query.currency || 'ALL').trim();
+
+  try {
+    if (type === 'orders') {
+      const { count, rows } = await repo.CoinOrder.findAndCountAll({
+        where: { avatarId },
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
+      });
+      const totalPages = Math.max(1, Math.ceil(count / limit));
+      return res.json({
+        success: true,
+        type,
+        page,
+        limit,
+        total: count,
+        totalPages,
+        hasMore: page < totalPages,
+        items: rows.map(r => r.get({ plain: true })),
+      });
+    }
+
+    if (type === 'transactions' || type === 'pix') {
+      const { count, rows } = await repo.PaymentBank.findAndCountAll({
+        where: {
+          [repo.Sequelize.Op.or]: [
+            { avatar_id: avatarId },
+            { user_id: user.id }
+          ],
+          type: { [repo.Sequelize.Op.in]: ['Buy', 'Withdraw'] }
+        },
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
+      });
+      const totalPages = Math.max(1, Math.ceil(count / limit));
+      return res.json({
+        success: true,
+        type,
+        page,
+        limit,
+        total: count,
+        totalPages,
+        hasMore: page < totalPages,
+        items: rows.map(r => r.get({ plain: true })),
+      });
+    }
+
+    // Default: wallet_ledger
+    const currencyFilter = currency && currency !== 'ALL' ? `AND UPPER(wl."currencyType") = UPPER(:currency)` : '';
+    const [countRes, items] = await Promise.all([
+      repo.sequelize.query(
+        `SELECT COUNT(*)::int AS "total"
+         FROM "wallet_ledger" wl
+         WHERE wl."avatarId" = :avatarId ${currencyFilter}`,
+        {
+          replacements: { avatarId, currency },
+          type: repo.Sequelize.QueryTypes.SELECT,
+        }
+      ),
+      getWalletLedger({ avatarId, userId: user.id, page, limit, currency }),
+    ]);
+    const total = Number(countRes[0]?.total || 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return res.json({
+      success: true,
+      type: 'ledger',
+      page,
+      limit,
+      total,
+      totalPages,
+      hasMore: page < totalPages,
+      items,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.get('/market/stats', async (req, res) => {
   try {
     const marketStats = await getMarketStats();
@@ -532,6 +656,7 @@ router.get('/partial/:section', async (req, res) => {
     'view-market',
     'view-vip',
     'view-cassino',
+    'view-diary',
     'view-friends',
     'view-chat',
     'modals'
@@ -947,6 +1072,30 @@ router.post('/notifications/read', async (req, res) => {
 });
 
 // ================= MÓDULO DE CASSINO (SLOTS, ROLETA, DADOS EM CHIPS) =================
+router.get('/casino/status', async (req, res) => {
+  try {
+    const avatarId = Number(req.headers['x-profile-id'] || req.query.avatarId || 0);
+    const rules = await getEconomyRules();
+    let chips = 0;
+    if (avatarId) {
+      const wallet = await repo.Currency.findOne({
+        where: { [repo.Sequelize.Op.or]: [{ avatarId }, { ownerId: avatarId }] }
+      });
+      chips = Number(wallet?.chips || 0);
+    }
+    return res.json({
+      success: true,
+      chips,
+      games: ["slots", "roulette", "dice"],
+      minBet: 1,
+      maxBet: 50000,
+      houseEdgePercent: Number(rules.casinoHouseEdgePercent ?? 5.0)
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.post('/casino/play', async (req, res) => {
   const user = req.user || req.session?.user;
   const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
@@ -2302,15 +2451,25 @@ async function formatPostsForViewer(posts, viewerAvatarId) {
   return results;
 }
 
-// GET /profile/social/feed?avatarId=1&filter=all|friends|mine
+// GET /profile/social/feed?avatarId=1&filter=all|friends|mine&beforeId=&afterId=&limit=20 (Sistema de Pool de Posts)
 router.get('/social/feed', async (req, res) => {
   const viewerId = Number(req.query.avatarId || req.headers['x-profile-id'] || 0);
   const filter = String(req.query.filter || 'all');
+  const poolLimit = Math.min(40, Math.max(1, Number(req.query.limit || 20)));
+  const beforeId = Number(req.query.beforeId || 0);
+  const afterId = Number(req.query.afterId || 0);
 
   try {
     await ensureFriendsFkDropped();
     const Op = repo.Sequelize.Op;
     const whereClause = {};
+
+    if (beforeId > 0) {
+      whereClause.id = { ...(whereClause.id || {}), [Op.lt]: beforeId };
+    }
+    if (afterId > 0) {
+      whereClause.id = { ...(whereClause.id || {}), [Op.gt]: afterId };
+    }
 
     const friendRows = viewerId
       ? await repo.Friend.findAll({
@@ -2351,15 +2510,16 @@ router.get('/social/feed', async (req, res) => {
       whereClause.profileId = { [Op.in]: Array.from(allowedIds) };
     }
 
+    // Busca com margem extra para compensar filtro de privacidade e manter o pool de 20 itens
     const postsRaw = await repo.Post.findAll({
       where: whereClause,
       include: POST_INCLUDES(),
-      order: [['createdAt', 'DESC']],
-      limit: 50,
+      order: [['id', 'DESC']],
+      limit: poolLimit + 15,
     });
 
     // Filtra publicações respeitando a privacidade de Publicações (privacyPosts) do autor
-    const visiblePosts = postsRaw.filter((p) => {
+    const visiblePostsAll = postsRaw.filter((p) => {
       const authorId = Number(p.profileId || 0);
       if (authorId === viewerId) return true;
       const priv = p.profile?.privacyPosts || 'public';
@@ -2368,8 +2528,24 @@ router.get('/social/feed', async (req, res) => {
       return true;
     });
 
+    const hasMore = visiblePostsAll.length > poolLimit;
+    const visiblePosts = visiblePostsAll.slice(0, poolLimit);
+
     const formatted = await formatPostsForViewer(visiblePosts, viewerId);
-    return res.json({ success: true, posts: formatted });
+    const nextCursorId = formatted.length > 0 ? formatted[formatted.length - 1].id : null;
+    const latestPostId = formatted.length > 0 ? formatted[0].id : null;
+
+    return res.json({
+      success: true,
+      posts: formatted,
+      poolMeta: {
+        limit: poolLimit,
+        count: formatted.length,
+        nextCursorId,
+        latestPostId,
+        hasMore,
+      },
+    });
   } catch (err) {
     console.error("Erro ao carregar feed social:", err);
     return res.status(500).json({ success: false, error: err.message });
@@ -2696,10 +2872,12 @@ router.post('/social/comments/:id/delete', async (req, res) => {
 
 // ================= GALERIA DE FOTOS (COMUNIDADE, AMIGOS E MINHAS FOTOS) =================
 
-// GET /profile/social/gallery?avatarId=1&filter=all|friends|mine
+// GET /profile/social/gallery?avatarId=1&filter=all|friends|mine&page=1&limit=20
 router.get('/social/gallery', async (req, res) => {
   const viewerId = Number(req.query.avatarId || req.headers['x-profile-id'] || 0);
   const filter = String(req.query.filter || 'all');
+  const page = Math.max(1, Number(req.query.page || 1));
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit || 20)));
 
   try {
     await ensureFriendsFkDropped();
@@ -2749,7 +2927,7 @@ router.get('/social/gallery', async (req, res) => {
         { model: repo.Comment, as: 'comments' },
       ],
       order: [['createdAt', 'DESC']],
-      limit: 60,
+      limit: 200,
     });
 
     // Filtra fotos respeitando a privacidade de Fotos (privacyPhotos) do autor
@@ -2762,7 +2940,12 @@ router.get('/social/gallery', async (req, res) => {
       return true;
     });
 
-    const photos = visiblePhotos.map((ph) => {
+    const total = visiblePhotos.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const offset = (page - 1) * limit;
+    const pagedPhotos = visiblePhotos.slice(offset, offset + limit);
+
+    const photos = pagedPhotos.map((ph) => {
       const pPlain = ph.get({ plain: true });
       const lStats = summarizeLikes(pPlain.likes || [], viewerId);
       return {
@@ -2778,7 +2961,15 @@ router.get('/social/gallery', async (req, res) => {
       };
     });
 
-    return res.json({ success: true, photos });
+    return res.json({
+      success: true,
+      photos,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasMore: page < totalPages,
+    });
   } catch (err) {
     console.error("Erro ao carregar galeria de fotos:", err);
     return res.status(500).json({ success: false, error: err.message });
@@ -3596,6 +3787,149 @@ router.get('/social/avatar/:targetId', async (req, res) => {
   } catch (err) {
     console.error("Erro ao carregar perfil social do avatar:", err);
     return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ================= DIÁRIO SECRETO & CANTINHO DE DESABAFO ANÔNIMO =================
+router.get('/diary/overview', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avatarId = Number(req.query.avatarId || req.headers['x-profile-id'] || 0);
+
+  try {
+    const overview = await getDiaryOverview({
+      userId: user.id,
+      avatarId,
+      mood: req.query.mood || 'ALL',
+      category: req.query.category || 'ALL',
+      sort: req.query.sort || 'recent',
+    });
+    return res.json({ success: true, ...overview });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/page/save', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+
+  try {
+    const result = await saveDiaryPage({
+      userId: user.id,
+      avatarId,
+      pageId: req.body.pageId || null,
+      title: req.body.title,
+      content: req.body.content,
+      moodKey: req.body.moodKey,
+      category: req.body.category,
+      isPublicAnonymous: req.body.isPublicAnonymous,
+      allowComments: req.body.allowComments !== false && req.body.allowComments !== 'false',
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/page/:id/visibility', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+
+  try {
+    const result = await toggleDiaryPageVisibility({
+      userId: user.id,
+      pageId: req.params.id,
+      isPublicAnonymous: req.body.isPublicAnonymous,
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/page/:id/delete', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+
+  try {
+    const result = await deleteDiaryPage({
+      userId: user.id,
+      pageId: req.params.id,
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/page/:id/react', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+
+  try {
+    const result = await reactToDiaryPage({
+      userId: user.id,
+      avatarId,
+      pageId: req.params.id,
+      reactionType: req.body.reactionType || 'hug',
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/page/:id/comment', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+
+  try {
+    const result = await commentOnDiaryPage({
+      userId: user.id,
+      avatarId,
+      pageId: req.params.id,
+      content: req.body.content,
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/comment/:id/delete', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+
+  try {
+    const result = await deleteDiaryComment({
+      userId: user.id,
+      commentId: req.params.id,
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/diary/page/:id/read-reward', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+
+  try {
+    const result = await recordDiaryReadingProgress({
+      userId: user.id,
+      avatarId,
+      pageId: req.params.id,
+      secondsReadDelta: Number(req.body.secondsReadDelta || 15),
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
   }
 });
 

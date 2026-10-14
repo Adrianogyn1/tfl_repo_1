@@ -9,6 +9,7 @@ module.exports = (sequelize) => {
     chips: { type: DataTypes.FLOAT, defaultValue: 0 },
     userId: { type: DataTypes.INTEGER, defaultValue: 0 },
     ownerId :{ type: DataTypes.INTEGER, defaultValue: 0 },
+    avatarId: { type: DataTypes.INTEGER, allowNull: true },
     pin: { type: DataTypes.STRING, defaultValue: "" },
     pixKey: { type: DataTypes.STRING, defaultValue: "" },
     uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },

@@ -1,0 +1,157 @@
+================================================================================
+                    THE FANTASY LIFE (TFL)
+         DOCUMENTO CANÔNICO DE ARQUITETURA DEFINITIVA DO SISTEMA
+                 ARQUIVO: docs/projeto/ARQUITETURA_DEFINITIVA_TFL.txt
+================================================================================
+Data: 2026-10-14
+Versão: 1.0.0
+Status: OFICIAL / IMUTÁVEL (Base para auditoria cruzada de IAs e Engenharia)
+
+--------------------------------------------------------------------------------
+1. VISÃO E ESTRUTURA DO PROJETO (O ECOSSISTEMA DE VIDA VIRTUAL)
+--------------------------------------------------------------------------------
+O TFL não é apenas um site nem um jogo focado em itens isolados. É uma
+Simulação de Vida Virtual e Roleplay (Life Sim Ecossystem).
+
+A hierarquia de domínio possui 3 camadas fundamentais:
+
+   [APP] (O Universo / Macro Ecossistema)
+     │
+     └── [USER] (A Conta Real / Âncora Jurídica e de Segurança)
+           │
+           └── [AVATAR] (A Persona Viva / O Centro Gravitacional)
+
+* APP:
+  Representa o ecossistema completo. Orquestra a infraestrutura, telemetria,
+  integração bancária e governança de servidores.
+
+* USER:
+  A âncora no mundo real. Cuida de autenticação (e-mail, senha, 2FA), titularidade
+  de contas bancárias Pix para saques e auditoria legal. Um User pode criar múltiplos
+  Avatares, mas nunca interage diretamente no mundo social.
+
+* AVATAR (A Persona Viva):
+  TUDO no ecossistema gira em torno do Avatar. O Avatar vive a experiência através
+  de 6 Pilares Interconectados de Vida:
+  1. Identidade & Visual: Corpo, morphs (blendshapes), 10 slots anatômicos de
+     roupas/cabelos, animações/emotes e estilos salvos (presets).
+  2. Habitação & Espaço: Salas 3D, casas, decoração, zoneamento de mobília e
+     hospitalidade (receber pessoas).
+  3. Vínculos & Afeto: Amigos, seguidores, relacionamentos (sistema de match/crush 💘),
+     família/clãs e futuros companheiros/pets.
+  4. Trabalho & Carreira: Profissões e ocupações com geração de valor, prestação
+     de serviços para a comunidade, reputação e títulos equipáveis.
+  5. Comércio & Consumo: Lojas próprias dos avatares, compra e venda de itens,
+     catálogo do jogo, giro de economia P2P (somente em Coins).
+  6. Lazer & Expressão: Diário de desabafos, sentimentos efêmeros (TTL 6h),
+     mini reels de fotos (TTL 24h), minigames e festas sociais.
+
+--------------------------------------------------------------------------------
+2. ESTRUTURA DOS ARQUIVOS E MODELO DE DOCUMENTAÇÃO (ANTI-ALUCINAÇÃO)
+--------------------------------------------------------------------------------
+Para eliminar contradições, vazamento de permissão e inchaço de memória dos
+modelos de IA, a documentação adota o padrão:
+"LAZY LOADING DE CONTEXTO EM 3 NÍVEIS DE ZOOM (L1, L2, L3)".
+
+A. Organização dos Arquivos de Documentação:
+   A pasta `docs/projeto/` espelha a árvore lógica de módulos (`tree.md`):
+   docs/projeto/
+   ├── tree.md                          # Mapa hierárquico canônico com tags [M][C][S]
+   ├── llms.txt                         # Guia rápido de navegação para modelos de IA
+   ├── ARQUITETURA_DEFINITIVA_TFL.txt   # Este documento mestre
+   └── app/
+       ├── regras.md                    # Regras do Ecossistema App
+       ├── user/
+       │   ├── regras.md                # Regras da Conta User
+       │   └── avatar/
+       │       ├── regras.md            # Regras da Persona Avatar (6 Pilares)
+       │       ├── visual/regras.md     # Slots 3D e anatomia
+       │       ├── salas/layout/regras.md # Cenários 3D e mobília
+       │       ├── carteira/regras.md   # Tri-moeda e transações
+       │       ├── diario/regras.md     # Desabafos e sentimentos
+       │       └── lojas_proprias/regras.md # Comércio do avatar
+
+B. O Padrão Rígido dos 3 Níveis em cada `regras.md`:
+   - Nível 1 (L1 - Resumo Mínimo): 3 a 5 linhas. Explica a função do nó e seus
+     filhos. Usado quando a IA só precisa saber da existência do módulo.
+   - Nível 2 (L2 - Visão Sistêmica): Como o módulo se conecta aos 6 pilares do
+     Avatar e quais eventos de outros módulos ele escuta ou dispara.
+   - Nível 3 (L3 - Regras Estritas & Proibições):
+     * Matriz de Acesso (Visitante, Player, VIP, Admin).
+     * O que É permitido (fluxos canônicos).
+     * O que NUNCA é permitido (barreiras inflexíveis anti-alucinação).
+     * Modelos de banco e endpoints oficiais.
+
+C. Organização do Código-Fonte:
+   - `src/models/`: Entidades Sequelize puras (PostgreSQL), blindadas contra bugs de
+     dialeto (`options.indexes`, locking pessimista em transações financeiras).
+   - `src/services/`: Lógica de negócio pura, isolada de controllers e views.
+   - `src/controllers/`: Orquestradores de requisições HTTP REST v1 e WebSockets.
+   - `src/views/`: Server-Driven UI (EJS), modularizada por seções parciais.
+   - `public/`: Assets estáticos, CSS responsivo mobile-first e JS modular.
+
+--------------------------------------------------------------------------------
+3. ESTRUTURA E INTEGRAÇÃO COM A ENGINE DO JOGO (3D / WEBGL / NATIVO)
+--------------------------------------------------------------------------------
+A engine de jogo (Godot / WebGL / Desktop) segue o princípio do
+"DESACOPLAMENTO TOTAL DATA-DRIVEN (HEADLESS)":
+
+A. A Engine NÃO possui Regras de Negócio:
+   - A Engine não calcula saldo de moedas, não autoriza compras e não valida permissões.
+   - A Engine é um cliente de renderização, física, animação e áudio espacial.
+   - Toda autorização, débito de moedas, regras de colisão e inventário ocorrem
+     no Backend antes de qualquer comando ser renderizado.
+
+B. Como a Engine consome o Avatar (Manifesto 3D Declarativo):
+   - Endpoint: `GET /api/v1/avatars/:id/manifest`
+   - O Backend entrega um payload JSON enxuto:
+     {
+       "avatarId": 123,
+       "baseRig": "humanoid_v1",
+       "blendshapes": { "jaw_width": 0.45, "eye_size": 1.1, "height": 1.0 },
+       "slots": {
+         "hair": { "mesh": "hair_punk_01.glb", "color": "#1a1a1a" },
+         "top": { "mesh": "jacket_biker.glb", "color": "#331100" },
+         "bottom": { "mesh": "pants_jeans_black.glb", "color": "#111111" },
+         "shoes": { "mesh": "sneakers_classic.glb", "color": "#ffffff" }
+       },
+       "animations": { "idle": "idle_casual.anim", "walk": "walk_standard.anim" }
+     }
+   - A Engine apenas faz o download dos assets correspondentes do CDN/Storage e monta
+     o avatar no esqueleto esquelético canônico.
+
+C. Como a Engine consome os Espaços / Ambientes (Salas 3D):
+   - Endpoint: `GET /api/v1/rooms/:id/layout`
+   - Payload JSON com a planta baixa:
+     {
+       "roomId": 456,
+       "environmentMesh": "room_penthouse.glb",
+       "maxCapacity": 25,
+       "items": [
+         { "itemId": 10, "mesh": "sofa_leather_3p.glb", "transform": { "pos": [0,0,2], "rot": [0,90,0], "scale": [1,1,1] } }
+       ]
+     }
+
+D. Conectividade em Tempo Real & Servidores Dedicados:
+   1. O jogador seleciona "Entrar na Sala" na Web ou App.
+   2. O Backend valida lotação e banimentos, aloca a melhor instância ativa na
+      tabela `servers` e gera um `ticket` JWT efêmero com TTL de 30 segundos.
+   3. O cliente do jogo conecta diretamente no servidor dedicado da sala via
+      WebSocket utilizando o ticket.
+   4. O servidor dedicado mantém posições `(x, y, z)` e chat de voz/proximidade
+      exclusivamente na memória RAM (zero escrita em disco a cada frame).
+   5. Eventos de persistência (comprar item na sala, sair da sala) são despachados
+      pelo servidor dedicado de volta à API REST v1 do Backend com header de
+      serviço seguro (`x-server-token`).
+
+--------------------------------------------------------------------------------
+4. DIRETRIZES DE ESTABILIDADE E AUDITORIA CRUZADA
+--------------------------------------------------------------------------------
+1. Qualquer modelo de IA que for trabalhar neste repositório DEVE ler primeiramente
+   este arquivo (`ARQUITETURA_DEFINITIVA_TFL.txt`) e o `docs/projeto/tree.md`.
+2. É ESTRITAMENTE PROIBIDO criar funcionalidades que criem atalhos entre camadas
+   (ex: vincular item diretamente à Conta User pulando o Avatar; criar transferência
+   de Cash entre jogadores; colocar regras de negócio dentro da Engine).
+3. Este documento é a LEI SUPREMA do projeto. Havendo divergência entre um arquivo
+   secundário e este documento, prevalece SEMPRE a regra deste documento.
+================================================================================

@@ -11,6 +11,7 @@ module.exports = (sequelize) => {
     size: { type: DataTypes.INTEGER, defaultValue: 0 },
     url: { type: DataTypes.STRING, defaultValue: "" },
     userId: { type: DataTypes.INTEGER, defaultValue: 0 },
+    avatarId: { type: DataTypes.INTEGER, allowNull: true },
     inventoryID: { type: DataTypes.INTEGER, defaultValue: 0 },
     status: { type: DataTypes.ENUM, values: ["pending", "done", "error"], defaultValue: "pending" },
     uid: { type: DataTypes.STRING, allowNull: true, defaultValue: UUIDV4 },

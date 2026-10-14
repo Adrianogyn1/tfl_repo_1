@@ -22,10 +22,12 @@ const GameModelsFactory = require("./game/index");
 //pagamento
 
 const {PaymentBankModel, PaymentWebHookModel, associatePaymentModels} = require("./bank/Payment_Bank");
+const PlatformOperationalExpenseFactory = require("./bank/PlatformOperationalExpense");
 
 module.exports = (sequelize) => {
   const PaymentBank = PaymentBankModel(sequelize);
   const PaymentWebHook = PaymentWebHookModel(sequelize);
+  const PlatformOperationalExpense = PlatformOperationalExpenseFactory(sequelize);
   const User = UserFactory(sequelize);
   const RoomModel = require("./game/RoomModel")(sequelize);
   const Profile = ProfileFactory(sequelize);
@@ -101,6 +103,7 @@ module.exports = (sequelize) => {
   return {
     PaymentBank,
     PaymentWebHook,
+    PlatformOperationalExpense,
     User,
     Profile,
     Like,

@@ -6,6 +6,8 @@ const Game = require("./game/index.js");
 const Bank = require("./bank/index.js");
 const profileController = require("../../controllers/profile/profile_controller");
 const { getPlatformStats } = require("../../services/stats.service");
+const { getAvatarCareers, equipAvatarBadge } = require("../../services/avatarCareer.service");
+const { getPlatformFinancialHealth } = require("../../services/financialHealth.service");
 
 const SERVER_MASTER_TOKEN = process.env.TFL_SERVER_API_TOKEN || "tfl-server-master-key-2026";
 
@@ -106,7 +108,10 @@ router.get("/endpoints", (req, res) => {
         { method: "GET",  path: "/api/v1/account/vip/status", desc: "Status VIP do avatar, selo VIP, validade e cotas diárias de chat" },
         { method: "POST", path: "/api/v1/account/vip/subscribe", body: "{ avatarId, planKey: '1_WEEK'|'1_MONTH'|'3_MONTHS', paymentCurrency: 'Cash'|'Coins' }", desc: "Assina ou renova Clube VIP" },
         { method: "GET",  path: "/api/v1/account/notifications", desc: "Lista notificações em tempo real do avatar e contagem de não lidas" },
-        { method: "POST", path: "/api/v1/account/notifications/read", body: "{ avatarId, notificationId }", desc: "Marca notificações como lidas" }
+        { method: "POST", path: "/api/v1/account/notifications/read", body: "{ avatarId, notificationId }", desc: "Marca notificações como lidas" },
+        { method: "GET",  path: "/api/v1/avatars/me/careers", desc: "Lista trilhas de carreiras e selos do avatar ativo" },
+        { method: "POST", path: "/api/v1/avatars/me/careers/equip", body: "{ careerKey }", desc: "Equipa selo de carreira principal do avatar" },
+        { method: "GET",  path: "/api/v1/avatars/:id/careers", desc: "Lista trilhas de carreiras e selo equipado de qualquer avatar público" }
       ],
       social: [
         { method: "GET",  path: "/api/v1/social/feed?filter=all|friends|mine", desc: "Lista feed social respeitando privacidade" },
@@ -152,7 +157,8 @@ router.get("/endpoints", (req, res) => {
         { method: "POST", path: "/api/v1/bank/market/cancel", body: "{ avatarId, orderId }", desc: "Cancela ordem de venda ativa" },
         { method: "POST", path: "/api/v1/bank/market/convert", body: "{ avatarId, direction, amount }", desc: "Conversor rápido entre Cash, Coins e Chips" },
         { method: "POST", path: "/api/v1/bank/market/pix/create", body: "{ avatarId, cashAmount }", desc: "Gera QR Code Pix dinâmico para compra de Cash" },
-        { method: "POST", path: "/api/v1/bank/market/withdraw", body: "{ avatarId, cashAmount, pixKey, pixKeyType }", desc: "Solicita saque de Cash via Pix" }
+        { method: "POST", path: "/api/v1/bank/market/withdraw", body: "{ avatarId, cashAmount, pixKey, pixKeyType }", desc: "Solicita saque de Cash via Pix" },
+        { method: "GET",  path: "/api/v1/financial-health", desc: "Saúde financeira da plataforma, passivo de Cash dos usuários e solvência" }
       ],
       game_3d_and_casino: [
         { method: "GET",  path: "/api/v1/game/rooms", desc: "Lista salas 3D do avatar" },
@@ -162,8 +168,25 @@ router.get("/endpoints", (req, res) => {
         { method: "POST", path: "/api/v1/game/room/:id/enter", body: "{ avatarId, password }", desc: "Entra na sala 3D (cobra passe 24h se houver e contabiliza visita única mensal com anti-farm)" },
         { method: "POST", path: "/api/v1/game/room/:id/boost", body: "{ avatarId }", desc: "Impulsiona sala 3D no topo do ranking por 24 horas" },
         { method: "GET",  path: "/api/v1/game/room/:id/details", desc: "Retorna sala 3D completa com objetos instanciados e terreno para o Godot" },
+        { method: "GET",  path: "/api/v1/room/:id/servers", desc: "Lista instâncias de servidor ativas da sala (tabela servers) com IP:Porta e lotação" },
+        { method: "POST", path: "/api/v1/room/:id/replicate", desc: "Aloca ou replica nova instância de servidor dedicado para a sala" },
+        { method: "GET",  path: "/api/v1/shop/catalog", desc: "Catálogo de roupas e itens 3D (slots, modelos, prefabs, preços)" },
+        { method: "GET",  path: "/api/v1/shop/wardrobe", desc: "Guarda-roupa do avatar, slots equipados e estilos salvos" },
+        { method: "POST", path: "/api/v1/shop/equip", body: "{ avatarId, slot, itemId }", desc: "Equipa ou desequipa item 3D no avatar" },
+        { method: "POST", path: "/api/v1/shop/buy", body: "{ avatarId, containerId }", desc: "Compra item 3D da loja" },
+        { method: "GET",  path: "/api/v1/shop/app-data", desc: "Exporta metadados 3D prontos para Babylon.js e Godot Engine" },
         { method: "POST", path: "/api/v1/game/shop/gift", body: "{ avatarId, containerId, recipient }", desc: "Envia roupa/item 3D de presente para outro jogador (em Coins)" },
-        { method: "POST", path: "/api/v1/game/casino/play", body: "{ avatarId, gameType: 'slots'|'roulette'|'dice', betChips, choice }", desc: "Joga no Cassino TFL usando Fichas (Chips)" }
+        { method: "GET",  path: "/api/v1/casino/status", desc: "Status do Cassino TFL (fichas, limites e jogos disponíveis)" },
+        { method: "POST", path: "/api/v1/casino/play", body: "{ avatarId, gameType: 'slots'|'roulette'|'dice', betChips, choice }", desc: "Joga no Cassino TFL usando Fichas (Chips)" }
+      ],
+      diary_anonymous: [
+        { method: "GET",  path: "/api/v1/diary/overview", desc: "Cantinho de desabafo anônimo + páginas do diário secreto" },
+        { method: "POST", path: "/api/v1/diary/page/save", body: "{ avatarId, title, content, mood, isPublicAnonymous }", desc: "Escreve nova folha de caderno ou publica desabafo anônimo" },
+        { method: "POST", path: "/api/v1/diary/page/:id/visibility", desc: "Alterna visibilidade entre Privado e Público Anônimo" },
+        { method: "POST", path: "/api/v1/diary/page/:id/delete", desc: "Exclui página do diário" },
+        { method: "POST", path: "/api/v1/diary/page/:id/react", body: "{ avatarId, reactionType }", desc: "Reage anonimamente à página (abraço, carinho, apoio, etc.)" },
+        { method: "POST", path: "/api/v1/diary/page/:id/comment", body: "{ avatarId, text }", desc: "Comenta anonimamente na página de desabafo" },
+        { method: "POST", path: "/api/v1/diary/page/:id/read-reward", body: "{ avatarId, activeReadSeconds }", desc: "Registra tempo de leitura e credita recompensa em Coins para leitor e autor" }
       ],
       telemetry: [
         { method: "GET",  path: "/api/v1/stats", desc: "Estatísticas em tempo real de servidor, banco, comunidade, social e economia" },
@@ -198,11 +221,142 @@ router.post("/bots/simulate", async (req, res) => {
   }
 });
 
+// ================= CARREIRAS & SELOS DO AVATAR =================
+router.get("/avatars/me/careers", async (req, res) => {
+  try {
+    const avatarId =
+      req.headers?.["x-profile-id"] ||
+      req.query?.avatarId ||
+      req.body?.avatarId ||
+      (await repo.Avatar.findOne({
+        where: { userId: req.user.id },
+        order: [["selected", "DESC"], ["id", "ASC"]],
+      }))?.id;
+
+    if (!avatarId) {
+      return res.status(404).json({ success: false, error: "Nenhum avatar encontrado para este usuário." });
+    }
+
+    const careers = await getAvatarCareers(avatarId);
+    return res.json({ success: true, avatarId: Number(avatarId), careers });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/avatars/me/careers/equip", async (req, res) => {
+  try {
+    const { careerKey } = req.body || {};
+    if (!careerKey) {
+      return res.status(400).json({ success: false, error: "Chave da carreira (careerKey) é obrigatória." });
+    }
+
+    const avatarId =
+      req.headers?.["x-profile-id"] ||
+      req.query?.avatarId ||
+      req.body?.avatarId ||
+      (await repo.Avatar.findOne({
+        where: { userId: req.user.id },
+        order: [["selected", "DESC"], ["id", "ASC"]],
+      }))?.id;
+
+    if (!avatarId) {
+      return res.status(404).json({ success: false, error: "Nenhum avatar encontrado para este usuário." });
+    }
+
+    await equipAvatarBadge(avatarId, careerKey);
+    const careers = await getAvatarCareers(avatarId);
+    return res.json({ success: true, avatarId: Number(avatarId), equippedCareerKey: careerKey, careers });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/avatars/:id/careers", async (req, res) => {
+  try {
+    const idParam = req.params.id;
+    let targetAvatarId = null;
+
+    if (idParam === "me") {
+      targetAvatarId =
+        req.headers?.["x-profile-id"] ||
+        req.query?.avatarId ||
+        req.body?.avatarId ||
+        (await repo.Avatar.findOne({
+          where: { userId: req.user.id },
+          order: [["selected", "DESC"], ["id", "ASC"]],
+        }))?.id;
+    } else {
+      targetAvatarId = Number(idParam);
+    }
+
+    if (!targetAvatarId) {
+      return res.status(404).json({ success: false, error: "Avatar não informado ou inexistente." });
+    }
+
+    const careers = await getAvatarCareers(targetAvatarId);
+    return res.json({ success: true, avatarId: Number(targetAvatarId), careers });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ================= SAÚDE FINANCEIRA & BALANÇO =================
+router.get("/financial-health", async (req, res) => {
+  try {
+    const health = await getPlatformFinancialHealth();
+    return res.json({ success: true, ...health });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/bank/financial-health", async (req, res) => {
+  try {
+    const health = await getPlatformFinancialHealth();
+    return res.json({ success: true, ...health });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.use("/social", Social);
 router.use("/game", Game);
 router.use("/bank", Bank);
 router.use("/account", profileController);
 router.use("/portal", profileController);
+
+// Submódulos adicionais para acesso direto da API externa v1
+router.use("/diary", (req, res, next) => {
+  if (!req.url.startsWith("/diary")) {
+    req.url = "/diary" + (req.url.startsWith("/") ? req.url : "/" + req.url);
+  }
+  return profileController(req, res, next);
+});
+
+router.use("/shop", (req, res, next) => {
+  if (!req.url.startsWith("/shop")) {
+    req.url = "/shop" + (req.url.startsWith("/") ? req.url : "/" + req.url);
+  }
+  return profileController(req, res, next);
+});
+
+router.use("/casino", (req, res, next) => {
+  if (!req.url.startsWith("/casino")) {
+    req.url = "/casino" + (req.url.startsWith("/") ? req.url : "/" + req.url);
+  }
+  return profileController(req, res, next);
+});
+
+router.use("/vip", (req, res, next) => {
+  if (!req.url.startsWith("/vip")) {
+    req.url = "/vip" + (req.url.startsWith("/") ? req.url : "/" + req.url);
+  }
+  return profileController(req, res, next);
+});
+
+// Fallback universal: Todas as rotas do controlador central ficam acessíveis diretamente em /api/v1/*
+router.use(profileController);
 
 module.exports = {
   router
