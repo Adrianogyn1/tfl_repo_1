@@ -1,225 +1,599 @@
-<!-- ================= VIEW: CASSINO TFL (TESTE FUNCIONAL EM FICHAS / CHIPS: SLOTS, ROLETA E DADOS) ================= -->
+<!-- ================= VIEW: CASSINO TFL (LAYOUT PREMIUM ESTILO STAKE / BETANO / BET365) ================= -->
 <%
     const chipsBal = Number(wallet?.chips || 0);
     const coinsBal = Number(wallet?.coins || 0);
     const rateChips = Number(marketStats?.rateChipsPerCoin || 10);
 %>
-<section id="view-cassino" class="view-section hidden p-6 md:p-10 max-w-6xl mx-auto space-y-8">
+<section id="view-cassino" class="view-section hidden p-3 sm:p-5 md:p-8 max-w-7xl mx-auto space-y-6">
 
-    <!-- HEADER DO CASSINO -->
-    <div class="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-950/50 via-slate-900/95 to-slate-950 p-6 md:p-8 shadow-2xl">
-        <div class="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div class="space-y-2 max-w-2xl">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[11px] font-black uppercase tracking-widest">
-                    <i class="fa-solid fa-dice text-purple-400"></i>
-                    <span>Entretenimento & Sorte — Fichas (Chips)</span>
+    <!-- ========================================================================= -->
+    <!-- 1. HEADER DO CASSINO ESTILO STAKE / BETANO                                -->
+    <!-- ========================================================================= -->
+    <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-950 via-[#0d1322] to-slate-950 p-4 sm:p-6 shadow-2xl">
+        <div class="absolute -top-24 -right-24 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <!-- Brand & Tagline -->
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-purple-600/30 flex-shrink-0">
+                    <i class="fa-solid fa-dice"></i>
                 </div>
-                <h1 class="text-2xl md:text-4xl font-display font-black uppercase italic text-white">
-                    Cassino <span class="text-amber-400">The Fantasy Life</span>
-                </h1>
-                <p class="text-xs md:text-sm text-zinc-300">
-                    Divirta-se usando exclusivamente <strong class="text-sky-400">Fichas (Chips 🎲)</strong>. Multiplique suas fichas no Golden Tiger 3x3, na Roleta ou nos Dados da Fortuna e converta seus ganhos para <strong class="text-amber-400">Coins</strong> na Carteira quando quiser!
-                </p>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-2xl font-black uppercase text-white tracking-wider">
+                            Cassino <span class="text-amber-400">TFL</span>
+                        </h1>
+                        <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider">
+                            Ao Vivo
+                        </span>
+                    </div>
+                    <p class="text-xs text-zinc-400">Entretenimento recreativo com Fichas (Chips 🎲) e Contrato Responsável com PIN.</p>
+                </div>
             </div>
 
-            <!-- PAINEL DE SALDO E TROCA RÁPIDA DE FICHAS -->
-            <div class="p-4 rounded-2xl bg-slate-950/90 border border-white/10 min-w-[290px] space-y-3">
-                <div class="grid grid-cols-2 gap-2 text-center">
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-sky-500/30">
-                        <div class="text-[10px] font-bold uppercase text-zinc-400">Suas Fichas (Chips)</div>
-                        <div class="text-base font-black text-sky-400 flex items-center justify-center gap-1 mt-0.5">
-                            <i class="fa-solid fa-dice"></i>
-                            <span id="casinoChipsBalance"><%= Math.floor(chipsBal).toLocaleString('pt-BR') %></span>
+            <!-- Balanço e Ações Rápidas (Betano / Stake Top Bar) -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Chip Balance Pill -->
+                <div class="flex items-center gap-2 bg-slate-900/90 border border-sky-500/30 rounded-2xl px-3.5 py-2 shadow-inner">
+                    <i class="fa-solid fa-dice text-sky-400 text-sm"></i>
+                    <div>
+                        <div class="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Saldo de Fichas</div>
+                        <div class="text-xs sm:text-sm font-black text-white font-mono leading-none">
+                            <span id="casinoChipsBalance"><%= Math.floor(chipsBal).toLocaleString('pt-BR') %></span> <span class="text-sky-400 text-[10px]">Chips</span>
                         </div>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-amber-500/30">
-                        <div class="text-[10px] font-bold uppercase text-zinc-400">Suas Coins</div>
-                        <div class="text-base font-black text-amber-400 flex items-center justify-center gap-1 mt-0.5">
-                            <i class="fa-solid fa-coins"></i>
+                </div>
+
+                <!-- Coins Balance Pill -->
+                <div class="flex items-center gap-2 bg-slate-900/90 border border-amber-500/30 rounded-2xl px-3.5 py-2 shadow-inner">
+                    <i class="fa-solid fa-coins text-amber-400 text-sm"></i>
+                    <div>
+                        <div class="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Suas Coins</div>
+                        <div class="text-xs sm:text-sm font-black text-amber-300 font-mono leading-none">
                             <span id="casinoCoinsBalance"><%= Number(coinsBal).toFixed(1) %></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Conversão Rápida Coins -> Chips -->
-                <div class="flex items-center gap-2 pt-1">
-                    <input type="number" id="inputQuickCoinsToChips" min="1" step="1" value="5"
-                           class="w-24 px-2.5 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-white font-bold focus:outline-none focus:border-sky-500"
-                           placeholder="Coins">
-                    <button type="button" id="btnQuickBuyChips"
-                            class="flex-1 py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-black uppercase tracking-wider transition">
-                        Trocar p/ +<span id="lblQuickChipsPreview"><%= 5 * rateChips %></span> Chips
+                <!-- Botão de Câmbio de Fichas (Max 80%) -->
+                <button type="button" onclick="$('#btnOpenQuickConvertModal').trigger('click')"
+                    class="px-3 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/25 transition flex items-center gap-1.5"
+                    title="Converter Coins em Fichas (Máximo 80% do saldo)">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Obter Fichas</span>
+                </button>
+
+                <!-- Contrato de Sessão Pill -->
+                <div id="casinoSessionContractWidget" class="flex items-center gap-2 bg-slate-900/90 border border-purple-500/40 rounded-2xl px-3 py-1.5 text-xs">
+                    <div class="min-w-0">
+                        <span class="text-[9px] text-zinc-400 uppercase font-bold block leading-tight">Contrato PIN</span>
+                        <span id="lblCasinoContractStatus" class="font-bold text-amber-300 text-[11px] truncate block leading-tight">Sem contrato</span>
+                    </div>
+                    <button type="button" id="btnOpenCasinoContractModal"
+                        class="px-2 py-1 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-[10px] uppercase transition shrink-0">
+                        PIN
                     </button>
                 </div>
-                <p class="text-[10px] text-zinc-500 text-center">Cotação: 1 Coin = <%= rateChips %> Chips (Fichas)</p>
             </div>
         </div>
     </div>
 
-    <!-- SELETOR DE JOGO E VALOR DE APOSTA UNIFICADO -->
-    <div class="p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex flex-wrap items-center gap-2">
-            <button type="button" class="btn-casino-tab px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20" data-game="slots">
-                🐯 Golden Tiger Slots 3x3
-            </button>
-            <button type="button" class="btn-casino-tab px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition bg-slate-800 text-zinc-300 hover:text-white" data-game="roulette">
-                🎡 Roleta Real (2x / 14x)
-            </button>
-            <button type="button" class="btn-casino-tab px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition bg-slate-800 text-zinc-300 hover:text-white" data-game="dice">
-                🎲 Dados da Fortuna (2d6)
-            </button>
-        </div>
+    <!-- ========================================================================= -->
+    <!-- 2. LOBBY PRINCIPAL ESTILO STAKE / BETANO                                   -->
+    <!-- ========================================================================= -->
+    <div id="casinoLobbyHub" class="space-y-6">
 
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-zinc-400">Aposta (Chips):</span>
-            <input type="number" id="inputCasinoBetChips" min="1" max="50000" value="10"
-                   class="w-24 px-3 py-2 rounded-xl bg-slate-950 border border-sky-500/40 text-sm font-black text-sky-400 text-center focus:outline-none">
-            <div class="flex items-center gap-1">
-                <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-zinc-300" data-bet="10">10</button>
-                <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-zinc-300" data-bet="50">50</button>
-                <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-zinc-300" data-bet="100">100</button>
-                <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-zinc-300" data-bet="500">500</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JOGO 1: GOLDEN TIGER SLOTS 3X3 -->
-    <div id="casinoGameSlots" class="casino-game-panel rounded-3xl bg-slate-900/95 border border-amber-500/30 p-6 md:p-8 shadow-xl">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div class="lg:col-span-7 flex flex-col items-center space-y-5">
-                <div class="text-center">
-                    <h3 class="text-xl font-black uppercase text-amber-400 tracking-wider">🐯 Golden Tiger 3x3 — 5 Linhas de Prêmio</h3>
-                    <p class="text-xs text-zinc-400">Alinhe 3 símbolos iguais nas linhas horizontais ou diagonais para multiplicar suas fichas!</p>
-                </div>
-
-                <!-- GRADE 3X3 DO CAÇA-NÍQUEL -->
-                <div id="slotsGrid3x3" class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-gradient-to-b from-amber-500/20 via-slate-950 to-slate-950 border-2 border-amber-500/50 shadow-2xl w-full max-w-sm">
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">💎</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">7️⃣</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">👑</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">🍀</div>
-                    <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">🍒</div>
-                </div>
-
-                <button type="button" id="btnSpinSlots"
-                        class="w-full max-w-sm py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 text-base font-black uppercase tracking-widest shadow-xl shadow-amber-500/20 transition transform active:scale-95">
-                    🎰 GIRAR AGORA
+        <!-- Barra de Categorias e Filtros Rápidos (Stake Pills) -->
+        <div class="flex items-center justify-between gap-3 overflow-x-auto pb-1 scrollbar-none">
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button type="button" class="btn-casino-filter px-4 py-2 rounded-2xl bg-emerald-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition active" data-filter="all">
+                    <span>🔥</span>
+                    <span>Lobby Principal</span>
+                </button>
+                <button type="button" class="btn-casino-filter px-4 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5" data-filter="slots">
+                    <span>🎰</span>
+                    <span>Slots / Caça-Níqueis</span>
+                </button>
+                <button type="button" class="btn-casino-filter px-4 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5" data-filter="roulette">
+                    <span>🎡</span>
+                    <span>Roleta ao Vivo</span>
+                </button>
+                <button type="button" class="btn-casino-filter px-4 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5" data-filter="dice">
+                    <span>🎲</span>
+                    <span>Dados 2D6</span>
+                </button>
+                <button type="button" class="btn-casino-filter px-4 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5" data-filter="originals">
+                    <span>⚡</span>
+                    <span>Originais TFL</span>
                 </button>
             </div>
 
-            <!-- TABELA DE PAGAMENTOS DO SLOTS -->
-            <div class="lg:col-span-5 p-5 rounded-2xl bg-slate-950/90 border border-white/10 space-y-4">
-                <h4 class="text-xs font-black uppercase tracking-widest text-amber-400">Tabela de Multiplicadores</h4>
-                <div class="grid grid-cols-2 gap-2.5 text-xs">
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-amber-500/30 flex items-center justify-between">
-                        <span>7️⃣ 7️⃣ 7️⃣</span>
-                        <span class="font-black text-amber-400">15x</span>
+            <!-- Busca Rápida de Jogos -->
+            <div class="relative w-48 sm:w-64 flex-shrink-0">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                <input type="text" id="inputCasinoSearchGames" placeholder="Buscar jogo..."
+                       class="w-full bg-slate-900/90 border border-white/10 rounded-2xl pl-9 pr-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 transition">
+            </div>
+        </div>
+
+        <!-- Banner de Destaque Hero (Stake / Betano Featured Game) -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-slate-950 border border-amber-500/30 p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-3 max-w-xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-widest">
+                    <span>⭐ JOGO EM DESTAQUE</span>
+                    <span>•</span>
+                    <span>RTP 96.5%</span>
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-black uppercase text-white tracking-wide">
+                    Golden Tiger Slots <span class="text-amber-400">3x3</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                    Caça-níquel temático com 5 linhas de premiação, multiplicadores instantâneos de até <strong>15x</strong> e prêmios de consolação para combinações parciais.
+                </p>
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <button type="button" class="btn-enter-casino-sublayout px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-500/25 transition transform active:scale-95 flex items-center gap-2" data-target="slots">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Jogar Agora</span>
+                    </button>
+                    <span class="text-xs text-zinc-400 font-semibold">Provedor: <strong class="text-white">TFL Originals</strong></span>
+                </div>
+            </div>
+
+            <!-- Visual Badge 3D do Tigre -->
+            <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl bg-gradient-to-br from-amber-500/20 via-slate-900 to-black border border-amber-500/40 flex items-center justify-center text-7xl sm:text-8xl shadow-2xl shadow-amber-500/20 relative group flex-shrink-0">
+                <span class="group-hover:scale-110 transition duration-300 select-none">🐯</span>
+                <span class="absolute bottom-3 px-3 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow">
+                    Multiplicador 15x
+                </span>
+            </div>
+        </div>
+
+        <!-- Grade de Cards de Jogos (Posters Estilo Betano / Stake 3:4) -->
+        <div class="space-y-3.5">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-black uppercase text-white tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-400"></i>
+                    <span>Jogos Disponíveis no Cassino</span>
+                </h3>
+                <span class="text-xs text-zinc-400">3 jogos verificados</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="casinoGamesCatalogGrid">
+
+                <!-- CARD 1: GOLDEN TIGER SLOTS (POSTER CARD) -->
+                <div class="casino-game-card group relative overflow-hidden rounded-3xl bg-slate-900 border border-white/10 hover:border-amber-500/60 transition-all duration-300 shadow-xl flex flex-col justify-between" data-category="slots originals">
+                    <div class="relative h-48 bg-gradient-to-br from-amber-950 via-slate-950 to-black flex items-center justify-center overflow-hidden">
+                        <span class="text-7xl group-hover:scale-110 transition duration-300 select-none">🐯</span>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+
+                        <!-- Badges Superiores -->
+                        <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 text-[10px] font-black uppercase shadow">
+                                HOT 🔥
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10 text-white text-[10px] font-bold">
+                                RTP 96.5%
+                            </span>
+                        </div>
+
+                        <!-- Hover Overlay com Botão de Play Estilo Betano -->
+                        <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <button type="button" class="btn-enter-casino-sublayout px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wider shadow-xl transition transform group-hover:scale-105 flex items-center gap-2" data-target="slots">
+                                <i class="fa-solid fa-play"></i>
+                                <span>Jogar Agora</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
-                        <span>💎 💎 💎</span>
-                        <span class="font-black text-sky-400">8x</span>
-                    </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
-                        <span>🐯 🐯 🐯</span>
-                        <span class="font-black text-amber-300">5x</span>
-                    </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
-                        <span>👑 👑 👑</span>
-                        <span class="font-black text-purple-400">3.5x</span>
-                    </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
-                        <span>🍀 🍀 🍀</span>
-                        <span class="font-black text-emerald-400">2.2x</span>
-                    </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
-                        <span>🍒 🍒 (Par Central)</span>
-                        <span class="font-black text-zinc-300">1.2x</span>
+
+                    <div class="p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Slots 3x3 • 5 Linhas</span>
+                            <span class="text-[10px] text-zinc-400 font-mono">Até 15x</span>
+                        </div>
+                        <h4 class="text-base font-black text-white group-hover:text-amber-300 transition">Golden Tiger Slots</h4>
+                        <p class="text-xs text-zinc-400 line-clamp-2">Caça-níquel temático com prêmios de até 15x em Cash/Chips.</p>
+                        <div class="pt-2 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-zinc-500">TFL Originals</span>
+                            <button type="button" class="btn-enter-casino-sublayout text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1" data-target="slots">
+                                <span>Entrar</span>
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div id="slotsResultBanner" class="p-3.5 rounded-xl bg-slate-900 border border-white/10 text-center text-xs font-bold text-zinc-300">
-                    Escolha sua aposta em Fichas e clique em <strong>GIRAR AGORA</strong>!
+
+                <!-- CARD 2: ROLETA REAL MONTE CARLO (POSTER CARD) -->
+                <div class="casino-game-card group relative overflow-hidden rounded-3xl bg-slate-900 border border-white/10 hover:border-rose-500/60 transition-all duration-300 shadow-xl flex flex-col justify-between" data-category="roulette originals">
+                    <div class="relative h-48 bg-gradient-to-br from-rose-950 via-slate-950 to-black flex items-center justify-center overflow-hidden">
+                        <span class="text-7xl group-hover:scale-110 transition duration-300 select-none">🎡</span>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+
+                        <!-- Badges Superiores -->
+                        <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black uppercase shadow">
+                                MESA REAL
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10 text-white text-[10px] font-bold">
+                                RTP 97.3%
+                            </span>
+                        </div>
+
+                        <!-- Hover Overlay com Botão de Play Estilo Betano -->
+                        <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <button type="button" class="btn-enter-casino-sublayout px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wider shadow-xl transition transform group-hover:scale-105 flex items-center gap-2" data-target="roulette">
+                                <i class="fa-solid fa-play"></i>
+                                <span>Jogar Agora</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400">Roleta Monte Carlo</span>
+                            <span class="text-[10px] text-zinc-400 font-mono">Zero Paga 14x</span>
+                        </div>
+                        <h4 class="text-base font-black text-white group-hover:text-rose-300 transition">Roleta Real TFL</h4>
+                        <p class="text-xs text-zinc-400 line-clamp-2">Roleta européia de 15 números (0 a 14) com Vermelho (2x), Preto (2x) e Zero Ouro (14x).</p>
+                        <div class="pt-2 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-zinc-500">TFL Originals</span>
+                            <button type="button" class="btn-enter-casino-sublayout text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1" data-target="roulette">
+                                <span>Entrar</span>
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- CARD 3: DADOS DA FORTUNA 2D6 (POSTER CARD) -->
+                <div class="casino-game-card group relative overflow-hidden rounded-3xl bg-slate-900 border border-white/10 hover:border-sky-500/60 transition-all duration-300 shadow-xl flex flex-col justify-between" data-category="dice originals">
+                    <div class="relative h-48 bg-gradient-to-br from-sky-950 via-slate-950 to-black flex items-center justify-center overflow-hidden">
+                        <span class="text-7xl group-hover:scale-110 transition duration-300 select-none">🎲</span>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+
+                        <!-- Badges Superiores -->
+                        <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded-md bg-sky-500 text-slate-950 text-[10px] font-black uppercase shadow">
+                                TURBO
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10 text-white text-[10px] font-bold">
+                                RTP 98.0%
+                            </span>
+                        </div>
+
+                        <!-- Hover Overlay com Botão de Play Estilo Betano -->
+                        <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <button type="button" class="btn-enter-casino-sublayout px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wider shadow-xl transition transform group-hover:scale-105 flex items-center gap-2" data-target="dice">
+                                <i class="fa-solid fa-play"></i>
+                                <span>Jogar Agora</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400">Dados Cyber 2D6</span>
+                            <span class="text-[10px] text-zinc-400 font-mono">Soma 7 Paga 5x</span>
+                        </div>
+                        <h4 class="text-base font-black text-white group-hover:text-sky-300 transition">Dados da Fortuna</h4>
+                        <p class="text-xs text-zinc-400 line-clamp-2">Arremesse 2 dados e preveja Baixo (2 a 6), Alto (8 a 12) ou Sete Exato para ganhar até 5x.</p>
+                        <div class="pt-2 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-zinc-500">TFL Originals</span>
+                            <button type="button" class="btn-enter-casino-sublayout text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1" data-target="dice">
+                                <span>Entrar</span>
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Ticker de Apostas e Vitórias Recentes (Feed Estilo Stake.com) -->
+        <div class="rounded-3xl bg-slate-900/80 border border-white/10 p-4 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-black uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Feed de Rodadas Recentes na Comunidade</span>
+                </span>
+                <span class="text-[10px] text-zinc-500">Sincronizado ao vivo</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
+                <div class="p-2.5 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-white truncate">Golden Tiger Slots</div>
+                        <div class="text-[10px] text-zinc-400">Viajante Anônimo</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-black text-emerald-400">15.00x</span>
+                        <div class="text-[10px] text-amber-300 font-mono">+150 Chips</div>
+                    </div>
+                </div>
+
+                <div class="p-2.5 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-white truncate">Roleta Real TFL</div>
+                        <div class="text-[10px] text-zinc-400">Viajante da Sorte</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-black text-emerald-400">2.00x</span>
+                        <div class="text-[10px] text-amber-300 font-mono">+40 Chips</div>
+                    </div>
+                </div>
+
+                <div class="p-2.5 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-white truncate">Dados da Fortuna</div>
+                        <div class="text-[10px] text-zinc-400">Mente Tranquila</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-black text-emerald-400">5.00x</span>
+                        <div class="text-[10px] text-amber-300 font-mono">+100 Chips</div>
+                    </div>
+                </div>
+
+                <div class="p-2.5 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-white truncate">Golden Tiger Slots</div>
+                        <div class="text-[10px] text-zinc-400">Caminhante Noturno</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-black text-emerald-400">8.00x</span>
+                        <div class="text-[10px] text-amber-300 font-mono">+80 Chips</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerta de Jogo Responsável & Contrato de Sessão -->
+        <div class="p-4 rounded-3xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3.5 text-xs text-amber-200 shadow-lg">
+            <span class="material-symbols-outlined text-[24px] text-amber-400 shrink-0 mt-0.5">verified_user</span>
+            <div class="space-y-1">
+                <strong class="font-black uppercase tracking-wider text-amber-300 text-sm">Diretrizes de Jogo Responsável</strong>
+                <p class="text-zinc-300 leading-relaxed">
+                    Você pode converter no máximo <strong>80%</strong> das suas Coins em Fichas por vez. Antes de iniciar, assine o Contrato de Sessão com seu PIN para fixar um teto de perda. Quando as fichas do contrato terminarem, as apostas são travadas compulsoriamente para evitar o impulso de perda.
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- JOGO 2: ROLETA REAL (2X / 14X) -->
-    <div id="casinoGameRoulette" class="casino-game-panel hidden rounded-3xl bg-slate-900/95 border border-rose-500/30 p-6 md:p-8 shadow-xl space-y-6">
-        <div class="text-center space-y-1">
-            <h3 class="text-xl font-black uppercase text-white tracking-wider">🎡 Roleta Real TFL (0 a 14)</h3>
-            <p class="text-xs text-zinc-400">Escolha sua cor para girar a roleta: Vermelho (1 a 7) paga <strong>2x</strong>, Preto (8 a 14) paga <strong>2x</strong> e Ouro (0) paga <strong>14x</strong>!</p>
-        </div>
-
-        <!-- FAIXA DE NÚMEROS DA ROLETA -->
-        <div id="rouletteWheelStrip" class="flex flex-wrap items-center justify-center gap-2 p-4 rounded-2xl bg-slate-950 border border-white/10">
-            <div class="roulette-num w-11 h-11 rounded-xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shadow" data-num="0">0</div>
-            <% for (let n = 1; n <= 14; n++) { %>
-                <div class="roulette-num w-11 h-11 rounded-xl <%= n <= 7 ? 'bg-rose-600 text-white' : 'bg-zinc-800 text-zinc-100 border border-white/15' %> font-black flex items-center justify-center text-sm" data-num="<%= n %>"><%= n %></div>
-            <% } %>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button type="button" class="btn-play-roulette py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black uppercase tracking-wider transition shadow-lg" data-choice="red">
-                🔴 Apostar no Vermelho (2x)
-            </button>
-            <button type="button" class="btn-play-roulette py-4 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black uppercase tracking-wider transition shadow-lg" data-choice="gold">
-                🟡 Apostar no Zero Ouro (14x)
-            </button>
-            <button type="button" class="btn-play-roulette py-4 px-5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-white/15 text-white font-black uppercase tracking-wider transition shadow-lg" data-choice="black">
-                ⚫ Apostar no Preto (2x)
-            </button>
-        </div>
-
-        <div id="rouletteResultBanner" class="p-3.5 rounded-xl bg-slate-950 border border-white/10 text-center text-xs font-bold text-zinc-300">
-            Clique em uma das cores acima para girar a Roleta!
-        </div>
-    </div>
-
-    <!-- JOGO 3: DADOS DA FORTUNA (2D6) -->
-    <div id="casinoGameDice" class="casino-game-panel hidden rounded-3xl bg-slate-900/95 border border-sky-500/30 p-6 md:p-8 shadow-xl space-y-6">
-        <div class="text-center space-y-1">
-            <h3 class="text-xl font-black uppercase text-sky-400 tracking-wider">🎲 Dados da Fortuna (2 Dados)</h3>
-            <p class="text-xs text-zinc-400">Lance dois dados e acerte a soma: Baixo (2 a 6) paga <strong>2x</strong>, Lucky 7 (Soma 7) paga <strong>4.5x</strong> e Alto (8 a 12) paga <strong>2x</strong>!</p>
-        </div>
-
-        <div class="flex items-center justify-center gap-6 py-4">
-            <div id="diceBox1" class="w-24 h-24 rounded-3xl bg-slate-950 border-2 border-sky-500/50 flex items-center justify-center text-4xl font-black text-white shadow-2xl">🎲 3</div>
-            <span class="text-2xl font-black text-zinc-500">+</span>
-            <div id="diceBox2" class="w-24 h-24 rounded-3xl bg-slate-950 border-2 border-sky-500/50 flex items-center justify-center text-4xl font-black text-white shadow-2xl">🎲 4</div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button type="button" class="btn-play-dice py-4 px-5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-black uppercase tracking-wider transition shadow-lg" data-choice="low">
-                🔽 Baixo (Soma 2 a 6) — 2x
-            </button>
-            <button type="button" class="btn-play-dice py-4 px-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-wider transition shadow-lg" data-choice="seven">
-                🎯 Lucky 7 (Soma Exata 7) — 4.5x
-            </button>
-            <button type="button" class="btn-play-dice py-4 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-wider transition shadow-lg" data-choice="high">
-                🔼 Alto (Soma 8 a 12) — 2x
-            </button>
-        </div>
-
-        <div id="diceResultBanner" class="p-3.5 rounded-xl bg-slate-950 border border-white/10 text-center text-xs font-bold text-zinc-300">
-            Escolha sua previsão acima para lançar os dados!
-        </div>
-    </div>
-
-    <!-- HISTÓRICO DE JOGADAS RECENTES NA SESSÃO -->
-    <div class="p-6 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
-        <h3 class="text-xs font-black uppercase tracking-widest text-zinc-400 flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-purple-400"></i>
-            <span>Últimas Jogadas no Cassino</span>
-        </h3>
-        <div id="casinoHistoryList" class="space-y-2 text-xs text-zinc-400">
-            <div class="p-3 rounded-xl bg-slate-950/60 border border-white/5 text-center">
-                Suas jogadas desta sessão aparecerão aqui em tempo real (e também ficam registradas no Extrato Completo da Carteira).
+    <!-- ========================================================================= -->
+    <!-- 3. SUBLAYOUTS DOS JOGOS (THEATER VIEW ESTILO BETANO / STAKE)              -->
+    <!-- ========================================================================= -->
+    <div id="casinoSublayoutContainer" class="hidden space-y-5">
+        <!-- BARRA DO SUBLAYOUT ATIVO: VOLTAR AO LOBBY + CONTROLES DE APOSTA -->
+        <div class="p-4 rounded-3xl bg-slate-900 border border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <button type="button" id="btnBackToCasinoLobby"
+                    class="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-zinc-200 hover:text-white text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>← Voltar ao Lobby</span>
+                </button>
+                <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
+                <div id="casinoActiveGameTitle" class="text-xs sm:text-sm font-black uppercase text-white truncate">
+                    Golden Tiger Slots
+                </div>
             </div>
+
+            <!-- Controles de Aposta -->
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-bold text-zinc-400">Aposta (Chips):</span>
+                <input type="number" id="inputCasinoBetChips" min="1" max="5000" value="10"
+                       class="w-20 px-2.5 py-1.5 rounded-xl bg-slate-950 border border-sky-500/40 text-sm font-black text-sky-400 text-center focus:outline-none">
+                <div class="flex items-center gap-1">
+                    <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-zinc-300" data-bet="10">10</button>
+                    <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-zinc-300" data-bet="50">50</button>
+                    <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-zinc-300" data-bet="100">100</button>
+                    <button type="button" class="btn-casino-bet-preset px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-zinc-300" data-bet="250">250</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner de Alerta do Contrato de Sessão -->
+        <div id="casinoContractWarningBanner" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-xs flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-amber-200">
+                <i class="fa-solid fa-lock text-amber-400"></i>
+                <span id="lblCasinoContractWarningText">Nenhum contrato ativo. Assine um contrato com seu PIN para autorizar as rodadas.</span>
+            </div>
+            <button type="button" onclick="$('#btnOpenCasinoContractModal').trigger('click')"
+                class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase transition shrink-0">
+                Assinar com PIN
+            </button>
+        </div>
+
+        <!-- JOGO 1: GOLDEN TIGER SLOTS 3X3 -->
+        <div id="casinoGameSlots" class="casino-game-panel rounded-3xl bg-slate-900/95 border border-amber-500/30 p-5 sm:p-7 shadow-xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 flex flex-col items-center space-y-5">
+                    <div class="text-center">
+                        <h3 class="text-lg sm:text-xl font-black uppercase text-amber-400 tracking-wider">🐯 Golden Tiger 3x3 — 5 Linhas de Prêmio</h3>
+                        <p class="text-xs text-zinc-400">Alinhe 3 símbolos iguais para multiplicar suas fichas!</p>
+                    </div>
+
+                    <!-- GRADE 3X3 DO CAÇA-NÍQUEL -->
+                    <div id="slotsGrid3x3" class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-gradient-to-b from-amber-500/20 via-slate-950 to-slate-950 border-2 border-amber-500/50 shadow-2xl w-full max-w-sm">
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">💎</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">7️⃣</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center justify-center text-4xl select-none shadow-inner">🐯</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">👑</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">🍀</div>
+                        <div class="slot-cell h-24 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-4xl select-none shadow-inner">🍒</div>
+                    </div>
+
+                    <button type="button" id="btnSpinSlots"
+                            class="w-full max-w-sm py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500 hover:from-emerald-400 hover:to-emerald-300 text-slate-950 text-base font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition transform active:scale-95">
+                        🎰 GIRAR AGORA
+                    </button>
+                </div>
+
+                <!-- TABELA DE MULTIPLICADORES -->
+                <div class="lg:col-span-5 p-5 rounded-2xl bg-slate-950/90 border border-white/10 space-y-4">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-amber-400">Tabela de Multiplicadores</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="p-2 rounded-xl bg-slate-900 border border-amber-500/30 flex items-center justify-between">
+                            <span>7️⃣ 7️⃣ 7️⃣</span>
+                            <span class="font-black text-amber-400">15x</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
+                            <span>💎 💎 💎</span>
+                            <span class="font-black text-sky-400">8x</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
+                            <span>🐯 🐯 🐯</span>
+                            <span class="font-black text-amber-300">5x</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
+                            <span>👑 👑 👑</span>
+                            <span class="font-black text-purple-400">3.5x</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
+                            <span>🍀 🍀 🍀</span>
+                            <span class="font-black text-emerald-400">2.2x</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between">
+                            <span>🍒 🍒 🍒</span>
+                            <span class="font-black text-rose-400">1.5x</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-[11px] text-zinc-400 space-y-1">
+                        <div class="font-bold text-zinc-300">Prêmio de Consolação:</div>
+                        <p>2 símbolos iguais em qualquer linha pagam de 0.2x a 0.5x da aposta.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JOGO 2: ROLETA REAL TFL (MONTE CARLO) -->
+        <div id="casinoGameRoulette" class="casino-game-panel hidden rounded-3xl bg-slate-900/95 border border-rose-500/30 p-5 sm:p-7 shadow-xl space-y-6">
+            <div class="text-center space-y-1">
+                <h3 class="text-lg sm:text-xl font-black uppercase text-rose-400 tracking-wider">🎡 Roleta Real Monte Carlo (0 a 14)</h3>
+                <p class="text-xs text-zinc-400">Escolha sua cor da sorte ou arrisque o Zero Ouro para ganhar 14x!</p>
+            </div>
+
+            <!-- ANIMAÇÃO DA ROLETA -->
+            <div class="flex flex-col items-center space-y-4">
+                <div class="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full border-4 border-amber-500/50 bg-gradient-to-br from-slate-950 via-slate-900 to-black flex items-center justify-center shadow-2xl shadow-rose-500/10">
+                    <div id="rouletteDisplayNumber" class="text-4xl sm:text-5xl font-black text-white font-mono">
+                        0
+                    </div>
+                    <div id="rouletteDisplayColor" class="absolute bottom-6 px-3 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase">
+                        Ouro
+                    </div>
+                </div>
+
+                <div class="text-xs text-zinc-400" id="rouletteStatusLabel">Selecione uma opção de aposta abaixo e gire!</div>
+            </div>
+
+            <!-- OPÇÕES DE APOSTA NA ROLETA -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mx-auto">
+                <button type="button" class="btn-roulette-choice p-4 rounded-2xl bg-rose-600/30 hover:bg-rose-600 border border-rose-500/50 text-white font-black text-sm uppercase transition flex flex-col items-center gap-1 shadow-lg" data-choice="red">
+                    <span>🔴 Vermelho</span>
+                    <span class="text-xs text-rose-300 font-mono">Paga 2x (1 a 7)</span>
+                </button>
+                <button type="button" class="btn-roulette-choice p-4 rounded-2xl bg-amber-500/30 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/50 text-amber-300 font-black text-sm uppercase transition flex flex-col items-center gap-1 shadow-lg" data-choice="zero">
+                    <span>🟡 Zero Ouro</span>
+                    <span class="text-xs text-amber-200 font-mono">Paga 14x (Número 0)</span>
+                </button>
+                <button type="button" class="btn-roulette-choice p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-white/20 text-white font-black text-sm uppercase transition flex flex-col items-center gap-1 shadow-lg" data-choice="black">
+                    <span>⚫ Preto</span>
+                    <span class="text-xs text-zinc-400 font-mono">Paga 2x (8 a 14)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- JOGO 3: DADOS DA FORTUNA 2D6 -->
+        <div id="casinoGameDice" class="casino-game-panel hidden rounded-3xl bg-slate-900/95 border border-sky-500/30 p-5 sm:p-7 shadow-xl space-y-6">
+            <div class="text-center space-y-1">
+                <h3 class="text-lg sm:text-xl font-black uppercase text-sky-400 tracking-wider">🎲 Dados da Fortuna Cyber (2D6)</h3>
+                <p class="text-xs text-zinc-400">Preveja a soma total de dois dados lançados simultaneamente!</p>
+            </div>
+
+            <div class="flex flex-col items-center space-y-4">
+                <div class="flex items-center gap-4">
+                    <div id="diceDie1" class="w-20 h-20 rounded-2xl bg-slate-950 border-2 border-sky-500/50 flex items-center justify-center text-4xl shadow-inner font-mono text-white">
+                        🎲
+                    </div>
+                    <span class="text-xl font-black text-zinc-500">+</span>
+                    <div id="diceDie2" class="w-20 h-20 rounded-2xl bg-slate-950 border-2 border-sky-500/50 flex items-center justify-center text-4xl shadow-inner font-mono text-white">
+                        🎲
+                    </div>
+                </div>
+                <div id="diceTotalLabel" class="text-sm font-bold text-zinc-300">Escolha uma previsão para rolar</div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mx-auto">
+                <button type="button" class="btn-dice-choice p-4 rounded-2xl bg-blue-600/30 hover:bg-blue-600 border border-blue-500/50 text-white font-black text-sm uppercase transition flex flex-col items-center gap-1 shadow-lg" data-choice="low">
+                    <span>⬇️ Baixo (2 a 6)</span>
+                    <span class="text-xs text-blue-300 font-mono">Paga 2x</span>
+                </button>
+                <button type="button" class="btn-dice-choice p-4 rounded-2xl bg-purple-600/30 hover:bg-purple-600 border border-purple-500/50 text-white font-black text-sm uppercase transition flex flex-col items-center gap-1 shadow-lg" data-choice="seven">
+                    <span>🎯 Sete Exato (7)</span>
+                    <span class="text-xs text-purple-300 font-mono">Paga 5x</span>
+                </button>
+                <button type="button" class="btn-dice-choice p-4 rounded-2xl bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/50 text-white font-black text-sm uppercase transition flex flex-col items-center gap-1 shadow-lg" data-choice="high">
+                    <span>⬆️ Alto (8 a 12)</span>
+                    <span class="text-xs text-indigo-300 font-mono">Paga 2x</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 4. MODAL DO CONTRATO DE SESSÃO ANTI-VÍCIO (COM PIN OBRIGATÓRIO)           -->
+    <!-- ========================================================================= -->
+    <div id="modalCasinoSessionContract" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="rounded-3xl bg-slate-900 border border-purple-500/40 p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-purple-400 text-[22px]">verified_user</span>
+                    <h3 class="text-sm font-black uppercase tracking-wider text-white">Contrato de Sessão</h3>
+                </div>
+                <button type="button" onclick="$('#modalCasinoSessionContract').addClass('hidden').removeClass('flex')"
+                        class="text-zinc-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-zinc-300 leading-relaxed">
+                Para evitar apostas compulsivas, determine o teto máximo de fichas que você autoriza usar nesta sessão. A confirmação com seu <strong>PIN de 4 dígitos</strong> é obrigatória.
+            </p>
+
+            <form id="formCasinoSessionContract" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Teto de Fichas (Limite de Perda)</label>
+                    <input type="number" id="inputContractChipsAmount" min="10" max="10000" step="10" value="100" required
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-sky-400 focus:outline-none focus:border-purple-500">
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <button type="button" class="btn-contract-preset-chips px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-xs font-bold text-white hover:border-purple-500" data-chips="50">50</button>
+                        <button type="button" class="btn-contract-preset-chips px-2.5 py-1 rounded-lg bg-purple-600/30 border border-purple-500 text-xs font-bold text-purple-200" data-chips="100">100</button>
+                        <button type="button" class="btn-contract-preset-chips px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-xs font-bold text-white hover:border-purple-500" data-chips="250">250</button>
+                        <button type="button" class="btn-contract-preset-chips px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-xs font-bold text-white hover:border-purple-500" data-chips="500">500</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-1.5">PIN da Carteira (4 Dígitos)</label>
+                    <input type="password" id="inputContractWalletPin" maxlength="4" pattern="[0-9]{4}" placeholder="••••" required
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-purple-500">
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="$('#modalCasinoSessionContract').addClass('hidden').removeClass('flex')"
+                            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-zinc-300 text-xs font-bold transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase tracking-wider transition shadow-lg shadow-purple-600/30">
+                        Assinar e Liberar Rodadas
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </section>

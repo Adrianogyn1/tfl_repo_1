@@ -38,6 +38,8 @@
         "success": "Sucesso!"
     },
     "home": {
+        "seoTitle": "The Fantasy Life | Mundo Virtual 3D, Rede Social & Avatares",
+        "entrar": "Entrar",
         "nav": {
             "play": "Jogue",
             "explore": "Explorar",
@@ -73,8 +75,13 @@
             "coffeeDesc": "Apoio simbólico para energia extra. Apoie-nos!"
         },
         "footer": {
-            "slogan": "Onde a sua imaginação ganha forma digital.",
-            "rights": "Todos os direitos reservados."
+            "slogan": "Onde a tua imaginação ganha forma digital.",
+            "rights": "Todos os direitos reservados.",
+            "contact": "Contato",
+            "reportBug": "Reportar Bug",
+            "suggestions": "Sugestões",
+            "tutorial": "Tutorial",
+            "version": "Notas da Versão"
         },
         "modal": {
             "downloadTitle": "Baixe o The Fantasy Life",
@@ -174,7 +181,8 @@
         }
     },
     "profile": {
-        "title": "Portal TFL",
+        "salas": "Salas 3D",
+        "title": "The Fantasy Life | Universo Virtual, Rede Social & Avatares",
         "welcome": "Bem-vindo, {{name}}",
         "nav": {
             "menu": "Menu",
@@ -329,5 +337,114 @@
             "tokenInvalid": "Este link de confirmação é inválido",
             "tokenExpired": "Este link expirou. Solicite um novo e-mail"
         }
+    },
+    "feedback": {
+            "heroBadge": "Central de Atendimento & Comunidade",
+            "heroTitle": "Como podemos te ajudar?",
+            "heroSubtitle": "Envie sua dúvida para a equipe, reporte problemas para correção ágil ou sugira novas ideias para o futuro do The Fantasy Life.",
+            "tabContact": "Contato",
+            "tabBug": "Reportar Bug",
+            "tabSuggestion": "Sugestões",
+            "contact": {
+                "pageTitle": "The Fantasy Life | Contato & Atendimento",
+                "title": "Mensagem de Contato",
+                "desc": "Dúvidas gerais, suporte de conta, parcerias e informações institucionais.",
+                "nameLabel": "Seu Nome *",
+                "namePlaceholder": "Ex: Alexandre Silva",
+                "emailLabel": "Seu E-mail para Resposta *",
+                "emailPlaceholder": "nome@exemplo.com",
+                "subjectLabel": "Assunto *",
+                "subjectPlaceholder": "Ex: Dúvida sobre recuperação de conta ou acesso",
+                "messageLabel": "Mensagem *",
+                "messagePlaceholder": "Escreva aqui detalhadamente a sua solicitação...",
+                "dataSecurity": "Seus dados são protegidos e tratados exclusivamente pela nossa equipe.",
+                "submitBtn": "Enviar Mensagem",
+                "submitting": "Enviando..."
+            },
+            "bug": {
+                "pageTitle": "The Fantasy Life | Reportar um Problema ou Bug",
+                "title": "Reportar um Problema ou Bug",
+                "desc": "Ajude nossa equipe a identificar e resolver falhas visuais, problemas de carregamento ou erros inesperados.",
+                "titleLabel": "Título Resumido do Problema *",
+                "titlePlaceholder": "Ex: O botão de convite não responde ao clicar",
+                "categoryLabel": "Área Afetada",
+                "severityLabel": "Impacto / Gravidade",
+                "emailLabel": "Seu E-mail (Opcional para contato)",
+                "emailPlaceholder": "Para avisarmos quando estiver corrigido",
+                "descLabel": "O que aconteceu? (Descrição Detalhada) *",
+                "descPlaceholder": "Explique o que você estava tentando fazer e o que aconteceu de inesperado...",
+                "stepsLabel": "Passos para reproduzir (Opcional)",
+                "stepsPlaceholder": "1. Entrei na sala...\n2. Cliquei em convidar amigo...\n3. A tela travou...",
+                "expectedLabel": "O que deveria ter acontecido? (Opcional)",
+                "expectedPlaceholder": "O convite deveria ter sido enviado e a sala carregada normalmente.",
+                "screenshotLabel": "Anexar Print ou Captura de Tela (Opcional)",
+                "screenshotPlaceholder": "Selecione uma imagem (PNG, JPG, WEBP) de até 5MB",
+                "notice": "Registrado diretamente na fila de triagem técnica da equipe.",
+                "submitBtn": "Registrar Bug",
+                "submitting": "Registrando..."
+            },
+            "suggestion": {
+                "pageTitle": "The Fantasy Life | Sugestões & Votação da Comunidade",
+                "title": "Enviar Sugestão ou Ideia",
+                "desc": "Tem uma ideia inovadora para novos ambientes, mecânicas sociais, minigames ou itens? Queremos ouvir você!",
+                "titleLabel": "Título da Ideia *",
+                "titlePlaceholder": "Ex: Criação de salas com música ambiente compartilhada",
+                "categoryLabel": "Categoria",
+                "descLabel": "Conte-nos sobre a sua sugestão *",
+                "descPlaceholder": "Descreva sua ideia com detalhes, como ela funcionaria e por que os jogadores adorariam...",
+                "benefitLabel": "Qual benefício isso traz à comunidade? (Opcional)",
+                "benefitPlaceholder": "Ex: Aumenta a interação e conexão entre amigos nas salas",
+                "emailLabel": "Seu E-mail (Opcional para feedback)",
+                "emailPlaceholder": "Seu e-mail caso queiramos trocar ideias",
+                "notice": "As melhores ideias são catalogadas para os próximos marcos da plataforma.",
+                "submitBtn": "Enviar Sugestão",
+                "submitting": "Enviando..."
+            },
+            "voting": {
+                "title": "Painel de Votação da Comunidade",
+                "subtitle": "Ideias propostas pelos próprios jogadores. Vote e ajude a decidir as próximas novidades do The Fantasy Life!",
+                "filterAll": "Todas as Categorias",
+                "sortVotes": "Mais Votadas",
+                "sortRecent": "Mais Recentes",
+                "voteBtn": "Apoiar esta ideia",
+                "votedBtn": "Apoiada",
+                "votesCount": "{{count}} votos",
+                "statusVoting": "Em Votação",
+                "statusPlanned": "Planejado",
+                "statusDone": "Implementado",
+                "empty": "Nenhuma sugestão encontrada no momento. Seja o primeiro a cadastrar uma ideia acima!",
+                "votedSuccess": "Voto computado! Obrigado por apoiar esta ideia.",
+                "unvotedSuccess": "Voto removido.",
+                "communityHighlight": "Destaque da Comunidade"
+            },
+            "api": {
+                "contactSuccess": "Mensagem enviada com sucesso! Entraremos em contato em breve.",
+                "bugSuccess": "Relatório de bug registrado com sucesso! Obrigado por ajudar a aprimorar o TFL.",
+                "suggestionSuccess": "Sugestão recebida com sucesso! Sua ideia será analisada pela equipe.",
+                "contactError": "Erro ao registrar mensagem de contato.",
+                "bugError": "Erro ao registrar relatório de bug.",
+                "suggestionError": "Erro ao registrar sugestão."
+            }
+    },
+    "changelog": {
+            "pageTitle": "The Fantasy Life | Notas de Atualização do Sistema",
+            "heroBadge": "Transparência & Evolução da Plataforma",
+            "heroTitle": "Notas de Atualização do Sistema",
+            "heroSubtitle": "Acompanhe cada novidade, melhoria de estabilidade e o status das funcionalidades em desenvolvimento no The Fantasy Life.",
+            "currentVersionBadge": "Versão Estável Atual",
+            "publishedOn": "Publicado em",
+            "whatsNewTitle": "O Que Há de Novo",
+            "whatsNewDesc": "Novos recursos e experiências implementadas nesta versão.",
+            "fixesTitle": "O Que Foi Corrigido",
+            "fixesDesc": "Estabilidade, fluidez e correções de comportamentos relatados.",
+            "bugsTitle": "Bugs Conhecidos & Em Investigação",
+            "bugsDesc": "Problemas identificados que estão atualmente em processo de solução.",
+            "reportOtherBug": "Reportar Outro Problema",
+            "historyTitle": "Histórico de Atualizações Anteriores",
+            "communityCtaTitle": "Construa o The Fantasy Life Conosco",
+            "communityCtaDesc": "Sua opinião é fundamental para lapidarmos o ambiente 3D, rede social e economia do jogo.",
+            "contactBtn": "Fale Conosco",
+            "reportBugBtn": "Reportar Bug",
+            "suggestionBtn": "Enviar Sugestão"
     }
 }

@@ -72,3 +72,23 @@ console.log("✅ controllers carregado com sucesso");
 server.listen(Settings.PORT, "0.0.0.0", () =>
   console.log(`🚀 Servidor rodando em http://localhost:${Settings.PORT}`),
 );
+
+// Encerramento gracioso de conexões para nodemon e sinais de sistema
+function gracefulShutdown(signal, killPid = false) {
+  server.close(async () => {
+    try {
+      if (repo && repo.sequelize) {
+        await repo.sequelize.close();
+      }
+    } catch (_) {}
+    if (killPid) {
+      process.kill(process.pid, signal);
+    } else {
+      process.exit(0);
+    }
+  });
+}
+
+process.once("SIGUSR2", () => gracefulShutdown("SIGUSR2", true));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

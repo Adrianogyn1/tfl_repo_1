@@ -158,11 +158,47 @@ function recordSiteVisit(req, extra = {}) {
 
 function getVisitStatsSnapshot() {
   const nowMs = Date.now();
-  const fiveMinAgo = nowMs - 5 * 60 * 1000;
-  let onlineNow = 0;
+  const windowsMs = {
+    '5m': 5 * 60 * 1000,
+    '30m': 30 * 60 * 1000,
+    '1h': 60 * 60 * 1000,
+    '6h': 6 * 3600 * 1000,
+    '12h': 12 * 3600 * 1000,
+    '24h': 24 * 3600 * 1000,
+    '48h': 48 * 3600 * 1000,
+    '72h': 72 * 3600 * 1000,
+  };
+
+  const activeWindows = {
+    '5m': 0,
+    '30m': 0,
+    '1h': 0,
+    '6h': 0,
+    '12h': 0,
+    '24h': 0,
+    '48h': 0,
+    '72h': 0,
+  };
+
   for (const lastSeen of visitTelemetry.visitorsLastSeen.values()) {
-    if (lastSeen >= fiveMinAgo) onlineNow += 1;
+    for (const [key, ms] of Object.entries(windowsMs)) {
+      if (lastSeen >= nowMs - ms) {
+        activeWindows[key] += 1;
+      }
+    }
   }
+
+  // Assegura consistência progressiva (janela maior >= janela menor) e fallback inicial
+  let runningMax = activeWindows['5m'];
+  for (const key of ['5m', '30m', '1h', '6h', '12h', '24h', '48h', '72h']) {
+    if (activeWindows[key] < runningMax) {
+      activeWindows[key] = runningMax;
+    } else {
+      runningMax = activeWindows[key];
+    }
+  }
+
+  const onlineNow = Math.max(activeWindows['5m'], 1);
 
   const total = Math.max(1, visitTelemetry.totalPageViews);
 
@@ -186,7 +222,8 @@ function getVisitStatsSnapshot() {
   return {
     totalPageViews: visitTelemetry.totalPageViews,
     uniqueVisitors: visitTelemetry.visitorsLastSeen.size,
-    onlineNow: Math.max(onlineNow, 1),
+    onlineNow,
+    activeWindows,
     byRegion,
     byPage,
     recentLogs: visitTelemetry.recentLogs.slice(0, 20),

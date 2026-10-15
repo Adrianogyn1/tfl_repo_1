@@ -115,27 +115,28 @@
     };
 
     TFL.buildUserMiniListItemHtml = function (av, isMatch) {
+        const lastSeen = av.lastSeenLabel || (isMatch ? '💘 Match' : (av.online ? 'Online agora' : 'Visto recentemente'));
         return `
-            <div class="p-3.5 rounded-2xl bg-slate-900/80 border ${isMatch ? 'border-pink-500/30' : 'border-white/10'} flex items-center justify-between gap-2.5">
+            <div class="p-3 rounded-2xl bg-slate-900/80 border ${isMatch ? 'border-pink-500/30' : 'border-white/10'} flex items-center justify-between gap-2.5 hover:border-blue-500/30 transition">
                 <button type="button" class="btn-open-mini-profile flex items-center gap-2.5 overflow-hidden text-left group flex-1"
                         data-avatarid="${av.id}">
-                    <img src="${TFL.getAvatarThumb(av)}" class="w-10 h-10 rounded-xl object-cover flex-shrink-0">
+                    <div class="relative flex-shrink-0">
+                        <img src="${TFL.getAvatarThumb(av)}" class="w-10 h-10 rounded-xl object-cover">
+                        <span class="w-2.5 h-2.5 rounded-full ${av.online ? 'bg-emerald-400' : 'bg-zinc-500'} ring-2 ring-slate-950 absolute -bottom-0.5 -right-0.5"></span>
+                    </div>
                     <div class="overflow-hidden">
                         <div class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate">${TFL.escapeHtml(av.name)}</div>
-                        <div class="text-[10px] text-zinc-500">#${av.id} ${isMatch ? '• 💘 Match' : ''}</div>
+                        <div class="text-[10px] text-zinc-400 flex items-center gap-1">${lastSeen}</div>
                     </div>
                 </button>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 flex-shrink-0">
                     ${isMatch ? `
-                        <button type="button" class="btn-open-dm p-2 rounded-xl bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white text-xs transition"
+                        <button type="button" class="btn-open-dm px-2.5 py-1.5 rounded-xl bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white text-xs font-bold transition flex items-center gap-1"
                                 data-profileid="${av.id}" data-name="${TFL.escapeHtml(av.name)}" title="Conversar no Chat">
                             <i class="fa-solid fa-comment-dots"></i>
+                            <span class="text-[10px]">Chat</span>
                         </button>
                     ` : ''}
-                    <button type="button" class="btn-navigate-user-profile px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-blue-600 text-zinc-300 hover:text-white text-[11px] font-bold transition"
-                            data-avatarid="${av.id}">
-                        Ver Perfil
-                    </button>
                 </div>
             </div>
         `;
@@ -144,7 +145,7 @@
     TFL.buildRecursiveCommentHtml = function (c, depth) {
         const level = Number(depth || 0);
         const activeId = TFL.getActiveAvatarId();
-        const cAuthor = c.profile || { id: c.profileId, name: `Avatar #${c.profileId || ''}` };
+        const cAuthor = c.profile || { id: c.profileId, name: c.name || 'Viajante' };
         const isMyComment = Number(c.profileId) === activeId;
         const timeStr = c.createdAt ? new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -230,6 +231,7 @@
             'view-vip': '#view-vip',
             'view-cassino': '#view-cassino',
             'view-diary': '#view-diary',
+            'view-ads': '#view-ads',
             'view-friends': '#view-friends',
             'view-chat': '#view-chat'
         };
@@ -330,7 +332,79 @@
             renderPage(1);
         };
 
-        // 2. Navegação entre Views (Chat abre na Gaveta Flutuante WhatsApp sem sair da página atual)
+        // 2. Navegação entre Views & Sub-rotas por Ramo (/profile/:branch)
+        const VIEW_TO_BRANCH = {
+            'view-social': 'social',
+            'view-avatar': 'avatar',
+            'view-salas': 'salas',
+            'view-shop': 'shop',
+            'view-profile': 'account',
+            'view-market': 'market',
+            'view-vip': 'vip',
+            'view-cassino': 'cassino',
+            'view-diary': 'diary',
+            'view-friends': 'friends',
+            'view-ads': 'ads'
+        };
+
+        const BRANCH_TO_VIEW = {
+            'social': 'view-social',
+            'avatar': 'view-avatar',
+            'salas': 'view-salas',
+            'shop': 'view-shop',
+            'account': 'view-profile',
+            'market': 'view-market',
+            'vip': 'view-vip',
+            'cassino': 'view-cassino',
+            'diary': 'view-diary',
+            'friends': 'view-friends',
+            'ads': 'view-ads'
+        };
+
+        function activateBranchView(branchOrView, updateHistory = true) {
+            let targetView = branchOrView;
+            let branch = VIEW_TO_BRANCH[branchOrView] || branchOrView;
+            if (BRANCH_TO_VIEW[branchOrView]) {
+                targetView = BRANCH_TO_VIEW[branchOrView];
+                branch = branchOrView;
+            }
+
+            const $targetNav = $(`.nav-item[data-view="${targetView}"]`);
+            if ($targetNav.length) {
+                $('.nav-item').removeClass('bg-blue-600 text-white shadow-lg shadow-blue-600/30')
+                              .addClass('text-zinc-400 hover:text-white hover:bg-slate-800/60');
+                $targetNav.addClass('bg-blue-600 text-white shadow-lg shadow-blue-600/30')
+                          .removeClass('text-zinc-400 hover:text-white hover:bg-slate-800/60');
+            }
+
+            $('.view-panel, .view-section').addClass('hidden');
+            $('#' + targetView).removeClass('hidden');
+
+            if (targetView === 'view-social') {
+                if (typeof TFL.carregarFeed === 'function') TFL.carregarFeed();
+                if (typeof TFL.carregarMiniReels === 'function') TFL.carregarMiniReels();
+            } else if (targetView === 'view-shop') {
+                if (typeof window.showSubPage === 'function') window.showSubPage('ShopPage');
+                if (typeof TFL.loadShopAppData === 'function') TFL.loadShopAppData();
+            } else if (targetView === 'view-ads') {
+                if (window.TFLAds && typeof window.TFLAds.loadCampaigns === 'function') {
+                    window.TFLAds.loadCampaigns();
+                }
+            }
+
+            if (updateHistory && window.history && window.history.pushState) {
+                const targetUrl = '/profile/' + branch;
+                if (window.location.pathname !== targetUrl) {
+                    window.history.pushState({ branch, targetView }, '', targetUrl);
+                }
+            }
+
+            // Envia telemetria da sub-rota
+            $.post('/profile/telemetry/branch-view', { branch: branch }).fail(function () {});
+        }
+
+        TFL.activateBranchView = activateBranchView;
+
         $(document).on('click', '#navBtnChat', function (e) {
             e.preventDefault();
             if (typeof TFL.toggleFloatingChatWindow === 'function') {
@@ -349,18 +423,16 @@
                 return;
             }
 
-            $('.nav-item').removeClass('bg-blue-600 text-white shadow-lg shadow-blue-600/30')
-                          .addClass('text-zinc-400 hover:text-white hover:bg-slate-800/60');
-            $(this).addClass('bg-blue-600 text-white shadow-lg shadow-blue-600/30')
-                   .removeClass('text-zinc-400 hover:text-white hover:bg-slate-800/60');
+            activateBranchView(targetView, true);
+        });
 
-            $('.view-panel, .view-section').addClass('hidden');
-            $('#' + targetView).removeClass('hidden');
-
-            if (targetView === 'view-social') {
-                if (typeof TFL.carregarFeed === 'function') TFL.carregarFeed();
-                if (typeof TFL.carregarMiniReels === 'function') TFL.carregarMiniReels();
+        window.addEventListener('popstate', function () {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            let branch = 'social';
+            if (pathParts[0] === 'profile' && pathParts[1]) {
+                branch = pathParts[1];
             }
+            activateBranchView(branch, false);
         });
 
         // 3. Fechar Modais
@@ -415,6 +487,82 @@
                 window.location.href = `/profile/locale/${encodeURIComponent(lang)}`;
             });
         });
+
+        // 6. Salvar Dados Pessoais da Conta
+        $(document).on('click', '#btnSaveUserData', function (e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const payload = {
+                name: $('#usrName').val(),
+                email: $('#usrEmail').val(),
+                phone: $('#usrPhone').val()
+            };
+            $btn.prop('disabled', true).addClass('opacity-60');
+            $.post('/profile/account/update', payload, function (res) {
+                $btn.prop('disabled', false).removeClass('opacity-60');
+                if (res && res.success) {
+                    if (TFL.toast) TFL.toast.success(res.message || 'Dados da conta atualizados!', 'Conta');
+                } else {
+                    if (TFL.toast) TFL.toast.error(res?.error || 'Erro ao salvar dados.');
+                }
+            }).fail(function (xhr) {
+                $btn.prop('disabled', false).removeClass('opacity-60');
+                if (TFL.toast) TFL.toast.error(xhr.responseJSON?.error || 'Falha na comunicação.');
+            });
+        });
+
+        // 7. Salvar / Alterar PIN de Segurança da Carteira (4 Dígitos)
+        $(document).on('submit', '#formUserWalletPin', function (e) {
+            e.preventDefault();
+            const currentPin = $('#inputCurrentPin').val() || '';
+            const newPin = $('#inputNewWalletPin').val() || '';
+            const confirmPin = $('#inputConfirmWalletPin').val() || '';
+
+            if (!/^\d{4}$/.test(newPin)) {
+                if (TFL.toast) TFL.toast.error('O PIN deve conter exatamente 4 números.');
+                return;
+            }
+            if (newPin !== confirmPin) {
+                if (TFL.toast) TFL.toast.error('A confirmação do PIN não confere.');
+                return;
+            }
+
+            const $btn = $('#btnSaveWalletPin');
+            $btn.prop('disabled', true).addClass('opacity-60');
+            $.post('/profile/account/pin', { currentPin, newPin, confirmPin }, function (res) {
+                $btn.prop('disabled', false).removeClass('opacity-60');
+                if (res && res.success) {
+                    if (TFL.toast) TFL.toast.success(res.message || 'PIN configurado com sucesso!', 'PIN de Segurança');
+                    $('#inputCurrentPin').val('');
+                    $('#inputNewWalletPin').val('');
+                    $('#inputConfirmWalletPin').val('');
+                    if (typeof TFL.refreshPartial === 'function') {
+                        TFL.refreshPartial('view-account');
+                    }
+                } else {
+                    if (TFL.toast) TFL.toast.error(res?.error || 'Não foi possível configurar o PIN.');
+                }
+            }).fail(function (xhr) {
+                $btn.prop('disabled', false).removeClass('opacity-60');
+                if (TFL.toast) TFL.toast.error(xhr.responseJSON?.error || 'Erro ao processar PIN.');
+            });
+        });
+
+        // 8. Inicialização do ramo ativo via URL (/profile/:branch) ou TFL.config.activeTab
+        const initialBranch = (function () {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts[0] === 'profile' && pathParts[1] && BRANCH_TO_VIEW[pathParts[1]]) {
+                return pathParts[1];
+            }
+            if (TFL.config && TFL.config.activeTab && BRANCH_TO_VIEW[TFL.config.activeTab]) {
+                return TFL.config.activeTab;
+            }
+            return 'social';
+        })();
+
+        if (initialBranch && initialBranch !== 'social') {
+            activateBranchView(initialBranch, false);
+        }
     });
 
 })(window, jQuery);

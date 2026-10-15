@@ -16,6 +16,7 @@ module.exports = (sequelize) => {
     entryValue: { type: DataTypes.FLOAT, defaultValue: 0 },
     entryFeeCoins: { type: DataTypes.FLOAT, defaultValue: 0 },
     featuredUntil: { type: DataTypes.DATE, allowNull: true },
+    boostExpiresAt: { type: DataTypes.DATE, allowNull: true },
     thumbnail: { type: DataTypes.STRING, defaultValue: 0 },
     ownnerId: { type: DataTypes.INTEGER, defaultValue: 0 },
     layoutId: { type: DataTypes.INTEGER, defaultValue: 0 },

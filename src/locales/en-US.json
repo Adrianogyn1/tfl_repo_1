@@ -12,25 +12,34 @@
         "edit": "Edit",
         "delete": "Delete",
         "public": "Public",
-        "friendsOnly": "Friends",
+        "friendsOnly": "Friends Only",
         "private": "Private",
         "online": "Online",
         "offline": "Offline",
         "required": "Required field",
         "showPassword": "Show password",
         "hidePassword": "Hide password",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please provide a valid email",
+        "passwordRequired": "Password is required",
+        "passwordTooShort": "Password must be at least {{min}} characters",
+        "passwordTooWeak": "Password must contain letters and numbers",
+        "passwordMismatch": "Passwords do not match",
+        "tooManyAttempts": "Too many attempts. Try again in {{minutes}} minutes",
         "serverError": "Server error. Please try again later",
-        "unknownError": "Unknown error",
+        "unknownError": "Unknown error. Please try again later",
         "errors": {
-            "tokenInvalid": "Invalid link",
-            "tokenExpired": "Expired link",
+            "tokenInvalid": "This link is invalid",
+            "tokenExpired": "This link has expired. Request a new one",
             "invalidCredentials": "Invalid credentials",
-            "emailNotFound": "Account not found",
-            "unauthorized": "Unauthorized!"
+            "emailNotFound": "No account found with this email",
+            "unauthorized": "You do not have permission for this action!"
         },
         "success": "Success!"
     },
     "home": {
+        "seoTitle": "The Fantasy Life | 3D Virtual World, Social Network & Avatars",
+        "entrar": "Sign In",
         "nav": {
             "play": "Play",
             "explore": "Explore",
@@ -40,27 +49,140 @@
         },
         "hero": {
             "title": "Build your story. Experience the new.",
-            "subtitle": "In The Fantasy Life, freedom comes first. An open world for authentic connections."
+            "subtitle": "In The Fantasy Life, freedom comes first. An open world for authentic connections and self-expression."
         },
         "gallery": {
             "tag": "Gallery",
             "title": "Explore the World",
             "scroll": "Scroll sideways to see more →"
+        },
+        "vibe": {
+            "title": "Freedom without labels.",
+            "desc": "A space where digital meets comfort. Your experience and interactions shape the environment.",
+            "item1Title": "Dynamic Environment:",
+            "item1Desc": "Events created by the community, for the community.",
+            "item2Title": "Experience Everything:",
+            "item2Desc": "From complete relaxation to building empires, you decide.",
+            "cardTitle": "Come experience it",
+            "cardDesc": "Join the users shaping this new world. Secure your access.",
+            "cardButton": "Join our community"
+        },
+        "support": {
+            "tag": "Contribute",
+            "title": "Keep the Dream Alive",
+            "desc": "The Fantasy Life is an independent project. Any support helps maintain stable servers and continuous development.",
+            "coffeeTitle": "A Coffee",
+            "coffeeDesc": "Symbolic support for extra energy. Support us!"
+        },
+        "footer": {
+            "slogan": "Where your imagination takes digital shape.",
+            "rights": "All rights reserved.",
+            "contact": "Contact",
+            "reportBug": "Report Bug",
+            "suggestions": "Suggestions",
+            "tutorial": "Tutorial",
+            "version": "Release Notes"
+        },
+        "modal": {
+            "downloadTitle": "Download The Fantasy Life",
+            "donateTitle": "Support the Project",
+            "donateDesc": "Thank you for helping keep The Fantasy Life active!",
+            "pixKey": "Pix Key / Copy & Paste",
+            "pixImage": "Pix QR Code",
+            "copy": "Copy",
+            "copied": "Copied!"
         }
     },
     "login": {
         "title": "Sign in to your account",
         "subtitle": "Enter your credentials to access",
         "emailLabel": "Email",
+        "emailPlaceholder": "youremail@example.com",
         "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "rememberMe": "Remember me",
+        "forgotPassword": "Forgot password?",
         "submit": "Sign In",
+        "submitting": "Signing in...",
+        "noAccount": "Don't have an account?",
+        "signUp": "Create account",
         "errors": {
+            "alreadyLoggedIn": "User already logged in.",
             "invalidCredentials": "Invalid email or password"
         },
         "success": "Signed in successfully!"
     },
+    "register": {
+        "title": "Create your account",
+        "subtitle": "Fill in the details below to get started",
+        "nameLabel": "Full name",
+        "namePlaceholder": "Enter your full name",
+        "emailLabel": "Email",
+        "emailPlaceholder": "youremail@example.com",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Create a password",
+        "confirmPasswordLabel": "Confirm password",
+        "confirmPasswordPlaceholder": "Repeat your password",
+        "passwordHint": "Use at least {{min}} characters",
+        "terms": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>",
+        "submit": "Create account",
+        "submitting": "Creating account...",
+        "haveAccount": "Already have an account?",
+        "signIn": "Sign In",
+        "errors": {
+            "registered": "An account already exists with this email or username",
+            "ageRestriction": "You must be of legal age to create an account",
+            "loginRequired": "Username is required",
+            "nameRequired": "Name is required",
+            "nameTooShort": "Name must be at least {{min}} characters",
+            "emailAlreadyRegistered": "This email is already registered",
+            "termsRequired": "You must accept the terms of use"
+        },
+        "success": "Account created successfully!"
+    },
+    "forgotPassword": {
+        "title": "Forgot your password?",
+        "subtitle": "Enter your email and we will send a reset link",
+        "emailLabel": "Email",
+        "emailPlaceholder": "youremail@example.com",
+        "submit": "Send reset link",
+        "submitting": "Sending...",
+        "backToLogin": "Back to login",
+        "errors": {
+            "emailNotFound": "No account found with this email"
+        },
+        "success": "If this email is registered, a reset link will arrive shortly"
+    },
+    "resetPassword": {
+        "title": "Reset password",
+        "subtitle": "Create a new password for your account",
+        "newPasswordLabel": "New password",
+        "newPasswordPlaceholder": "Enter your new password",
+        "confirmPasswordLabel": "Confirm new password",
+        "confirmPasswordPlaceholder": "Repeat your new password",
+        "submit": "Reset password",
+        "submitting": "Resetting...",
+        "backToLogin": "Back to login",
+        "errors": {
+            "tokenInvalid": "This link is invalid",
+            "tokenExpired": "This link has expired. Request a new one"
+        },
+        "success": "Password reset successfully!"
+    },
+    "verifyEmail": {
+        "title": "Verify your email",
+        "subtitle": "We sent a confirmation link to {{email}}",
+        "resend": "Resend email",
+        "resendCooldown": "Resend in {{seconds}}s",
+        "success": "Email verified successfully!",
+        "errors": {
+            "tokenInvalid": "This confirmation link is invalid",
+            "tokenExpired": "This link has expired. Request a new email"
+        }
+    },
     "profile": {
-        "title": "TFL Portal",
+        "salas": "3D Rooms",
+        "title": "The Fantasy Life | Virtual Universe, Social Network & Avatars",
         "welcome": "Welcome, {{name}}",
         "nav": {
             "menu": "Menu",
@@ -74,7 +196,7 @@
             "stats": "Statistics",
             "tutorial": "Tutorial",
             "account": "Account",
-            "logout": "Logout",
+            "logout": "Log Out",
             "language": "Language"
         },
         "social": {
@@ -108,7 +230,7 @@
             "newAvatar": "New",
             "editAvatar": "Edit",
             "active": "Active",
-            "activate": "Select",
+            "activate": "Activate",
             "female": "Fem",
             "male": "Male"
         },
@@ -130,7 +252,7 @@
             "add": "Add"
         },
         "chat": {
-            "title": "Chats",
+            "title": "Conversations",
             "newGroup": "Group",
             "all": "All",
             "dms": "DMs",
@@ -153,11 +275,11 @@
             "sellCoins": "Sell Coins",
             "converter": "Converter",
             "orders": "My Orders",
-            "history": "Pix History"
+            "history": "Pix Statement"
         },
         "account": {
             "title": "Account",
-            "fullName": "Full Name",
+            "fullName": "Name",
             "login": "Username",
             "email": "Email",
             "phone": "Phone",
@@ -165,7 +287,7 @@
         },
         "stats": {
             "title": "Statistics & Performance",
-            "subtitle": "Real-time server, database, economy & Godot API telemetry",
+            "subtitle": "Real-time monitoring of server, database, economy and API",
             "serverHealth": "Server Performance",
             "latency": "DB Latency",
             "memory": "RAM Memory",
@@ -173,14 +295,156 @@
             "wsClients": "WS Connections",
             "tableTitle": "Platform Metrics Table",
             "category": "Module",
-            "metric": "Metric",
-            "value": "Value / Total",
+            "metric": "Indicator",
+            "value": "Total / Value",
             "status": "Status",
-            "apiReady": "Godot API v1 Ready"
+            "apiReady": "Godot API v1 Active"
         },
         "tutorial": {
             "title": "Official Guide & Tutorial",
-            "subtitle": "How the Web Portal + 3D Game (Godot Engine) ecosystem works"
+            "subtitle": "How the Web + 3D Game ecosystem works"
+        },
+        "careers": {
+            "title": "Careers & Achievement Badges",
+            "subtitle": "Evolve your avatar in the metaverse and unlock exclusive reputation badges",
+            "equipped": "Equipped Badge",
+            "equipAction": "Equip Badge",
+            "level": "Level {{level}}",
+            "xp": "{{current}} / {{next}} XP",
+            "explorer": "Dimensional Explorer",
+            "writer": "Diary Scribe",
+            "trader": "P2P Tycoon",
+            "socialite": "Social Star",
+            "host": "Grand Host"
+        },
+        "financialHealth": {
+            "title": "Platform Financial Health",
+            "subtitle": "Solvency audit, user Cash liabilities and operating expenses",
+            "cashLiabilities": "Total Cash Liabilities",
+            "liabilitiesBrl": "Liabilities in BRL",
+            "activeWallets": "Wallets with Balance",
+            "operationalExpenses": "Operating Expenses",
+            "paidExpenses": "Paid Expenses",
+            "pendingExpenses": "Pending Expenses",
+            "solvencyRatio": "Coverage / Solvency Ratio",
+            "addExpense": "Log Expense",
+            "category": "Category",
+            "amountBrl": "Amount (R$)",
+            "date": "Date",
+            "status": "Status"
+        },
+        "errors": {
+            "tokenInvalid": "This confirmation link is invalid",
+            "tokenExpired": "This link has expired. Request a new email"
         }
+    },
+    "feedback": {
+        "heroBadge": "Support Center & Community",
+        "heroTitle": "How can we help you?",
+        "heroSubtitle": "Send your question to the team, report issues for quick resolution, or suggest new ideas for the future of The Fantasy Life.",
+        "tabContact": "Contact",
+        "tabBug": "Report Bug",
+        "tabSuggestion": "Suggestions",
+        "contact": {
+            "pageTitle": "The Fantasy Life | Contact & Support",
+            "title": "Contact Message",
+            "desc": "General questions, account support, partnerships, and institutional inquiries.",
+            "nameLabel": "Your Name *",
+            "namePlaceholder": "E.g.: Alex Smith",
+            "emailLabel": "Your Email for Reply *",
+            "emailPlaceholder": "name@example.com",
+            "subjectLabel": "Subject *",
+            "subjectPlaceholder": "E.g.: Question about account recovery or access",
+            "messageLabel": "Message *",
+            "messagePlaceholder": "Write your detailed inquiry here...",
+            "dataSecurity": "Your data is protected and handled exclusively by our team.",
+            "submitBtn": "Send Message",
+            "submitting": "Sending..."
+        },
+        "bug": {
+            "pageTitle": "The Fantasy Life | Report an Issue or Bug",
+            "title": "Report an Issue or Bug",
+            "desc": "Help our team identify and fix visual glitches, loading issues, or unexpected errors.",
+            "titleLabel": "Short Issue Title *",
+            "titlePlaceholder": "E.g.: The invite button does not respond on click",
+            "categoryLabel": "Affected Area",
+            "severityLabel": "Impact / Severity",
+            "emailLabel": "Your Email (Optional for updates)",
+            "emailPlaceholder": "So we can notify you when it is resolved",
+            "descLabel": "What happened? (Detailed Description) *",
+            "descPlaceholder": "Explain what you were trying to do and what happened unexpectedly...",
+            "stepsLabel": "Steps to reproduce (Optional)",
+            "stepsPlaceholder": "1. Joined the room...\n2. Clicked invite friend...\n3. Screen froze...",
+            "expectedLabel": "What should have happened? (Optional)",
+            "expectedPlaceholder": "The invite should have been sent and the room loaded normally.",
+            "screenshotLabel": "Attach Screenshot (Optional)",
+            "screenshotPlaceholder": "Select an image (PNG, JPG, WEBP) up to 5MB",
+            "notice": "Logged directly into the team's technical triage queue.",
+            "submitBtn": "Submit Bug",
+            "submitting": "Submitting..."
+        },
+        "suggestion": {
+            "pageTitle": "The Fantasy Life | Community Suggestions & Voting",
+            "title": "Submit Suggestion or Idea",
+            "desc": "Have an innovative idea for new environments, social mechanics, minigames, or items? We want to hear from you!",
+            "titleLabel": "Idea Title *",
+            "titlePlaceholder": "E.g.: Custom rooms with shared ambient music",
+            "categoryLabel": "Category",
+            "descLabel": "Tell us about your suggestion *",
+            "descPlaceholder": "Describe your idea in detail, how it works and why players will love it...",
+            "benefitLabel": "What benefit does this bring to the community? (Optional)",
+            "benefitPlaceholder": "E.g.: Enhances social interaction and engagement between friends",
+            "emailLabel": "Your Email (Optional for feedback)",
+            "emailPlaceholder": "Your email in case we want to brainstorm",
+            "notice": "The best ideas are cataloged for upcoming platform milestones.",
+            "submitBtn": "Submit Suggestion",
+            "submitting": "Submitting..."
+        },
+        "voting": {
+            "title": "Community Voting Board",
+            "subtitle": "Ideas proposed by players. Vote and help decide the next features of The Fantasy Life!",
+            "filterAll": "All Categories",
+            "sortVotes": "Most Voted",
+            "sortRecent": "Most Recent",
+            "voteBtn": "Support this idea",
+            "votedBtn": "Supported",
+            "votesCount": "{{count}} votes",
+            "statusVoting": "In Voting",
+            "statusPlanned": "Planned",
+            "statusDone": "Implemented",
+            "empty": "No suggestions found at this moment. Be the first to submit an idea above!",
+            "votedSuccess": "Vote registered! Thank you for supporting this idea.",
+            "unvotedSuccess": "Vote removed.",
+            "communityHighlight": "Community Highlight"
+        },
+        "api": {
+            "contactSuccess": "Message sent successfully! We will get in touch shortly.",
+            "bugSuccess": "Bug report submitted successfully! Thank you for helping improve TFL.",
+            "suggestionSuccess": "Suggestion received successfully! Your idea will be analyzed by the team.",
+            "contactError": "Error submitting contact message.",
+            "bugError": "Error submitting bug report.",
+            "suggestionError": "Error submitting suggestion."
+        }
+    },
+    "changelog": {
+        "pageTitle": "The Fantasy Life | System Release Notes",
+        "heroBadge": "Platform Transparency & Evolution",
+        "heroTitle": "System Release Notes",
+        "heroSubtitle": "Follow every update, stability enhancement, and the status of features under development in The Fantasy Life.",
+        "currentVersionBadge": "Current Stable Version",
+        "publishedOn": "Published on",
+        "whatsNewTitle": "What's New",
+        "whatsNewDesc": "New features and experiences delivered in this release.",
+        "fixesTitle": "What Was Fixed",
+        "fixesDesc": "Stability, smoothness, and resolutions for reported behaviors.",
+        "bugsTitle": "Known Issues & Under Investigation",
+        "bugsDesc": "Identified issues that are currently in the resolution process.",
+        "reportOtherBug": "Report Another Issue",
+        "historyTitle": "Previous Updates History",
+        "communityCtaTitle": "Build The Fantasy Life With Us",
+        "communityCtaDesc": "Your feedback is essential to polish the 3D environment, social network, and game economy.",
+        "contactBtn": "Contact Us",
+        "reportBugBtn": "Report Bug",
+        "suggestionBtn": "Submit Suggestion"
     }
 }

@@ -351,7 +351,7 @@ class BotAgent {
       const roomUpd = await this.api.post("/api/v1/game/room/update", {
         roomId: this.roomId,
         name: `Lounge VIP de ${this.displayName}`,
-        description: `Sala 3D atualizada via API por ${this.displayName} (${new Date().toLocaleTimeString()})`,
+        description: `Espaço acolhedor de ${this.displayName} para reunir amigos, relaxar e curtir boa conversa!`,
         maxPlayers: randInt(30, 80),
         isPrivate: false,
       });

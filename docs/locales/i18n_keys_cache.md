@@ -1,0 +1,413 @@
+# Cache de Chaves de Internacionalização (i18n Keys Cache)
+
+> **Regra de Ouro**: Em qualquer saída de texto voltada ao usuário, SEMPRE forneça o texto padrão no 3º argumento como fallback (`<%= t('endpoint.key', {}, 'Texto Padrão') %>` ou `req.translate('endpoint.key', {}, 'Texto Padrão')`). Se a chave não existir ou o idioma não tiver tradução cadastrada, o fallback entra em ação automaticamente sem quebrar a interface.
+
+## Padrão Obrigatório
+```text
+- endpoint
+-- endpoint.key
+```
+
+---
+
+### - common
+-- common.home
+-- common.cancel
+-- common.close
+-- common.back
+-- common.save
+-- common.saved
+-- common.search
+-- common.refresh
+-- common.create
+-- common.edit
+-- common.delete
+-- common.public
+-- common.friendsOnly
+-- common.private
+-- common.online
+-- common.offline
+-- common.required
+-- common.showPassword
+-- common.hidePassword
+-- common.emailRequired
+-- common.emailInvalid
+-- common.passwordRequired
+-- common.passwordTooShort
+-- common.passwordTooWeak
+-- common.passwordMismatch
+-- common.tooManyAttempts
+-- common.serverError
+-- common.unknownError
+-- common.errors.tokenInvalid
+-- common.errors.tokenExpired
+-- common.errors.invalidCredentials
+-- common.errors.emailNotFound
+-- common.errors.unauthorized
+-- common.success
+
+---
+
+### - home
+-- home.seoTitle
+-- home.entrar
+-- home.nav.play
+-- home.nav.explore
+-- home.nav.support
+-- home.nav.tutorial
+-- home.nav.login
+-- home.hero.title
+-- home.hero.subtitle
+-- home.gallery.tag
+-- home.gallery.title
+-- home.gallery.scroll
+-- home.vibe.title
+-- home.vibe.desc
+-- home.vibe.item1Title
+-- home.vibe.item1Desc
+-- home.vibe.item2Title
+-- home.vibe.item2Desc
+-- home.vibe.cardTitle
+-- home.vibe.cardDesc
+-- home.vibe.cardButton
+-- home.support.tag
+-- home.support.title
+-- home.support.desc
+-- home.support.coffeeTitle
+-- home.support.coffeeDesc
+-- home.footer.slogan
+-- home.footer.rights
+-- home.footer.contact
+-- home.footer.reportBug
+-- home.footer.suggestions
+-- home.footer.tutorial
+-- home.footer.version
+-- home.modal.downloadTitle
+-- home.modal.donateTitle
+-- home.modal.donateDesc
+-- home.modal.pixKey
+-- home.modal.pixImage
+-- home.modal.copy
+-- home.modal.copied
+
+---
+
+### - login
+-- login.title
+-- login.subtitle
+-- login.emailLabel
+-- login.emailPlaceholder
+-- login.passwordLabel
+-- login.passwordPlaceholder
+-- login.rememberMe
+-- login.forgotPassword
+-- login.submit
+-- login.submitting
+-- login.noAccount
+-- login.signUp
+-- login.errors.alreadyLoggedIn
+-- login.errors.invalidCredentials
+-- login.success
+
+---
+
+### - register
+-- register.title
+-- register.subtitle
+-- register.nameLabel
+-- register.namePlaceholder
+-- register.emailLabel
+-- register.emailPlaceholder
+-- register.passwordLabel
+-- register.passwordPlaceholder
+-- register.confirmPasswordLabel
+-- register.confirmPasswordPlaceholder
+-- register.passwordHint
+-- register.terms
+-- register.submit
+-- register.submitting
+-- register.haveAccount
+-- register.signIn
+-- register.errors.registered
+-- register.errors.ageRestriction
+-- register.errors.loginRequired
+-- register.errors.nameRequired
+-- register.errors.nameTooShort
+-- register.errors.emailAlreadyRegistered
+-- register.errors.termsRequired
+-- register.success
+
+---
+
+### - forgotPassword
+-- forgotPassword.title
+-- forgotPassword.subtitle
+-- forgotPassword.emailLabel
+-- forgotPassword.emailPlaceholder
+-- forgotPassword.submit
+-- forgotPassword.submitting
+-- forgotPassword.backToLogin
+-- forgotPassword.errors.emailNotFound
+-- forgotPassword.success
+
+---
+
+### - resetPassword
+-- resetPassword.title
+-- resetPassword.subtitle
+-- resetPassword.newPasswordLabel
+-- resetPassword.newPasswordPlaceholder
+-- resetPassword.confirmPasswordLabel
+-- resetPassword.confirmPasswordPlaceholder
+-- resetPassword.submit
+-- resetPassword.submitting
+-- resetPassword.backToLogin
+-- resetPassword.errors.tokenInvalid
+-- resetPassword.errors.tokenExpired
+-- resetPassword.success
+
+---
+
+### - verifyEmail
+-- verifyEmail.title
+-- verifyEmail.subtitle
+-- verifyEmail.resend
+-- verifyEmail.resendCooldown
+-- verifyEmail.success
+-- verifyEmail.errors.tokenInvalid
+-- verifyEmail.errors.tokenExpired
+
+---
+
+### - profile
+-- profile.title
+-- profile.welcome
+-- profile.salas
+-- profile.nav.menu
+-- profile.nav.social
+-- profile.nav.avatars
+-- profile.nav.shop
+-- profile.nav.rooms
+-- profile.nav.friends
+-- profile.nav.chat
+-- profile.nav.wallet
+-- profile.nav.stats
+-- profile.nav.tutorial
+-- profile.nav.account
+-- profile.nav.logout
+-- profile.nav.language
+-- profile.social.reels
+-- profile.social.feeling6h
+-- profile.social.reel24h
+-- profile.social.postTitlePlaceholder
+-- profile.social.postTextPlaceholder
+-- profile.social.photo
+-- profile.social.room
+-- profile.social.myProfile
+-- profile.social.publish
+-- profile.social.explore
+-- profile.social.friends
+-- profile.social.mine
+-- profile.social.gallery
+-- profile.social.addPhoto
+-- profile.social.allPhotos
+-- profile.social.myPhotos
+-- profile.social.peopleAndMatch
+-- profile.social.posts
+-- profile.social.photos
+-- profile.social.followers
+-- profile.social.rooms
+-- profile.social.likes
+-- profile.social.matches
+-- profile.social.editCover
+-- profile.avatars.title
+-- profile.avatars.newAvatar
+-- profile.avatars.editAvatar
+-- profile.avatars.active
+-- profile.avatars.activate
+-- profile.avatars.female
+-- profile.avatars.male
+-- profile.rooms.title
+-- profile.rooms.newRoom
+-- profile.rooms.capacity
+-- profile.rooms.inspect
+-- profile.rooms.empty
+-- profile.friends.title
+-- profile.friends.pending
+-- profile.friends.sent
+-- profile.friends.suggestions
+-- profile.friends.searchPlaceholder
+-- profile.friends.accept
+-- profile.friends.chat
+-- profile.friends.add
+-- profile.chat.title
+-- profile.chat.newGroup
+-- profile.chat.all
+-- profile.chat.dms
+-- profile.chat.groups
+-- profile.chat.global
+-- profile.chat.participants
+-- profile.chat.typeMessage
+-- profile.chat.send
+-- profile.market.title
+-- profile.market.rules
+-- profile.market.buyPix
+-- profile.market.withdrawPix
+-- profile.market.poolCoins
+-- profile.market.activeOrders
+-- profile.market.myCash
+-- profile.market.myCoins
+-- profile.market.buyCoins
+-- profile.market.sellCoins
+-- profile.market.converter
+-- profile.market.orders
+-- profile.market.history
+-- profile.account.title
+-- profile.account.fullName
+-- profile.account.login
+-- profile.account.email
+-- profile.account.phone
+-- profile.account.save
+-- profile.stats.title
+-- profile.stats.subtitle
+-- profile.stats.serverHealth
+-- profile.stats.latency
+-- profile.stats.memory
+-- profile.stats.uptime
+-- profile.stats.wsClients
+-- profile.stats.tableTitle
+-- profile.stats.category
+-- profile.stats.metric
+-- profile.stats.value
+-- profile.stats.status
+-- profile.stats.apiReady
+-- profile.tutorial.title
+-- profile.tutorial.subtitle
+-- profile.careers.title
+-- profile.careers.subtitle
+-- profile.careers.equipped
+-- profile.careers.equipAction
+-- profile.careers.level
+-- profile.careers.xp
+-- profile.careers.explorer
+-- profile.careers.writer
+-- profile.careers.trader
+-- profile.careers.socialite
+-- profile.careers.host
+-- profile.financialHealth.title
+-- profile.financialHealth.subtitle
+-- profile.financialHealth.cashLiabilities
+-- profile.financialHealth.liabilitiesBrl
+-- profile.financialHealth.activeWallets
+-- profile.financialHealth.operationalExpenses
+-- profile.financialHealth.paidExpenses
+-- profile.financialHealth.pendingExpenses
+-- profile.financialHealth.solvencyRatio
+-- profile.financialHealth.addExpense
+-- profile.financialHealth.category
+-- profile.financialHealth.amountBrl
+-- profile.financialHealth.date
+-- profile.financialHealth.status
+
+---
+
+### - feedback
+-- feedback.heroBadge
+-- feedback.heroTitle
+-- feedback.heroSubtitle
+-- feedback.tabContact
+-- feedback.tabBug
+-- feedback.tabSuggestion
+-- feedback.contact.pageTitle
+-- feedback.contact.title
+-- feedback.contact.desc
+-- feedback.contact.nameLabel
+-- feedback.contact.namePlaceholder
+-- feedback.contact.emailLabel
+-- feedback.contact.emailPlaceholder
+-- feedback.contact.subjectLabel
+-- feedback.contact.subjectPlaceholder
+-- feedback.contact.messageLabel
+-- feedback.contact.messagePlaceholder
+-- feedback.contact.dataSecurity
+-- feedback.contact.submitBtn
+-- feedback.contact.submitting
+-- feedback.bug.pageTitle
+-- feedback.bug.title
+-- feedback.bug.desc
+-- feedback.bug.titleLabel
+-- feedback.bug.titlePlaceholder
+-- feedback.bug.categoryLabel
+-- feedback.bug.severityLabel
+-- feedback.bug.emailLabel
+-- feedback.bug.emailPlaceholder
+-- feedback.bug.descLabel
+-- feedback.bug.descPlaceholder
+-- feedback.bug.stepsLabel
+-- feedback.bug.stepsPlaceholder
+-- feedback.bug.expectedLabel
+-- feedback.bug.expectedPlaceholder
+-- feedback.bug.screenshotLabel
+-- feedback.bug.screenshotPlaceholder
+-- feedback.bug.notice
+-- feedback.bug.submitBtn
+-- feedback.bug.submitting
+-- feedback.suggestion.pageTitle
+-- feedback.suggestion.title
+-- feedback.suggestion.desc
+-- feedback.suggestion.titleLabel
+-- feedback.suggestion.titlePlaceholder
+-- feedback.suggestion.categoryLabel
+-- feedback.suggestion.descLabel
+-- feedback.suggestion.descPlaceholder
+-- feedback.suggestion.benefitLabel
+-- feedback.suggestion.benefitPlaceholder
+-- feedback.suggestion.emailLabel
+-- feedback.suggestion.emailPlaceholder
+-- feedback.suggestion.notice
+-- feedback.suggestion.submitBtn
+-- feedback.suggestion.submitting
+-- feedback.voting.title
+-- feedback.voting.subtitle
+-- feedback.voting.filterAll
+-- feedback.voting.sortVotes
+-- feedback.voting.sortRecent
+-- feedback.voting.voteBtn
+-- feedback.voting.votedBtn
+-- feedback.voting.votesCount
+-- feedback.voting.statusVoting
+-- feedback.voting.statusPlanned
+-- feedback.voting.statusDone
+-- feedback.voting.empty
+-- feedback.voting.votedSuccess
+-- feedback.voting.unvotedSuccess
+-- feedback.voting.communityHighlight
+-- feedback.api.contactSuccess
+-- feedback.api.bugSuccess
+-- feedback.api.suggestionSuccess
+-- feedback.api.contactError
+-- feedback.api.bugError
+-- feedback.api.suggestionError
+
+---
+
+### - changelog
+-- changelog.pageTitle
+-- changelog.heroBadge
+-- changelog.heroTitle
+-- changelog.heroSubtitle
+-- changelog.currentVersionBadge
+-- changelog.publishedOn
+-- changelog.whatsNewTitle
+-- changelog.whatsNewDesc
+-- changelog.fixesTitle
+-- changelog.fixesDesc
+-- changelog.bugsTitle
+-- changelog.bugsDesc
+-- changelog.reportOtherBug
+-- changelog.historyTitle
+-- changelog.communityCtaTitle
+-- changelog.communityCtaDesc
+-- changelog.contactBtn
+-- changelog.reportBugBtn
+-- changelog.suggestionBtn

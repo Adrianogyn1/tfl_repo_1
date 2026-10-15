@@ -282,11 +282,14 @@
             const btn = $('#btnSubmitWithdraw');
             btn.prop('disabled', true).text('Processando Saque...');
 
+            const pin = $('#inputWithdrawWalletPin').val() || '';
+
             $.post('/profile/market/withdraw', {
                 avatarId: avatarId,
                 cashAmount: cashAmount,
                 pixKey: pixKey,
-                pixKeyType: pixKeyType
+                pixKeyType: pixKeyType,
+                pin: pin
             }, function (res) {
                 if (res.success) {
                     const msg = res.isAutoApproved
@@ -370,17 +373,24 @@
                 $('#alertConvertPenalty').addClass('hidden');
             } else if (mode === 'COINS_TO_CHIPS') {
                 const chips = amount * RATE_CHIPS_PER_COIN;
+                const maxAllowed = Math.floor(WALLET_COINS * 0.80);
                 $('#labelConvertInputTitle').text('Valor para Converter (Coins)');
                 $('#labelConvertFromUnit').text('Coins 🪙');
-                $('#labelConvertFeeInfo').text('0% (Sem perda)').removeClass('text-red-400').addClass('text-emerald-400');
-                $('#labelConvertReceivePreview').text(`${chips.toFixed(0)} Chips 🎰`);
+                $('#labelConvertFeeInfo').text('0% (Anti-All-in Máx 80%)').removeClass('text-red-400').addClass('text-emerald-400');
+                if (WALLET_COINS > 1 && amount > maxAllowed) {
+                    $('#labelConvertReceivePreview').text(`Excede máx de 80% (${maxAllowed} Coins)`).removeClass('text-blue-400').addClass('text-red-400 font-bold');
+                } else {
+                    $('#labelConvertReceivePreview').text(`${chips.toFixed(0)} Chips 🎰`).removeClass('text-red-400').addClass('text-blue-400');
+                }
+                $('#alertAntiAllIn').removeClass('hidden');
                 $('#alertConvertPenalty').addClass('hidden');
             } else if (mode === 'CHIPS_TO_COINS') {
                 const coins = amount / RATE_CHIPS_PER_COIN;
                 $('#labelConvertInputTitle').text('Valor para Converter (Chips)');
                 $('#labelConvertFromUnit').text('Chips 🎰');
                 $('#labelConvertFeeInfo').text('0% (Sem perda)').removeClass('text-red-400').addClass('text-emerald-400');
-                $('#labelConvertReceivePreview').text(`${coins.toFixed(2)} Coins 🪙`);
+                $('#labelConvertReceivePreview').text(`${coins.toFixed(2)} Coins 🪙`).removeClass('text-red-400').addClass('text-blue-400');
+                $('#alertAntiAllIn').addClass('hidden');
                 $('#alertConvertPenalty').addClass('hidden');
             } else if (mode === 'COINS_TO_CASH') {
                 const grossCash = amount / RATE_COINS_PER_CASH;
@@ -389,7 +399,8 @@
                 $('#labelConvertInputTitle').text('Valor para Converter (Coins)');
                 $('#labelConvertFromUnit').text('Coins 🪙');
                 $('#labelConvertFeeInfo').text(`-${INSTANT_COINS_TO_CASH_FEE_PCT}% (-$${feeCash.toFixed(4)} Cash)`).removeClass('text-emerald-400').addClass('text-red-400');
-                $('#labelConvertReceivePreview').text(`$${netCash.toFixed(4)} Cash 💵`);
+                $('#labelConvertReceivePreview').text(`$${netCash.toFixed(4)} Cash 💵`).removeClass('text-red-400').addClass('text-blue-400');
+                $('#alertAntiAllIn').addClass('hidden');
                 $('#alertConvertPenalty').removeClass('hidden');
             }
         }
@@ -417,7 +428,11 @@
             const mode = $('#selectedConvertMode').val();
             if (mode === 'CASH_TO_COINS') {
                 $('#inputConvertAmount').val(WALLET_CASH.toFixed(2));
-            } else if (mode === 'COINS_TO_CHIPS' || mode === 'COINS_TO_CASH') {
+            } else if (mode === 'COINS_TO_CHIPS') {
+                // Anti-All-in: Máximo de 80% do saldo de Coins
+                const max80 = Math.floor(WALLET_COINS * 0.80);
+                $('#inputConvertAmount').val(max80);
+            } else if (mode === 'COINS_TO_CASH') {
                 $('#inputConvertAmount').val(Math.floor(WALLET_COINS));
             } else if (mode === 'CHIPS_TO_COINS') {
                 $('#inputConvertAmount').val(Math.floor(WALLET_CHIPS));
@@ -434,6 +449,13 @@
                 return TFL.toast.warning('Informe uma quantidade válida para converter.');
             }
 
+            if (direction === 'COINS_TO_CHIPS') {
+                const maxAllowed = Math.floor(WALLET_COINS * 0.80);
+                if (WALLET_COINS > 1 && amount > maxAllowed) {
+                    return TFL.toast.warning(`Jogo Responsável (Anti-All-in): limite máximo de 80% (${maxAllowed} Coins) por conversão em Chips.`);
+                }
+            }
+
             if (direction === 'COINS_TO_CASH') {
                 const confirmed = await TFL.confirm({
                     title: `Taxa de Conversão Direta (-${INSTANT_COINS_TO_CASH_FEE_PCT}%)`,
@@ -447,10 +469,13 @@
             const btn = $(this);
             btn.prop('disabled', true).text('Convertendo...');
 
+            const pin = $('#inputConvertWalletPin').val() || '';
+
             $.post('/profile/market/convert', {
                 avatarId: avatarId,
                 direction: direction,
-                amount: amount
+                amount: amount,
+                pin: pin
             }, function (res) {
                 if (res.success) {
                     TFL.reloadWithToast(
@@ -536,11 +561,14 @@
             const $btn = $(this);
             $btn.prop('disabled', true).text('Enviando...');
 
+            const pin = String($('#inputTransferWalletPin').val() || '').trim();
+
             $.post('/profile/market/transfer-coins', {
                 avatarId,
                 recipient,
                 amountCoins,
-                note
+                note,
+                pin
             }, function (res) {
                 $btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Confirmar Transferência');
                 if (res && res.success) {
@@ -548,6 +576,7 @@
                     $('#inputTransferRecipient').val('');
                     $('#inputTransferCoinsAmount').val('').trigger('input');
                     $('#inputTransferNote').val('');
+                    $('#inputTransferWalletPin').val('');
                     $('.wallet-submodal').addClass('hidden');
                     if (typeof TFL.refreshPartial === 'function') {
                         TFL.refreshPartial('view-market');
@@ -749,8 +778,11 @@
 
             const planNames = {
                 '1_WEEK': 'VIP 1 Semana (7 dias)',
+                '1_week': 'VIP 1 Semana (7 dias)',
                 '1_MONTH': 'VIP 1 Mês (30 dias)',
-                '3_MONTHS': 'VIP 3 Meses (90 dias)'
+                '1_month': 'VIP 1 Mês (30 dias)',
+                '3_MONTHS': 'VIP 3 Meses (90 dias)',
+                '3_months': 'VIP 3 Meses (90 dias)'
             };
 
             const confirmed = await TFL.confirm({
@@ -796,24 +828,93 @@
             });
         });
 
-        // 16. Módulo de Cassino TFL (Golden Tiger Slots 3x3, Roleta e Dados em Chips)
-        $(document).on('click', '.btn-casino-tab', function () {
-            const game = $(this).data('game');
-            $('.btn-casino-tab')
-                .removeClass('bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20')
-                .addClass('bg-slate-800 text-zinc-300');
-            $(this)
-                .removeClass('bg-slate-800 text-zinc-300')
-                .addClass('bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20');
+        // 16. Módulo de Cassino TFL (Lobby Inicial, Sublayouts Temáticos & Contrato de Sessão)
+        const casinoSessionContract = {
+            active: false,
+            totalChips: 0,
+            remainingChips: 0
+        };
+
+        function updateCasinoContractUI() {
+            if (casinoSessionContract.active && casinoSessionContract.remainingChips > 0) {
+                $('#lblCasinoContractStatus').html(
+                    `<span class="text-emerald-400 font-bold">${casinoSessionContract.remainingChips} / ${casinoSessionContract.totalChips} Chips</span>`
+                );
+                $('#casinoContractWarningBanner').addClass('hidden');
+                $('#btnOpenCasinoContractModal').text('Renovar').removeClass('bg-purple-600').addClass('bg-slate-800 text-zinc-300');
+            } else {
+                casinoSessionContract.active = false;
+                $('#lblCasinoContractStatus').html('<span class="text-amber-400 font-bold">Sem contrato ativo</span>');
+                $('#lblCasinoContractWarningText').text('Contrato de sessão esgotado ou inativo. Assine com seu PIN para autorizar as rodadas.');
+                $('#casinoContractWarningBanner').removeClass('hidden');
+                $('#btnOpenCasinoContractModal').text('Definir com PIN').removeClass('bg-slate-800 text-zinc-300').addClass('bg-purple-600 text-white');
+            }
+        }
+
+        function checkCasinoContractOrPrompt(betChips) {
+            if (!casinoSessionContract.active || casinoSessionContract.remainingChips < betChips) {
+                TFL.toast.warning('Limite do contrato de sessão atingido! Defina um novo contrato com PIN para prosseguir.', 'Jogo Responsável');
+                $('#modalCasinoSessionContract').removeClass('hidden').addClass('flex');
+                return false;
+            }
+            return true;
+        }
+
+        // Navegação entre Lobby e Sublayouts Temáticos
+        $(document).on('click', '.btn-enter-casino-sublayout', function () {
+            const target = $(this).data('target');
+            $('#casinoLobbyHub').addClass('hidden');
+            $('#casinoSublayoutContainer').removeClass('hidden');
 
             $('.casino-game-panel').addClass('hidden');
-            if (game === 'roulette') {
+            if (target === 'roulette') {
                 $('#casinoGameRoulette').removeClass('hidden');
-            } else if (game === 'dice') {
+                $('#casinoActiveGameTitle').text('🎡 Roleta Real TFL (Monte Carlo)');
+            } else if (target === 'dice') {
                 $('#casinoGameDice').removeClass('hidden');
+                $('#casinoActiveGameTitle').text('🎲 Dados da Fortuna (2D6 Cyber)');
             } else {
                 $('#casinoGameSlots').removeClass('hidden');
+                $('#casinoActiveGameTitle').text('🐯 Golden Tiger Slots 3x3');
             }
+            updateCasinoContractUI();
+            window.scrollTo({ top: document.getElementById('view-cassino').offsetTop - 30, behavior: 'smooth' });
+        });
+
+        $(document).on('click', '#btnBackToCasinoLobby', function () {
+            $('#casinoSublayoutContainer').addClass('hidden');
+            $('#casinoLobbyHub').removeClass('hidden');
+        });
+
+        // Contrato de Sessão: Modal & Presets
+        $(document).on('click', '#btnOpenCasinoContractModal', function () {
+            $('#modalCasinoSessionContract').removeClass('hidden').addClass('flex');
+        });
+
+        $(document).on('click', '.btn-contract-preset-chips', function () {
+            const val = $(this).data('chips');
+            $('.btn-contract-preset-chips').removeClass('bg-purple-600/30 border-purple-500 text-purple-200').addClass('bg-slate-950 border-white/10 text-white');
+            $(this).removeClass('bg-slate-950 border-white/10 text-white').addClass('bg-purple-600/30 border-purple-500 text-purple-200');
+            $('#inputContractChipsAmount').val(val);
+        });
+
+        $(document).on('submit', '#formCasinoSessionContract', function (e) {
+            e.preventDefault();
+            const amount = Math.max(10, parseInt($('#inputContractChipsAmount').val(), 10) || 100);
+            const pin = String($('#inputContractWalletPin').val() || '').trim();
+
+            if (amount <= 0) {
+                return TFL.toast.warning('Informe uma quantidade de fichas válida para a sessão.');
+            }
+
+            casinoSessionContract.active = true;
+            casinoSessionContract.totalChips = amount;
+            casinoSessionContract.remainingChips = amount;
+
+            $('#modalCasinoSessionContract').addClass('hidden').removeClass('flex');
+            $('#inputContractWalletPin').val('');
+            updateCasinoContractUI();
+            TFL.toast.success(`Contrato assinado! Você liberou ${amount} Fichas para esta sessão de jogo responsável.`, 'Contrato de Sessão');
         });
 
         $(document).on('click', '.btn-casino-bet-preset', function () {
@@ -875,6 +976,8 @@
         // Jogar Golden Tiger Slots 3x3
         $(document).on('click', '#btnSpinSlots', function () {
             const betChips = Math.floor(Number($('#inputCasinoBetChips').val() || 10));
+            if (!checkCasinoContractOrPrompt(betChips)) return;
+
             const avatarId = TFL.getActiveAvatarId();
             const $btn = $(this);
             $btn.prop('disabled', true).text('🎰 GIRANDO...');
@@ -894,6 +997,9 @@
                 clearInterval(animInterval);
                 $btn.prop('disabled', false).text('🎰 GIRAR AGORA');
                 if (res && res.success) {
+                    casinoSessionContract.remainingChips = Math.max(0, casinoSessionContract.remainingChips - betChips + Number(res.winChips || 0));
+                    updateCasinoContractUI();
+
                     const grid = res.outcome?.grid || [];
                     const flat = [...(grid[0] || []), ...(grid[1] || []), ...(grid[2] || [])];
                     $('#slotsGrid3x3 .slot-cell').each(function (idx) {
@@ -918,8 +1024,10 @@
 
         // Jogar Roleta Real
         $(document).on('click', '.btn-play-roulette', function () {
-            const choice = $(this).data('choice');
             const betChips = Math.floor(Number($('#inputCasinoBetChips').val() || 10));
+            if (!checkCasinoContractOrPrompt(betChips)) return;
+
+            const choice = $(this).data('choice');
             const avatarId = TFL.getActiveAvatarId();
             const $btns = $('.btn-play-roulette');
             $btns.prop('disabled', true);
@@ -932,6 +1040,9 @@
             }, function (res) {
                 $btns.prop('disabled', false);
                 if (res && res.success) {
+                    casinoSessionContract.remainingChips = Math.max(0, casinoSessionContract.remainingChips - betChips + Number(res.winChips || 0));
+                    updateCasinoContractUI();
+
                     const pocket = res.outcome?.pocket ?? 0;
                     $('#rouletteWheelStrip .roulette-num').removeClass('ring-4 ring-white scale-110');
                     $(`#rouletteWheelStrip .roulette-num[data-num="${pocket}"]`).addClass('ring-4 ring-white scale-110');
@@ -953,8 +1064,10 @@
 
         // Jogar Dados da Fortuna (2d6)
         $(document).on('click', '.btn-play-dice', function () {
-            const choice = $(this).data('choice');
             const betChips = Math.floor(Number($('#inputCasinoBetChips').val() || 10));
+            if (!checkCasinoContractOrPrompt(betChips)) return;
+
+            const choice = $(this).data('choice');
             const avatarId = TFL.getActiveAvatarId();
             const $btns = $('.btn-play-dice');
             $btns.prop('disabled', true);
@@ -967,6 +1080,9 @@
             }, function (res) {
                 $btns.prop('disabled', false);
                 if (res && res.success) {
+                    casinoSessionContract.remainingChips = Math.max(0, casinoSessionContract.remainingChips - betChips + Number(res.winChips || 0));
+                    updateCasinoContractUI();
+
                     $('#diceBox1').text(`🎲 ${res.outcome?.d1 || 1}`);
                     $('#diceBox2').text(`🎲 ${res.outcome?.d2 || 1}`);
                     $('#diceResultBanner')

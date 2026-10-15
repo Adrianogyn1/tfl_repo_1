@@ -1,0 +1,108 @@
+{
+  "currentVersion": "0.00042",
+  "baseDecimals": 5,
+  "releases": [
+    {
+      "version": "0.00042",
+      "releaseDate": "2026-10-14",
+      "gitCommit": "5e9e4b8",
+      "gitCommitCount": 42,
+      "rollbackTarget": "1d6e80a",
+      "title": "Módulo Mini Ads, Guias, Proximity Chat e Sub-Rotas por Ramo",
+      "summary": "Arquitetura completa de monetização e impulsionamento com revenue share de 50%, chat local 15m e desacoplamento de rotas de perfil.",
+      "whatsNew": [
+        "Modelos MiniAdCampaign e MiniAdImpression criados no Sequelize com foreign keys para Avatar",
+        "Serviço miniAds.service.js com debito atômico de Coins e validação de PIN de 4 dígitos (User.walletPin)",
+        "Revenue Share ético de 50% para criadores e micro-recompensa Pay-to-View (+0,05 Coins) com teto anti-fraude diário de 10 views",
+        "Endpoint POST /profile/creator/tip com notificação via user_notifications e registro no ledger contábil",
+        "Enum e modelo de Guias da Comunidade (Avatar.guideRole) com 5 especializações e paleta CSS estrita",
+        "Proximity Chat 3D: MessageType.Local no chat_controller.js e filtro no friends-chat.js",
+        "Desacoplamento de rotas: /profile/:branch com pushState no core.js e telemetria granular via POST /profile/telemetry/branch-view"
+      ],
+      "fixes": [
+        "Erradicação de jargões de backend ('pool', 'cache') em public/js/profile/social.js",
+        "Sincronização entre User.walletPin no PostgreSQL e req.session.user",
+        "Correção de ativação do selo VIP e cotas de compra para planos semanais em coinMarket.service.js",
+        "Higienização de IDs internos de avatares (#ID) em 100% das views públicas",
+        "Blindagem de metadados internos de Git/Rollback em APIs públicas"
+      ],
+      "knownIssues": [
+        "Implementação de spatial attenuation no motor de áudio WebRTC/WebSocket",
+        "Calibração de probabilidade de RTP em novos slots do cassino",
+        "Fila de processamento assíncrono para thumbnails UGC da Loja 3D"
+      ],
+      "technicalDetails": {
+        "modifiedFilesCount": 16,
+        "databaseMigrations": [
+          "MiniAdCampaign",
+          "MiniAdImpression",
+          "Avatar.guideRole",
+          "Avatar.creatorTipsCoinsTotal"
+        ],
+        "endpointsAdded": [
+          "GET /profile/ads/my",
+          "GET /profile/ads/active",
+          "POST /profile/ads/create",
+          "POST /profile/ads/qualified-view",
+          "POST /profile/creator/tip",
+          "POST /profile/telemetry/branch-view",
+          "GET /profile/:branch",
+          "GET /api/version",
+          "GET /api/changelog",
+          "GET /admin/api/changelog"
+        ]
+      }
+    },
+    {
+      "version": "0.00041",
+      "releaseDate": "2026-10-14",
+      "gitCommit": "1d6e80a",
+      "gitCommitCount": 41,
+      "rollbackTarget": "734edac",
+      "title": "Diário Afetivo em Caderno Artesanal e Lobby de Cassino Stake/Betano",
+      "summary": "Refatoração de UX do diário com washi tapes táteis e redesign do cassino com teatro de slots.",
+      "whatsNew": [
+        "View view-diary.ejs reestruturada sem caixas rígidas de formulário, com 5 texturas de papel e 4 fontes afetivas",
+        "Lobby view-cassino.ejs remodelado com grid de minigames, tickets de apostas e modo teatro",
+        "Validação desimpedida de PIN para novos usuários em profile_controller.js"
+      ],
+      "fixes": [
+        "Resolução de falha de cálculo no plano semanal VIP ($0.75 Cash)",
+        "Remoção de link redundante 'Ver Perfil' em cards do social.js"
+      ],
+      "knownIssues": [
+        "Integração do chat de perímetro local 3D em andamento"
+      ],
+      "technicalDetails": {
+        "modifiedFilesCount": 8,
+        "databaseMigrations": [],
+        "endpointsAdded": ["POST /profile/account/pin"]
+      }
+    },
+    {
+      "version": "0.00040",
+      "releaseDate": "2026-10-13",
+      "gitCommit": "734edac",
+      "gitCommitCount": 40,
+      "rollbackTarget": "77ce033",
+      "title": "Presença em Tempo Real e Sanitização de IDs Numéricos",
+      "summary": "Higienização de dados sensíveis nas interfaces públicas e proteção de presença.",
+      "whatsNew": [
+        "Função formatLastSeenString em profile_controller.js para presence tracking",
+        "Mapeamento de privacidade individual por seção do avatar"
+      ],
+      "fixes": [
+        "Eliminação de IDs de chave primária nas UIs públicas de viajantes, match e amigos",
+        "Correção de sintaxe e fechamento de handlers em core.js"
+      ],
+      "knownIssues": [
+        "Ajustes de responsividade mobile em tabelas de transação"
+      ],
+      "technicalDetails": {
+        "modifiedFilesCount": 12,
+        "databaseMigrations": ["Avatar.privacySettings"],
+        "endpointsAdded": []
+      }
+    }
+  ]
+}

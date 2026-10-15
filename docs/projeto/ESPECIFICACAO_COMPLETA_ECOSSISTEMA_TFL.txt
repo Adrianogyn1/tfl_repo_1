@@ -1,0 +1,2065 @@
+================================================================================
+                     THE FANTASY LIFE (TFL)
+       ESPECIFICAÇÃO COMPLETA E CANÔNICA DO ECOSSISTEMA VIRTUAL
+        DOCUMENTO EXAUSTIVO DE ENGENHARIA, DESIGN E ARQUITETURA
+================================================================================
+Arquivo: docs/projeto/ESPECIFICACAO_COMPLETA_ECOSSISTEMA_TFL.txt
+Versão do Ecossistema: 1.0.0-PROD
+Data de Compilação: 2026-10-14
+Classificação: Canônica / Fonte da Verdade do Sistema
+Finalidade: Especificação integral para auditoria cruzada por múltiplos modelos
+            de inteligência artificial (Claude, GPT, Grok, DeepSeek) e guia
+            definitivo de engenharia para o time de desenvolvimento.
+
+--------------------------------------------------------------------------------
+ÍNDICE SISTÊMICO DE CAPÍTULOS
+--------------------------------------------------------------------------------
+1.  VISÃO GERAL, FILOSOFIA E PROPÓSITO DO ECOSSISTEMA TFL
+2.  PÚBLICO-ALVO, PERSONAS DE USUÁRIO E JORNADAS DE EXPERIÊNCIA
+3.  GAME DESIGN, PSICOLOGIA DE JOGO E MECÂNICAS DE ROLEPLAY SOCIAL
+4.  PLANEJAMENTO DE UI/UX, DESIGN SYSTEM E ARQUITETURA MOBILE-FIRST
+5.  ESPECIFICAÇÃO EXAUSTIVA DE TODAS AS VIEWS, TELAS E MODAIS (EJS/HTML)
+6.  MODELAGEM DE DADOS, ENTIDADES SEQUELIZE E ESQUEMAS DE BANCO POSTGRESQL
+7.  CATÁLOGO COMPLETO DE CONTROLLERS, ROTAS E ENDPOINTS DA API REST v1
+8.  ARQUITETURA DE COMUNICAÇÃO EM TEMPO REAL, WEBSOCKETS E HUB DE SOCKETS
+9.  INTEGRAÇÃO COM A ENGINE 3D (GODOT / WEBGL / DESKTOP) E MANIFESTOS JSON
+10. ENGENHARIA ECONÔMICA, SISTEMA TRI-MOEDA, LIVRO-RAZÃO E REGRAS FISCAIS
+11. STACK TECNOLÓGICO ATUAL, DEPENDÊNCIAS E RECOMENDAÇÕES DE ESCALABILIDADE
+12. MATRIZ CANÔNICA DE GOVERNANÇA, RBAC E PREVENÇÃO DE ALUCINAÇÕES DE IA
+================================================================================
+
+================================================================================
+CAPÍTULO 1: VISÃO GERAL, FILOSOFIA E PROPÓSITO DO ECOSSISTEMA TFL
+================================================================================
+
+1.1 O QUE É O THE FANTASY LIFE (TFL)?
+O The Fantasy Life (TFL) é uma plataforma híbrida de simulação de vida virtual (Life Sim),
+rede social rica em mídia e metaverso 3D interativo descentralizado, construído com
+tecnologias web modernas (Node.js, Express, PostgreSQL, EJS, WebSockets) e integrado a uma
+engine de renderização tridimensional (Godot / WebGL).
+
+Diferente de redes sociais convencionais (focadas apenas em feeds bidimensionais) e de jogos
+MMORPG clássicos (focados em combate, quests mecânicas e nivelamento forçado de atributos),
+o TFL coloca a autoexpressão, a convivência social, o roleplay e a economia criativa no
+centro absoluto de todas as interações humanas digitais.
+
+1.2 A FILOSOFIA FUNDAMENTAL: A SIMULAÇÃO DA VIDA VIRTUAL (LIFE SIMULATION)
+No mundo real, um indivíduo não se resume a um número de conta bancária ou a um perfil estático.
+Um ser humano possui:
+- Uma identidade visual única, mutável através de roupas, cortes de cabelo e expressões.
+- Um espaço próprio (seu quarto, sua casa, seu refúgio), que decora para seu bem-estar
+  e onde recebe pessoas queridas.
+- Relacionamentos e afetos: amizades profundas, admiração, crushes silenciosos e vínculos.
+- Vocação e trabalho: o desejo de produzir algo com suas mãos ou ideias, gerando valor
+  para outros e construindo reputação.
+- Comércio e trocas: a necessidade de comprar o que outros produzem e vender criações próprias.
+- Emoção e desabafo: momentos íntimos de reflexão, diários pessoais, sentimentos passageiros
+  e a busca por lazer e diversão descompromissada.
+
+O TFL modela matematicamente e socialmente esses princípios fundamentais.
+
+1.3 A ESTRUTURA CANÔNICA EM 3 CAMADAS INVIOLÁVEIS
+A integridade do ecossistema é garantida pela separação rígida em 3 camadas de abstração:
+
+       ┌──────────────────────────────────────────────────────────────┐
+       │ 1. CAMADA MACRO: APP (O Universo / Infraestrutura Global)   │
+       └──────────────────────────────┬───────────────────────────────┘
+                                      │ 1 para N
+       ┌──────────────────────────────▼───────────────────────────────┐
+       │ 2. CAMADA JURÍDICA: USER (A Conta Real / Titularidade Pix)   │
+       └──────────────────────────────┬───────────────────────────────┘
+                                      │ 1 para N
+       ┌──────────────────────────────▼───────────────────────────────┐
+       │ 3. CAMADA VIVA: AVATAR (A Persona / O Centro Gravitacional)  │
+       └──────────────────────────────────────────────────────────────┘
+
+1.3.1 Papel da Camada APP:
+- Governa a infraestrutura de rede, os clusters de instâncias de salas 3D (servidores dedicados),
+- Monitora a saúde financeira da plataforma, o passivo de Cash dos jogadores e despesas operacionais.
+- Processa a telemetria anônima de acessos por região geográfica e gerencia a segurança do servidor.
+
+1.3.2 Papel da Camada USER:
+- Representa a pessoa física no mundo real.
+- É a detentora das credenciais de segurança primárias (e-mail, hash de senha bcrypt, 2FA, logs de login).
+- É o titular financeiro exclusivo perante o sistema bancário (Gateway Asaas / Pix).
+- REGRA DE ISOLAMENTO: O User NUNCA aparece publicamente no feed, em salas 3D ou no chat social.
+  Usuários reais não interagem entre si diretamente como 'Users'; interagem sempre via 'Avatares'.
+
+1.3.3 Papel da Camada AVATAR (O Centro de Gravidade):
+- Um único User pode criar e administrar múltiplos Avatares (personas distintas).
+- O Avatar é o titular de todas as ações de jogo e sociedade: saldos de moedas do dia a dia,
+  itens de vestuário equipados, salas virtuais criadas, amigos, seguidores, publicações e chat.
+
+1.4 OS 6 PILARES DE VIDA DO AVATAR
+Toda mecânica, rota ou tela no TFL deve se encaixar em exatamente um dos 6 Pilares:
+
+1. PILAR VISUAL & IDENTIDADE: Anatomia esquelética padronizada de 10 slots (cabelo, cabeça,
+   olhos, torso, pernas, calçados, corpo inteiro, acessórios, pele e emotes), sistema de morph
+   targets (blendshapes) faciais e corporais normalizados de 0.0 a 1.0, e presets de looks salvos.
+
+2. PILAR HABITAÇÃO & ESPAÇO: Salas 3D públicas ou privadas criadas pelos avatares, com capacidade
+   configurável, sistema de mobília e decoração com transformadas 3D (posição, rotação, escala),
+   mecanismo de boost 24h para visibilidade e ranking mensal com premiação aos melhores anfitriões.
+
+3. PILAR VÍNCULOS & AFETO: Laços sociais profundos. Distinção clara entre Amizade (mútua, com
+   privilégios de visitação e chat direto), Seguidores (unidirecional para criadores), Matchmaking
+   Silencioso (sistema de Crush Mútuo 💘 sem rejeição pública), e futuros clãs/famílias e pets.
+
+4. PILAR TRABALHO & CARREIRA: Trilhas de progressão ocupacional onde o avatar ganha experiência (XP)
+   e títulos prestigiosos por realizar ações comunitárias e produzir conteúdo:
+   - Explorador Dimensional (visitas a salas e mundos virtuais)
+   - Escriba do Diário (publicações e desabafos de valor)
+   - Magnata P2P (movimentação de comércio na bolsa)
+   - Estrela Social (engajamento, amizades e reações no feed)
+   - Grande Anfitrião (criação e gestão de salas movimentadas)
+
+5. PILAR COMÉRCIO & CONSUMO: O giro da moeda no jogo. Catálogo oficial do sistema (roupas base,
+   móveis), Lojas Próprias de avatares com royalties de 70% para o criador e 30% de taxa da
+   plataforma, Bolsa P2P FIFO para negociação transparente de moedas entre jogadores.
+
+6. PILAR LAZER & EXPRESSÃO: A válvula de escape emocional. Diário íntimo com controle estrito
+   de privacidade e medidor de humor, Sentimentos Efêmeros com TTL de 6 horas, Mini Reels com
+   TTL de 24 horas, e minigames de cassino recreativo (Roleta, Fantan, Baccarat, Slots Golden Tiger).
+
+================================================================================
+CAPÍTULO 2: PÚBLICO-ALVO, PERSONAS DE USUÁRIO E JORNADAS DE EXPERIÊNCIA
+================================================================================
+
+2.1 DEMOGRAFIA E AMBIENTES DE CONSUMO
+O TFL foi concebido para atender a um público conectado, dinâmico e multiplataforma:
+- Idade predominante: 16 a 35 anos (nativos digitais, entusiastas de jogos de simulação de vida,
+  jogadores de Second Life, IMVU, Habbo, The Sims, VRChat e redes como Instagram/TikTok).
+- Dispositivos principais: Smartphones modernos (Android e iOS, 360px a 480px de viewport),
+  tablets e computadores Desktop (resoluções 1080p e superiores).
+- Conexões de rede: Otimizado para funcionar com latência tolerável em redes móveis 4G/5G
+  e banda larga residencial, usando compressão gzip, payloads enxutos e assets 3D em GLB.
+
+2.2 OS QUATRO ARQUÉTIPOS CENTRAIS DE JOGADORES (PERSONAS)
+
+2.2.1 ARQUÉTIPO A: O ROLEPLAYER SOCIAL (O 'VIVENTE')
+- Motivação: Quer viver uma segunda vida digital, fazer novos amigos, encontrar um par romântico
+  ou simplesmente ter um lugar seguro para desabafar no final do dia.
+- Jornada diária típica:
+  1. Entra no site pelo celular pela manhã e atualiza seu Sentimento Efêmero (ex: 'Animado com café ☕').
+  2. Olha o feed social para ver o que os amigos postaram nas últimas horas e deixa reações.
+  3. Abre o Diário Pessoal para escrever sobre algo que está sentindo, definindo a visibilidade
+     para 'Somente Amigos'.
+  4. À noite, abre o chat flutuante estilo WhatsApp e marca de entrar na sala de um amigo para
+     conversar por texto ou voz espacial.
+
+2.2.2 ARQUÉTIPO B: O EMPREENDEDOR / CRIADOR UGC (USER GENERATED CONTENT)
+- Motivação: Quer criar roupas, abrir sua loja virtual própria, estipular preços e acumular Coins.
+- Jornada diária típica:
+  1. Publica novos itens de vestuário ou presets de estilo na sua Loja Virtual.
+  2. Monitora as vendas no extrato detalhado do Livro-Razão (`wallet_ledger`).
+  3. Vende parte do seu lucro de Coins na Bolsa P2P para converter em Cash.
+  4. Solicita Saque Pix para sua conta bancária real ao atingir o limite mínimo estipulado.
+
+2.2.3 ARQUÉTIPO C: O ANFITRIÃO / EVENT MAKER (DONO DE SALAS)
+- Motivação: Quer ter a sala mais visitada do TFL, promover festas virtuais, podcasts ou reuniões.
+- Jornada diária típica:
+  1. Edita o layout da sua sala 3D, reposicionando sofás, luzes e palcos.
+  2. Ativa o 'Boost 24h' pagando uma pequena taxa em Coins para fixar a sala no topo da listagem pública.
+  3. Recebe dezenas de visitantes únicos para bater a meta mensal de 1.000 visitas e ganhar o prêmio
+     de anfitrião do mês.
+
+2.2.4 ARQUÉTIPO D: O JOGADOR CASUAL / MINIGAMER
+- Motivação: Busca entretenimento rápido em intervalos de trabalho ou estudo.
+- Jornada diária típica:
+  1. Converte pequenas quantias de Coins em Chips.
+  2. Entra nas mesas de Roleta, Bacboo ou nas rodadas do Golden Tiger no cassino recreativo.
+  3. Utiliza os ganhos para comprar itens exclusivos na loja 3D e exibir aos amigos.
+
+================================================================================
+CAPÍTULO 3: GAME DESIGN, PSICOLOGIA DE JOGO E MECÂNICAS DE ROLEPLAY SOCIAL
+================================================================================
+
+3.1 DESIGN DE RETENÇÃO SEM TOXICIDADE OU 'PAY-TO-WIN'
+O TFL rejeita propositalmente mecânicas predatórias de jogos 'gacha' ou progressão pay-to-win.
+A retenção do jogador baseia-se em pertencimento comunitário, reciprocidade social e expressão:
+
+3.1.1 O Ciclo dos Sentimentos Efêmeros (TTL de 6 Horas):
+- Sentimentos humanos mudam ao longo do dia. Um status congelado por meses é irrealista.
+- Ao definir um Sentimento (humor + emoji + texto curto), o registro expira automaticamente em 6 horas.
+- Isso incentiva o jogador a visitar a plataforma no mínimo 2 a 3 vezes ao dia para atualizar
+  seu estado de espírito e verificar como os amigos estão se sentindo.
+
+3.1.2 O Ciclo dos Mini Reels de Foto + Texto (TTL de 24 Horas):
+- Inspirado no formato global de 'Stories', os Mini Reels permitem que o jogador registre momentos
+  rápidos do seu avatar sem a solenidade de um post permanente no feed.
+- Expiram rigorosamente em 24 horas, criando o gatilho psicológico de 'não perca o dia de hoje'.
+
+3.1.3 O Sistema de Matchmaking Silencioso (Crush Mútuo 💘):
+- O medo da rejeição é a maior barreira para relacionamentos sociais em ambientes virtuais.
+- No TFL, o Avatar A pode marcar o Avatar B como 'Crush' de forma 100% invisível.
+- O Avatar B JAMAIS recebe uma notificação dizendo 'Fulano te marcou'.
+- O evento de MATCH só é disparado se e somente se o Avatar B também marcar o Avatar A como 'Crush'.
+- Quando o Match mútuo ocorre, uma celebração visual discreta é gerada e um canal privado especial
+  é aberto no chat.
+
+3.1.4 As 7 Reações Canônicas no Feed:
+- Em vez do botão binário de 'Curtir', o TFL oferece 7 nuances emocionais com contadores atômicos:
+  * Amei (❤️) | Incrível (🔥) | Engraçado (😂) | Triste (😢) | Uau (😮) | Parabéns (🎉) | Apoio (🤝)
+
+3.1.5 O Clube VIP e a Progressão Sustentável:
+- Planos oficiais de assinatura: 1 Semana, 1 Mês e 3 Meses.
+- Pode ser assinado com Cash (fiduciário) ou Coins (moeda acumulada no jogo), garantindo que
+  jogadores dedicados possam ser VIPs sem desembolsar dinheiro real.
+- Benefícios do VIP:
+  * Acesso a cores e materiais exclusivos no guarda-roupa.
+  * Aumento da cota de salas ativas simultâneas (de 2 para 10).
+  * Limite diário ampliado de mensagens diretas (DMs) para combater spam de contas fake.
+  * Selo dourado cintilante no perfil social e balão de chat destacado.
+
+================================================================================
+CAPÍTULO 4: PLANEJAMENTO DE UI/UX, DESIGN SYSTEM E ARQUITETURA MOBILE-FIRST
+================================================================================
+
+4.1 A FILOSOFIA MOBILE-FIRST ADAPTATIVA
+Mais de 70% dos acessos modernos ocorrem por telas de smartphones.
+Historicamente, plataformas 3D e mundos virtuais falharam por tentarem 'espremer' interfaces
+complexas de desktop em telas minúsculas, resultando em botões microscópicos e menus ilegíveis.
+
+No TFL, a interface é desenhada primeiro para 360px de largura e progride de forma fluida
+até telas ultrawide de 2560px sem quebras de layout.
+
+4.2 COMPONENTES ARQUITETURAIS DE NAVEGAÇÃO
+
+4.2.1 A Barra Inferior Fixa (Bottom Navigation Bar):
+- Fixada rigidamente no rodapé da viewport em resoluções móveis (`fixed bottom-0 left-0 right-0`).
+- Altura ergonômica de 64px com suporte a 'safe area' de aparelhos modernos (`pb-safe`).
+- Contém 5 âncoras de toque primárias desenhadas para o alcance do polegar:
+  1. Ícone 'Feed' (Acesso imediato à timeline social e stories)
+  2. Ícone 'Avatares' (Alternância e customização do avatar)
+  3. Ícone 'Salas' (Navegação pelo metaverso 3D e salas públicas)
+  4. Ícone 'Carteira' (Saldos de moedas e extrato de transações)
+  5. Ícone 'Menu' (Dispara a abertura do Drawer Lateral)
+- Buffer de scroll: Todo contêiner de conteúdo principal possui classe utilitária `pb-20 md:pb-0`,
+  garantindo que o último card de post ou botão nunca fique oculto atrás da barra.
+
+4.2.2 A Sidebar Híbrida (Drawer no Mobile vs Coluna Fixa no Desktop):
+- No Mobile (`< 768px`): A barra lateral transforma-se em um Drawer Off-Canvas (`-translate-x-full`),
+  que desliza suavemente sobre a tela com backdrop escurecido (`#sidebarMobileBackdrop`).
+  Possui botão dedicado de fechar (X) e fecha automaticamente ao clicar em qualquer item.
+- No Desktop (`>= 768px`): Fixa na lateral esquerda, podendo operar expandida (260px) ou recolhida
+  em modo compacto de ícones (72px) para dar mais espaço ao palco 3D.
+
+4.2.3 Cabeçalho Superior Mobile Compacto:
+- Barra superior minimalista com logo do TFL, botão hambúrguer à esquerda e chips resumidos
+  de saldos (Cash verde e Coins douradas) à direita, atualizados em tempo real via WebSocket.
+
+4.2.4 O Chat Flutuante Estilo Aplicativo Nativo:
+- O botão disparador do chat flutuante fica posicionado a `bottom-20 right-4` no mobile para nunca
+  colidir com a Bottom Navigation Bar.
+- Ao abrir no mobile: Ocupa 100% da viewport (`fixed inset-0 z-50`), comportando-se exatamente como
+  o aplicativo do WhatsApp ou Telegram, com cabeçalho de conversa, lista de mensagens e campo de input.
+- Ao abrir no desktop: Abre como janela flutuante elegante no canto inferior direito (`w-[410px] h-[560px]`).
+
+4.2.5 Trilhos Horizontais de Toque (Touch Carousels):
+- Abas de navegação interna (como as abas do Perfil Social e sub-abas das Salas) utilizam
+  `flex overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth`.
+- Isso impede que listas de botões quebrem em 3 ou 4 linhas verticais, permitindo deslizar o dedo
+  horizontalmente de forma natural.
+
+4.2.6 Eliminação de Alertas Nativos e Adoção de Toasts:
+- A função nativa `window.alert()` é terminantemente banida do código por pausar a thread do navegador.
+- Adotado o plugin leve `public/js/toast.js` (`window.showToast(message, type)`), que desenha cartões
+  animados translúcidos no canto superior direito, com auto-fechamento em 4 segundos.
+
+================================================================================
+CAPÍTULO 5: ESPECIFICAÇÃO EXAUSTIVA DE TODAS AS VIEWS, TELAS E MODAIS (EJS/HTML)
+================================================================================
+
+5.1 INVENTÁRIO COMPLETO DO DIRETÓRIO `src/views/`
+
+5.1.1 `src/views/home.ejs` (A Vitrine de Entrada):
+- Responsabilidade: Landing page pública institucional do The Fantasy Life.
+- Componentes:
+  * Hero banner imersivo com chamada para criação de conta e botão de login em destaque.
+  * Destaques dos 6 pilares do jogo com capturas de tela e ilustrações renderizadas.
+  * Rodapé unificado (`footer.ejs`) contendo termos de uso, link do tutorial e seletor único i18n.
+- Regra Inviolável: Nenhum termo de API interna ou menção a engines de videogame.
+
+5.1.2 `src/views/tutorial.ejs` (O Guia do Jogador):
+- Responsabilidade: Manual intuitivo e ilustrado ensinando o usuário a usar a plataforma.
+- Tópicos cobertos exclusivamente sob o ponto de vista do jogador:
+  1. Como criar sua conta e configurar seu primeiro Avatar.
+  2. Como navegar pelo Feed, reagir a publicações e postar fotos.
+  3. Como funciona o Sentimento de 6 horas e os Mini Reels de 24 horas.
+  4. Como entrar em uma Sala 3D e decorar seu próprio quarto.
+  5. Como operar a Carteira, trocar moedas na Bolsa P2P e solicitar Saque Pix.
+- Posicionamento: Link presente estritamente no rodapé global (`footer.ejs`).
+
+5.1.3 `src/views/partials/header.ejs` & `footer.ejs` (A Moldura Global):
+- `header.ejs`: Barra superior limpa com links universais (Início, Sobre, Ajuda, Login/Perfil).
+- `footer.ejs`: Rodapé unificado contendo:
+  * Dropdown único de troca de idioma (`#langSelect`) disparando `GET /i18n/change/:lang`.
+  * Link canônico para `/tutorial` e termos legais.
+  * Beacon JavaScript silencioso (`POST /api/visit-beacon`) para telemetria geográfica no Admin.
+
+5.1.4 `src/views/profile/index.ejs` (O Portal Mestre do Jogador):
+- Responsabilidade: Shell principal da aplicação autenticada.
+- Arquitetura: Funciona como uma Single-Page Application (SPA) híbrida baseada em Server-Driven UI.
+- Carrega a casca (Cabeçalho, Sidebar, Bottom Bar, Container Dinâmico `#profileMainContent`).
+- Ao clicar em qualquer módulo do menu, o script `public/js/profile/core.js` requisita o partial
+  correspondente via `GET /profile/partial/:section` e injeta no DOM sem recarregar a página.
+
+5.1.5 `src/views/profile/partials/view-user-profile.ejs` (O Perfil Social do Avatar):
+- Responsabilidade: Exibição completa da persona ativa perante a comunidade.
+- Estrutura visual:
+  * Foto de capa (banner) e foto de perfil com anel de status (verde para online).
+  * Nome social do avatar, biografia, gênero, selo de carreira e selo VIP (se ativo).
+  * Indicadores numéricos: Amigos, Seguidores, Curtidas Totais e Visitas Recebidas.
+  * Botões de Ação: Adicionar Amigo, Seguir, Enviar Mensagem, Marcar Crush (💘).
+  * Trilho de Abas Horizontais:
+    - Aba 'Publicações': Timeline de posts do avatar com comentários em árvore e reações.
+    - Aba 'Fotos': Galeria de fotos em grade responsiva com visualizador lightbox.
+    - Aba 'Salas': Lista de salas 3D criadas por este avatar com botão 'Entrar Agora'.
+    - Aba 'Amigos': Grade de cartões de amigos com status online/offline.
+    - Aba 'Privacidade': Painel descentralizado para definir quem vê cada seção.
+
+5.1.6 `src/views/profile/partials/view-diary.ejs` (O Diário Íntimo & Desabafo):
+- Responsabilidade: Espaço de saúde mental e registro confessional do avatar.
+- Componentes:
+  * Seletor de Humor do Dia (Excelente 🌟, Bem 😊, Neutro 😐, Triste 😢, Ansioso 🌪️).
+  * Editor de texto para desabafo diário com opção de anexo de foto.
+  * Chave de Privacidade: 'Privado (Só Eu)', 'Somente Amigos' ou 'Público'.
+  * Histórico em linha do tempo cronológica com busca por data.
+
+5.1.7 `src/views/profile/partials/view-vip.ejs` (O Clube VIP Oficial):
+- Responsabilidade: Tela de adesão aos planos de privilégio da plataforma.
+- Tabela comparativa minuciosa entre 'Membro Gratuito' e 'Membro VIP'.
+- Cartões dos 3 Planos Oficiais:
+  * Plano 1 Semana: Ideal para testes e eventos de fim de semana.
+  * Plano 1 Mês: O plano mais popular com desconto progressivo.
+  * Plano 3 Meses: Plano trimestral com insígnia exclusiva e maior bônus de Coins.
+- Modal de Pagamento: Permite ao jogador pagar com Cash (Pix) ou com Coins acumuladas.
+
+5.1.8 `src/views/profile/partials/view-avatar.ejs` (Guarda-Roupa & Palco 3D):
+- Responsabilidade: Customização visual completa da persona.
+- Canvas WebGL interativo para visualização 3D em tempo real com controles orbitais.
+- Seleção dos 10 slots anatômicos e botões de desequipar/equipar com resolução de conflitos.
+- Sliders de morfologia corporal e facial (altura, largura do rosto, formato dos olhos).
+- Gestor de Looks: Salvar até 10 presets completos no banco (`avatar_outfit_styles`).
+
+5.1.9 `src/views/profile/partials/view-salas.ejs` (O Explorador de Mundos 3D):
+- Responsabilidade: Central de acesso aos ambientes tridimensionais do metaverso.
+- Sub-aba 1: 'Minhas Salas' (criar nova sala, configurar nome, senha, lotação e tema).
+- Sub-aba 2: 'Explorar Salas Públicas' (busca por nome, filtro por lotação e ordenação por popularidade).
+- Sub-aba 3: 'Ranking do Mês' (placar dos anfitriões mais visitados com contagem anti-farm).
+- Botão '🚀 Impulsionar Sala' (Boost de 24 horas por 20 Coins).
+
+5.1.10 `src/views/profile/partials/view-shop.ejs` (A Loja 3D Oficial & Lojas Próprias):
+- Responsabilidade: Vitrine de compras de itens virtuais do ecossistema.
+- Filtros por Categoria: Roupas (divididas por slot), Móveis, Decoração, Animações e Emotes.
+- Filtro por Moeda: Itens em Coins, Cash ou Chips.
+- Modo Provador Virtual: O item selecionado é aplicado temporariamente no avatar 3D antes da compra.
+
+5.1.11 `src/views/profile/partials/view-market.ejs` (A Carteira & Bolsa P2P):
+- Responsabilidade: Central de controle financeiro do jogador.
+- Bloco Superior: 3 Cartões de Saldo (Cash verde, Coins douradas, Chips azuis).
+- Tabela do Livro-Razão (`wallet_ledger`): Extrato contábil com data, tipo de operação, valor e saldo final.
+- Atalhos de Modais Especializados:
+  * `#modalWalletDepositPix`: Geração de QR Code Pix e Copia-e-Cola via Asaas.
+  * `#modalWalletWithdrawPix`: Solicitação de Saque Pix para a chave do titular.
+  * `#modalWalletTransferP2P`: Transferência de Coins entre amigos.
+  * `#modalWalletConverter`: Conversor instantâneo de moedas com cálculo de spread.
+  * `#modalWalletP2PExchange`: Livro de ofertas de compra e venda de Coins.
+
+5.1.12 `src/views/profile/partials/view-chat.ejs` (A Central de Mensageria):
+- Responsabilidade: Comunicação instantânea por texto, áudio e mídias.
+- Coluna Esquerda: Lista de conversas recentes com prévia da última mensagem e selo de não lidas.
+- Coluna Direita: Janela ativa com rolagem automática, balões com timestamp e suporte a emojis.
+
+5.1.13 `src/views/profile/cassino/*.html` (O Salão de Minigames Recreativos):
+- `roleta.html`: Mesa de roleta europeia com apostas internas e externas em Chips.
+- `fantan.html`: Jogo tradicional oriental de contagem de peças.
+- `baccarat.html` & `bacboo.html`: Jogos de cartas e dados contra a mesa.
+- `golden_tiger.js`: Caça-níquel temático com rolos animados e tabela de multiplicadores.
+
+5.1.14 `src/views/admin/*.html` (O Painel de Comando da Diretoria):
+- `home.html`: Dashboard com gráficos em tempo real de acessos, receita Pix e uso de CPU.
+- `serversDetails.html`: Status de cada servidor dedicado Godot ativo, IP, porta e ping.
+- `shopUpload.html`: Ferramenta administrativa para upload de arquivos 3D (.glb) e texturas.
+- `expenses.html`: Gestão de despesas operacionais da plataforma para cálculo de saúde financeira.
+
+================================================================================
+CAPÍTULO 6: MODELAGEM DE DADOS, ENTIDADES SEQUELIZE E ESQUEMAS DE BANCO POSTGRESQL
+================================================================================
+
+6.1 DIRETRIZES DE ENGENHARIA POSTGRESQL + SEQUELIZE
+O banco de dados relacional oficial é o PostgreSQL 14+. Todas as tabelas seguem:
+1. Nomes de tabela em snake_case plural ou explícito.
+2. Chaves primárias universais do tipo `INTEGER GENERATED ALWAYS AS IDENTITY` ou `SERIAL`.
+3. Timestamps mandatórios: `createdAt` e `updatedAt` gerenciados pelo ORM.
+4. BLINDAGEM CONTRA BUG DO SEQUELIZE: Proibido utilizar `unique: true` junto com `defaultValue`.
+   Índices únicos são declarados exclusivamente no bloco `options.indexes`.
+5. TRANSACIONALIDADE BANCÁRIA: Operações financeiras usam transações atômicas com locking pessimista
+   (`transaction.LOCK.UPDATE`) para evitar 'race conditions' de gasto duplo.
+
+6.2 ENTIDADES PRINCIPAIS DO ESQUEMA
+
+6.2.1 Agregado User & Autenticação:
+- Tabela `users`:
+  * `id` (PK, INT): Identificador único da conta real.
+  * `email` (VARCHAR 255, UNIQUE): E-mail validado do usuário.
+  * `password` (VARCHAR 255): Hash criptográfico seguro (Bcrypt com salt 10).
+  * `role` (VARCHAR 50, DEFAULT 'user'): Papel de acesso ('user', 'vip', 'moderator', 'admin', 'owner').
+  * `cpf` (VARCHAR 20, NULL): CPF do titular para fins de conformidade bancária e saque Pix.
+  * `pixKey` (VARCHAR 255, NULL): Chave Pix padrão cadastrada para resgates.
+  * `isBanned` (BOOLEAN, DEFAULT FALSE): Flag de bloqueio administrativo.
+
+6.2.2 Agregado Avatar & Persona:
+- Tabela `avatars`:
+  * `id` (PK, INT): Identificador único do avatar.
+  * `userId` (FK -> users.id): Conta dona do avatar.
+  * `name` (VARCHAR 100, UNIQUE): Nome social exclusivo visível no jogo.
+  * `gender` (SMALLINT, DEFAULT 0): 0 = Feminino, 1 = Masculino, 2 = Neutro/Outro.
+  * `bio` (TEXT): Descrição pessoal do perfil.
+  * `avatarPhoto` (VARCHAR 500): URL da imagem de exibição no feed e chat.
+  * `coverPhoto` (VARCHAR 500): URL da imagem de banner do perfil.
+  * `activeCareerId` (INT, NULL): Título ou carreira equipada no momento.
+  * `isVip` (BOOLEAN, DEFAULT FALSE): Indicador de assinatura ativa.
+  * `vipExpiresAt` (TIMESTAMP, NULL): Data limite de expiração do Clube VIP.
+  * `privacyPosts` / `privacyPhotos` / `privacyRooms` / `privacyFriends`: Enums de privacidade.
+
+6.2.3 Agregado Carteira & Finanças:
+- Tabela `currencies`:
+  * `id` (PK, INT)
+  * `avatarId` (FK -> avatars.id, UNIQUE): Carteira vinculada ao avatar ativo.
+  * `cash` (DECIMAL(12,2), DEFAULT 0.00): Moeda fiduciária real (1 Cash = R$ 1,00).
+  * `coins` (DECIMAL(14,2), DEFAULT 100.00): Moeda utilitária de trocas do jogo.
+  * `chips` (BIGINT, DEFAULT 0): Fichas recreativas de minigames/cassino.
+
+- Tabela `wallet_ledgers` (O Livro-Razão Imutável):
+  * `id` (PK, BIGINT)
+  * `avatarId` (FK -> avatars.id): Avatar movimentador.
+  * `currencyType` (VARCHAR 20): 'cash', 'coins' ou 'chips'.
+  * `operationType` (VARCHAR 50): 'pix_deposit', 'pix_withdraw', 'p2p_buy', 'p2p_sell', 'shop_purchase', 'vip_subscription'.
+  * `amount` (DECIMAL(14,2)): Valor da transação (positivo para crédito, negativo para débito).
+  * `feeRetained` (DECIMAL(14,2), DEFAULT 0): Taxa retida pela plataforma.
+  * `balanceAfter` (DECIMAL(14,2)): Saldo resultante após a transação para auditoria matemática.
+  * `metadata` (JSONB): Detalhes adicionais (ID do pedido, chave Pix, hash do pagamento).
+
+6.2.4 Agregado Social:
+- Tabela `posts` (Publicações na timeline).
+- Tabela `comments` (Comentários com suporte recursivo a `parentId` para árvore de respostas).
+- Tabela `post_reactions` (Contadores das 7 reações canônicas por post).
+- Tabela `mini_reels` (Stories de foto com expiração mandatória de 24 horas).
+- Tabela `sentimentos` (Status passageiro com expiração de 6 horas).
+- Tabela `friends` & `followers` (Grafo social de relacionamentos e permissões).
+- Tabela `avatar_matches` (Registros de crush mútuo 💘 com validação bidirecional).
+
+6.2.5 Agregado Game 3D & Metaverso:
+- Tabela `avatar_outfits` (Peças equipadas atualmente nos 10 slots anatômicos do avatar).
+- Tabela `avatar_inventories` (Acervo de roupas e itens comprados pelo avatar).
+- Tabela `avatar_outfit_styles` (Até 10 combinações salvas de looks favoritos).
+- Tabela `rooms` (Salas 3D com dono, nome, senha, capacidade e tipo de ambiente).
+- Tabela `room_objects` (Móveis e objetos decorativos dispostos na sala com transformadas 3D).
+- Tabela `servers` (Cluster de instâncias dedicadas de salas com controle de porta e capacidade).
+
+================================================================================
+CAPÍTULO 7: CATÁLOGO COMPLETO DE CONTROLLERS, ROTAS E ENDPOINTS DA API REST v1
+================================================================================
+
+7.1 PADRÕES DE PAYLOAD E HEADERS DA API REST v1
+Todas as respostas da API REST v1 seguem o formato padronizado JSON:
+Sucesso: { 'success': true, 'data': { ... }, 'message': 'Operação concluída com sucesso' }
+Erro:    { 'success': false, 'error': { 'code': 'RESOURCE_NOT_FOUND', 'message': '...' } }
+
+Headers de Autenticação Suportados:
+- `Authorization: Bearer <JWT_TOKEN>` (Sessão universal da conta)
+- `tfl-token: <TOKEN>` (Header customizado para clientes de jogo)
+- `x-profile-id: <AVATAR_ID>` (Define o contexto do avatar ativo na requisição)
+- `x-server-token: <SECRET>` (Comunicação segura exclusiva entre servidores dedicados e o backend)
+
+7.2 MAPEAMENTO DE ROTAS POR MÓDULO
+
+7.2.1 Autenticação e Sessão (`/auth` e `/api/v1/auth`):
+- `POST /auth/register`: Cadastro de nova conta com validação de e-mail e força de senha.
+- `POST /auth/login`: Autenticação via formulário web com geração de cookie HTTP-Only.
+- `POST /api/v1/auth/token`: Emissão de JWT para clientes de jogos externos.
+- `GET /auth/logout`: Destruição de sessão e limpeza de cookies de segurança.
+
+7.2.2 Portal Web do Perfil (`/profile`):
+- `GET /profile`: Renderiza a casca SPA principal (`index.ejs`).
+- `GET /profile/partial/:section`: Retorna o fragmento HTML renderizado sob demanda
+  (ex: `/profile/partial/feed`, `/profile/partial/vip`, `/profile/partial/market`).
+- `POST /profile/avatar/switch`: Altera o avatar ativo na sessão do jogador.
+- `POST /profile/vip/subscribe`: Realiza o débito e ativação de plano VIP.
+
+7.2.3 Rede Social & Comunidade (`/api/v1/social`):
+- `GET /api/v1/social/feed`: Timeline paginada com cursor keyset (20 posts por requisição).
+- `POST /api/v1/social/posts`: Criação de novo post com suporte a texto e uploads de fotos.
+- `POST /api/v1/social/posts/:id/react`: Adiciona ou altera a reação canônica em um post.
+- `POST /api/v1/social/posts/:id/comments`: Adiciona comentário (suporta `parentId` recursivo).
+- `POST /api/v1/social/reels`: Publica Mini Reel de 24 horas.
+- `POST /api/v1/social/feelings`: Publica Sentimento efêmero de 6 horas.
+- `POST /api/v1/social/match/crush`: Registra crush secreto em outro avatar.
+
+7.2.4 Metaverso 3D & Avatar (`/api/v1/game`):
+- `GET /api/v1/avatars/:id/manifest`: Manifesto declarativo JSON com todas as malhas e morphs.
+- `POST /api/v1/avatars/me/outfit/equip`: Equipa uma peça no slot anatômico correspondente.
+- `POST /api/v1/avatars/me/styles/save`: Salva a combinação atual em um preset de look.
+- `GET /api/v1/rooms`: Lista salas públicas disponíveis com filtro e ordenação.
+- `GET /api/v1/rooms/:id/layout`: Manifesto declarativo da sala com mobília e colisores.
+- `POST /api/v1/rooms/create`: Criação de nova sala pelo avatar.
+- `POST /api/v1/rooms/:id/boost`: Aplica impulso de 24h na visibilidade da sala.
+- `POST /api/v1/rooms/:id/ticket`: Emissão de ticket JWT efêmero (30s) para conectar no servidor dedicado.
+
+7.2.5 Finanças & Carteira (`/api/v1/bank` e `/payment`):
+- `GET /api/v1/bank/balance`: Consulta saldos em Cash, Coins e Chips do avatar.
+- `GET /api/v1/bank/ledger`: Extrato histórico paginado de transações.
+- `POST /payment/pix/charge`: Cria cobrança Pix via Asaas e retorna QR Code e Copia-e-Cola.
+- `POST /payment/webhook/asaas`: Webhook seguro que recebe a confirmação bancária e credita Cash.
+- `POST /api/v1/bank/withdraw`: Solicita resgate de Cash via Pix para o CPF do titular.
+- `POST /api/v1/bank/exchange/p2p`: Cria ou aceita oferta de compra/venda de Coins na Bolsa.
+
+7.2.6 Painel de Administração (`/admin/api`):
+- `GET /admin/api/stats`: Telemetria em tempo real (visitantes, regiões, pico de usuários).
+- `GET /admin/api/servers`: Lista e monitora instâncias de servidores dedicados.
+- `POST /admin/api/servers/spawn`: Solicita a inicialização de nova instância de sala.
+- `GET /admin/api/financial-health`: Auditoria de passivo de Cash e liquidez em Reais.
+- `POST /admin/api/expenses`: Registro de custos operacionais (servidores, licenças).
+- `POST /admin/api/bots/simulate`: Dispara simulação com múltiplos bots para teste de carga.
+
+================================================================================
+CAPÍTULO 8: ARQUITETURA DE COMUNICAÇÃO EM TEMPO REAL, WEBSOCKETS E HUB DE SOCKETS
+================================================================================
+
+8.1 ESTRUTURA DO SOKETHUB (`src/sockets/SoketHub.js`)
+O TFL gerencia conexões persistentes bidirecionais através de instâncias especializadas
+do protocolo WebSocket (via Socket.io e WebSockets nativos), segmentadas por namespaces:
+
+8.1.1 Namespace `/ws/chat` (A Mensageria Social):
+- Responsável por:
+  * Entrega instantânea de mensagens diretas (DMs) entre avatares.
+  * Indicadores de presença em tempo real (online, ausente, offline).
+  * Indicadores visuais de digitação ('Avatar está digitando...').
+  * Confirmação de recebimento e leitura de mensagens.
+- Segurança: O handshake exige token de autenticação e vincula o socket estritamente ao `avatarId` ativo.
+
+8.1.2 Namespace `/ws/game` (Sincronização de Metaverso):
+- Responsável por:
+  * Notificação de entrada e saída de avatares nas salas.
+  * Sincronização de eventos de mobília (mover sofá, ligar rádio da sala).
+  * Transmissão de comandos de teleporte e convites interativos de sala.
+
+8.1.3 Namespace `/ws/voice` (Áudio Espacial e Proximidade):
+- Negociação de conexões peer-to-peer WebRTC para chat de voz 3D por proximidade.
+- O volume da voz do avatar receptor é atenuado matematicamente com base na distância euclidiana
+  para o avatar emissor dentro do espaço tridimensional.
+
+================================================================================
+CAPÍTULO 9: INTEGRAÇÃO COM A ENGINE 3D (GODOT / WEBGL / DESKTOP) E MANIFESTOS JSON
+================================================================================
+
+9.1 O PRINCÍPIO DO DESACOPLAMENTO TOTAL DATA-DRIVEN (HEADLESS)
+A Engine de jogo (Godot 4.x / WebGL export ou cliente Desktop) NÃO armazena nem calcula
+regras de negócio financeiras, inventário permanente ou permissões de sala.
+A Engine opera estritamente como um 'terminal inteligente de renderização e física'.
+
+9.2 O MANIFESTO DECLARATIVO DO AVATAR (`/api/v1/avatars/:id/manifest`)
+Quando o cliente 3D precisa renderizar um avatar, ele requisita o manifesto JSON:
+
+Exemplo Canônico de Payload:
+{
+  'version': '1.0.0',
+  'avatarId': 1042,
+  'avatarName': 'Luna_Starlight',
+  'baseRig': 'tfl_humanoid_female_v1',
+  'blendshapes': {
+    'height': 0.52,
+    'jaw_width': 0.35,
+    'eye_size': 0.70,
+    'nose_length': 0.45,
+    'smile_neutral': 0.20
+  },
+  'slots': {
+    'hair':      { 'mesh': 'hair_wavy_long_01.glb', 'color': '#2a1a08' },
+    'head':      { 'mesh': 'beret_paris_vintage.glb', 'color': '#cc2233' },
+    'eyes':      { 'mesh': 'glasses_aviator.glb', 'color': '#d4af37' },
+    'top':       { 'mesh': 'sweater_wool_cream.glb', 'color': '#f5f5dc' },
+    'bottom':    { 'mesh': 'skirt_plaid_red.glb', 'color': '#8b0000' },
+    'shoes':     { 'mesh': 'boots_leather_ankle.glb', 'color': '#111111' },
+    'accessory': { 'mesh': 'scarf_winter.glb', 'color': '#ffffff' },
+    'skin':      { 'texture': 'skin_fair_02.png', 'roughness': 0.6 }
+  },
+  'animations': {
+    'idle': 'idle_feminine_relaxed.anim',
+    'walk': 'walk_feminine_stylish.anim'
+  }
+}
+
+9.3 A MATRIZ DE CONFLITO DOS 10 SLOTS ANATÔMICOS
+Para impedir anomalias visuais (glitches de malhas sobrepostas):
+- Ao equipar um item no slot `fullbody` (vestido longo, macacão, armadura completa), os slots
+  `top` (camisa) e `bottom` (calça) são automaticamente desequipados e movidos para o inventário.
+- Ao equipar qualquer item em `top` ou `bottom`, qualquer item equipado em `fullbody` é removido.
+
+9.4 CICLO DE SESSÃO COM SERVIDORES DEDICADOS (TICKETS EFÊMEROS)
+1. O jogador solicita entrada em uma sala via interface Web.
+2. O Backend verifica se a sala está lotada e se o jogador tem passe/permissão.
+3. O Backend emite um Ticket JWT com claims (`avatarId`, `roomId`, `serverId`, `exp: 30s`).
+4. O cliente 3D conecta via WebSocket na porta do servidor dedicado passando o Ticket.
+5. O servidor dedicado valida o Ticket e aloca a entidade na memória RAM.
+6. Sincronização de movimento a 20 ticks por segundo via UDP/WebSockets.
+7. Ao sair da sala ou realizar compra em loja interna, o servidor dedicado comunica com a
+   API REST do Backend utilizando o header seguro `x-server-token`.
+
+================================================================================
+CAPÍTULO 10: ENGENHARIA ECONÔMICA, SISTEMA TRI-MOEDA, LIVRO-RAZÃO E REGRAS FISCAIS
+================================================================================
+
+10.1 AS TRÊS MOEDAS E SEUS DOMÍNIOS ESPECÍFICOS
+
+1. CASH (Moeda Fiduciária Real - R$ BRL):
+- Proprietário: Conta do Usuário (`User`), refletida no saldo do Avatar ativo.
+- Como entra: Exclusivamente via depósito Pix processado pelo Gateway Asaas.
+- Como sai: Exclusivamente via solicitação de Saque Pix para a chave do titular da conta.
+- REGRA DE BLINDAGEM MÁXIMA: É ESTRITAMENTE PROIBIDA A TRANSFERÊNCIA DE CASH ENTRE JOGADORES.
+  Nenhum jogador pode enviar Cash para outro. Isso elimina completamente fraudes de lavagem de
+  dinheiro, chargebacks cruzados e vazamentos regulatórios.
+
+2. COINS (Moeda Utilitária Social do Jogo):
+- Proprietário: Avatar ativo (`Avatar`).
+- Finalidade: Compra de roupas, mobília, pagamento de boosts de salas, presentes e assinaturas.
+- Transferibilidade: É a ÚNICA moeda que pode circular livremente entre avatares e na Bolsa P2P.
+- Como é gerada: Comprada utilizando Cash, ou obtida como recompensa de progressão de carreira.
+
+3. CHIPS (Fichas Recreativas de Minigames):
+- Proprietário: Avatar ativo.
+- Finalidade: Uso exclusivo nas mesas de minigames de cassino recreativo.
+- Conversibilidade: Comprada utilizando Coins.
+
+10.2 A PONTE AUDITÁVEL `AVATAR -> USER` PARA SAQUES PIX
+Para que um jogador retire lucros obtidos na plataforma (ex: royalties de vendas de roupas):
+1. O Avatar vende suas criações e acumula Coins.
+2. O Avatar vende suas Coins na Bolsa P2P oficial, recebendo Cash fiduciário.
+3. O jogador solicita o Saque Pix.
+4. O Backend valida se o CPF cadastrado no `User` corresponde ao titular da conta bancária.
+5. O valor em Cash é debitado com lock pessimista no `wallet_ledger` e a transferência Pix é despachada.
+
+10.3 O POTE FIFO DA BOLSA P2P (COIN ORDER)
+- O mercado de compra e venda de Coins entre jogadores opera pelo princípio FIFO (First In, First Out).
+- A menor oferta de venda disponível é atendida primeiro pela ordem de compra.
+- Taxa da plataforma: 5% a 10% retidos na conversão para absorção de custos operacionais de gateway.
+
+
+10.4 GOVERNANÇA DE PARÂMETROS ECONÔMICOS DINÂMICOS (ZERO CONSTANTES NO CÓDIGO)
+- PROIBIÇÃO DE CONSTANTES ESTÁTICAS: É terminantemente proibido declarar valores econômicos (taxas de spread, split de royalties, bonificações iniciais, limites de saque) como constantes fixas (`const`) no código-fonte.
+- CONFIGURAÇÃO VIA PAINEL ADMINISTRATIVO (/admin): Todos os parâmetros residem na tabela `economy_rules` e são editáveis em tempo real pela diretoria sem reinicialização do servidor.
+- ANTI-FARM DE MOEDAS DE BOAS-VINDAS:
+  * A bonificação inicial de Coins é concedida estritamente por CONTA (`User.coinsGrantedTotal` <= `User.coinsGrantCap`), nunca por Avatar.
+  * O 1º avatar criado recebe o bônus configurado; avatares adicionais nascem com saldo 0.
+  * O valor do bônus inicial e sua ativação/desativação são controlados dinamicamente no painel `/admin`.
+
+10.5 DESIGN ÉTICO, CONTRATOS DE SESSÃO E PROTEÇÃO AO JOGADOR (ANTI-VÍCIO)
+- O PIN FINANCEIRO DO USUÁRIO (`User.walletPin`):
+  * Código de segurança pessoal de 4 dígitos (hash Bcrypt na tabela `users`).
+  * Obrigatório para autorizar: Saque Pix, compra na Bolsa P2P, transferência de Coins e abertura de Contrato de Sessão de minigames.
+  * Impede transações acidentais, furtos ou compras por terceiros no dispositivo.
+- CONTRATO DE SESSÃO DE MINIGAMES (FRICÇÃO DELIBERADA CONTRA PERDAS COMPULSIVAS):
+  * Em jogos rápidos (Slots, Roleta, Bacboo), o jogador é obrigado a assinar um Contrato de Sessão definindo um teto máximo de perda (ex: 50, 100 ou 200 Chips).
+  * A máquina só opera dentro do teto contratado.
+  * Ao esgotar o limite da sessão, A MÁQUINA TRAVA IMEDIATAMENTE e o jogador é forçado a sair.
+  * Para jogar novamente, é necessário fechar a interface, abrir um novo contrato e digitar o PIN. Essa pausa obrigatória quebra o transe psicológico do vício.
+- REGRA ANTI-ALL-IN (TETO DE CONVERSÃO DE 80%):
+  * É matematicamente impossível converter 100% das Coins para Chips de minigames.
+  * O sistema impõe um limite máximo de 80% do saldo atual de Coins em cada operação de conversão.
+  * Isso garante que o avatar sempre mantenha no mínimo 20% de reserva para sua vida social, vestuário, moradia e interação no metaverso, impedindo que o jogador zere seu patrimônio de jogo.
+
+
+================================================================================
+CAPÍTULO 11: STACK TECNOLÓGICO ATUAL, DEPENDÊNCIAS E RECOMENDAÇÕES DE ESCALABILIDADE
+================================================================================
+
+11.1 STACK TECNOLÓGICO EM PRODUÇÃO
+- Runtime: Node.js 18+ LTS (assíncrono, orientado a eventos, estável).
+- Framework Web: Express 4.x com roteadores desacoplados.
+- Camada de Persistência: PostgreSQL 14+ gerenciado através do Sequelize ORM.
+- Engine de Templates: EJS (Embedded JavaScript) para Server-Driven UI dinâmica.
+- Estilização & UI: Tailwind CSS compilado + CSS Vanilla modularizado em `public/css/`.
+- Camada de Tempo Real: Socket.io 4.x + WebSockets puros para streaming bidirecional.
+- Processamento Bancário: Integração oficial com Asaas Gateway para cobranças e saques Pix.
+- Engine Tridimensional: Godot Engine 4.x (export WebGL/WebAssembly para navegadores e binários nativos).
+
+11.2 RECOMENDAÇÕES ARQUITETURAIS PARA ALTA ESCALA (100.000+ USUÁRIOS)
+1. Caching & Presença com Redis:
+   - Substituir caches voláteis em memória Node.js por Redis Cluster.
+   - Utilizar Redis Streams ou Pub/Sub para propagação de mensagens de chat entre múltiplos pods.
+2. CDN Global para Assets 3D (Cloudflare R2 / AWS S3):
+   - Mover arquivos de malhas (.glb), texturas (.png, .webp) e áudios para buckets de objetos
+     com terminação em Cloudflare CDN, aliviando o I/O do servidor Express.
+3. Servidor de Voz WebRTC Dedicado (Coturn / LiveKit):
+   - Para salas com mais de 20 pessoas falando simultaneamente, adotar um SFU (Selective Forwarding
+     Unit) como LiveKit em substituição ao mesh P2P puro.
+
+================================================================================
+CAPÍTULO 12: MATRIZ CANÔNICA DE GOVERNANÇA, RBAC E PREVENÇÃO DE ALUCINAÇÕES DE IA
+================================================================================
+
+12.1 MATRIZ DE ACESSO UNIVERSAL (RBAC)
+
+Nível de Papel         | Rotas Permitidas               | Recursos Exclusivos
+-----------------------+--------------------------------+--------------------------------------------
+1. Visitante (Guest)   | `/`, `/tutorial`, `/auth/*`     | Apenas leitura da vitrine e cadastro.
+2. Jogador Comum       | `/profile/*`, `/api/v1/*`      | Feed, amizades, até 2 salas 3D, chat padrão.
+3. Membro VIP          | `/profile/*`, `/api/v1/*`      | Até 10 salas 3D, cores VIP, DMs ilimitadas.
+4. Administrador       | `/admin/*`, `/admin/api/*`     | Telemetria, aprovação Pix, simulador bots.
+5. Owner / Dono        | Acesso Irrestrito Total        | Gestão de despesas, criação de admins.
+
+12.2 AS REGRAS SUPREMAS E INVIOLÁVEIS DO PROJETO
+1. LEI DO ISOLAMENTO: NUNCA expor detalhes internos da engine (termos como 'Godot', 'Canvas',
+   'WebGL export') em páginas públicas ou no perfil social do jogador.
+2. LEI DO FEEDBACK: NUNCA usar `window.alert()` nativo. Usar sempre `window.showToast()`.
+3. LEI DO RODAPÉ: O link para `/tutorial` e o seletor único de idioma (`#langSelect`) devem
+   permanecer estritamente no rodapé global (`footer.ejs`).
+4. LEI DO ADMIN: Toda e qualquer ferramenta administrativa (estatísticas, logs de bots, despesas)
+   pertence exclusivamente a `/admin`. É terminantemente proibido colocar botões de admin no `/profile`.
+5. LEI DA HIERARQUIA: Nada pula o Avatar. Toda transação de jogo, compra ou amizade pertence ao Avatar.
+6. LEI DA AUDITORIA CRUZADA: Se qualquer arquivo de documentação secundário entrar em conflito com
+   este documento ou com `ARQUITETURA_DEFINITIVA_TFL.txt`, ESTE DOCUMENTO GANHA SEMPRE.
+
+================================================================================
+SEÇÃO ESPECIAL A: DICIONÁRIO EXAUSTIVO DE DADOS (POSTGRESQL / SEQUELIZE)
+================================================================================
+Esta seção detalha minuciosamente todas as colunas, tipos de dados primitivos, restrições,
+valores padrão e índices de performance de cada tabela persistida no PostgreSQL.
+
+--------------------------------------------------------------------------------
+TABELA: users
+Descrição: Tabela mestre de contas reais e autenticação jurídica.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador universal da conta.
+  * email              | VARCHAR(255)                 | NOT NULL, UNIQUE INDEX              | Endereço eletrônico validado com formato RFC 5322.
+  * password           | VARCHAR(255)                 | NOT NULL                            | Hash Bcrypt com salt rounds = 10.
+  * role               | VARCHAR(50)                  | NOT NULL DEFAULT 'user'             | Papel: 'user', 'vip', 'moderator', 'admin', 'owner'.
+  * cpf                | VARCHAR(20)                  | NULL, UNIQUE INDEX                  | Cadastro de Pessoa Física para conformidade bancária.
+  * pixKey             | VARCHAR(255)                 | NULL                                | Chave Pix para liquidação de saques (CPF, e-mail ou aleatória).
+  * isBanned           | BOOLEAN                      | NOT NULL DEFAULT FALSE              | Bloqueio cautelar ou disciplinar da conta.
+  * banReason          | TEXT                         | NULL                                | Justificativa administrativa do bloqueio.
+  * lastLoginAt        | TIMESTAMP WITH TIME ZONE     | NULL                                | Registro do último handshake de autenticação.
+  * lastLoginIp        | INET                         | NULL                                | Endereço IP da última sessão para detecção de fraudes.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Carimbo de criação do registro.
+  * updatedAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Carimbo da última modificação.
+Índices de Performance: idx_users_email (UNIQUE), idx_users_cpf (UNIQUE), idx_users_role
+
+--------------------------------------------------------------------------------
+TABELA: avatars
+Descrição: Tabela de personas virtuais ativas do ecossistema.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador universal do avatar.
+  * userId             | INTEGER                      | NOT NULL REFERENCES users(id) ON DELETE CASCADE | Conta mãe dona da persona.
+  * name               | VARCHAR(100)                 | NOT NULL, UNIQUE INDEX              | Nome social único visível em todo o metaverso.
+  * gender             | SMALLINT                     | NOT NULL DEFAULT 0                  | Gênero: 0 (Feminino), 1 (Masculino), 2 (Neutro/Outro).
+  * bio                | TEXT                         | NULL                                | Biografia descritiva visível no cartão de visitas.
+  * avatarPhoto        | VARCHAR(500)                 | NULL                                | Caminho ou URL da foto de perfil quadrada.
+  * coverPhoto         | VARCHAR(500)                 | NULL                                | Caminho ou URL do banner retangular de cabeçalho.
+  * activeCareerId     | INTEGER                      | NULL                                | Carreira equipada atualmente pelo avatar.
+  * isVip              | BOOLEAN                      | NOT NULL DEFAULT FALSE              | Status do Clube VIP.
+  * vipExpiresAt       | TIMESTAMP WITH TIME ZONE     | NULL                                | Data de encerramento do plano VIP.
+  * privacyPosts       | VARCHAR(20)                  | NOT NULL DEFAULT 'public'           | Visibilidade do feed: 'public', 'friends', 'private'.
+  * privacyPhotos      | VARCHAR(20)                  | NOT NULL DEFAULT 'public'           | Visibilidade da galeria: 'public', 'friends', 'private'.
+  * privacyRooms       | VARCHAR(20)                  | NOT NULL DEFAULT 'public'           | Visibilidade de salas: 'public', 'friends', 'private'.
+  * privacyFriends     | VARCHAR(20)                  | NOT NULL DEFAULT 'public'           | Visibilidade de amizades: 'public', 'friends', 'private'.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Carimbo de criação.
+  * updatedAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Carimbo da última modificação.
+Índices de Performance: idx_avatars_name (UNIQUE), idx_avatars_userId, idx_avatars_isVip
+
+--------------------------------------------------------------------------------
+TABELA: currencies
+Descrição: Tabela de saldos monetários vinculada ao avatar.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador único da carteira.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Avatar titular dos saldos.
+  * cash               | DECIMAL(12,2)                | NOT NULL DEFAULT 0.00               | Saldo em Moeda Real (R$ BRL).
+  * coins              | DECIMAL(14,2)                | NOT NULL DEFAULT 100.00             | Saldo em Moeda Virtual Utilitária.
+  * chips              | BIGINT                       | NOT NULL DEFAULT 0                  | Saldo em Fichas Recreativas de Cassino.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data de abertura da carteira.
+  * updatedAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data da última conciliação de saldo.
+Índices de Performance: idx_currencies_avatarId (UNIQUE)
+
+--------------------------------------------------------------------------------
+TABELA: wallet_ledgers
+Descrição: Livro-razão imutável de transações financeiras para auditoria forense.
+Colunas:
+  * id                 | BIGINT                       | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador sequencial do lançamento contábil.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id)     | Avatar participante da operação.
+  * currencyType       | VARCHAR(20)                  | NOT NULL                            | Tipo: 'cash', 'coins' ou 'chips'.
+  * operationType      | VARCHAR(50)                  | NOT NULL                            | Operação: 'pix_deposit', 'pix_withdraw', 'p2p_trade', 'shop_buy'.
+  * amount             | DECIMAL(14,2)                | NOT NULL                            | Valor transacionado (+ crédito, - débito).
+  * feeRetained        | DECIMAL(14,2)                | NOT NULL DEFAULT 0.00               | Taxa de spread retida pela plataforma.
+  * balanceAfter       | DECIMAL(14,2)                | NOT NULL                            | Saldo resultante para prova matemática contínua.
+  * metadata           | JSONB                        | NULL                                | Payload com referências de Gateway, hash de ordem e IP.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Carimbo imutável de registro.
+Índices de Performance: idx_wallet_ledgers_avatarId, idx_wallet_ledgers_opType, idx_wallet_ledgers_created
+
+--------------------------------------------------------------------------------
+TABELA: posts
+Descrição: Publicações permanentes na timeline da rede social.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador do post.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Autor da publicação.
+  * content            | TEXT                         | NOT NULL                            | Corpo de texto da postagem (suporta menções e hashtags).
+  * mediaUrl           | VARCHAR(500)                 | NULL                                | URL de imagem ou vídeo curto anexado.
+  * visibility         | VARCHAR(20)                  | NOT NULL DEFAULT 'public'           | Visibilidade: 'public', 'friends', 'private'.
+  * reactionsCount     | INTEGER                      | NOT NULL DEFAULT 0                  | Contador agregado de reações.
+  * commentsCount      | INTEGER                      | NOT NULL DEFAULT 0                  | Contador agregado de comentários.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data da postagem.
+  * updatedAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data da última edição.
+Índices de Performance: idx_posts_avatarId, idx_posts_createdAt, idx_posts_visibility
+
+--------------------------------------------------------------------------------
+TABELA: comments
+Descrição: Comentários em posts com suporte recursivo infinito a respostas.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador do comentário.
+  * postId             | INTEGER                      | NOT NULL REFERENCES posts(id) ON DELETE CASCADE | Post pai.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Autor do comentário.
+  * parentId           | INTEGER                      | NULL REFERENCES comments(id) ON DELETE CASCADE | Comentário pai em caso de resposta.
+  * content            | TEXT                         | NOT NULL                            | Texto do comentário.
+  * likesCount         | INTEGER                      | NOT NULL DEFAULT 0                  | Curtidas no comentário.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data do comentário.
+Índices de Performance: idx_comments_postId, idx_comments_parentId, idx_comments_avatarId
+
+--------------------------------------------------------------------------------
+TABELA: mini_reels
+Descrição: Publicações efêmeras de foto e texto com TTL mandatória de 24 horas.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador do reel.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Autor do reel.
+  * mediaUrl           | VARCHAR(500)                 | NOT NULL                            | Imagem em proporção vertical 9:16.
+  * caption            | VARCHAR(255)                 | NULL                                | Legenda sobreposta na mídia.
+  * expiresAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL                            | Data e hora exata de expiração (createdAt + 24h).
+  * viewsCount         | INTEGER                      | NOT NULL DEFAULT 0                  | Contagem de visualizações únicas.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data de publicação.
+Índices de Performance: idx_mini_reels_avatarId, idx_mini_reels_expiresAt
+
+--------------------------------------------------------------------------------
+TABELA: sentimentos
+Descrição: Status de humor passageiro com expiração automática em 6 horas.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador do sentimento.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Avatar que sente.
+  * moodEmoji          | VARCHAR(10)                  | NOT NULL                            | Emoji representativo do humor.
+  * moodText           | VARCHAR(100)                 | NOT NULL                            | Frase descritiva do estado emocional.
+  * expiresAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL                            | Expiração estrita (createdAt + 6h).
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data do registro.
+Índices de Performance: idx_sentimentos_avatarId, idx_sentimentos_expiresAt
+
+--------------------------------------------------------------------------------
+TABELA: rooms
+Descrição: Espaços tridimensionais (ambientes e salas) do metaverso.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador da sala.
+  * ownerAvatarId      | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Dono e anfitrião da sala.
+  * name               | VARCHAR(120)                 | NOT NULL                            | Nome do ambiente visível na busca pública.
+  * description        | TEXT                         | NULL                                | Descrição das regras e temática da sala.
+  * themeMesh          | VARCHAR(255)                 | NOT NULL DEFAULT 'room_default.glb' | Malha base do cenário 3D.
+  * maxCapacity        | SMALLINT                     | NOT NULL DEFAULT 20                 | Limite de jogadores simultâneos.
+  * password           | VARCHAR(100)                 | NULL                                | Senha de proteção para salas privadas.
+  * isPublic           | BOOLEAN                      | NOT NULL DEFAULT TRUE               | Listagem pública no diretório de salas.
+  * boostExpiresAt     | TIMESTAMP WITH TIME ZONE     | NULL                                | Validade do impulso 24h no topo do ranking.
+  * monthlyVisits      | INTEGER                      | NOT NULL DEFAULT 0                  | Visitas únicas acumuladas no mês corrente.
+  * createdAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data de criação da sala.
+  * updatedAt          | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Data da última alteração de layout.
+Índices de Performance: idx_rooms_ownerAvatarId, idx_rooms_isPublic, idx_rooms_boostExpiresAt, idx_rooms_monthlyVisits
+
+--------------------------------------------------------------------------------
+TABELA: room_objects
+Descrição: Móveis e itens de decoração posicionados no espaço 3D da sala.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador da instância do objeto.
+  * roomId             | INTEGER                      | NOT NULL REFERENCES rooms(id) ON DELETE CASCADE | Sala onde está posicionado.
+  * shopItemId         | INTEGER                      | NOT NULL                            | Item do catálogo original.
+  * posX               | DECIMAL(8,3)                 | NOT NULL DEFAULT 0.000              | Coordenada X no espaço tridimensional.
+  * posY               | DECIMAL(8,3)                 | NOT NULL DEFAULT 0.000              | Coordenada Y (elevação/altura).
+  * posZ               | DECIMAL(8,3)                 | NOT NULL DEFAULT 0.000              | Coordenada Z no espaço tridimensional.
+  * rotX               | DECIMAL(6,2)                 | NOT NULL DEFAULT 0.00               | Rotação no eixo X em graus.
+  * rotY               | DECIMAL(6,2)                 | NOT NULL DEFAULT 0.00               | Rotação no eixo Y em graus (orientação).
+  * rotZ               | DECIMAL(6,2)                 | NOT NULL DEFAULT 0.00               | Rotação no eixo Z em graus.
+  * scaleX             | DECIMAL(6,3)                 | NOT NULL DEFAULT 1.000              | Fator de escala X.
+  * scaleY             | DECIMAL(6,3)                 | NOT NULL DEFAULT 1.000              | Fator de escala Y.
+  * scaleZ             | DECIMAL(6,3)                 | NOT NULL DEFAULT 1.000              | Fator de escala Z.
+  * customColor        | VARCHAR(20)                  | NULL                                | Cor personalizada aplicada na malha do móvel.
+Índices de Performance: idx_room_objects_roomId
+
+--------------------------------------------------------------------------------
+TABELA: avatar_outfits
+Descrição: Vestuário equipado ativamente nos 10 slots anatômicos.
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador do registro de look.
+  * avatarId           | INTEGER                      | NOT NULL REFERENCES avatars(id) ON DELETE CASCADE | Avatar que veste a peça.
+  * slotName           | VARCHAR(20)                  | NOT NULL                            | Slot: 'hair', 'head', 'eyes', 'top', 'bottom', 'shoes', 'fullbody', 'accessory', 'skin', 'animation'.
+  * shopItemId         | INTEGER                      | NOT NULL                            | Item de vestuário equipado.
+  * primaryColor       | VARCHAR(20)                  | NULL                                | Cor primária customizada aplicada no shader.
+  * secondaryColor     | VARCHAR(20)                  | NULL                                | Cor secundária customizada.
+  * equippedAt         | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Momento em que vestiu.
+Índices de Performance: idx_avatar_outfits_avatar_slot (UNIQUE: avatarId + slotName)
+
+--------------------------------------------------------------------------------
+TABELA: servers
+Descrição: Cluster de instâncias ativas de servidores dedicados (Godot headless).
+Colunas:
+  * id                 | INTEGER                      | PRIMARY KEY GENERATED ALWAYS AS IDENTITY | Identificador da instância.
+  * serverName         | VARCHAR(100)                 | NOT NULL                            | Nome do nó no cluster.
+  * ipAddress          | VARCHAR(45)                  | NOT NULL                            | Endereço IPv4 ou IPv6 do host.
+  * port               | INTEGER                      | NOT NULL                            | Porta WebSocket/UDP aberta para o jogo.
+  * currentPlayers     | INTEGER                      | NOT NULL DEFAULT 0                  | Carga atual de avatares conectados.
+  * maxCapacity        | INTEGER                      | NOT NULL DEFAULT 100                | Capacidade máxima segura da instância.
+  * status             | VARCHAR(20)                  | NOT NULL DEFAULT 'online'           | Status: 'online', 'busy', 'restarting', 'offline'.
+  * lastHeartbeatAt    | TIMESTAMP WITH TIME ZONE     | NOT NULL DEFAULT NOW()              | Sinal de vida periódica (TTL 45s).
+Índices de Performance: idx_servers_status, idx_servers_heartbeat
+
+
+================================================================================
+SEÇÃO ESPECIAL B: CATÁLOGO MINUCIOSO DE ENDPOINTS DA API REST v1
+================================================================================
+Documentação profunda dos contratos HTTP, parâmetros obrigatórios e corpos JSON.
+
+--------------------------------------------------------------------------------
+ENDPOINT: [POST] /api/v1/auth/token
+Descrição: Emissão de JWT de autenticação para clientes nativos e WebGL.
+Headers Requeridos: Content-Type: application/json
+Corpo da Requisição (Request):
+{
+  "email": "jogador@fantasy.life",
+  "password": "SenhaForte@2026"
+}
+Resposta Sucesso (Response 200 OK):
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "userId": 42,
+    "avatars": [
+      { "id": 101, "name": "Aragorn_TFL", "isVip": true },
+      { "id": 102, "name": "Legolas_3D", "isVip": false }
+    ]
+  }
+}
+
+--------------------------------------------------------------------------------
+ENDPOINT: [GET] /api/v1/avatars/:id/manifest
+Descrição: Manifesto declarativo completo para renderização do avatar pela engine 3D.
+Headers Requeridos: Authorization: Bearer <JWT>, x-profile-id: <AVATAR_ID>
+Corpo da Requisição (Request):
+Nenhum corpo (Query params opcionais: ?lod=high|med|low)
+Resposta Sucesso (Response 200 OK):
+{
+  "version": "1.0.0",
+  "avatarId": 101,
+  "name": "Aragorn_TFL",
+  "gender": 1,
+  "baseRig": "tfl_humanoid_male_v1",
+  "blendshapes": {
+    "height": 0.65,
+    "muscular": 0.40,
+    "jaw_width": 0.50,
+    "eye_slant": 0.15
+  },
+  "slots": {
+    "hair": { "mesh": "hair_ranger_02.glb", "color": "#1a0f00" },
+    "top": { "mesh": "tunic_leather_brown.glb", "color": "#3b2005" },
+    "bottom": { "mesh": "pants_medieval_dark.glb", "color": "#1c1c1c" },
+    "shoes": { "mesh": "boots_traveler.glb", "color": "#0d0d0d" }
+  }
+}
+
+--------------------------------------------------------------------------------
+ENDPOINT: [GET] /api/v1/rooms/:id/layout
+Descrição: Manifesto declarativo de sala 3D com planta baixa e objetos.
+Headers Requeridos: Authorization: Bearer <JWT>
+Corpo da Requisição (Request):
+Nenhum corpo
+Resposta Sucesso (Response 200 OK):
+{
+  "roomId": 55,
+  "roomName": "Taverna do Dragão Dourado",
+  "themeMesh": "room_tavern_wood.glb",
+  "maxCapacity": 35,
+  "furniture": [
+    {
+      "instanceId": 801,
+      "mesh": "table_oak_round.glb",
+      "transform": { "pos": [1.2, 0.0, -3.5], "rot": [0, 45, 0], "scale": [1, 1, 1] }
+    },
+    {
+      "instanceId": 802,
+      "mesh": "chair_oak.glb",
+      "transform": { "pos": [1.2, 0.0, -2.6], "rot": [0, 180, 0], "scale": [1, 1, 1] }
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+ENDPOINT: [POST] /api/v1/rooms/:id/ticket
+Descrição: Emissão de ticket JWT efêmero (30s) com uso único para conexão no servidor dedicado.
+Headers Requeridos: Authorization: Bearer <JWT>, x-profile-id: <AVATAR_ID>
+Corpo da Requisição (Request):
+Nenhum corpo
+Resposta Sucesso (Response 200 OK):
+{
+  "success": true,
+  "data": {
+    "ticket": "jwt_efemero_com_jti_e_ttl_30s...",
+    "server": {
+      "ip": "200.155.10.22",
+      "port": 8990,
+      "protocol": "wss"
+    },
+    "expiresInSeconds": 30
+  }
+}
+
+--------------------------------------------------------------------------------
+ENDPOINT: [POST] /api/v1/social/feelings
+Descrição: Publica um Sentimento efêmero com validade rígida de 6 horas.
+Headers Requeridos: Authorization: Bearer <JWT>, x-profile-id: <AVATAR_ID>
+Corpo da Requisição (Request):
+{
+  "moodEmoji": "☕",
+  "moodText": "Tomando um café e pronto para explorar salas!"
+}
+Resposta Sucesso (Response 200 OK):
+{
+  "success": true,
+  "data": {
+    "id": 991,
+    "expiresAt": "2026-10-14T23:59:00.000Z"
+  },
+  "message": "Sentimento publicado com validade de 6 horas."
+}
+
+--------------------------------------------------------------------------------
+ENDPOINT: [POST] /payment/pix/charge
+Descrição: Geração de cobrança Pix via Gateway Asaas para aquisição de Cash.
+Headers Requeridos: Authorization: Bearer <JWT>
+Corpo da Requisição (Request):
+{
+  "amount": 50.00,
+  "avatarId": 101
+}
+Resposta Sucesso (Response 200 OK):
+{
+  "success": true,
+  "data": {
+    "chargeId": "pay_asaas_88291",
+    "value": 50.00,
+    "qrCodeImage": "data:image/png;base64,iVBORw0KGgoAAAANSUh...",
+    "copyPaste": "00020126580014br.gov.bcb.pix0136123e4567-e89b...",
+    "expiresAt": "2026-10-14T19:30:00.000Z"
+  }
+}
+
+--------------------------------------------------------------------------------
+ENDPOINT: [POST] /api/v1/bank/withdraw
+Descrição: Solicitação formal de Saque Pix do saldo de Cash para o titular da conta.
+Headers Requeridos: Authorization: Bearer <JWT>
+Corpo da Requisição (Request):
+{
+  "amount": 150.00,
+  "pixKey": "12345678900"
+}
+Resposta Sucesso (Response 200 OK):
+{
+  "success": true,
+  "data": {
+    "withdrawId": "wd_77102",
+    "status": "processing",
+    "amount": 150.00,
+    "fee": 0.00,
+    "newBalance": 25.50
+  },
+  "message": "Solicitação de saque enviada com sucesso para processamento bancário."
+}
+
+
+================================================================================
+SEÇÃO ESPECIAL C: MANUAL DE ENGENHARIA DE TODAS AS TELAS E VIEWS (EJS)
+================================================================================
+Inventário técnico de cada view parcial do front-end, mapeando classes Tailwind,
+IDs de elementos DOM e eventos JavaScript associados.
+
+--------------------------------------------------------------------------------
+VIEW: src/views/profile/partials/view-vip.ejs
+Responsabilidade: Interface de Adesão ao Clube VIP Oficial
+Elementos DOM e IDs Principais:
+  * #vipCard1Week                : Cartão do plano de 1 Semana com botão de contratação.
+  * #vipCard1Month               : Cartão do plano de 1 Mês (plano recomendado com selo de destaque).
+  * #vipCard3Months              : Cartão do plano de 3 Meses com maior taxa de bônus em Coins.
+  * #modalConfirmVip             : Modal de confirmação com escolha de moeda (Cash ou Coins).
+  * #btnPayVipCash               : Dispara requisição POST para débito em Cash.
+  * #btnPayVipCoins              : Dispara requisição POST para débito em Coins.
+Arquitetura e Comportamento CSS/JS:
+  Layout mobile-first utilizando CSS Grid (`grid grid-cols-1 md:grid-cols-3 gap-6`), com cartões estilizados em efeito Glassmorphism (`backdrop-blur-md bg-white/10 dark:bg-black/40 border border-amber-500/30`), botões táteis com feedback visual de hover/active e tabela comparativa de benefícios.
+
+--------------------------------------------------------------------------------
+VIEW: src/views/profile/partials/sidebar.ejs
+Responsabilidade: Menu Lateral de Navegação Híbrido (Desktop e Mobile)
+Elementos DOM e IDs Principais:
+  * #sidebarContainer            : Contêiner principal com classes responsivas.
+  * #sidebarMobileBackdrop       : Backdrop escuro com transição de opacidade.
+  * #btnSidebarCloseMobile       : Botão X para fechar a gaveta no mobile.
+  * .sidebar-nav-item            : Links de módulos com ícones FontAwesome e selos numéricos.
+Arquitetura e Comportamento CSS/JS:
+  No mobile (< 768px), o contêiner recebe classes `fixed inset-y-0 left-0 z-50 w-72 transform -translate-x-full transition-transform duration-300 ease-in-out`. No desktop (>= 768px), transforma-se em coluna estática `md:relative md:translate-x-0 md:w-64`.
+
+--------------------------------------------------------------------------------
+VIEW: src/views/profile/partials/view-chat.ejs
+Responsabilidade: Central de Comunicação e Mensageria Flutuante
+Elementos DOM e IDs Principais:
+  * #floatingChatLauncher        : Botão balão fixado a bottom-20 no mobile.
+  * #chatWindowContainer         : Janela do chat com transição de escala/opacidade.
+  * #chatConversationsList       : Lista lateral de chats recentes com status online.
+  * #chatMessagesStream          : Container de mensagens com auto-scroll para a base.
+  * #chatInputText               : Campo de digitação com suporte a tecla Enter.
+  * #btnSendChatMessage          : Botão de envio de mensagem.
+Arquitetura e Comportamento CSS/JS:
+  Comportamento mobile adaptativo: ao abrir em celulares (< 640px), a janela de chat assume `fixed inset-0 z-50 bg-neutral-900 flex flex-col` cobrindo 100% da viewport, com botão superior de retorno. No desktop, assume `sm:fixed sm:bottom-6 sm:right-6 sm:w-[410px] sm:h-[560px] sm:rounded-2xl shadow-2xl`.
+
+--------------------------------------------------------------------------------
+VIEW: src/views/profile/partials/view-salas.ejs
+Responsabilidade: Navegador de Ambientes 3D e Ranking de Anfitriões
+Elementos DOM e IDs Principais:
+  * #salasTabsNav                : Trilho horizontal de sub-abas com overflow-x-auto.
+  * #tabBtnMinhasSalas           : Aba de gerenciamento de salas do avatar.
+  * #tabBtnExplorarSalas         : Aba com grade de salas públicas da comunidade.
+  * #tabBtnRankingMes            : Aba com pódio e classificação mensal de anfitriões.
+  * #btnCreateRoomModal          : Abre modal de criação com upload de thumbnail e escolha de tema.
+  * .btn-boost-room              : Aplica o impulso 24h na sala pagando taxa de 20 Coins.
+Arquitetura e Comportamento CSS/JS:
+  As sub-abas são estruturadas com `flex items-center space-x-2 overflow-x-auto no-scrollbar py-2 px-1`, garantindo que o usuário deslize suavemente o dedo sem quebras de linha em telas pequenas.
+
+--------------------------------------------------------------------------------
+VIEW: src/views/profile/partials/view-user-profile.ejs
+Responsabilidade: Perfil Social Público e Configurações de Privacidade
+Elementos DOM e IDs Principais:
+  * #profileCoverImg             : Banner de capa do avatar com botão de upload.
+  * #profileAvatarImg            : Foto de perfil circular com indicador de status online.
+  * #profileSocialTabs           : Trilho horizontal de seções (Posts, Fotos, Salas, Amigos, Privacidade).
+  * #btnActionAddFriend          : Envia solicitação de amizade mútua.
+  * #btnActionCrush              : Marca crush silencioso com ícone de coração.
+  * #privacySettingsForm         : Formulário com selects de privacidade por seção.
+Arquitetura e Comportamento CSS/JS:
+  Descentraliza a privacidade. O jogador ajusta quem pode ver seus posts na aba Posts, quem vê fotos na aba Fotos, e quem vê salas na aba Salas, eliminando menus de configuração labirínticos.
+
+
+================================================================================
+SEÇÃO ESPECIAL D: ESPECIFICAÇÃO MATEMÁTICA DOS MINIGAMES DE CASSINO
+================================================================================
+Modelagem probabilística, cálculo de RTP (Return to Player) e máquinas de estado.
+
+D.1 ROLETA EUROPEIA (37 NÚMEROS: 0 A 36):
+- Vantagem matemática da casa: 2,70% (devido à casa única '0' verde).
+- Tipos de apostas suportadas:
+  * Apostas Internas: Direta (35:1), Dividida (17:1), Rua (11:1), Canto (8:1), Linha (5:1).
+  * Apostas Externas: Vermelho/Preto (1:1), Par/Ímpar (1:1), Alto/Baixo (1:1), Dúzias (2:1), Colunas (2:1).
+- Randomização: Algoritmo pseudo-aleatório criptográfico `crypto.randomInt(0, 37)` executado
+  exclusivamente no Backend Node.js, transmitindo o resultado via WebSocket para a animação do cliente.
+
+D.2 CAÇA-NÍQUEL GOLDEN TIGER (SLOTS 3X3):
+- Matriz de 3 rolos por 3 linhas com 5 linhas de pagamento ativas.
+- Tabela de Símbolos e Multiplicadores:
+  * Tigre Dourado (Wild): 100x na aposta de linha.
+  * Moeda Dourada da Sorte: 50x.
+  * Pote de Ouro: 25x.
+  * Tambor Chinês: 15x.
+  * Envelopes Vermelhos: 10x.
+  * Letras A, K, Q, J: 5x, 4x, 3x, 2x.
+- Taxa de Retorno Teórico (RTP): Fixada em 95,50% no arquivo de configuração do backend.
+
+D.3 JOGOS DE CARTAS: BACCARAT E BACBOO:
+- Baccarat: Aposta no Jogador (1:1), na Banca (0.95:1 com 5% de comissão retida) ou Empate (8:1).
+- Bacboo: Variação rápida onde os pontos são definidos pelo somatório de 2 dados de 6 faces
+  lançados para o Jogador e 2 dados para a Banca.
+
+
+================================================================================
+SEÇÃO ESPECIAL E: GLOSSÁRIO CANÔNICO E VOCABULÁRIO CONTROLADO DO TFL
+================================================================================
+Definições estritas de termos para uniformidade de linguagem entre modelos de IA e engenheiros:
+
+1. USER: A pessoa física real proprietária da conta. Nunca aparece no chat ou no metaverso 3D.
+2. AVATAR: A entidade viva, tridimensional e social. É a detentora de moedas de jogo, amigos e roupas.
+3. CASH: Moeda fiduciária indexada ao Real (R$ 1,00 = 1 Cash). NUNCA é transferível entre usuários.
+4. COINS: Moeda virtual utilitária social do jogo. É a única moeda que circula na Bolsa P2P e no comércio.
+5. CHIPS: Fichas recreativas internas para uso exclusivo nos minigames de cassino.
+6. MINI REEL: Formato efêmero de postagem vertical de foto e texto que expira rigidamente em 24 horas.
+7. SENTIMENTO: Atualização de humor e status emocional do avatar com validade mandatória de 6 horas.
+8. MATCHMAKING SILENCIOSO: Mecânica de crush mútua onde a marcação é invisível até haver reciprocidade.
+9. SERVIDOR DEDICADO: Instância de processo headless que gerencia física e presença de sala em memória RAM.
+10. MANIFESTO DECLARATIVO: Payload JSON emitido pelo backend descrevendo malhas, cores e coordenadas.
+11. SLOTS ANATÔMICOS: Os 10 compartimentos padronizados do esqueleto 3D para equipar vestuário.
+12. LAZY LOADING DE CONTEXTO: Prática de carregar apenas o nível de documentação necessário (L1, L2 ou L3).
+
+================================================================================
+SEÇÃO ESPECIAL F: MANUAL EXAUSTIVO DAS TELAS DO PAINEL ADMINISTRATIVO (/admin)
+================================================================================
+O Painel de Administração do TFL é uma aplicação isolada, protegida por autenticação rígida
+e acessível exclusivamente por operadores com papel 'admin' ou 'owner'.
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: home.html (Dashboard Geral)
+Objetivo: Central de comando executiva com telemetria agregada em tempo real.
+Componentes da Interface:
+  * Cards de Métricas Rápidas: Usuários Registrados, Avatares Ativos, Salas 3D Criadas e Volume Pix (BRL).
+  * Gráfico de Linha Interativo: Curva de visitantes únicos por hora nas últimas 24 horas.
+  * Mapa Coroplético de Acessos: Distribuição geográfica de acessos por país e estado brasileiro.
+  * Tabela de Últimas Transações: Feed em tempo real de depósitos e saques com status de aprovação.
+Endpoints Consumidos: GET /admin/api/stats, GET /admin/api/financial-summary
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: serversDetails.html (Cluster de Servidores Dedicados)
+Objetivo: Monitoramento e controle de instâncias Godot Headless para salas 3D.
+Componentes da Interface:
+  * Grade de Instâncias: Cartão para cada nó com IP público, porta, uptime e ping médio.
+  * Indicador de Lotação: Barra percentual de jogadores conectados em relação à capacidade máxima.
+  * Botão 'Reiniciar Instância': Envia sinal SIGTERM controlado para desalocar salas vazias.
+  * Botão 'Subir Novo Nó': Executa provisionamento de novo processo em porta dinâmica livre.
+Endpoints Consumidos: GET /admin/api/servers, POST /admin/api/servers/spawn, POST /admin/api/servers/:id/restart
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: shopUpload.html (Central de Upload e Catálogo 3D)
+Objetivo: Ferramenta de ingestão e catalogação de novos itens tridimensionais.
+Componentes da Interface:
+  * Área de Drag-and-Drop: Upload de arquivos de malha 3D (.glb) e texturas PBR (.png, .webp).
+  * Seletor de Categoria: Roupas (com escolha do slot anatômico), Móveis, Decoração, Emotes.
+  * Configurador de Economia: Definição de preço em Coins, Cash ou Chips, e estoque (-1 para infinito).
+  * Seletor de Gênero: Universal, Masculino (gender 1) ou Feminino (gender 0).
+  * Pré-visualizador WebGL: Canvas de validação do arquivo 3D antes da publicação oficial.
+Endpoints Consumidos: POST /admin/api/shop/upload, POST /admin/api/shop/items
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: prefab.html (Biblioteca de Prefabs de Cenários)
+Objetivo: Gestão de modelos pré-fabricados de salas (apartamentos, castelos, praias, boates).
+Componentes da Interface:
+  * Galeria de Temas: Listagem dos prefabs padrão disponíveis para seleção pelos avatares.
+  * Editor de Metadados: Capacidade máxima recomendada, pontos de spawn (x, y, z) e caixas de colisão.
+  * Upload de Novos Prefabs: Ingestão de arquivos de cenário completos com materiais embutidos.
+Endpoints Consumidos: GET /admin/api/prefabs, POST /admin/api/prefabs
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: rooms.html (Auditoria de Salas e Moderação)
+Objetivo: Painel de fiscalização e moderação de ambientes virtuais públicos e privados.
+Componentes da Interface:
+  * Tabela de Salas Ativas: Nome, Dono, Lotação Atual, Visitas Mensais e Status de Boost.
+  * Filtro de Conteúdo Sensível: Busca por palavras-chave em títulos e descrições de salas.
+  * Botão 'Intervir na Sala': Teleporta moderador invisível ou desativa a sala imediatamente.
+  * Botão 'Remover Boost': Cancela impulsos irregulares ou obtidos mediante fraude.
+Endpoints Consumidos: GET /admin/api/rooms, DELETE /admin/api/rooms/:id, POST /admin/api/rooms/:id/moderate
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: expenses.html (Gestão de Custos e Saúde Financeira)
+Objetivo: Auditoria de solvência da plataforma perante o passivo de Cash dos jogadores.
+Componentes da Interface:
+  * Formulário de Lançamento de Despesa: Servidores, gateways de pagamento, licenças, marketing.
+  * Painel de Solvência: Comparativo entre Total de Cash em poder dos jogadores vs Saldo bancário Asaas.
+  * Alerta de Liquidez: Indicador visual (Verde: Seguro, Amarelo: Atenção, Vermelho: Déficit).
+  * Histórico Contábil: Tabela de saídas operacionais com recibos e notas fiscais anexadas.
+Endpoints Consumidos: GET /admin/api/financial-health, POST /admin/api/expenses, DELETE /admin/api/expenses/:id
+
+--------------------------------------------------------------------------------
+TELA ADMINISTRATIVA: bots.html (Simulador de Carga e Comportamento)
+Objetivo: Ferramenta de estresse e teste de carga em tempo real com bots simulados.
+Componentes da Interface:
+  * Controle de Quantidade de Bots: Slider de 1 a 100 bots simultâneos.
+  * Seletor de Perfil de Ação: Bots de navegação em feed, bots de chat, bots de salas 3D.
+  * Painel de Telemetria de Carga: Tempo de resposta da API (ms) e consumo de CPU sob estresse.
+  * Botão 'Parar Todos os Bots': Interrompe imediatamente todas as rotinas simuladas.
+Endpoints Consumidos: POST /admin/api/bots/simulate, POST /admin/api/bots/stop
+
+
+================================================================================
+SEÇÃO ESPECIAL G: CATÁLOGO COMPLETO DE ROTAS E MIDDLEWARES DO BACKEND
+================================================================================
+Estrutura completa de roteadores Express e a cadeia de tratamento de requisições.
+
+G.1 CADEIA DE MIDDLEWARES (PIPELINE GLOBAL):
+1. `express.json()` & `express.urlencoded({ extended: true })`: Parsing de payloads JSON e formulários.
+2. `cookieParser()`: Leitura de cookies de sessão assinados e tokens de autenticação.
+3. `sessionMiddleware`: Gestão de sessões ativas com armazenamento seguro no banco/memória.
+4. `i18nMiddleware`: Detecção automática do idioma do usuário via cookie ou header `Accept-Language`.
+5. `requireAuth`: Validador de sessão para áreas privadas do `/profile`.
+6. `requireAdminAuth`: Barreira rígida que valida se a conta possui `role IN ('admin', 'owner')`.
+7. `errorHandler`: Captura global de exceções, impedindo vazamento de stack traces em produção.
+
+G.2 MAPEAMENTO DO ROTEADOR RAIZ (`src/routes/router.js`):
+- `/`: Roteador da Home institucional (`home_controller.js`).
+- `/tutorial`: Renderização do manual amigável do jogador (`tutorial.ejs`).
+- `/auth`: Rotas de cadastro, login, logout e redefinição de senha (`auth_controller.js`).
+- `/profile`: Portal do jogador e parciais Server-Driven UI (`profile_controller.js`).
+- `/api/v1`: Barramento de APIs REST para clientes móveis e desktop (`api.routers.js`).
+- `/admin`: Painel administrativo protegido por `requireAdminAuth` (`admin.router.js`).
+- `/payment`: Webhooks bancários e endpoints de checkout Pix (`pagbank.js`).
+- `/api/visit-beacon`: Endpoint ultrarrápido para telemetria silenciosa de acessos geográficos.
+
+
+================================================================================
+SEÇÃO ESPECIAL H: SISTEMA DE INTERNACIONALIZAÇÃO (i18n) E MULTILÍNGUE
+================================================================================
+O TFL foi projetado para acolher uma comunidade global sem barreiras idiomáticas.
+
+H.1 IDIOMAS OFICIAIS SUPORTADOS:
+- `pt-BR` (Português do Brasil - Idioma Nativo)
+- `en-US` (Inglês Internacional)
+- `es-ES` (Espanhol)
+- Suporte preliminar a `it-IT` (Italiano), `nl-NL` (Holandês) e `ko-KR` (Coreano) via arquivos em `src/locales/`.
+
+H.2 ARQUITETURA DO SERVIÇO `src/locales/i18n.js`:
+- Carrega os dicionários JSON em memória durante a inicialização do servidor.
+- Injeta o helper global `__()` nas views EJS:
+  Exemplo na View: `<h1 class="text-xl font-bold"><%= __('welcome_message') %></h1>`
+- Troca Dinâmica sem Reload da Sessão:
+  Rota: `GET /i18n/change/:lang`
+  Ação: Grava cookie HTTP-Only `tfl_lang` com TTL de 365 dias e redireciona para a URL de origem.
+- Regra de Interface: O seletor de idioma reside exclusivamente no rodapé (`footer.ejs`).
+
+
+================================================================================
+SEÇÃO ESPECIAL I: MATRIZ DE TESTES E PROCEDIMENTOS DE HOMOLOGAÇÃO
+================================================================================
+Roteiros formais de teste para garantir a robustez e ausência de regressões no ecossistema.
+
+--------------------------------------------------------------------------------
+CASO DE TESTE [TC-01]: Depósito Pix via Gateway Asaas e Crédito de Cash
+Procedimento de Execução:
+  1. O usuário seleciona R$ 50,00 na Carteira.
+  2. O backend gera o QR Code Pix com chargeId único.
+  3. O simulador bancário dispara webhook para `/payment/webhook/asaas`.
+  4. O backend valida a assinatura do webhook, inicia transação com locking pessimista.
+  5. O saldo de Cash do avatar é incrementado em exatamente 50.00.
+  6. Um registro com `operationType: 'pix_deposit'` é inserido no `wallet_ledger`.
+
+--------------------------------------------------------------------------------
+CASO DE TESTE [TC-02]: Transferência P2P de Coins entre Avatares com Validação de Saldo
+Procedimento de Execução:
+  1. Avatar A tenta transferir 500 Coins para Avatar B tendo saldo de 300 Coins.
+  2. O backend intercepta e retorna erro HTTP 400 com mensagem 'Saldo insuficiente'.
+  3. Nenhuma alteração ocorre no banco.
+  4. Avatar A transfere 100 Coins.
+  5. O backend bloqueia as duas carteiras simultaneamente com `LOCK.UPDATE`.
+  6. Debita 100 de A, credita 100 em B e grava 2 lançamentos auditáveis no ledger.
+
+--------------------------------------------------------------------------------
+CASO DE TESTE [TC-03]: Conflito de Slots 3D: Equipar 'Fullbody' Desequipando 'Top' e 'Bottom'
+Procedimento de Execução:
+  1. O avatar possui camisa (top) e calça (bottom) equipados.
+  2. O jogador envia requisição para equipar um vestido longo (fullbody).
+  3. O backend executa transação no banco:
+     - Insere a peça no slot `fullbody` em `avatar_outfits`.
+     - Remove as linhas dos slots `top` e `bottom` do mesmo avatar.
+  4. O manifesto retornado em `GET /api/v1/avatars/:id/manifest` reflete exclusivamente o fullbody.
+
+--------------------------------------------------------------------------------
+CASO DE TESTE [TC-04]: Expiração Estrita de Sentimento (TTL 6h) e Mini Reel (TTL 24h)
+Procedimento de Execução:
+  1. Um Sentimento é postado às 10:00 com expiração marcada para as 16:00.
+  2. Às 15:59, a consulta ao feed ainda retorna o sentimento.
+  3. Às 16:01, a consulta ao feed aplica filtro `WHERE expiresAt > NOW()` e o sentimento desaparece.
+  4. O mesmo critério é validado para Mini Reels com horizonte de 24 horas.
+
+--------------------------------------------------------------------------------
+CASO DE TESTE [TC-05]: Responsividade Mobile-First (Viewport de 360px a 480px)
+Procedimento de Execução:
+  1. A aplicação é carregada em simulador com viewport 360x640.
+  2. A Bottom Navigation Bar fixa-se na base sem sobrepor o conteúdo (`pb-20`).
+  3. A Sidebar é recolhida em Drawer e só abre ao toque no botão hambúrguer ou aba Menu.
+  4. O chat flutuante abre em modo tela cheia (100% viewport) sem barras horizontais de scroll quebrado.
+
+
+================================================================================
+SEÇÃO ESPECIAL J: MATRIZ DE RISCOS TÉCNICOS E PLANO DE CONTINGÊNCIA
+================================================================================
+Identificação preventiva de vulnerabilidades de arquitetura e procedimentos de mitigação.
+
+J.1 RISCO 1: FALHA OU QUEDA DE INSTÂNCIA DE SERVIDOR DEDICADO GODOT
+- Impacto: Desconexão abrupta de jogadores em uma sala específica.
+- Mitigação e Recuperação:
+  * O serviço `stats.service.js` roda verificação de heartbeat a cada 15 segundos.
+  * Caso uma instância pare de responder por 45 segundos, seu status é alterado para 'offline'.
+  * O balanceador do Backend provisiona automaticamente uma nova instância em porta livre.
+  * Os clientes de jogo recebem evento WebSocket de reconexão e reconectam na nova sala em < 3s.
+
+J.2 RISCO 2: INCONSISTÊNCIA OU DIVERGÊNCIA DE SALDOS MONETÁRIOS
+- Impacto: Quebra de confiança de jogadores ou prejuízo financeiro.
+- Mitigação e Auditoria:
+  * O Livro-Razão (`wallet_ledger`) é a autoridade absoluta de prova contábil.
+  * Script de auditoria diária compara o somatório dos lançamentos históricos de cada avatar
+    com o valor gravado na coluna `currencies.coins` e `currencies.cash`.
+  * Em caso de divergência de 1 centavo, a conta é suspensa cautelarmente para análise da diretoria.
+
+J.3 RISCO 3: ATAQUES DE NEGAÇÃO DE SERVIÇO (DDoS) E SPAM EM CHAT
+- Impacto: Lentidão do servidor Express e degradação da experiência social.
+- Mitigação:
+  * Rate limiting configurado via middleware: máximo de 60 requisições por minuto por IP em rotas gerais.
+  * No chat: Cota diária de DMs para contas não-VIP (limite de 30 novas conversas por dia).
+  * Cooldown de envio de mensagens no WebSocket: intervalo mínimo de 500ms entre balões de texto.
+
+J.4 RISCO 4: ALUCINAÇÃO DE MODELOS DE INTELIGÊNCIA ARTIFICIAL EM DESENVOLVIMENTO
+- Impacto: Criação de rotas contraditórias, vazamento de permissão ou reintrodução de termos de engine.
+- Mitigação:
+  * Regra de ouro: Antes de qualquer código, o modelo DEVE ler `ARQUITETURA_DEFINITIVA_TFL.txt`.
+  * Princípio do Lazy Loading: A IA consulta a `tree.md` e abre apenas o `regras.md` do nó desejado.
+  * Validação de proibições: Toda revisão de código deve checar a lista de proibições do L3.
+
+================================================================================
+SEÇÃO ESPECIAL K: ESPECIFICAÇÃO TÉCNICA DOS 10 SLOTS ANATÔMICOS 3D E RIGGING
+================================================================================
+O ecossistema 3D do TFL utiliza um esqueleto canônico humanoide compartilhado.
+Todas as peças de vestuário criadas pela plataforma ou por criadores UGC devem obrigatoriamente
+seguir os padrões de vinculação esquelética (skinning), limites de polígonos e materiais PBR.
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 1. hair (Cabelos e Penteados)
+Osso(s) de Ancoragem / Deformação: Head (Cabeça)
+Orçamento Técnico: Máximo de 4.000 triângulos / Textura Diffuse + Normal Map de 1024x1024.
+Shader & Materiais: Shader de cabelo PBR com corte de transparência alfa (Alpha Scissor = 0.5) e brilho especular anisotrópico.
+Customização de Cores: Suporte a coloração dinâmica via tintura RGB na camada primária e luz de contorno na camada secundária.
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 2. head (Chapéus, Bonés, Capacetes e Tiaras)
+Osso(s) de Ancoragem / Deformação: Head (Ancorado no ponto central da calota craniana)
+Orçamento Técnico: Máximo de 2.500 triângulos / Textura 1024x1024.
+Shader & Materiais: PBR padrão (Albedo, Roughness, Metallic, Normal Map).
+Customização de Cores: Permite 2 canais de cores configuráveis (ex: cor do boné e cor da aba).
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 3. eyes (Óculos, Lentes de Contato e Máscaras)
+Osso(s) de Ancoragem / Deformação: Head (Ancorado nos marcadores oculares LeftEye / RightEye)
+Orçamento Técnico: Máximo de 1.500 triângulos / Textura 512x512.
+Shader & Materiais: Suporte a reflexo especular de vidro e índice de refração (IOR = 1.45) para lentes graduadas ou escurecidas.
+Customização de Cores: Cor da armação e tonalidade do degradê das lentes.
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 4. top (Torso: Camisas, Jaquetas, Casacos e Blusas)
+Osso(s) de Ancoragem / Deformação: Spine1, Spine2, Neck, LeftClavicle, RightClavicle, LeftArm, RightArm
+Orçamento Técnico: Máximo de 5.000 triângulos / Textura 2048x2048.
+Shader & Materiais: PBR com suporte a mapa de oclusão de ambiente (Ambient Occlusion) para vincos realistas de tecido.
+Customização de Cores: Canal primário (tecido principal) e canal secundário (gola, punhos e zíperes).
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 5. bottom (Pernas: Calças, Bermudas, Saias e Shorts)
+Osso(s) de Ancoragem / Deformação: Hips, LeftUpLeg, RightUpLeg, LeftLeg, RightLeg
+Orçamento Técnico: Máximo de 4.500 triângulos / Textura 2048x2048.
+Shader & Materiais: PBR com deformação suave de vértices nos joelhos (Dual Quaternion Skinning compatível).
+Customização de Cores: Canal primário (jeans/tecido) e canal secundário (cinto e detalhes laterais).
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 6. shoes (Calçados: Tênis, Botas, Sapatos e Sandálias)
+Osso(s) de Ancoragem / Deformação: LeftFoot, RightFoot, LeftToeBase, RightToeBase
+Orçamento Técnico: Máximo de 2.500 triângulos por par / Textura 1024x1024.
+Shader & Materiais: PBR com solado antiderrapante em mapa de rugosidade dedicado.
+Customização de Cores: Canal primário (couro/cabedal) e canal secundário (cadarços e entressola).
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 7. fullbody (Trajes Completos: Macacões, Vestidos Longos e Armaduras)
+Osso(s) de Ancoragem / Deformação: Cobre todo o esqueleto da base do pescoço até os tornozelos
+Orçamento Técnico: Máximo de 8.000 triângulos / Textura 2048x2048.
+Shader & Materiais: PBR de alta fidelidade com física secundária suave em tecidos longos (Cloth Simulation via Spring Bones).
+Customização de Cores: Canal primário e canal secundário com suporte a textura estampada customizada.
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 8. accessory (Acessórios Especiais: Mochilas, Asas, Capas e Caudas)
+Osso(s) de Ancoragem / Deformação: Spine2 (Mochilas/Asas), Hips (Caudas) ou Wrist (Relógios/Braceletes)
+Orçamento Técnico: Máximo de 3.000 triângulos / Textura 1024x1024.
+Shader & Materiais: PBR ou Shader com emissão de luz suave (Unlit Emissive) para itens mágicos e futuristas.
+Customização de Cores: Cor do acessório e intensidade do brilho neon.
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 9. skin (Pele Base, Tatuagens e Texturas Corporais)
+Osso(s) de Ancoragem / Deformação: Todos os ossos do corpo humanoide
+Orçamento Técnico: Malha compartilhada do Rig Base / Textura corporal de 2048x2048.
+Shader & Materiais: Shader de pele com dispersão subsuperficial (Subsurface Scattering aproximado) para evitar aspecto de plástico.
+Customização de Cores: Paleta universal de tonalidades de pele humana e fantástica (élfica, demoníaca, alienígena).
+
+--------------------------------------------------------------------------------
+SLOT ANATÔMICO: 10. animation (Emotes, Danças e Poses Estáticas)
+Osso(s) de Ancoragem / Deformação: Trilhas de animação de rotação e translação de todos os 52 ossos do rig humanoide
+Orçamento Técnico: Arquivos de animação comprimidos (.anim) a 30 quadros por segundo.
+Shader & Materiais: Não se aplica (camada de cinemática e animação).
+Customização de Cores: Não se aplica.
+
+
+--------------------------------------------------------------------------------
+TABELA DE MORPH TARGETS (BLENDSHAPES) FACIAIS E CORPORAIS
+--------------------------------------------------------------------------------
+Todos os parâmetros morfológicos utilizam escala normalizada de 0.0 (mínimo) a 1.0 (máximo),
+com 0.5 representando o padrão neutro do rig:
+
+Parâmetro            | Descrição Visual                      | Impacto no Rig
+---------------------+---------------------------------------+------------------------------------------
+height               | Estatura total do avatar              | Escala linear uniforme do osso Root.
+muscular             | Definição e volume muscular           | Expansão de vértices nos braços e tórax.
+weight               | Volume de massa corporal (largura)    | Escala nos eixos X e Z do tronco e quadris.
+jaw_width            | Largura do maxilar e queixo           | Deslocamento lateral dos vértices da mandíbula.
+jaw_prominence       | Projeção frontal do queixo            | Deslocamento do queixo no eixo Z.
+eye_size             | Tamanho dos globos oculares           | Escala dos marcadores oculares.
+eye_slant            | Inclinação das órbitas oculares       | Rotação dos cantos dos olhos.
+nose_width           | Largura da base nasal e narinas       | Escala transversal da cartilagem nasal.
+nose_length          | Comprimento vertical do nariz         | Translação inferior da ponta do nariz.
+lip_thickness        | Volume e espessura dos lábios         | Inflação nos vértices dos lábios superior/inferior.
+
+
+================================================================================
+SEÇÃO ESPECIAL L: GUIA DE ENGENHARIA DE CONTROLLERS (src/controllers/)
+================================================================================
+Documentação técnica de cada arquivo de controller em produção, mapeando sua lógica de negócio.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/game/avatar/avatar_controller.js
+Responsabilidade: Gestão de Ciclo de Vida e Customização dos Avatares
+Métodos Principais e Lógica:
+  * `createAvatar(req, res)`: Cria uma nova persona vinculada ao `req.user.id`. Valida nome único, gera carteira inicial com 100 Coins de presente de boas-vindas e cria registro de slots limpos.
+  * `getAvatarManifest(req, res)`: Constrói dinamicamente o manifesto JSON consultando os slots equipados em `avatar_outfits` e os blendshapes cadastrados, retornando payload para o cliente 3D.
+  * `switchActiveAvatar(req, res)`: Altera o `avatarId` ativo gravado na sessão e no cookie criptografado do usuário.
+  * `updateBioAndCover(req, res)`: Atualiza foto de perfil, banner de capa e texto de biografia social.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/game/avatar/inventoryCloth_controller.js
+Responsabilidade: Guarda-Roupa e Resolução de Conflitos de Equipamento
+Métodos Principais e Lógica:
+  * `equipCloth(req, res)`: Valida se o avatar possui a peça no inventário (`avatar_inventories`). Executa transação Sequelize que remove peças conflitantes (ex: desequipa `top` ao vestir `fullbody`) e grava a nova peça no slot correspondente.
+  * `unequipCloth(req, res)`: Remove a peça do slot em `avatar_outfits`, retornando o slot ao estado desnudo padrão.
+  * `getInventory(req, res)`: Retorna catálogo paginado de todas as peças adquiridas pelo avatar com filtro por slot.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/game/shop/shop_controller.js
+Responsabilidade: Processamento de Compras de Roupas, Móveis e Royalties UGC
+Métodos Principais e Lógica:
+  * `purchaseItem(req, res)`: Executa transação atômica bancária. Valida se o item tem estoque, debita a moeda correspondente (Coins, Cash ou Chips) da carteira do comprador com `LOCK.UPDATE`. Se o item for de criador UGC, credita 70% na carteira do criador e 30% na plataforma. Grava registro no `wallet_ledger` e adiciona o item ao `avatar_inventories`.
+  * `listCatalog(req, res)`: Catálogo público com paginação de 20 itens por página, filtro de gênero e categoria.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/game/rooms_controllers.js
+Responsabilidade: Orquestração de Salas 3D, Layout e Bilhetagem de Entrada
+Métodos Principais e Lógica:
+  * `createRoom(req, res)`: Cria nova sala no banco vinculada ao avatar dono. Configura tema base e permissões.
+  * `getRoomLayout(req, res)`: Retorna o manifesto da sala com o tema 3D e a lista de móveis posicionados.
+  * `saveRoomLayout(req, res)`: Atualiza em lote as transformadas tridimensionais (pos, rot, escala) dos móveis em `room_objects`.
+  * `boostRoom(req, res)`: Debita 20 Coins da carteira do avatar e estende o campo `boostExpiresAt` por 24 horas.
+  * `issueRoomTicket(req, res)`: Valida se o avatar não está banido da sala e se a capacidade máxima não foi atingida, emitindo o Ticket JWT de 30s para o servidor dedicado.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/social/chat_controller.js
+Responsabilidade: Mensageria Instantânea, DMs e Salas de Conversa
+Métodos Principais e Lógica:
+  * `getConversationHistory(req, res)`: Retorna mensagens paginadas por cursor de tempo entre dois avatares.
+  * `sendMessage(req, res)`: Grava mensagem na tabela `chat_messages`, atualiza timestamp da conversa e despacha evento em tempo real via Socket.io para o canal do destinatário.
+  * `markAsRead(req, res)`: Atualiza status de leitura das mensagens recebidas e emite recibo visual.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/social/social.js
+Responsabilidade: Feed, Reações, Comentários Recursivos e Relacionamentos
+Métodos Principais e Lógica:
+  * `getFeed(req, res)`: Monta timeline unificada combinando posts de amigos e posts públicos, ordenados por recência e popularidade.
+  * `createPost(req, res)`: Cria postagem permanente com upload de foto opcional e validação de tamanho de texto.
+  * `reactToPost(req, res)`: Incrementa atomicamente uma das 7 reações canônicas e remove reação anterior se houver.
+  * `addComment(req, res)`: Insere comentário com suporte a `parentId` para montagem de árvore recursiva.
+  * `handleCrushMatch(req, res)`: Registra crush invisível e verifica se há reciprocidade para disparar evento de Match 💘.
+
+--------------------------------------------------------------------------------
+CONTROLLER: src/controllers/profile/profile_controller.js
+Responsabilidade: Roteamento e Server-Driven UI do Portal Web
+Métodos Principais e Lógica:
+  * `renderIndex(req, res)`: Renderiza a casca SPA principal com dados básicos do usuário e avatares.
+  * `renderPartial(req, res)`: Renderiza e devolve sob demanda fragmentos HTML das views parciais (`view-vip`, `view-diary`, `view-salas`, `view-market`, `view-avatar`, etc.).
+  * `updateProfileSettings(req, res)`: Grava preferências de idioma, notificações e tema visual.
+
+
+================================================================================
+SEÇÃO ESPECIAL M: ESTRUTURA FÍSICA INTEGRAL DE ARQUIVOS DO PROJETO
+================================================================================
+Mapeamento dos 268 arquivos de código-fonte estruturados em `src/`:
+
+`src/`
+├── `api/` (Barramento de APIs REST)
+│   ├── `errors.js` (Tratamento centralizado de códigos de erro HTTP)
+│   ├── `index.js` (Inicializador do barramento)
+│   └── `v1/` (Versão 1 da API)
+│       ├── `auth/user.routers.js` (Rotas de token e login de API)
+│       ├── `bank/index.js` (Rotas de saldo, extrato e cobranças Pix)
+│       ├── `cassino/index.js` (Rotas de saldo e apostas em jogos)
+│       ├── `game/` (Rotas de avatares, inventário, salas e objetos 3D)
+│       └── `social/` (Rotas de posts, fotos, comentários e reels)
+├── `config/` (Configurações de ambiente e credenciais de banco)
+├── `controllers/` (Lógica de controle dividida por domínios)
+│   ├── `admin/` (Telemetria, arquivos 3D, moderação)
+│   ├── `auth/` (Login, registro, sessões)
+│   ├── `game/` (Avatares, roupas, salas, cassino)
+│   ├── `home/` (Landing page institucional)
+│   ├── `profile/` (Portal do jogador e SDUI)
+│   └── `social/` (Chat, feed, amizades, match)
+├── `locales/` (Dicionários multilíngues pt-BR, en-US, es-ES, etc.)
+├── `middlewares/` (Autenticação, sessões, i18n e segurança)
+├── `models/` (Modelos Sequelize divididos em bank/, game/, social/)
+├── `routes/` (Roteadores Express raiz e agregados)
+├── `services/` (Serviços puros de negócio: storage, diary, stats, market, career)
+├── `sockets/` (Hub de WebSockets para chat, salas e voz)
+└── `views/` (Templates EJS modulares e telas administrativas)
+
+================================================================================
+SEÇÃO ESPECIAL N: ESPECIFICAÇÃO DETALHADA DOS SERVICES (src/services/)
+================================================================================
+A camada de Serviços isola 100% das regras de negócio complexas, mantendo os controllers
+apenas como orquestradores de requisição e resposta HTTP.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/stats.service.js
+Responsabilidade: Serviço de Telemetria Geográfica e Presença Global
+Funções e Regras de Negócio:
+  * `recordVisit(ip, userAgent, headers)`: Extrai fuso horário, país e estado brasileiro a partir de headers de proxy e GeoIP. Grava contagem agregada com cache TTL de 60 segundos para não onerar o banco com I/O de disco.
+  * `getOnlineAvatarsCount()`: Retorna o número exato de avatares com sockets ativos nos namespaces de chat e salas 3D.
+  * `getGeographicDistribution()`: Monta mapa percentual de acessos por região para o dashboard administrativo.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/coinMarket.service.js
+Responsabilidade: Serviço do Mercado de Moedas e Bolsa P2P FIFO
+Funções e Regras de Negócio:
+  * `createOrder(avatarId, type, amount, pricePerCoin)`: Registra uma nova ordem no livro de ofertas. Se for venda, bloqueia as Coins imediatamente na carteira do vendedor com lock pessimista.
+  * `matchOrders()`: Algoritmo de cruzamento contínuo. Emparelha ordens de compra e venda pela melhor cotação disponível (FIFO). Executa liquidação atômica e transfere Coins para o comprador e Cash para o vendedor, retendo taxa da plataforma.
+  * `recordLedgerEntry(avatarId, currency, opType, amount, fee, balanceAfter, metadata)`: Helper centralizado para gravação imutável no `wallet_ledger`.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/shop3d.service.js
+Responsabilidade: Serviço da Loja 3D e Liquidação de Royalties UGC
+Funções e Regras de Negócio:
+  * `processPurchase(buyerAvatarId, shopItemId, currencyChoice)`: Conduz a transação bancária completa. Verifica compatibilidade de gênero e duplicação no inventário. Debita o valor e credita 70% de royalties ao avatar criador (se houver), retendo 30% para a plataforma.
+  * `equipAndResolveConflicts(avatarId, shopItemId)`: Lê a categoria do item. Se for `fullbody`, executa desequipamento automático de `top` e `bottom` e equipa a nova peça.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/storage.service.js
+Responsabilidade: Serviço de Upload Seguro e Proxy de Mídias
+Funções e Regras de Negócio:
+  * `uploadImage(fileBuffer, mimeType, folder)`: Valida tamanho máximo (5MB) e assinaturas de cabeçalho MIME (magic bytes) para impedir uploads maliciosos. Gera hash SHA-256 e armazena em disco com caminhos sanitizados.
+  * `getSecureMediaStream(mediaId, requestingUser)`: Valida se o usuário tem permissão para visualizar a mídia com base na visibilidade do post ou diário antes de despachar os bytes.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/diary.service.js
+Responsabilidade: Serviço de Diário Pessoal e Desabafos de Saúde Mental
+Funções e Regras de Negócio:
+  * `saveEntry(avatarId, moodEmoji, content, visibility)`: Grava nova confissão diária com carimbo de data/hora.
+  * `getTimeline(avatarId, viewerAvatarId)`: Aplica filtros rígidos de privacidade (se o visualizador não for amigo, retorna apenas entradas públicas).
+  * `getMoodStats(avatarId, days)`: Calcula a média semanal e mensal do estado de humor do avatar para relatórios de autocuidado.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/avatarCareer.service.js
+Responsabilidade: Serviço de Progressão de Carreiras e Ocupações Virtuais
+Funções e Regras de Negócio:
+  * `addExperience(avatarId, careerType, xpGained)`: Incrementa a experiência na carreira correspondente (`explorador`, `escriba`, `magnata`, `social`, `anfitriao`).
+  * `checkLevelUp(currentXp)`: Aplica fórmula de progressão exponencial `XP_Necessario = 100 * (Nivel ^ 1.5)`. Ao subir de nível, desbloqueia títulos honoríficos e insígnias para exibição no perfil.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/nameGenerator.service.js
+Responsabilidade: Gerador Procedural de Nomes Fonéticos e Fantasia
+Funções e Regras de Negócio:
+  * `generateAvatarName(style)`: Combina prefixos e sufixos fonéticos harmoniosos (élficos, modernos, cyberpunk) garantindo unicidade no banco.
+  * `generateRoomName(theme)`: Sugere títulos criativos e atraentes para novas salas 3D.
+
+--------------------------------------------------------------------------------
+SERVICE: src/services/financialHealth.service.js
+Responsabilidade: Serviço de Auditoria de Liquidez e Solvência Financeira
+Funções e Regras de Negócio:
+  * `calculateCashLiability()`: Soma o saldo total de Cash em posse de todos os avatares do sistema.
+  * `compareWithAsaasLiquidity(apiKey)`: Consulta saldo bancário real disponível e calcula o índice de cobertura.
+  * `logExpense(category, amount, desc)`: Registra custo operacional em `platform_operational_expenses`.
+
+
+================================================================================
+SEÇÃO ESPECIAL O: INVENTÁRIO COMPLETO DE MODAIS DO SISTEMA (modals.ejs)
+================================================================================
+O arquivo `src/views/profile/partials/modals.ejs` concentra todos os diálogos de topo de tela
+utilizados pelo jogador no portal social, evitando recarregamento de páginas.
+
+--------------------------------------------------------------------------------
+MODAL: #modalCreateAvatar
+Nome Amigável: Criação de Avatar
+Comportamento e Elementos: Formulário com nome do avatar, seleção de gênero inicial (Feminino/Masculino/Outro), escolha de rig base e biografia inicial. Dispara `POST /profile/avatar/create`.
+
+--------------------------------------------------------------------------------
+MODAL: #modalSwitchAvatar
+Nome Amigável: Alternância de Personas
+Comportamento e Elementos: Lista de todos os avatares pertencentes ao usuário com fotos, saldos individuais e botão 'Ativar'. Dispara `POST /profile/avatar/switch`.
+
+--------------------------------------------------------------------------------
+MODAL: #modalWalletDepositPix
+Nome Amigável: Depósito de Cash via Pix
+Comportamento e Elementos: Seleção de valor pré-definido (R$ 10, R$ 25, R$ 50, R$ 100) ou personalizado. Renderiza QR Code dinâmico do Asaas e botão 'Copiar Chave'.
+
+--------------------------------------------------------------------------------
+MODAL: #modalWalletWithdrawPix
+Nome Amigável: Saque de Cash para Conta Bancária
+Comportamento e Elementos: Exibe saldo disponível para resgate, campo de chave Pix, validação de titularidade do CPF e aviso de prazo de liquidação (até 24h úteis).
+
+--------------------------------------------------------------------------------
+MODAL: #modalWalletTransferP2P
+Nome Amigável: Transferência P2P de Coins
+Comportamento e Elementos: Busca de avatar destinatário por nome com autocompletar, campo de quantidade de Coins e confirmação de senha do usuário.
+
+--------------------------------------------------------------------------------
+MODAL: #modalWalletConverter
+Nome Amigável: Conversor Instantâneo de Moedas
+Comportamento e Elementos: Calculadora com taxas de conversão atualizadas em tempo real entre Cash, Coins e Chips.
+
+--------------------------------------------------------------------------------
+MODAL: #modalCreateRoom
+Nome Amigável: Criação de Sala 3D
+Comportamento e Elementos: Escolha do nome da sala, descrição, seleção do prefab de cenário base (apartamento, praia, auditório), capacidade máxima e senha opcional.
+
+--------------------------------------------------------------------------------
+MODAL: #modalEditRoomLayout
+Nome Amigável: Editor de Layout e Mobília
+Comportamento e Elementos: Interface para reposicionamento e rotação de móveis da sala 3D, com listagem de itens do inventário prontos para disposição.
+
+--------------------------------------------------------------------------------
+MODAL: #modalFollowersList
+Nome Amigável: Lista de Seguidores
+Comportamento e Elementos: Exibe a lista de avatares que seguem a persona ativa, com opção de seguir de volta ou visitar seus perfis.
+
+--------------------------------------------------------------------------------
+MODAL: #modalFriendsList
+Nome Amigável: Central de Amigos
+Comportamento e Elementos: Abas de 'Amigos Atuais', 'Pedidos Recebidos' e 'Sugestões de Conexão' baseadas em interesses comuns.
+
+--------------------------------------------------------------------------------
+MODAL: #modalPhotoLightbox
+Nome Amigável: Visualizador de Alta Resolução
+Comportamento e Elementos: Modal preto translúcido em tela cheia para exibição de fotos do feed e galeria, com zoom e atalhos de navegação anterior/próxima.
+
+--------------------------------------------------------------------------------
+MODAL: #modalConfirmVip
+Nome Amigável: Confirmação de Assinatura VIP
+Comportamento e Elementos: Resumo dos benefícios do plano escolhido, valor a ser debitado e seleção entre Cash ou Coins como método de pagamento.
+
+
+================================================================================
+SEÇÃO ESPECIAL P: DESIGN SYSTEM, PALETA DE CORES E IDENTIDADE VISUAL
+================================================================================
+O Design System do TFL foi projetado para transmitir sofisticação, modernidade e imersão.
+
+P.1 PALETA CROMÁTICA OFICIAL:
+- Dourado Prestígio (Coins, VIP e Insígnias):
+  * Primário: `#f59e0b` (Tailwind amber-500)
+  * Destaque/Brilho: `#fbbf24` (amber-400)
+  * Profundo: `#b45309` (amber-700)
+- Verde Esmeralda (Cash Fiduciário e Transações Financeiras):
+  * Primário: `#10b981` (Tailwind emerald-500)
+  * Sucesso/Confirmação: `#34d399` (emerald-400)
+  * Fundo de Alerta Positivo: `#064e3b` (emerald-900)
+- Azul Royal (Chips e Minigames de Cassino Recreativo):
+  * Primário: `#2563eb` (Tailwind blue-600)
+  * Destaque de Mesa: `#3b82f6` (blue-500)
+- Roxo Místico (Metaverso 3D, Portais e Salas Especiais):
+  * Primário: `#9333ea` (Tailwind purple-600)
+  * Acento Neon: `#a855f7` (purple-500)
+- Escala de Fundo Escuro (Dark Mode Imersivo Mobile):
+  * Background Principal: `#0a0a0a` (neutral-950 puro)
+  * Superfície de Cartões (Cards): `#171717` (neutral-900 com borda neutral-800)
+  * Vidro Translúcido: `rgba(23, 23, 23, 0.75)` com filtro `backdrop-blur-xl`
+
+P.2 TIPOGRAFIA:
+- Fonte Primária de Interface: `Inter`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, sans-serif.
+- Fonte de Títulos e Chamadas: `Outfit` ou `Montserrat` (peso 700 e 800) com tracking apertado (`tracking-tight`).
+- Legibilidade em Telas Pequenas: Tamanho base de 14px a 16px para textos de post e diário,
+  garantindo excelente leitura em telas AMOLED sob a luz solar.
+
+================================================================================
+SEÇÃO ESPECIAL Q: ESPECIFICAÇÃO DE SCRIPTS CLIENT-SIDE (JAVASCRIPT EM public/js/)
+================================================================================
+O front-end do TFL utiliza JavaScript modular vanilla (ES6+), eliminando o peso de frameworks
+pesados de cliente (como React ou Angular) para garantir carregamento instantâneo no celular.
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/profile/core.js
+Módulo: Orquestrador Central da Experiência SPA / Server-Driven UI
+Funções e Eventos DOM:
+  * `initNavigation()`: Intercepta cliques nos links da sidebar e da Bottom Navigation Bar, prevenindo recarregamento de página (`e.preventDefault()`).
+  * `loadSection(sectionName, pushState)`: Executa chamada `fetch('/profile/partial/' + sectionName)`, injeta o HTML retornado no contêiner `#profileMainContent` e dispara eventos de ciclo de vida (`sectionLoaded`).
+  * `syncNavState(sectionName)`: Atualiza simultaneamente o estado ativo visual (cor de destaque e ícone preenchido) tanto no item da Sidebar quanto no botão da Bottom Navigation Bar.
+  * `toggleMobileDrawer(forceState)`: Alterna as classes `-translate-x-full` e `translate-x-0` na Sidebar e faz o fade-in do backdrop escuro `#sidebarMobileBackdrop`.
+  * `scrollToTopSmooth()`: Rola o contêiner principal suavemente para a posição zero ao trocar de seção para garantir que o usuário não comece uma nova tela no meio da página.
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/profile/social.js
+Módulo: Módulo de Interações do Feed, Reações e Comentários
+Funções e Eventos DOM:
+  * `bindPostActions()`: Vincula listeners aos botões de reação, comentário e compartilhamento de cada cartão de post.
+  * `sendReaction(postId, reactionType)`: Despacha requisição otimista para `POST /api/v1/social/posts/:id/react`, atualizando o contador visualmente antes da resposta do servidor.
+  * `toggleCommentsThread(postId)`: Expande ou recolhe a árvore de comentários com animação suave de acordeão.
+  * `submitComment(postId, parentId, text)`: Envia comentário para a API e renderiza o novo nó diretamente na árvore DOM sem necessidade de re-renderizar a página.
+  * `openMiniReelsViewer(reelId)`: Abre o modal de stories em tela cheia com barra de progresso temporizada de 5 segundos e suporte a gestos de toque (arraste para o lado).
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/profile/chat.js
+Módulo: Cliente de Tempo Real do Chat Flutuante e DMs
+Funções e Eventos DOM:
+  * `connectChatSocket()`: Inicializa a conexão com o namespace `/ws/chat`, transmitindo o token de autenticação no handshake.
+  * `onIncomingMessage(msg)`: Recebe mensagem instantânea. Se a janela de chat estiver aberta com o avatar emissor, adiciona o balão de texto e rola para a base. Se estiver fechada ou em outra conversa, incrementa o badge vermelho de não lidas e dispara som discreto.
+  * `sendChatMessage(targetAvatarId, text)`: Emite evento `chat:message` via socket com `idempotencyKey` única gerada no cliente.
+  * `emitTypingIndicator(targetAvatarId, isTyping)`: Dispara sinalizador de digitação com 'debounce' de 1.500ms para não inundar o servidor.
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/profile/market.js
+Módulo: Controlador de Carteira, Webhooks e Conversor de Moedas
+Funções e Eventos DOM:
+  * `initPixPolling(chargeId)`: Inicia verificação periódica a cada 3 segundos via `GET /payment/pix/status/:chargeId` até receber a confirmação de pagamento bancário.
+  * `onPaymentSuccess()`: Fecha o modal de QR Code, exibe Toast festivo de sucesso ('Cash Creditado!'), atualiza o saldo no cabeçalho superior e insere a nova linha no extrato do Livro-Razão.
+  * `calculateLiveExchange(fromCurrency, toCurrency, amount)`: Calcula em tempo real o valor final da conversão com base na cotação oficial e taxa de spread da plataforma.
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/profile/diary.js
+Módulo: Controlador do Diário Íntimo e Registro de Humor
+Funções e Eventos DOM:
+  * `bindMoodSelector()`: Permite ao usuário clicar nos emojis de humor, alterando a cor de acento do card do diário.
+  * `saveDiaryEntry()`: Envia o texto confessionário para `POST /profile/diary/entry` e adiciona o novo registro no topo da linha do tempo com badge de visibilidade.
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/profile/avatar-rooms.js
+Módulo: Ponte entre a Interface Web e o Canvas 3D
+Funções e Eventos DOM:
+  * `launchRoomSession(roomId)`: Solicita o Ticket JWT ao backend, exibe tela de carregamento estilizada ('Conectando ao Metaverso...') e inicializa o cliente 3D com os parâmetros de conexão.
+  * `handleTransformUpdate(instanceId, transform)`: Captura movimentos de móveis no modo de edição de sala e envia lotes de coordenadas atualizadas para a API.
+
+--------------------------------------------------------------------------------
+SCRIPT CLIENT-SIDE: public/js/toast.js
+Módulo: Gerenciador Visual de Notificações Não-Bloqueantes
+Funções e Eventos DOM:
+  * `window.showToast(message, type, duration)`: Cria elemento DOM dinâmico no contêiner `#toastContainer`. Tipos suportados: 'success' (borda verde), 'error' (borda vermelha), 'info' (borda azul) e 'warning' (borda amarela).
+  * `autoDismiss(toastElement, duration)`: Executa animação CSS de fade-out e descarte do nó após 4.000ms.
+
+
+================================================================================
+SEÇÃO ESPECIAL R: CHECKLIST OFICIAL DE AUDITORIA CRUZADA PARA MODELOS DE IA
+================================================================================
+Este checklist serve como instrumento formal de homologação para que múltiplos modelos de IA
+(Claude, GPT, Grok, DeepSeek) auditem a consistência do ecossistema:
+
+  [ ] 1. HIERARQUIA DE DOMÍNIO: O sistema respeita estritamente a relação App -> User -> Avatar?
+  [ ] 2. VAZAMENTO DE CONTA: Existe alguma rota pública que exponha dados do 'User' para outro usuário?
+  [ ] 3. AUTORIDADE DO AVATAR: Todos os itens de vestuário, amigos e salas pertencem ao Avatar e não à Conta?
+  [ ] 4. SEGURANÇA DO CASH: É matematicamente impossível transferir Cash fiduciário entre jogadores?
+  [ ] 5. AUDITORIA PIX: Os depósitos e saques Pix passam obrigatoriamente pelo Livro-Razão (wallet_ledger)?
+  [ ] 6. CONFLITO DE SLOTS 3D: A regra de desequipamento entre 'fullbody' e 'top/bottom' está blindada?
+  [ ] 7. DESACOPLAMENTO DA ENGINE: A Engine Godot/WebGL está livre de qualquer lógica de negócio ou saldo?
+  [ ] 8. AUTORIDADE DE FÍSICA: O servidor dedicado gerencia movimento em RAM sem onerar o banco a cada frame?
+  [ ] 9. EFEMERIDADE DOS REELS: Os Mini Reels expiram rigorosamente em 24 horas no banco de dados?
+  [ ] 10. EFEMERIDADE DOS SENTIMENTOS: Os Sentimentos expiram rigorosamente em 6 horas no banco de dados?
+  [ ] 11. MATCHMAKING SILENCIOSO: A marcação de crush é 100% invisível até haver reciprocidade mútua?
+  [ ] 12. BLINDAGEM DE ENGINE: Não existe nenhuma menção à palavra 'Godot' ou 'Canvas' em views públicas?
+  [ ] 13. AUSÊNCIA DE ALERT NATIVO: Todas as mensagens usam 'window.showToast' em substituição a 'alert()'?
+  [ ] 14. RODAPÉ UNIFICADO: O seletor de idiomas (#langSelect) e o link do tutorial estão apenas no footer?
+  [ ] 15. PROTEÇÃO DO ADMIN: A rota `/admin` barra qualquer usuário que não tenha role 'admin' ou 'owner'?
+  [ ] 16. DESIGN MOBILE-FIRST: O layout funciona ergonomicamente em telas de 360px com safe area padding?
+  [ ] 17. GAVETA RETRÁTIL: A sidebar vira um Drawer no mobile com backdrop escuro e fecha ao toque?
+  [ ] 18. BOTTOM NAVIGATION: A barra inferior possui as 5 âncoras essenciais e não sobrepõe conteúdo?
+  [ ] 19. CHAT FLUTUANTE: O balão do chat fica em bottom-20 no celular e abre em 100% da viewport?
+  [ ] 20. TRILHOS HORIZONTAIS: As abas de salas e perfil social usam scroll horizontal touch-friendly?
+  [ ] 21. PREVENÇÃO DE ALUCINAÇÃO: Os arquivos `regras.md` estão organizados nos 3 níveis de zoom (L1, L2, L3)?
+  [ ] 22. TRANSACIONABILIDADE: As operações financeiras utilizam `transaction.LOCK.UPDATE` no Sequelize?
+  [ ] 23. ÍNDICES DE PERFORMANCE: Todas as foreign keys e campos de busca frequente possuem índices criados?
+  [ ] 24. NORMALIZAÇÃO DE MORPHS: Todos os blendshapes 3D utilizam a escala canônica normalizada de 0.0 a 1.0?
+  [ ] 25. RESPOSTA PADRONIZADA: A API REST v1 devolve envelopes consistentes com success, data e error?
+
+================================================================================
+SEÇÃO ESPECIAL S: PROTOCOLO DE PACOTES WEBSOCKET E SINCRONIZAÇÃO DE REDE 3D
+================================================================================
+Especificação dos pacotes binários e JSON transmitidos entre clientes e servidores dedicados:
+
+--------------------------------------------------------------------------------
+EVENTO DE REDE: `game:handshake`
+Sentido do Fluxo: Cliente 3D -> Servidor Dedicado
+Estrutura do Pacote:
+  { 'ticket': '<JWT_30S>', 'clientVersion': '1.0.0', 'avatarId': 101 }
+Comportamento e Regras:
+  Valida o ticket assinado pelo Backend. Se válido, instancia o nó do avatar na cena 3D e responde `game:joined` com o estado de todos os jogadores presentes.
+
+--------------------------------------------------------------------------------
+EVENTO DE REDE: `game:player_transform`
+Sentido do Fluxo: Bidirecional (Cliente <-> Servidor)
+Estrutura do Pacote:
+  { 'p': [12.4, 0.0, -8.1], 'r': [0, 90, 0], 'v': [1.2, 0, 0], 'anim': 'walk' }
+Comportamento e Regras:
+  Taxa de atualização de 20 Hz (a cada 50ms). O servidor dedicado faz interpolação de movimento linear (Lerp/Slerp) para suavizar a renderização nos outros clientes.
+
+--------------------------------------------------------------------------------
+EVENTO DE REDE: `game:interaction_furniture`
+Sentido do Fluxo: Cliente 3D -> Servidor Dedicado -> Backend REST
+Estrutura do Pacote:
+  { 'instanceId': 502, 'action': 'sit', 'seatIndex': 0 }
+Comportamento e Regras:
+  Informa que o avatar sentou no sofá. O servidor trava o assento para impedir que dois avatares ocupem o mesmo lugar e transmite o estado aos outros clientes.
+
+--------------------------------------------------------------------------------
+EVENTO DE REDE: `game:player_leave`
+Sentido do Fluxo: Servidor Dedicado -> Backend REST
+Estrutura do Pacote:
+  { 'avatarId': 101, 'roomId': 55, 'durationSeconds': 1420 }
+Comportamento e Regras:
+  Notifica a saída do jogador para liberação de vaga na sala e atualização das estatísticas de visitas da sala e XP de carreira do avatar.
+
+--------------------------------------------------------------------------------
+EVENTO DE REDE: `chat:direct_message`
+Sentido do Fluxo: Cliente Web -> SoketHub -> Cliente Destinatário
+Estrutura do Pacote:
+  { 'toAvatarId': 202, 'content': 'Olá, vamos para a sala da praia?', 'idempotencyKey': 'uuid-v4' }
+Comportamento e Regras:
+  Encaminha mensagem instantânea se o destinatário estiver online no socket `/ws/chat`, ou armazena no banco para entrega assim que ele conectar.
+
+
+================================================================================
+SEÇÃO ESPECIAL T: PLANO DE DEPRECIAÇÃO E LIMPEZA DE CÓDIGO LEGADO
+================================================================================
+Durante a evolução do projeto, algumas rotas e arquivos monolíticos antigos foram substituídos
+pela nova arquitetura modular Server-Driven UI e API REST v1. Esta seção estabelece o plano de limpeza:
+
+T.1 ARQUIVOS MARCADOS COMO DEPRECADOS (PARA ARQUIVAMENTO FUTURO):
+1. `src/views/index_old.html` & `src/views/profile/index_old.html`:
+   - Status: Legado monolítico substituído integralmente por `src/views/profile/index.ejs`
+     e seus partials modulares (`view-user-profile.ejs`, `view-diary.ejs`, etc.).
+   - Ação: Manter isolado como referência histórica ou mover para pasta `_lixo/`.
+
+2. `src/api/v1/old/` (Antigos Controladores de API):
+   - Contém: `api_controller.js`, `assas_client.js`, `bank_controller.js`, `manifest_controller.js`.
+   - Status: Substituído pelos novos controladores especializados em `src/controllers/game/`,
+     `src/controllers/social/` e `src/services/`.
+   - Ação: Todos os novos endpoints devem ser desenvolvidos exclusivamente dentro de `src/api/v1/`
+     seguindo os padrões da Seção 7 deste documento.
+
+T.2 REGRAS DE TRANSIÇÃO E BLINDAGEM DE COMPATIBILIDADE:
+- Nenhuma view ativa em produção deve importar ou fazer referência a arquivos da pasta `old`.
+- O arquivo `src/routes/router.js` é a única autoridade de montagem de rotas da aplicação.
+
+================================================================================
+SEÇÃO ESPECIAL U: VARIÁVEIS DE AMBIENTE (.env), SEGREDOS E DEPLOY EM PRODUÇÃO
+================================================================================
+Esta seção especifica todos os parâmetros de configuração necessários para inicializar
+e manter o ecossistema TFL operando de forma segura em ambientes de desenvolvimento, homologação e produção:
+
+U.1 DICIONÁRIO DE VARIÁVEIS DE AMBIENTE:
+--------------------------------------------------------------------------------
+VARIÁVEL: `PORT`
+Exemplo: `3000`
+Finalidade: Porta HTTP/WebSocket principal onde o Express escuta as conexões web.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `NODE_ENV`
+Exemplo: `production`
+Finalidade: Ambiente de execução ('development', 'test', 'production').
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `DB_HOST`
+Exemplo: `localhost`
+Finalidade: Endereço do cluster PostgreSQL 14+.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `DB_PORT`
+Exemplo: `5432`
+Finalidade: Porta de conexão padrão do banco PostgreSQL.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `DB_NAME`
+Exemplo: `thefantasylife`
+Finalidade: Nome do banco de dados relacional principal.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `DB_USER`
+Exemplo: `tfl_app_user`
+Finalidade: Usuário do PostgreSQL com permissões concedidas apenas nas tabelas de schema.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `DB_PASS`
+Exemplo: `SenhaComplexaSuperSegura2026`
+Finalidade: Senha criptografada do usuário do banco de dados.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `JWT_SECRET`
+Exemplo: `ChaveMestraParaAssinaturaDeTokensJwtDe32CaracteresMinimo`
+Finalidade: Segredo para geração e validação de tokens JWT.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `JWT_EXPIRATION`
+Exemplo: `7d`
+Finalidade: Tempo de expiração padrão para tokens de autenticação de sessão.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `TICKET_SECRET`
+Exemplo: `SegredoExclusivoParaTicketsEfemerosDeSalas30s`
+Finalidade: Chave privada para assinatura dos tickets efêmeros de entrada em salas 3D.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `ASAAS_API_KEY`
+Exemplo: `$aact_YTU5YTE0M2M6N2ZlZC00Zj...`
+Finalidade: Chave de API em ambiente de produção do Gateway de Pagamentos Asaas.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `ASAAS_WEBHOOK_SECRET`
+Exemplo: `whsec_991823abce...`
+Finalidade: Assinatura para validação de integridade dos webhooks bancários Pix recebidos.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `SERVER_SECRET_TOKEN`
+Exemplo: `SegredoParaComunicaoEntreServidoresDedicadosEBackend`
+Finalidade: Token estático de alta entropia transmitido no header `x-server-token`.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `UPLOAD_DIR`
+Exemplo: `/media/not/Projetos/WebSite/uploads`
+Finalidade: Diretório do sistema de arquivos onde são armazenadas imagens e arquivos 3D.
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `MAX_FILE_SIZE_MB`
+Exemplo: `15`
+Finalidade: Tamanho máximo permitido para upload de malhas 3D (.glb).
+
+--------------------------------------------------------------------------------
+VARIÁVEL: `CORS_ORIGINS`
+Exemplo: `https://thefantasy.life,https://app.thefantasy.life`
+Finalidade: Lista separada por vírgulas de origens permitidas para requisições cross-origin.
+
+U.2 CONFIGURAÇÃO RECOMENDADA DO PROXY REVERSO (NGINX):
+O Nginx deve ser configurado como terminação SSL/TLS (HTTPS) e balanceador de carga:
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name thefantasy.life;
+
+    # Suporte a upload de malhas 3D (.glb)
+    client_max_body_size 25M;
+
+    ssl_certificate /etc/letsencrypt/live/thefantasy.life/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/thefantasy.life/privkey.pem;
+
+    # Compressão Gzip para aceleração móvel
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
+
+    # WebSockets e API REST
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400s;
+    }
+}
+```
+
+U.3 GESTÃO DE PROCESSOS COM PM2 (INSTÂNCIA ÚNICA ESTÁVEL):
+Para garantir estabilidade máxima de memória e reconexão automática sem downtime:
+```bash
+# Inicialização em instância única (Node.js nativo gerencia memória e WebSockets sem complexidade de Redis prematuro)
+pm2 start app.js --name 'tfl-web'
+
+# Salvar estado para recuperação pós-reboot
+pm2 save
+pm2 startup
+```
+
+================================================================================
+                   [FIM DEFINITIVO E ABSOLUTO DA ESPECIFICAÇÃO]
+================================================================================

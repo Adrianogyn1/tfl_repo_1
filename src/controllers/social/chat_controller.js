@@ -43,6 +43,7 @@ const ROOM_MESSAGE_TYPE = {
   private: MessageType.Private,
   group: MessageType.Group,
   global: MessageType.Chat,
+  local: MessageType.Local,
 };
 
 const MAX_TEXT = 4000;
@@ -185,8 +186,8 @@ async function loadRoomForMember(req, res) {
     where: { chatId: room.id, profileId: req.profileId },
   });
 
-  // sala global é aberta a todos; as demais exigem participação
-  if (!participant && room.type !== "global") {
+  // salas global e local (ambiente) são abertas a todos; as demais exigem participação
+  if (!participant && room.type !== "global" && room.type !== "local") {
     res.status(403).json({ error: "Você não participa deste chat" });
     return null;
   }
@@ -700,17 +701,23 @@ router.delete("/announcements/:id", requireProfile, requireSystemAdmin, wrap(asy
 
 // GET /chats -> minhas conversas, com última mensagem e contagem de não lidas
 router.get("/", requireProfile, wrap(async (req, res) => {
-  // Garante que a sala de Chat Global exista para todos os jogadores
-  await repo.ChatRoom.findOrCreate({
-    where: { type: "global" },
-    defaults: { type: "global", name: "Chat Global Metaverso" },
-  });
+  // Garante que as salas de Chat Global e Chat de Ambiente (Local 3D) existam para todos os jogadores
+  await Promise.all([
+    repo.ChatRoom.findOrCreate({
+      where: { type: "global" },
+      defaults: { type: "global", name: "Chat Global Metaverso" },
+    }),
+    repo.ChatRoom.findOrCreate({
+      where: { type: "local" },
+      defaults: { type: "local", name: "📍 Chat de Ambiente (Perímetro 3D)" },
+    }),
+  ]);
 
   const participations = await repo.ChatParticipant.findAll({ where: { profileId: req.profileId } });
   const chatIds = participations.map((p) => p.chatId);
 
   const rooms = await repo.ChatRoom.findAll({
-    where: { [Op.or]: [{ id: { [Op.in]: chatIds } }, { type: "global" }] },
+    where: { [Op.or]: [{ id: { [Op.in]: chatIds } }, { type: "global" }, { type: "local" }] },
     include: [{ model: getProfile(), as: "profiles", through: { attributes: [] } }],
     order: [["updatedAt", "DESC"]],
   });
@@ -1021,7 +1028,7 @@ router.get("/:uid/messages", requireProfile, wrap(async (req, res) => {
       {
         model: getProfile(),
         as: "sender",
-        attributes: ["id", "name", "thumbnail", "gender"],
+        attributes: ["id", "name", "thumbnail", "gender", "isVip", "vipPlan", "guideRole", "isContentCreator"],
       },
     ],
     order: [["createdAt", "DESC"], ["id", "DESC"]],

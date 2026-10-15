@@ -63,7 +63,14 @@ async function requireAdminAuth(req, res, next) {
       if (isApiCall) {
         return res.status(401).json({ success: false, error: "Não autenticado no painel Admin." });
       }
-      return res.redirect("/admin/login?pg=" + encodeURIComponent(req.originalUrl));
+      let safeReturnUrl = req.originalUrl || "/admin";
+      while (safeReturnUrl.includes("/admin/admin")) {
+        safeReturnUrl = safeReturnUrl.replace("/admin/admin", "/admin");
+      }
+      if (safeReturnUrl === "/admin/login" || safeReturnUrl === "/admin/login/" || safeReturnUrl === "/admin/signin") {
+        safeReturnUrl = "/admin";
+      }
+      return res.redirect("/admin/login?pg=" + encodeURIComponent(safeReturnUrl));
     }
 
     if (!isUserAdmin(user)) {
@@ -1172,6 +1179,47 @@ router.post("/api/expenses/:id/delete", requireAdminAuth, async (req, res) => {
     return res.json(result);
   } catch (err) {
     return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// ================= DOWNLOADS & BUILDS RELEASES =================
+router.get("/api/downloads", requireAdminAuth, (req, res) => {
+  try {
+    const { getDownloadsInfo } = require("../../services/download.service");
+    const data = getDownloadsInfo();
+    return res.json({ success: true, platforms: data });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/api/downloads/update", requireAdminAuth, (req, res) => {
+  try {
+    const { platform, version, filename, releaseNotes } = req.body;
+    if (!platform) {
+      return res.status(400).json({ success: false, error: "Plataforma não informada." });
+    }
+    const { updatePlatformRelease, getDownloadsInfo } = require("../../services/download.service");
+    const updated = updatePlatformRelease(platform, { version, filename, releaseNotes });
+    const all = getDownloadsInfo();
+    return res.json({ success: true, meta: updated, platforms: all });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ================= CHANGELOG TÉCNICO & NOTAS DE VERSÃO (ADMIN) =================
+router.get("/api/changelog", requireAdminAuth, (req, res) => {
+  try {
+    const { getAdminChangelog, getCurrentVersionInfo, getAllReleases } = require("../../services/version.service");
+    return res.json({
+      success: true,
+      current: getCurrentVersionInfo(true),
+      history: getAllReleases(true),
+      fullDocument: getAdminChangelog(),
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

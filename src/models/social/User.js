@@ -21,6 +21,10 @@ module.exports = (sequelize) => {
       uid: { type: DataTypes.STRING, allowNull: true, defaultValue:UUIDV4},
       gender: { type: DataTypes.INTEGER, defaultValue: 1 },
       cpf: { type: DataTypes.STRING, defaultValue: "", allowNull: true },
+      cash: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0.00, allowNull: false },
+      walletPin: { type: DataTypes.STRING, defaultValue: null, allowNull: true },
+      coinsGrantedTotal: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
+      coinsGrantCap: { type: DataTypes.INTEGER, defaultValue: 100, allowNull: false },
 
       role: {
         type: DataTypes.ENUM(

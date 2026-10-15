@@ -6,7 +6,10 @@
             <span class="material-symbols-outlined text-[16px]">arrow_back</span>
             <span><%= t('common.back', {}, 'Voltar') %></span>
         </button>
-        <span id="userProfileIdBadge" class="px-3 py-1 rounded-full bg-slate-900 border border-white/10 text-[11px] font-mono text-zinc-400">#0</span>
+        <span id="userProfileLastSeenBadge" class="px-3 py-1 rounded-full bg-slate-900 border border-white/10 text-[11px] font-medium text-emerald-400 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="userProfileLastSeenText">Visto recentemente</span>
+        </span>
     </div>
 
     <!-- Cabeçalho & Capa do Perfil -->

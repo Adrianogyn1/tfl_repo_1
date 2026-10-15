@@ -60,13 +60,10 @@
                             <img src="${thumb}" class="w-10 h-10 rounded-xl object-cover flex-shrink-0">
                             <div class="overflow-hidden">
                                 <div class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate">${TFL.escapeHtml(av.name)}</div>
-                                <div class="text-[10px] text-zinc-500">ID: #${av.id}</div>
+                                <div class="text-[10px] text-zinc-400 truncate">${TFL.escapeHtml(av.lastSeenLabel || 'Viajante')}</div>
                             </div>
                         </button>
                         <div class="flex items-center gap-1.5">
-                            <button type="button" class="btn-navigate-user-profile p-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-zinc-400 hover:text-white text-xs transition" data-avatarid="${av.id}" title="Ver Perfil">
-                                <i class="fa-solid fa-id-card"></i>
-                            </button>
                             ${actionBtn}
                         </div>
                     </div>
@@ -103,6 +100,16 @@
                 peerId: null
             };
         }
+        if (room.type === 'local') {
+            return {
+                title: room.name || '📍 Chat de Ambiente (Perímetro 3D)',
+                sub: 'Voz e mensagens no raio de 15m da sala 3D',
+                badge: 'AMBIENTE',
+                badgeClass: 'bg-emerald-500/20 text-emerald-400',
+                avatarHtml: '<i class="fa-solid fa-location-dot text-lg text-emerald-400"></i>',
+                peerId: null
+            };
+        }
         if (room.type === 'group') {
             const count = Array.isArray(room.profiles) ? room.profiles.length : '';
             return {
@@ -118,11 +125,11 @@
         if (!peer && Array.isArray(room.profiles)) {
             peer = room.profiles.find(p => Number(p.id) !== ACTIVE_AVATAR_ID) || room.profiles[0];
         }
-        const name = peer?.name || `Conversa #${room.id}`;
+        const name = peer?.name || 'Conversa Privada';
         const thumb = TFL.getAvatarThumb(peer || { name });
         return {
             title: name,
-            sub: peer?.id ? `Mensagem Direta • Avatar #${peer.id}` : 'Mensagem Direta Privada',
+            sub: peer?.id ? (peer.lastSeenLabel || 'Mensagem Direta') : 'Mensagem Direta Privada',
             badge: 'DM',
             badgeClass: 'bg-emerald-500/20 text-emerald-400',
             avatarHtml: `<img src="${thumb}" class="w-full h-full object-cover">`,
@@ -380,6 +387,36 @@
             `;
         }
 
+        const sender = msg.sender || {};
+        const isVip = Boolean(sender.isVip || msg.isVip);
+        const guideRole = String(sender.guideRole || msg.guideRole || "").toLowerCase();
+        const isContentCreator = Boolean(sender.isContentCreator || msg.isContentCreator);
+
+        // Mapeamento de cores oficiais: Básico = Verde, VIP = Amarelo/Dourado, Guias = Cores dedicadas
+        let nameColor = isVip ? "text-amber-400" : "text-emerald-400";
+        let badgeTag = isVip ? '<span class="px-1.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[9px] font-black">👑 VIP</span>' : '';
+
+        if (guideRole === "geral") {
+            nameColor = "text-orange-400";
+            badgeTag = '<span class="px-1.5 py-0.5 rounded-md bg-orange-500/20 border border-orange-500/30 text-orange-300 text-[9px] font-black">🧭 Guia Geral</span>';
+        } else if (guideRole === "bolsa") {
+            nameColor = "text-cyan-400";
+            badgeTag = '<span class="px-1.5 py-0.5 rounded-md bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[9px] font-black">💎 Guia da Bolsa</span>';
+        } else if (guideRole === "decoracao") {
+            nameColor = "text-purple-400";
+            badgeTag = '<span class="px-1.5 py-0.5 rounded-md bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[9px] font-black">🎨 Guia Decoração</span>';
+        } else if (guideRole === "moda") {
+            nameColor = "text-pink-400";
+            badgeTag = '<span class="px-1.5 py-0.5 rounded-md bg-pink-500/20 border border-pink-500/30 text-pink-300 text-[9px] font-black">👗 Guia Estilo</span>';
+        } else if (guideRole === "profissoes") {
+            nameColor = "text-blue-400";
+            badgeTag = '<span class="px-1.5 py-0.5 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-300 text-[9px] font-black">🛠️ Guia Carreiras</span>';
+        }
+
+        if (isContentCreator) {
+            badgeTag += ' <span class="px-1.5 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[9px] font-black">🌟 Criador</span>';
+        }
+
         const bubbleHtml = `
             <div class="flex items-end gap-2.5 ${isMine ? 'justify-end' : 'justify-start'}">
                 ${!isMine ? `
@@ -390,10 +427,13 @@
                 ` : ''}
                 <div class="max-w-[88%] sm:max-w-[74%] rounded-2xl px-4 py-2.5 text-xs ${isMine ? 'bg-sky-600 text-white rounded-br-none shadow-lg shadow-sky-600/20' : 'bg-slate-800/90 text-zinc-200 border border-white/5 rounded-bl-none'}">
                     ${!isMine ? `
-                        <button type="button" class="btn-open-mini-profile text-[10px] font-black text-sky-400 hover:underline mb-0.5 block text-left"
-                                data-avatarid="${msg.profileId}">
-                            ${TFL.escapeHtml(msg.senderName || 'Avatar #' + msg.profileId)}
-                        </button>
+                        <div class="flex items-center gap-1.5 mb-1 flex-wrap">
+                            <button type="button" class="btn-open-mini-profile text-[11px] font-black ${nameColor} hover:underline"
+                                    data-avatarid="${msg.profileId}">
+                                ${TFL.escapeHtml(msg.senderName || 'Avatar')}
+                            </button>
+                            ${badgeTag}
+                        </div>
                     ` : ''}
                     ${mediaHtml}
                     ${msg.text ? `<p class="leading-relaxed break-words">${TFL.escapeHtml(msg.text)}</p>` : ''}
@@ -550,14 +590,10 @@
                                     <span class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate">${TFL.escapeHtml(prof.name)}</span>
                                     ${roleBadge}
                                 </div>
-                                <span class="text-[10px] text-zinc-500">ID: #${prof.id} • Clique para Mini Profile</span>
+                                <span class="text-[10px] text-zinc-400">${prof.lastSeenLabel || 'Viajante'}</span>
                             </div>
                         </button>
                         <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <button type="button" class="btn-navigate-user-profile p-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-zinc-400 hover:text-white text-xs transition"
-                                    data-avatarid="${prof.id}" title="Navegar ao Perfil">
-                                <i class="fa-solid fa-id-card"></i>
-                            </button>
                             ${removeBtn}
                         </div>
                     </div>
@@ -579,7 +615,7 @@
                             <button type="button" class="btn-open-mini-profile flex items-center gap-2.5 overflow-hidden text-left flex-1"
                                     data-avatarid="${av.id}">
                                 <img src="${TFL.getAvatarThumb(av)}" class="w-8 h-8 rounded-lg object-cover flex-shrink-0">
-                                <span class="text-xs font-bold text-white truncate">${TFL.escapeHtml(av.name)} <span class="text-[10px] text-zinc-500">#${av.id}</span></span>
+                                <span class="text-xs font-bold text-white truncate">${TFL.escapeHtml(av.name)}</span>
                             </button>
                             <button type="button" class="btn-add-friend-to-group px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold transition flex items-center gap-1 flex-shrink-0"
                                     data-uid="${targetUid}" data-profileid="${av.id}">
@@ -1138,54 +1174,75 @@
         let shareableRoomsCache = [];
 
         function renderShareModalInstancesForRoom(roomId, preselectServerId) {
-            const room = shareableRoomsCache.find(r => Number(r.id) === Number(roomId));
             const listEl = $('#shareRoomServerInstancesList');
             const summaryEl = $('#lblShareRoomInstancesSummary');
 
-            if (!room) {
+            if (!roomId) {
                 summaryEl.text('0 instâncias');
                 listEl.html('<div class="text-xs text-zinc-500 text-center py-2">Selecione uma sala acima para ver as instâncias do servidor.</div>');
                 return;
             }
 
-            const instances = Array.isArray(room.serverInstances) ? room.serverInstances : [];
-            summaryEl.text(`${instances.length} instância(s) ativa(s) • ${room.livePlayersOnline || 0}/${room.totalCapacityOnline || room.maxPlayers || 30} online`);
+            const room = shareableRoomsCache.find(r => Number(r.id) === Number(roomId)) || { id: roomId, serverInstances: [] };
 
-            let html = `
-                <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900 border border-indigo-500/30 cursor-pointer hover:border-indigo-400 transition text-xs">
-                    <div class="flex items-center gap-2">
-                        <input type="radio" name="shareRoomServerId" value="0" ${!preselectServerId ? 'checked' : ''} class="text-indigo-600 focus:ring-0">
-                        <div>
-                            <div class="font-black text-indigo-300">⚡ Automático (Instância com vaga ou Nova Réplica)</div>
-                            <div class="text-[10px] text-zinc-400">Se todas as instâncias estiverem cheias, cria outra sala automaticamente na tabela servers</div>
-                        </div>
-                    </div>
-                </label>
-            `;
+            function buildInstancesHtml(instances, totalPlayers, maxCap) {
+                summaryEl.text(`${instances.length} instância(s) ativa(s) • ${totalPlayers || 0}/${maxCap || 30} online`);
 
-            instances.forEach(srv => {
-                const isSelected = Number(preselectServerId) === Number(srv.id);
-                const isFull = Number(srv.playersCount || 0) >= Number(srv.maxPlayers || 30);
-                html += `
-                    <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900 border ${isFull ? 'border-amber-500/40' : 'border-white/5'} cursor-pointer hover:border-sky-500/40 transition text-xs">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <input type="radio" name="shareRoomServerId" value="${srv.id}" ${isSelected ? 'checked' : ''} class="text-sky-600 focus:ring-0">
-                            <div class="min-w-0">
-                                <div class="font-bold text-white flex items-center gap-1.5">
-                                    <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-black">${TFL.escapeHtml(srv.instanceLabel || 'Instância #' + srv.instanceNumber)}</span>
-                                    <code class="text-[11px] text-emerald-300 font-mono">${TFL.escapeHtml(srv.connectAddress)}</code>
-                                </div>
-                                <div class="text-[10px] text-zinc-400 truncate">Cena: ${TFL.escapeHtml(srv.scene || 'house')} • PID: ${srv.pid || '-'} • Server #${srv.id}</div>
+                let html = `
+                    <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900 border border-indigo-500/30 cursor-pointer hover:border-indigo-400 transition text-xs">
+                        <div class="flex items-center gap-2">
+                            <input type="radio" name="shareRoomServerId" value="0" ${!preselectServerId ? 'checked' : ''} class="text-indigo-600 focus:ring-0">
+                            <div>
+                                <div class="font-black text-indigo-300">⚡ Automático (Instância com vaga ou Abertura Automática)</div>
+                                <div class="text-[10px] text-zinc-400">Abre ou direciona automaticamente para a melhor instância disponível no servidor</div>
                             </div>
                         </div>
-                        <span class="px-2 py-0.5 rounded-lg ${isFull ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'} text-[10px] font-black flex-shrink-0">
-                            ${srv.playersCount || 0}/${srv.maxPlayers || 30} ${isFull ? 'LOTADA' : 'VAGAS'}
-                        </span>
                     </label>
                 `;
-            });
 
-            listEl.html(html);
+                instances.forEach(srv => {
+                    const isSelected = Number(preselectServerId) === Number(srv.id);
+                    const isFull = Number(srv.playersCount || 0) >= Number(srv.maxPlayers || 30);
+                    html += `
+                        <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900 border ${isFull ? 'border-amber-500/40' : 'border-white/5'} cursor-pointer hover:border-sky-500/40 transition text-xs">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="radio" name="shareRoomServerId" value="${srv.id}" ${isSelected ? 'checked' : ''} class="text-sky-600 focus:ring-0">
+                                <div class="min-w-0">
+                                    <div class="font-bold text-white flex items-center gap-1.5">
+                                        <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-black">${TFL.escapeHtml(srv.instanceLabel || 'Instância #' + srv.instanceNumber)}</span>
+                                        <code class="text-[11px] text-emerald-300 font-mono">${TFL.escapeHtml(srv.connectAddress)}</code>
+                                    </div>
+                                    <div class="text-[10px] text-zinc-400 truncate">Cena: ${TFL.escapeHtml(srv.scene || 'lobby')} • Jogadores: ${srv.playersCount || 0}/${srv.maxPlayers || 30}</div>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-lg ${isFull ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'} text-[10px] font-black flex-shrink-0">
+                                ${srv.playersCount || 0}/${srv.maxPlayers || 30} ${isFull ? 'LOTADA' : 'VAGAS'}
+                            </span>
+                        </label>
+                    `;
+                });
+
+                listEl.html(html);
+            }
+
+            // Se já tiver instâncias em cache, renderiza de imediato
+            if (Array.isArray(room.serverInstances) && room.serverInstances.length > 0) {
+                buildInstancesHtml(room.serverInstances, room.livePlayersOnline, room.totalCapacityOnline || room.maxPlayers);
+            } else {
+                summaryEl.text('Verificando instâncias...');
+                listEl.html('<div class="text-xs text-indigo-400 text-center py-2"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Inicializando / verificando instância ativa da sala...</div>');
+            }
+
+            // Dispara verificação dinâmica no backend (aciona auto-spawn e limpeza de ociosidade)
+            $.get(`/profile/room/${roomId}/servers?autoSpawn=true`, function (res) {
+                if (res && res.success) {
+                    const freshInstances = Array.isArray(res.instances) ? res.instances : [];
+                    room.serverInstances = freshInstances;
+                    room.livePlayersOnline = res.totalPlayersOnline || 0;
+                    room.totalCapacityOnline = res.totalCapacity || 30;
+                    buildInstancesHtml(freshInstances, res.totalPlayersOnline, res.totalCapacity || 30);
+                }
+            });
         }
 
         TFL.openShareRoomInChatModal = function (preselectRoomId = null, preselectServerId = null) {

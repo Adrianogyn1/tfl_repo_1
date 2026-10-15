@@ -141,6 +141,9 @@ async function ensureFeeAndRoomTables() {
       CREATE INDEX IF NOT EXISTS "idx_user_notifications_avatar_id" ON "user_notifications" ("avatarId");
       CREATE INDEX IF NOT EXISTS "idx_user_notifications_is_read" ON "user_notifications" ("isRead");
       CREATE INDEX IF NOT EXISTS "idx_user_notifications_created_at" ON "user_notifications" ("createdAt" DESC);
+
+      -- Garante que a coluna boostExpiresAt exista na tabela rooms
+      ALTER TABLE IF EXISTS "rooms" ADD COLUMN IF NOT EXISTS "boostExpiresAt" TIMESTAMPTZ;
     `);
     _feeTablesEnsured = true;
   } catch (err) {
@@ -666,7 +669,7 @@ async function buyCoins(buyerAvatarId, coinsWanted, buyerUserId = null) {
  * - Reserva (debita) o Cash da carteira do avatar imediatamente.
  * - Verifica na tabela EconomyRule se aprova no AUTOMÁTICO (até maxAutoWithdrawCash) ou MANUAL.
  */
-async function requestWithdraw({ userId, avatarId, cashAmount, pixKey, pixKeyType }) {
+async function requestWithdraw({ userId, avatarId, cashAmount, pixKey, pixKeyType, pin = null }) {
   const amount = Number(cashAmount);
   if (!amount || amount <= 0 || isNaN(amount)) {
     throw new Error("Informe uma quantidade válida de Cash para saque.");
@@ -676,6 +679,16 @@ async function requestWithdraw({ userId, avatarId, cashAmount, pixKey, pixKeyTyp
   }
 
   return await repo.sequelize.transaction(async (t) => {
+    // Validação de PIN de Segurança da Carteira
+    if (userId) {
+      const userRec = await repo.User.findByPk(userId, { transaction: t });
+      if (userRec && userRec.walletPin) {
+        if (!pin || String(userRec.walletPin).trim() !== String(pin).trim()) {
+          throw new Error("PIN de segurança da carteira inválido para autorizar saque Pix.");
+        }
+      }
+    }
+
     const rules = await getEconomyRules(t);
     const minWithdraw = Number(rules.minWithdrawCash) || 1.0;
     const usdBrlRate = Number(rules.usdBrlRate) || 5.0;
@@ -884,13 +897,23 @@ async function reviewPaymentTransaction(paymentId, action = "APPROVE") {
  * - CHIPS_TO_COINS: 10 Chips = 1 Coin
  * - COINS_TO_CASH: Conversão direta imediata com taxa punitiva (padrão 30% de perda) para não atrapalhar o mercado
  */
-async function convertCurrency(avatarId, direction, rawAmount, userId = null) {
+async function convertCurrency(avatarId, direction, rawAmount, userId = null, pin = null) {
   const amount = Number(rawAmount);
   if (!amount || amount <= 0 || isNaN(amount)) {
     throw new Error("Informe um valor válido maior que zero para converter.");
   }
 
   return await repo.sequelize.transaction(async (t) => {
+    // Validação de PIN de Segurança da Carteira
+    if (userId) {
+      const userRec = await repo.User.findByPk(userId, { transaction: t });
+      if (userRec && userRec.walletPin && userRec.walletPin.trim() !== '') {
+        if (!pin || String(userRec.walletPin).trim() !== String(pin).trim()) {
+          throw new Error("PIN de segurança da carteira inválido para autorizar a conversão.");
+        }
+      }
+    }
+
     const rules = await getEconomyRules(t);
     const rateCoinsPerCash = Number(rules.rateCoinsPerCash) || 250.0;
     const rateChipsPerCoin = Number(rules.rateChipsPerCoin) || 10.0;
@@ -1011,6 +1034,15 @@ async function convertCurrency(avatarId, direction, rawAmount, userId = null) {
     if (direction === "COINS_TO_CHIPS") {
       if (Number(wallet.coins) < amount) {
         throw new Error(`Saldo insuficiente de Coins. Disponível: ${Number(wallet.coins || 0)} Coins.`);
+      }
+
+      // Regra de Jogo Responsável: Anti-All-in (máximo 80% dos coins por conversão para Chips)
+      const currentCoins = Number(wallet.coins || 0);
+      const maxAllowedCoins = Number((currentCoins * 0.80).toFixed(2));
+      if (currentCoins > 1 && amount > maxAllowedCoins) {
+        throw new Error(
+          `Jogo Responsável (Anti-All-in): É permitido converter no máximo 80% do saldo de Coins (${maxAllowedCoins} Coins) por conversão em Chips.`
+        );
       }
 
       const feePct = Number(rules.coinsToChipsFeePercent || 0);
@@ -1372,22 +1404,148 @@ function formatServerInstance(srv, instanceIndex = 0, room = null) {
 }
 
 /**
- * Lista todas as instâncias ativas na tabela `servers` para uma sala (`roomId`)
+ * Monitora e encerra instâncias ociosas (playersCount === 0) na tabela `servers`
+ * para economizar recursos do servidor.
+ * Tolerância padrão: instâncias sem nenhum jogador por mais de 3 minutos são encerradas.
  */
-async function getRoomActiveServerInstances(roomId, transaction = null) {
+async function reapIdleServerInstances({ idleMinutes = 3, roomId = null } = {}) {
+  if (!repo.Server) return { closedCount: 0 };
+  try {
+    const Op = repo.Sequelize.Op;
+    const cutoffDate = new Date(Date.now() - Math.max(1, idleMinutes) * 60 * 1000);
+
+    const where = {
+      playersCount: 0,
+      createdAt: { [Op.lt]: cutoffDate },
+      updatedAt: { [Op.lt]: cutoffDate },
+      [Op.or]: [{ isClosed: false }, { isClosed: null }],
+    };
+
+    if (roomId) {
+      where.roomId = Number(roomId);
+    }
+
+    const idleServers = await repo.Server.findAll({ where });
+    if (!idleServers || idleServers.length === 0) return { closedCount: 0 };
+
+    const idleIds = idleServers.map((s) => s.id);
+
+    // Remove instâncias ociosas da tabela para liberar portas e memória do sistema
+    await repo.Server.destroy({
+      where: { id: { [Op.in]: idleIds } },
+    });
+
+    return { closedCount: idleServers.length, closedIds: idleIds };
+  } catch (err) {
+    console.warn("⚠️ [reapIdleServerInstances]", err.message);
+    return { closedCount: 0 };
+  }
+}
+
+// Timer periódico em background para varrer e encerrar instâncias ociosas a cada 5 minutos
+if (typeof setInterval === "function") {
+  const idleCleanupTimer = setInterval(() => {
+    if (repo && repo.Server && repo.sequelize) {
+      reapIdleServerInstances({ idleMinutes: 3 }).catch(() => {});
+    }
+  }, 5 * 60 * 1000);
+  idleCleanupTimer.unref?.();
+}
+
+/**
+ * Notifica a saída de um jogador de uma instância do servidor, decrementando playersCount
+ */
+async function leaveRoomServerInstance({ roomId, serverId, avatarId = null }) {
+  const sId = Number(serverId || 0);
+  const rId = Number(roomId || 0);
+  if (!sId || !repo.Server) return null;
+
+  const server = await repo.Server.findByPk(sId);
+  if (!server) return null;
+
+  server.playersCount = Math.max(0, Number(server.playersCount || 0) - 1);
+  server.updatedAt = new Date();
+  await server.save();
+
+  // Sincroniza playersCount total na sala
+  if (rId > 0 && repo.RoomModel) {
+    const sumRows = await repo.Server.findAll({
+      where: { roomId: rId, isClosed: false },
+      attributes: ["playersCount"],
+    });
+    const totalOnline = sumRows.reduce((acc, s) => acc + Number(s.playersCount || 0), 0);
+    await repo.sequelize
+      .query(`UPDATE "rooms" SET "playersCount" = :totalOnline WHERE "id" = :roomId`, {
+        replacements: { totalOnline, roomId: rId },
+      })
+      .catch(() => {});
+  }
+
+  return formatServerInstance(server);
+}
+
+/**
+ * Lista todas as instâncias ativas na tabela `servers` para uma sala (`roomId`).
+ * Com Abertura Automática Sob Demanda (Auto-Spawn On-Demand):
+ * Se a sala não possuir instâncias ativas ao ser consultada para entrada/compartilhamento,
+ * aloca automaticamente a primeira instância na tabela `servers`.
+ */
+async function getRoomActiveServerInstances(roomId, optionsOrTx = {}) {
   const rId = Number(roomId || 0);
   if (!rId || !repo.Server) {
     return { instances: [], instancesCount: 0, totalPlayersOnline: 0, bestAvailableInstance: null };
   }
+
+  const isTx = optionsOrTx && typeof optionsOrTx.commit === 'function';
+  const transaction = isTx ? optionsOrTx : (optionsOrTx?.transaction || null);
+  const autoSpawn = !isTx && optionsOrTx?.autoSpawn !== false;
+
+  // 1. Limpa instâncias ociosas desta sala antes de listar
+  await reapIdleServerInstances({ idleMinutes: 3, roomId: rId });
+
   const room = await repo.RoomModel.findByPk(rId, { transaction });
-  const rows = await repo.Server.findAll({
-    where: { roomId: rId },
+  if (!room) {
+    return { instances: [], instancesCount: 0, totalPlayersOnline: 0, bestAvailableInstance: null };
+  }
+
+  const Op = repo.Sequelize.Op;
+  let rows = await repo.Server.findAll({
+    where: {
+      roomId: rId,
+      [Op.or]: [{ isClosed: false }, { isClosed: null }],
+      status: { [Op.ne]: "closed" },
+    },
     order: [["id", "ASC"]],
     transaction,
   });
+
+  // 2. Abertura Automática Sob Demanda: se não há instâncias ativas, cria automaticamente a Instância #1
+  if (rows.length === 0 && autoSpawn) {
+    try {
+      await allocateOrReplicateRoomServerInstance({
+        roomId: rId,
+        joinPlayer: false,
+        transaction,
+      });
+
+      rows = await repo.Server.findAll({
+        where: {
+          roomId: rId,
+          [Op.or]: [{ isClosed: false }, { isClosed: null }],
+          status: { [Op.ne]: "closed" },
+        },
+        order: [["id", "ASC"]],
+        transaction,
+      });
+    } catch (spawnErr) {
+      console.warn(`[getRoomActiveServerInstances:autoSpawn] Falha ao auto-abrir instância para sala #${rId}:`, spawnErr.message);
+    }
+  }
+
   const instances = rows.map((srv, idx) => formatServerInstance(srv, idx, room));
   const totalPlayersOnline = instances.reduce((acc, s) => acc + s.playersCount, 0);
   const bestAvailableInstance = instances.find((s) => !s.isFull) || instances[instances.length - 1] || null;
+
   return {
     room: room ? room.get({ plain: true }) : null,
     instances,
@@ -2174,6 +2332,7 @@ async function transferCoinsBetweenPlayers({
   targetAvatarInput,
   amountCoins,
   note = "",
+  pin = null,
 }) {
   await ensureFeeAndRoomTables();
   const sId = Number(senderAvatarId || 0);
@@ -2193,6 +2352,16 @@ async function transferCoinsBetweenPlayers({
   }
 
   return await repo.sequelize.transaction(async (t) => {
+    // Validação de PIN de Segurança da Carteira
+    if (senderUserId) {
+      const userRec = await repo.User.findByPk(senderUserId, { transaction: t });
+      if (userRec && userRec.walletPin) {
+        if (!pin || String(userRec.walletPin).trim() !== String(pin).trim()) {
+          throw new Error("PIN de segurança da carteira inválido para autorizar a transferência.");
+        }
+      }
+    }
+
     let targetAvatar = null;
     if (/^\d+$/.test(rawTarget)) {
       targetAvatar = await repo.AvatarModel.findByPk(Number(rawTarget), { transaction: t });
@@ -2426,7 +2595,9 @@ async function getVipStatus(avatarId, userId = null) {
   return {
     isVip,
     vipExpiresAt,
+    expiresAt: vipExpiresAt,
     vipPlan,
+    plan: vipPlan,
     badgeLabel: isVip ? "👑 VIP" : "Membro Básico",
     plans,
     chatUsageToday: {
@@ -2477,9 +2648,38 @@ async function enrichAvatarsWithVip(avatarsList = []) {
   return list.map((av) => {
     const activeByCol = Boolean(av.isVip && (!av.vipExpiresAt || new Date(av.vipExpiresAt) > new Date()));
     const isVip = vipSet.has(Number(av.id)) || activeByCol;
+    const guideRole = av.guideRole ? String(av.guideRole).toLowerCase().trim() : null;
+    const isContentCreator = Boolean(av.isContentCreator);
+
+    // Mapeamento de cores no ecossistema: Básico = Verde, VIP = Amarelo, Guias = Cores dedicadas
+    let nameColorClass = isVip ? "text-amber-400" : "text-emerald-400";
+    let roleBadge = isVip ? "👑 VIP" : "Básico";
+
+    if (guideRole === "geral") {
+      nameColorClass = "text-orange-400";
+      roleBadge = "🧭 Guia Geral";
+    } else if (guideRole === "bolsa") {
+      nameColorClass = "text-cyan-400";
+      roleBadge = "💎 Guia da Bolsa";
+    } else if (guideRole === "decoracao") {
+      nameColorClass = "text-purple-400";
+      roleBadge = "🎨 Guia de Decoração";
+    } else if (guideRole === "moda") {
+      nameColorClass = "text-pink-400";
+      roleBadge = "👗 Guia de Estilo";
+    } else if (guideRole === "profissoes") {
+      nameColorClass = "text-blue-400";
+      roleBadge = "🛠️ Guia de Carreiras";
+    }
+
     return {
       ...av,
       isVip,
+      guideRole,
+      isContentCreator,
+      nameColorClass,
+      roleBadge,
+      creatorBadge: isContentCreator ? "🌟 Criador" : null,
     };
   });
 }
@@ -2489,7 +2689,8 @@ async function purchaseVipSubscription({ avatarId, userId = null, planKey = "1_m
   const avId = Number(avatarId || 0);
   if (!avId) throw new Error("Avatar não identificado para ativar o VIP.");
 
-  const planMeta = VIP_PLANS_META[planKey] || VIP_PLANS_META["1_month"];
+  const normPlan = String(planKey || "1_month").trim().toLowerCase().replace('-', '_');
+  const planMeta = VIP_PLANS_META[normPlan] || VIP_PLANS_META["1_month"];
   const currency = String(payWith || "Cash").toLowerCase() === "coins" ? "Coins" : "Cash";
 
   return await repo.sequelize.transaction(async (t) => {
@@ -2617,10 +2818,13 @@ async function purchaseVipSubscription({ avatarId, userId = null, planKey = "1_m
 
     return {
       success: true,
+      isVip: true,
+      message: `Parabéns! ${planMeta.label} ativado com sucesso!`,
       plan: planMeta,
       currencyPaid: currency,
       amountPaid,
       vipExpiresAt: expiresAt.toISOString(),
+      expiresAt: expiresAt.toISOString(),
     };
   });
 }
@@ -2737,30 +2941,66 @@ async function getPublicRoomsExplorer({ viewerAvatarId = 0, filter = "all", sear
   return withOwner;
 }
 
-async function boostRoom24h({ roomId, ownerAvatarId, ownerUserId = null }) {
+async function boostRoom24h({ roomId, ownerAvatarId, avatarId, ownerUserId = null, userId = null }) {
   await ensureFeeAndRoomTables();
   const rId = Number(roomId || 0);
-  const avId = Number(ownerAvatarId || 0);
-  if (!rId || !avId) throw new Error("Sala ou Avatar inválido.");
+  let avId = Number(ownerAvatarId || avatarId || 0);
+  const uId = Number(ownerUserId || userId || 0);
+
+  if (!rId) throw new Error("Sala inválida.");
+
+  if (!avId && uId > 0 && repo.AvatarModel) {
+    const userAv = await repo.AvatarModel.findOne({
+      where: { userId: uId },
+      order: [["selected", "DESC"], ["id", "ASC"]],
+    });
+    if (userAv) avId = Number(userAv.id);
+  }
+
+  if (!avId) throw new Error("Avatar não especificado.");
 
   return await repo.sequelize.transaction(async (t) => {
     const room = await repo.RoomModel.findByPk(rId, { lock: t.LOCK.UPDATE, transaction: t });
     if (!room) throw new Error("Sala não encontrada.");
-    if (Number(room.avatarId) !== avId) {
+
+    // Verifica legitimidade de proprietário da sala (por avatar ou por conta User)
+    let isOwner = Number(room.avatarId) === avId;
+    if (!isOwner && uId > 0) {
+      if (Number(room.userId) === uId) {
+        isOwner = true;
+      } else if (room.avatarId && repo.AvatarModel) {
+        const roomOwnerAv = await repo.AvatarModel.findByPk(Number(room.avatarId), { transaction: t });
+        if (roomOwnerAv && Number(roomOwnerAv.userId) === uId) {
+          isOwner = true;
+        }
+      }
+    }
+
+    if (!isOwner) {
       throw new Error("Apenas o dono da sala pode impulsioná-la.");
     }
 
     const rules = await getEconomyRules(t);
     const boostFee = Math.max(0, Number(rules.roomBoost24hFeeCoins ?? 20.0));
 
-    const wallet = await repo.Currency.findOne({
+    // Busca carteira do avatar ou do usuário
+    let wallet = await repo.Currency.findOne({
       where: { [Op.or]: [{ avatarId: avId }, { ownerId: avId }] },
       lock: t.LOCK.UPDATE,
       transaction: t,
     });
+
+    if (!wallet && uId > 0) {
+      wallet = await repo.Currency.findOne({
+        where: { userId: uId },
+        lock: t.LOCK.UPDATE,
+        transaction: t,
+      });
+    }
+
     if (!wallet || Number(wallet.coins || 0) < boostFee) {
       throw new Error(
-        `Saldo insuficiente para Impulsionar Sala por 24h (Taxa: ${boostFee.toFixed(2)} Coins). Seu saldo é ${Number(wallet?.coins || 0).toFixed(2)} Coins.`
+        `Saldo insuficiente para impulsionar a sala por 24h (Taxa: ${boostFee.toFixed(2)} Coins). Seu saldo é ${Number(wallet?.coins || 0).toFixed(2)} Coins.`
       );
     }
 
@@ -2773,13 +3013,16 @@ async function boostRoom24h({ roomId, ownerAvatarId, ownerUserId = null }) {
     const baseDate = room.boostExpiresAt && new Date(room.boostExpiresAt) > new Date() ? new Date(room.boostExpiresAt) : new Date();
     const boostExpiresAt = new Date(baseDate.getTime() + 24 * 3600 * 1000);
 
+    room.boostExpiresAt = boostExpiresAt;
+    await room.save({ transaction: t });
+
     await repo.sequelize.query(
       `UPDATE "rooms" SET "boostExpiresAt" = :boostExpiresAt WHERE "id" = :roomId`,
       { replacements: { boostExpiresAt: boostExpiresAt.toISOString(), roomId: rId }, transaction: t }
-    );
+    ).catch(() => {});
 
     await recordLedgerEntry({
-      userId: ownerUserId || wallet.userId,
+      userId: uId || wallet.userId,
       avatarId: avId,
       currencyType: "Coins",
       direction: "DEBIT",
@@ -2795,9 +3038,11 @@ async function boostRoom24h({ roomId, ownerAvatarId, ownerUserId = null }) {
     return {
       success: true,
       roomId: rId,
+      roomName: room.name,
       boostFeeCoins: boostFee,
       boostExpiresAt: boostExpiresAt.toISOString(),
       newCoinsBalance: wallet.coins,
+      message: `Sala "${room.name}" impulsionada com sucesso por 24 horas no Explorador!`,
     };
   });
 }
@@ -3021,5 +3266,7 @@ module.exports = {
   formatServerInstance,
   getRoomActiveServerInstances,
   allocateOrReplicateRoomServerInstance,
+  reapIdleServerInstances,
+  leaveRoomServerInstance,
 };
 

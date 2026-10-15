@@ -1,0 +1,708 @@
+<%- include('../partials/header', { title: typeof title !== 'undefined' ? title : t('feedback.heroTitle', {}, 'Central de Atendimento & Feedback') }) %>
+
+<main class="w-full flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-10 md:py-16">
+    <!-- Header Hero da Central de Atendimento -->
+    <div class="text-center max-w-2xl mx-auto mb-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-4">
+            <span class="material-symbols-outlined text-[16px]">support_agent</span>
+            <span><%= t('feedback.heroBadge', {}, 'Central de Atendimento & Comunidade') %></span>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight font-display mb-3">
+            <%= t('feedback.heroTitle', {}, 'Como podemos te ajudar?') %>
+        </h1>
+        <p class="text-zinc-400 text-sm md:text-base leading-relaxed">
+            <%= t('feedback.heroSubtitle', {}, 'Envie sua dúvida para a equipe, reporte problemas para correção ágil ou sugira novas ideias para o futuro do The Fantasy Life.') %>
+        </p>
+    </div>
+
+    <!-- Seletor de Abas Mobile-First -->
+    <div class="bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 max-w-xl mx-auto mb-10 flex gap-1 shadow-xl">
+        <button type="button" onclick="switchFeedbackTab('contact')" id="tabBtn-contact"
+            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition duration-200 <%= activeTab === 'contact' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60' %>">
+            <span class="material-symbols-outlined text-[18px]">mail</span>
+            <span><%= t('feedback.tabContact', {}, 'Contato') %></span>
+        </button>
+
+        <button type="button" onclick="switchFeedbackTab('bug')" id="tabBtn-bug"
+            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition duration-200 <%= activeTab === 'bug' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60' %>">
+            <span class="material-symbols-outlined text-[18px]">bug_report</span>
+            <span><%= t('feedback.tabBug', {}, 'Reportar Bug') %></span>
+        </button>
+
+        <button type="button" onclick="switchFeedbackTab('suggestion')" id="tabBtn-suggestion"
+            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition duration-200 <%= activeTab === 'suggestion' ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60' %>">
+            <span class="material-symbols-outlined text-[18px]">how_to_vote</span>
+            <span><%= t('feedback.tabSuggestion', {}, 'Sugestões & Votação') %></span>
+        </button>
+    </div>
+
+    <!-- Container dos Formulários e Painéis -->
+    <div class="bg-zinc-950/80 border border-white/10 rounded-3xl p-6 sm:p-10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-32 -right-32 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- ABA 1: CONTATO / FALE CONOSCO -->
+        <div id="tabContent-contact" class="<%= activeTab === 'contact' ? '' : 'hidden' %>">
+            <div class="mb-6 border-b border-white/5 pb-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2 font-display">
+                    <span class="material-symbols-outlined text-blue-400">send</span>
+                    <span><%= t('feedback.contact.title', {}, 'Mensagem de Contato') %></span>
+                </h2>
+                <p class="text-xs text-zinc-400 mt-1"><%= t('feedback.contact.desc', {}, 'Dúvidas gerais, suporte de conta, parcerias e informações institucionais.') %></p>
+            </div>
+
+            <form id="formContact" class="space-y-5" onsubmit="submitContactForm(event)">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="contactName"><%= t('feedback.contact.nameLabel', {}, 'Seu Nome *') %></label>
+                        <input type="text" id="contactName" required maxlength="100" placeholder="<%= t('feedback.contact.namePlaceholder', {}, 'Ex: Alexandre Silva') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="contactEmail"><%= t('feedback.contact.emailLabel', {}, 'Seu E-mail para Resposta *') %></label>
+                        <input type="email" id="contactEmail" required maxlength="150" placeholder="<%= t('feedback.contact.emailPlaceholder', {}, 'nome@exemplo.com') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="contactSubject"><%= t('feedback.contact.subjectLabel', {}, 'Assunto *') %></label>
+                    <input type="text" id="contactSubject" required maxlength="180" placeholder="<%= t('feedback.contact.subjectPlaceholder', {}, 'Ex: Dúvida sobre recuperação de conta ou acesso') %>"
+                        class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="contactMessage"><%= t('feedback.contact.messageLabel', {}, 'Mensagem *') %></label>
+                    <textarea id="contactMessage" required rows="5" minlength="10" placeholder="<%= t('feedback.contact.messagePlaceholder', {}, 'Escreva aqui detalhadamente a sua solicitação...') %>"
+                        class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition resize-y"></textarea>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span class="text-[11px] text-zinc-500 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px] text-blue-400">lock</span>
+                        <%= t('feedback.contact.dataSecurity', {}, 'Seus dados são protegidos e tratados exclusivamente pela nossa equipe.') %>
+                    </span>
+                    <button type="submit" id="btnSubmitContact"
+                        class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">send</span>
+                        <span><%= t('feedback.contact.submitBtn', {}, 'Enviar Mensagem') %></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ABA 2: REPORTAR BUG COM PRINT OPCIONAL -->
+        <div id="tabContent-bug" class="<%= activeTab === 'bug' ? '' : 'hidden' %>">
+            <div class="mb-6 border-b border-white/5 pb-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2 font-display">
+                    <span class="material-symbols-outlined text-rose-400">pest_control</span>
+                    <span><%= t('feedback.bug.title', {}, 'Reportar um Problema ou Bug') %></span>
+                </h2>
+                <p class="text-xs text-zinc-400 mt-1"><%= t('feedback.bug.desc', {}, 'Ajude nossa equipe a identificar e resolver falhas visuais, problemas de carregamento ou erros inesperados.') %></p>
+            </div>
+
+            <form id="formBug" class="space-y-5" onsubmit="submitBugForm(event)">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugTitle"><%= t('feedback.bug.titleLabel', {}, 'Título Resumido do Problema *') %></label>
+                        <input type="text" id="bugTitle" required maxlength="180" placeholder="<%= t('feedback.bug.titlePlaceholder', {}, 'Ex: O botão de convite não responde ao clicar') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500 transition" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugCategory"><%= t('feedback.bug.categoryLabel', {}, 'Área Afetada') %></label>
+                        <select id="bugCategory"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500 transition cursor-pointer">
+                            <option value="geral"><%= t('common.general', {}, 'Geral / Navegação') %></option>
+                            <option value="interface_web">Visual & Botões do Site</option>
+                            <option value="game_3d">Salas 3D & Servidores</option>
+                            <option value="chat">Chat & Mensagens</option>
+                            <option value="perfil">Perfil & Avatares</option>
+                            <option value="loja_economia">Loja & Moedas</option>
+                            <option value="login_conta">Login ou Cadastro</option>
+                            <option value="outro"><%= t('common.other', {}, 'Outro') %></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugSeverity"><%= t('feedback.bug.severityLabel', {}, 'Impacto / Gravidade') %></label>
+                        <select id="bugSeverity"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500 transition cursor-pointer">
+                            <option value="baixa">Baixa (Pequeno detalhe visual)</option>
+                            <option value="media" selected>Média (Inconveniente, mas utilizável)</option>
+                            <option value="alta">Alta (Impede o uso de uma função importante)</option>
+                            <option value="critica">Crítica (Impossibilita acesso ou trava)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugEmail"><%= t('feedback.bug.emailLabel', {}, 'Seu E-mail (Opcional para contato)') %></label>
+                        <input type="email" id="bugEmail" maxlength="150" placeholder="<%= t('feedback.bug.emailPlaceholder', {}, 'Para avisarmos quando estiver corrigido') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500 transition" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugDescription"><%= t('feedback.bug.descLabel', {}, 'O que aconteceu? (Descrição Detalhada) *') %></label>
+                    <textarea id="bugDescription" required rows="4" minlength="10" placeholder="<%= t('feedback.bug.descPlaceholder', {}, 'Explique o que você estava tentando fazer e o que aconteceu de inesperado...') %>"
+                        class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500 transition resize-y"></textarea>
+                </div>
+
+                <!-- Campo de Print / Captura de Tela Opcional -->
+                <div class="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80">
+                    <label class="block text-xs font-bold text-zinc-300 mb-1.5 flex items-center justify-between" for="bugScreenshotFile">
+                        <span class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-rose-400">add_photo_alternate</span>
+                            <span><%= t('feedback.bug.screenshotLabel', {}, 'Anexar Print ou Captura de Tela (Opcional)') %></span>
+                        </span>
+                        <span class="text-[10px] text-zinc-500 font-normal">Máx 5MB</span>
+                    </label>
+                    <input type="file" id="bugScreenshotFile" accept="image/*" onchange="previewBugScreenshot(this)"
+                        class="w-full text-xs text-zinc-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-500/15 file:text-rose-300 hover:file:bg-rose-500/25 file:cursor-pointer cursor-pointer transition" />
+
+                    <!-- Preview da Imagem Selecionada -->
+                    <div id="bugScreenshotPreviewContainer" class="hidden mt-3 relative inline-block">
+                        <img id="bugScreenshotPreview" src="" alt="Preview Print" class="max-h-40 rounded-xl border border-white/10 shadow-lg object-contain" />
+                        <button type="button" onclick="clearBugScreenshot()" title="Remover imagem"
+                            class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-500 transition shadow">
+                            <span class="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugSteps"><%= t('feedback.bug.stepsLabel', {}, 'Passos para reproduzir (Opcional)') %></label>
+                        <textarea id="bugSteps" rows="3" placeholder="<%= t('feedback.bug.stepsPlaceholder', {}, '1. Entrei na sala...\n2. Cliquei em convidar amigo...\n3. A tela travou...') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500 transition resize-y"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="bugExpected"><%= t('feedback.bug.expectedLabel', {}, 'O que deveria ter acontecido? (Opcional)') %></label>
+                        <textarea id="bugExpected" rows="3" placeholder="<%= t('feedback.bug.expectedPlaceholder', {}, 'O convite deveria ter sido enviado e a sala carregada normalmente.') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500 transition resize-y"></textarea>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span class="text-[11px] text-zinc-500 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px] text-rose-400">bolt</span>
+                        <%= t('feedback.bug.notice', {}, 'Registrado diretamente na fila de triagem técnica da equipe.') %>
+                    </span>
+                    <button type="submit" id="btnSubmitBug"
+                        class="w-full sm:w-auto px-8 py-3.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">bug_report</span>
+                        <span><%= t('feedback.bug.submitBtn', {}, 'Registrar Bug') %></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ABA 3: SUGESTÕES & PAINEL DE VOTAÇÃO DA COMUNIDADE -->
+        <div id="tabContent-suggestion" class="<%= activeTab === 'suggestion' ? '' : 'hidden' %> space-y-12">
+            <!-- Bloco 1: Formulário de Envio de Nova Sugestão -->
+            <div>
+                <div class="mb-6 border-b border-white/5 pb-4 flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2 font-display">
+                            <span class="material-symbols-outlined text-amber-400">tips_and_updates</span>
+                            <span><%= t('feedback.suggestion.title', {}, 'Enviar Sugestão ou Ideia') %></span>
+                        </h2>
+                        <p class="text-xs text-zinc-400 mt-1"><%= t('feedback.suggestion.desc', {}, 'Tem uma ideia inovadora para novos ambientes, mecânicas sociais, minigames ou itens? Queremos ouvir você!') %></p>
+                    </div>
+                    <a href="#painel-votacao" class="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold transition flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">how_to_vote</span>
+                        <span>Ir para o Painel de Votação ↓</span>
+                    </a>
+                </div>
+
+                <form id="formSuggestion" class="space-y-5" onsubmit="submitSuggestionForm(event)">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="suggestionTitle"><%= t('feedback.suggestion.titleLabel', {}, 'Título da Ideia *') %></label>
+                            <input type="text" id="suggestionTitle" required maxlength="180" placeholder="<%= t('feedback.suggestion.titlePlaceholder', {}, 'Ex: Criação de salas com música ambiente compartilhada') %>"
+                                class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="suggestionCategory"><%= t('feedback.suggestion.categoryLabel', {}, 'Categoria') %></label>
+                            <select id="suggestionCategory"
+                                class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition cursor-pointer">
+                                <option value="geral"><%= t('common.general', {}, 'Geral') %></option>
+                                <option value="jogabilidade">Jogabilidade & Salas 3D</option>
+                                <option value="social">Rede Social & Amizades</option>
+                                <option value="visual">Personalização & Avatares</option>
+                                <option value="economia">Economia & Loja</option>
+                                <option value="nova_funcao">Nova Funcionalidade</option>
+                                <option value="outro"><%= t('common.other', {}, 'Outro') %></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="suggestionDescription"><%= t('feedback.suggestion.descLabel', {}, 'Conte-nos sobre a sua sugestão *') %></label>
+                        <textarea id="suggestionDescription" required rows="4" minlength="10" placeholder="<%= t('feedback.suggestion.descPlaceholder', {}, 'Descreva sua ideia com detalhes, como ela funcionaria e por que os jogadores adorariam...') %>"
+                            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition resize-y"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="suggestionBenefit"><%= t('feedback.suggestion.benefitLabel', {}, 'Qual benefício isso traz à comunidade? (Opcional)') %></label>
+                            <input type="text" id="suggestionBenefit" maxlength="200" placeholder="<%= t('feedback.suggestion.benefitPlaceholder', {}, 'Ex: Aumenta a interação e conexão entre amigos nas salas') %>"
+                                class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1.5" for="suggestionEmail"><%= t('feedback.suggestion.emailLabel', {}, 'Seu E-mail (Opcional para feedback)') %></label>
+                            <input type="email" id="suggestionEmail" maxlength="150" placeholder="<%= t('feedback.suggestion.emailPlaceholder', {}, 'Seu e-mail caso queiramos trocar ideias') %>"
+                                class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition" />
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-[11px] text-zinc-500 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px] text-amber-400">auto_awesome</span>
+                            <%= t('feedback.suggestion.notice', {}, 'As melhores ideias são catalogadas para os próximos marcos da plataforma.') %>
+                        </span>
+                        <button type="submit" id="btnSubmitSuggestion"
+                            class="w-full sm:w-auto px-8 py-3.5 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-amber-600/30 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">lightbulb</span>
+                            <span><%= t('feedback.suggestion.submitBtn', {}, 'Enviar Sugestão') %></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bloco 2: PAINEL DE VOTAÇÃO DA COMUNIDADE -->
+            <div id="painel-votacao" class="border-t border-white/10 pt-10">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-[11px] font-bold uppercase tracking-wider mb-1">
+                            <span class="material-symbols-outlined text-[14px]">how_to_vote</span>
+                            <span>Votação Aberta</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white font-display">
+                            <%= t('feedback.voting.title', {}, 'Painel de Votação da Comunidade') %>
+                        </h3>
+                        <p class="text-xs text-zinc-400 mt-1">
+                            <%= t('feedback.voting.subtitle', {}, 'Ideias propostas pelos próprios jogadores. Vote e ajude a decidir as próximas novidades do The Fantasy Life!') %>
+                        </p>
+                    </div>
+
+                    <!-- Filtros e Ordenação -->
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <select id="votingCategoryFilter" onchange="loadCommunitySuggestions()"
+                            class="bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-500 cursor-pointer">
+                            <option value="all"><%= t('feedback.voting.filterAll', {}, 'Todas as Categorias') %></option>
+                            <option value="jogabilidade">Jogabilidade & Salas 3D</option>
+                            <option value="social">Rede Social & Amizades</option>
+                            <option value="visual">Personalização & Avatares</option>
+                            <option value="economia">Economia & Loja</option>
+                            <option value="nova_funcao">Nova Funcionalidade</option>
+                        </select>
+
+                        <div class="bg-zinc-900 p-1 rounded-xl border border-zinc-800 flex gap-1">
+                            <button type="button" onclick="setVotingSort('votes')" id="btnSortVotes"
+                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black shadow">
+                                <%= t('feedback.voting.sortVotes', {}, 'Mais Votadas') %>
+                            </button>
+                            <button type="button" onclick="setVotingSort('recent')" id="btnSortRecent"
+                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-zinc-400 hover:text-white">
+                                <%= t('feedback.voting.sortRecent', {}, 'Mais Recentes') %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feed Dinâmico de Ideias -->
+                <div id="votingFeedLoading" class="text-center py-12 text-zinc-500">
+                    <span class="material-symbols-outlined text-3xl animate-spin text-amber-400 mb-2">progress_activity</span>
+                    <p class="text-xs">Carregando sugestões da comunidade...</p>
+                </div>
+
+                <div id="votingFeedList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+                <div id="votingFeedEmpty" class="hidden text-center py-12 p-8 rounded-2xl bg-zinc-900/40 border border-white/5">
+                    <span class="material-symbols-outlined text-4xl text-zinc-600 mb-2">inbox</span>
+                    <p class="text-xs text-zinc-400"><%= t('feedback.voting.empty', {}, 'Nenhuma sugestão encontrada no momento. Seja o primeiro a cadastrar uma ideia acima!') %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    let currentVotingSort = 'votes';
+
+    function switchFeedbackTab(tab) {
+        ['contact', 'bug', 'suggestion'].forEach(function(t) {
+            const content = document.getElementById('tabContent-' + t);
+            const btn = document.getElementById('tabBtn-' + t);
+            if (!content || !btn) return;
+
+            if (t === tab) {
+                content.classList.remove('hidden');
+                btn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition duration-200 text-white shadow-lg ' +
+                    (t === 'contact' ? 'bg-blue-600 shadow-blue-600/30' : (t === 'bug' ? 'bg-rose-600 shadow-rose-600/30' : 'bg-amber-600 shadow-amber-600/30'));
+            } else {
+                content.classList.add('hidden');
+                btn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition duration-200 text-zinc-400 hover:text-white hover:bg-zinc-800/60';
+            }
+        });
+
+        const routeMap = { contact: '/contact', bug: '/report-bug', suggestion: '/suggestions' };
+        if (routeMap[tab]) {
+            window.history.replaceState({}, '', routeMap[tab]);
+        }
+
+        if (tab === 'suggestion') {
+            loadCommunitySuggestions();
+        }
+    }
+
+    // Gerenciamento do print opcional de bug
+    function previewBugScreenshot(input) {
+        const file = input.files && input.files[0];
+        const container = document.getElementById('bugScreenshotPreviewContainer');
+        const img = document.getElementById('bugScreenshotPreview');
+
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '<%= t("common.attention", {}, "Atenção") %>',
+                    text: 'O print anexado deve ter no máximo 5MB.',
+                    background: '#09090b',
+                    color: '#fff',
+                    confirmButtonColor: '#e11d48'
+                });
+                input.value = '';
+                container.classList.add('hidden');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                container.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function clearBugScreenshot() {
+        const input = document.getElementById('bugScreenshotFile');
+        const container = document.getElementById('bugScreenshotPreviewContainer');
+        if (input) input.value = '';
+        if (container) container.classList.add('hidden');
+    }
+
+    async function submitContactForm(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmitContact');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span><%= t("feedback.contact.submitting", {}, "Enviando...") %></span>';
+
+        try {
+            const res = await fetch('/api/feedback/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('contactName').value,
+                    email: document.getElementById('contactEmail').value,
+                    subject: document.getElementById('contactSubject').value,
+                    message: document.getElementById('contactMessage').value,
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '<%= t("common.success", {}, "Sucesso!") %>',
+                    text: data.message || '<%= t("feedback.api.contactSuccess", {}, "Recebemos sua mensagem com sucesso.") %>',
+                    background: '#09090b',
+                    color: '#fff',
+                    confirmButtonColor: '#2563eb'
+                });
+                document.getElementById('formContact').reset();
+            } else {
+                throw new Error(data.message || '<%= t("feedback.api.contactError", {}, "Erro ao enviar mensagem.") %>');
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: '<%= t("common.attention", {}, "Atenção") %>',
+                text: err.message || '<%= t("common.serverError", {}, "Erro no servidor. Tente novamente mais tarde") %>',
+                background: '#09090b',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">send</span><span><%= t("feedback.contact.submitBtn", {}, "Enviar Mensagem") %></span>';
+        }
+    }
+
+    async function submitBugForm(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmitBug');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span><%= t("feedback.bug.submitting", {}, "Registrando...") %></span>';
+
+        try {
+            const formData = new FormData();
+            formData.append('title', document.getElementById('bugTitle').value);
+            formData.append('category', document.getElementById('bugCategory').value);
+            formData.append('severity', document.getElementById('bugSeverity').value);
+            formData.append('email', document.getElementById('bugEmail').value);
+            formData.append('description', document.getElementById('bugDescription').value);
+            formData.append('stepsToReproduce', document.getElementById('bugSteps').value);
+            formData.append('expectedBehavior', document.getElementById('bugExpected').value);
+
+            const fileInput = document.getElementById('bugScreenshotFile');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                formData.append('screenshot', fileInput.files[0]);
+            }
+
+            const res = await fetch('/api/feedback/bug', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '<%= t("common.success", {}, "Sucesso!") %>',
+                    text: data.message || '<%= t("feedback.api.bugSuccess", {}, "Seu relatório foi registrado na nossa fila técnica.") %>',
+                    background: '#09090b',
+                    color: '#fff',
+                    confirmButtonColor: '#e11d48'
+                });
+                document.getElementById('formBug').reset();
+                clearBugScreenshot();
+            } else {
+                throw new Error(data.message || '<%= t("feedback.api.bugError", {}, "Erro ao registrar bug.") %>');
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: '<%= t("common.attention", {}, "Atenção") %>',
+                text: err.message || '<%= t("common.serverError", {}, "Erro no servidor. Tente novamente mais tarde") %>',
+                background: '#09090b',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">bug_report</span><span><%= t("feedback.bug.submitBtn", {}, "Registrar Bug") %></span>';
+        }
+    }
+
+    async function submitSuggestionForm(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmitSuggestion');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span><%= t("feedback.suggestion.submitting", {}, "Enviando...") %></span>';
+
+        try {
+            const res = await fetch('/api/feedback/suggestion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: document.getElementById('suggestionTitle').value,
+                    category: document.getElementById('suggestionCategory').value,
+                    description: document.getElementById('suggestionDescription').value,
+                    expectedBenefit: document.getElementById('suggestionBenefit').value,
+                    email: document.getElementById('suggestionEmail').value,
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '<%= t("common.success", {}, "Sucesso!") %>',
+                    text: data.message || '<%= t("feedback.api.suggestionSuccess", {}, "Agradecemos por contribuir para o The Fantasy Life.") %>',
+                    background: '#09090b',
+                    color: '#fff',
+                    confirmButtonColor: '#d97706'
+                });
+                document.getElementById('formSuggestion').reset();
+                loadCommunitySuggestions();
+            } else {
+                throw new Error(data.message || '<%= t("feedback.api.suggestionError", {}, "Erro ao registrar sugestão.") %>');
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: '<%= t("common.attention", {}, "Atenção") %>',
+                text: err.message || '<%= t("common.serverError", {}, "Erro no servidor. Tente novamente mais tarde") %>',
+                background: '#09090b',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">lightbulb</span><span><%= t("feedback.suggestion.submitBtn", {}, "Enviar Sugestão") %></span>';
+        }
+    }
+
+    // Painel de Votação Popular
+    function setVotingSort(sort) {
+        currentVotingSort = sort;
+        if (sort === 'votes') {
+            document.getElementById('btnSortVotes').className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black shadow';
+            document.getElementById('btnSortRecent').className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition text-zinc-400 hover:text-white';
+        } else {
+            document.getElementById('btnSortVotes').className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition text-zinc-400 hover:text-white';
+            document.getElementById('btnSortRecent').className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black shadow';
+        }
+        loadCommunitySuggestions();
+    }
+
+    async function loadCommunitySuggestions() {
+        const loading = document.getElementById('votingFeedLoading');
+        const list = document.getElementById('votingFeedList');
+        const empty = document.getElementById('votingFeedEmpty');
+        const category = document.getElementById('votingCategoryFilter')?.value || 'all';
+
+        loading.classList.remove('hidden');
+        list.innerHTML = '';
+        empty.classList.add('hidden');
+
+        try {
+            const res = await fetch(`/api/feedback/suggestions?sort=${currentVotingSort}&category=${category}`);
+            const data = await res.json();
+            loading.classList.add('hidden');
+
+            if (!data.success || !data.suggestions || data.suggestions.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            const categoryLabels = {
+                geral: 'Geral',
+                jogabilidade: 'Jogabilidade & Salas 3D',
+                social: 'Rede Social',
+                visual: 'Personalização & Avatares',
+                economia: 'Economia & Loja',
+                nova_funcao: 'Nova Funcionalidade',
+                outro: 'Outro'
+            };
+
+            data.suggestions.forEach(function(item) {
+                const card = document.createElement('div');
+                card.className = 'bg-zinc-900/60 border border-white/5 hover:border-amber-500/30 rounded-2xl p-5 flex flex-col justify-between transition group relative';
+
+                const isHighlight = (item.votesCount || 0) >= 5;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-300 border border-white/5">
+                                ${categoryLabels[item.category] || item.category}
+                            </span>
+                            ${isHighlight ? `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                    <span class="material-symbols-outlined text-[12px]">star</span>
+                                    <span><%= t('feedback.voting.communityHighlight', {}, 'Destaque da Comunidade') %></span>
+                                </span>
+                            ` : ''}
+                        </div>
+
+                        <h4 class="text-sm font-bold text-white group-hover:text-amber-300 transition mb-1.5 leading-snug">
+                            ${escapeHtml(item.title)}
+                        </h4>
+                        <p class="text-xs text-zinc-400 leading-relaxed mb-3">
+                            ${escapeHtml(item.description)}
+                        </p>
+                        ${item.expectedBenefit ? `
+                            <div class="text-[11px] text-zinc-500 bg-zinc-950/40 p-2.5 rounded-xl border border-white/5 mb-3 flex items-start gap-1.5">
+                                <span class="material-symbols-outlined text-[14px] text-amber-400 mt-0.5">thumb_up</span>
+                                <span><strong>Benefício:</strong> ${escapeHtml(item.expectedBenefit)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="pt-3 border-t border-white/5 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-400" id="voteCount-${item.id}">
+                            <span class="material-symbols-outlined text-[16px]">how_to_vote</span>
+                            <span>${item.votesCount || 0} votos</span>
+                        </div>
+
+                        <button type="button" onclick="voteSuggestion(${item.id})" id="voteBtn-${item.id}"
+                            class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                                item.hasVoted
+                                    ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/30'
+                                    : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
+                            }">
+                            <span class="material-symbols-outlined text-[15px]">${item.hasVoted ? 'check' : 'favorite'}</span>
+                            <span>${item.hasVoted ? '<%= t("feedback.voting.votedBtn", {}, "Apoiada") %>' : '<%= t("feedback.voting.voteBtn", {}, "Apoiar esta ideia") %>'}</span>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        } catch (err) {
+            loading.classList.add('hidden');
+            empty.classList.remove('hidden');
+        }
+    }
+
+    async function voteSuggestion(id) {
+        const btn = document.getElementById('voteBtn-' + id);
+        const countEl = document.getElementById('voteCount-' + id);
+        if (btn) btn.disabled = true;
+
+        try {
+            const res = await fetch(`/api/feedback/suggestions/${id}/vote`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (btn) {
+                    if (data.hasVoted) {
+                        btn.className = 'px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow-lg shadow-amber-500/30';
+                        btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">check</span><span><%= t("feedback.voting.votedBtn", {}, "Apoiada") %></span>';
+                    } else {
+                        btn.className = 'px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200';
+                        btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">favorite</span><span><%= t("feedback.voting.voteBtn", {}, "Apoiar esta ideia") %></span>';
+                    }
+                }
+                if (countEl) {
+                    countEl.innerHTML = `<span class="material-symbols-outlined text-[16px]">how_to_vote</span><span>${data.votesCount || 0} votos</span>`;
+                }
+            } else {
+                throw new Error(data.message || 'Erro ao votar.');
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: '<%= t("common.attention", {}, "Atenção") %>',
+                text: err.message || 'Não foi possível registrar o seu voto no momento.',
+                background: '#09090b',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // Inicializa carregamento se a aba inicial for sugestões
+    $(document).ready(function() {
+        if ('<%= activeTab %>' === 'suggestion') {
+            loadCommunitySuggestions();
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %>

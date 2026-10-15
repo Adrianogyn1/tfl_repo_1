@@ -1,0 +1,203 @@
+<!-- ================= VIEW 5.5: CLUBE VIP (BENEFÍCIOS, PLANOS & SELO VIP) ================= -->
+<%
+    const isVipUser = Boolean(vipStatus?.isVip || activeAvatar?.isVip);
+    const vipExpires = vipStatus?.expiresAt || activeAvatar?.vipExpiresAt;
+    const rateCoinsPerCash = Number(marketStats?.rateCoinsPerCash || 250);
+    const p1wCash = Number(marketStats?.vipPrice1WeekCash ?? 0.75);
+    const p1mCash = Number(marketStats?.vipPrice1MonthCash ?? 2.00);
+    const p3mCash = Number(marketStats?.vipPrice3MonthsCash ?? 5.00);
+%>
+<section id="view-vip" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
+
+    <!-- Hero Card do Clube VIP -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-950/60 via-slate-900 to-slate-950 border border-amber-500/30 p-6 sm:p-8 shadow-2xl space-y-4">
+        <div class="absolute -right-8 -top-8 w-44 h-44 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div class="flex items-center gap-3">
+                <span class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/30">
+                    👑
+                </span>
+                <div>
+                    <h2 class="text-lg sm:text-xl font-black uppercase text-white tracking-wider flex items-center gap-2">
+                        <span>Clube VIP The Fantasy Life</span>
+                        <% if (isVipUser) { %>
+                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider">
+                                Ativo
+                            </span>
+                        <% } else { %>
+                            <span class="px-2.5 py-0.5 rounded-full bg-slate-800 text-zinc-400 border border-white/10 text-[10px] font-bold uppercase tracking-wider">
+                                Básico
+                            </span>
+                        <% } %>
+                    </h2>
+                    <p class="text-xs text-zinc-400">
+                        <% if (isVipUser) { %>
+                            Sua assinatura VIP está ativa<%= vipExpires ? ' até ' + new Date(vipExpires).toLocaleDateString('pt-BR') : '' %>. Aproveite todos os benefícios exclusivos!
+                        <% } else { %>
+                            Desbloqueie conversas ilimitadas, envio de fotos/áudios no chat e destaque dourado no mundo.
+                        <% } %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-zinc-400 font-bold">Saldo:</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-950 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
+                    $<%= Number(wallet?.cash || 0).toFixed(2) %> Cash
+                </span>
+                <span class="px-3 py-1 rounded-xl bg-slate-950 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold">
+                    <%= Number(wallet?.coins || 0).toLocaleString('pt-BR') %> Coins
+                </span>
+            </div>
+        </div>
+
+        <!-- Grade de Benefícios -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-2">
+            <div class="bg-slate-950/70 border border-white/5 rounded-2xl p-4 space-y-1.5">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-sm font-black">
+                    <span class="material-symbols-outlined text-[18px]">verified</span>
+                </div>
+                <h4 class="text-xs font-black uppercase text-white">Selo Dourado VIP</h4>
+                <p class="text-[11px] text-zinc-400 leading-relaxed">Destaque com ícone da coroa dourada no seu perfil, posts, mini reels e listas de amigos.</p>
+            </div>
+
+            <div class="bg-slate-950/70 border border-white/5 rounded-2xl p-4 space-y-1.5">
+                <div class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-sm font-black">
+                    <span class="material-symbols-outlined text-[18px]">chat</span>
+                </div>
+                <h4 class="text-xs font-black uppercase text-white">DMs Sem Limite</h4>
+                <p class="text-[11px] text-zinc-400 leading-relaxed">Converse livremente sem cota diária de aberturas de chat com novos amigos.</p>
+            </div>
+
+            <div class="bg-slate-950/70 border border-white/5 rounded-2xl p-4 space-y-1.5">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-sm font-black">
+                    <span class="material-symbols-outlined text-[18px]">perm_media</span>
+                </div>
+                <h4 class="text-xs font-black uppercase text-white">Mídias no Chat</h4>
+                <p class="text-[11px] text-zinc-400 leading-relaxed">Envie fotos e mensagens de voz nos chats privados e grupos sem restrições diárias.</p>
+            </div>
+
+            <div class="bg-slate-950/70 border border-white/5 rounded-2xl p-4 space-y-1.5">
+                <div class="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center text-sm font-black">
+                    <span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+                </div>
+                <h4 class="text-xs font-black uppercase text-white">Boost em Salas</h4>
+                <p class="text-[11px] text-zinc-400 leading-relaxed">Suas salas ganham prioridade nas buscas e destaque visual no Explorador 3D.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seletor de Planos VIP -->
+    <div class="space-y-4">
+        <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-amber-400">payments</span>
+            <span>Escolha seu Plano de Assinatura</span>
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Plano 1 Semana -->
+            <div class="bg-slate-900 border border-white/10 hover:border-amber-500/40 rounded-3xl p-5 flex flex-col justify-between space-y-4 transition">
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-wider text-amber-300">Semanal</span>
+                        <span class="px-2 py-0.5 rounded-md bg-slate-800 text-zinc-400 text-[10px] font-bold">7 Dias</span>
+                    </div>
+                    <div class="pt-1">
+                        <span class="text-2xl font-black text-white">$<%= p1wCash.toFixed(2) %></span>
+                        <span class="text-xs text-zinc-500 font-bold">Cash</span>
+                    </div>
+                    <div class="text-[11px] text-zinc-400">
+                        ou <strong class="text-amber-400 font-mono"><%= Math.round(p1wCash * rateCoinsPerCash) %> Coins</strong>
+                    </div>
+                    <ul class="pt-3 border-t border-white/5 space-y-2 text-xs text-zinc-300">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 7 dias de Clube VIP</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Selo da coroa dourada</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Abertura livre de conversas</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <button type="button" class="btn-subscribe-vip w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
+                            data-plan="1_WEEK" data-currency="Cash">
+                        Pagar $<%= p1wCash.toFixed(2) %> Cash
+                    </button>
+                    <button type="button" class="btn-subscribe-vip w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold transition"
+                            data-plan="1_WEEK" data-currency="Coins">
+                        Pagar <%= Math.round(p1wCash * rateCoinsPerCash) %> Coins
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plano 1 Mês (Destaque) -->
+            <div class="relative bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/60 rounded-3xl p-5 flex flex-col justify-between space-y-4 shadow-xl shadow-amber-500/10">
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow">
+                    Mais Popular
+                </span>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-wider text-amber-300">Mensal</span>
+                        <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold">30 Dias</span>
+                    </div>
+                    <div class="pt-1">
+                        <span class="text-2xl font-black text-white">$<%= p1mCash.toFixed(2) %></span>
+                        <span class="text-xs text-zinc-500 font-bold">Cash</span>
+                    </div>
+                    <div class="text-[11px] text-zinc-400">
+                        ou <strong class="text-amber-400 font-mono"><%= Math.round(p1mCash * rateCoinsPerCash) %> Coins</strong>
+                    </div>
+                    <ul class="pt-3 border-t border-white/5 space-y-2 text-xs text-zinc-300">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 30 dias de Clube VIP</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Selo da coroa dourada</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Fotos e áudios no chat</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> DMs ilimitadas</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <button type="button" class="btn-subscribe-vip w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-500/25"
+                            data-plan="1_MONTH" data-currency="Cash">
+                        Pagar $<%= p1mCash.toFixed(2) %> Cash
+                    </button>
+                    <button type="button" class="btn-subscribe-vip w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold transition"
+                            data-plan="1_MONTH" data-currency="Coins">
+                        Pagar <%= Math.round(p1mCash * rateCoinsPerCash) %> Coins
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plano 3 Meses (Trimestral) -->
+            <div class="bg-slate-900 border border-white/10 hover:border-amber-500/40 rounded-3xl p-5 flex flex-col justify-between space-y-4 transition">
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-wider text-amber-300">Trimestral</span>
+                        <span class="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[10px] font-bold">90 Dias</span>
+                    </div>
+                    <div class="pt-1">
+                        <span class="text-2xl font-black text-white">$<%= p3mCash.toFixed(2) %></span>
+                        <span class="text-xs text-zinc-500 font-bold">Cash</span>
+                    </div>
+                    <div class="text-[11px] text-zinc-400">
+                        ou <strong class="text-amber-400 font-mono"><%= Math.round(p3mCash * rateCoinsPerCash) %> Coins</strong>
+                    </div>
+                    <ul class="pt-3 border-t border-white/5 space-y-2 text-xs text-zinc-300">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 90 dias de Clube VIP</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Melhor custo-benefício</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Todos os benefícios ativos</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <button type="button" class="btn-subscribe-vip w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
+                            data-plan="3_MONTHS" data-currency="Cash">
+                        Pagar $<%= p3mCash.toFixed(2) %> Cash
+                    </button>
+                    <button type="button" class="btn-subscribe-vip w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold transition"
+                            data-plan="3_MONTHS" data-currency="Coins">
+                        Pagar <%= Math.round(p3mCash * rateCoinsPerCash) %> Coins
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -34,23 +34,19 @@
                     <p class="text-xs text-[#8794b8] mt-0.5">Personalize seu avatar com novos itens.</p>
                 </div>
 
-                <!-- HeaderActions (Exatamente como no shop_app.tscn) -->
-                <div class="flex flex-wrap items-center gap-2.5">
+                <!-- HeaderActions: Foco em Carrinho da Loja e Atalho ao Guarda-Roupa do Avatar -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" class="btn-go-avatar-wardrobe px-3.5 py-2 rounded-xl bg-[#131829] hover:bg-[#1f2947] border border-[#2e3d70] text-xs font-bold text-zinc-300 hover:text-white transition flex items-center gap-1.5" title="Ir para o Guarda-Roupa do Avatar">
+                        <span class="material-symbols-outlined text-[16px] text-purple-400">checkroom</span>
+                        <span>Meu Guarda-Roupa</span>
+                    </button>
                     <button type="button" id="btnShopOpenCreate"
-                            class="px-4 py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center gap-1.5">
-                        <span>+ Criar item</span>
-                    </button>
-                    <button type="button" id="btnShopOpenTextures"
-                            class="px-4 py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-layer-group text-sky-400"></i>
-                        <span>Textures</span>
-                    </button>
-                    <button type="button" id="btnShopOpenInventory"
-                            class="px-4 py-2.5 rounded-xl bg-[#1f2947] hover:bg-[#2b3963] border border-[#3d528c] text-xs font-bold text-white transition flex items-center gap-1.5">
-                        <span>🎒 Inventário</span>
+                            class="px-3.5 py-2 rounded-xl bg-[#131829] hover:bg-[#1f2947] border border-[#2e3d70] text-xs font-bold text-zinc-300 hover:text-white transition flex items-center gap-1.5" title="Ateliê de Criação UGC">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                        <span>Criar Item UGC</span>
                     </button>
                     <button type="button" id="btnShopOpenCart"
-                            class="px-4 py-2.5 rounded-xl bg-[#427aff] hover:bg-[#5c8fff] text-xs font-black text-white shadow-lg shadow-blue-600/25 transition flex items-center gap-1.5">
+                            class="px-4 py-2 rounded-xl bg-[#427aff] hover:bg-[#5c8fff] text-xs font-black text-white shadow-lg shadow-blue-600/25 transition flex items-center gap-1.5">
                         <span id="shopCartBtnLabel">🛍️ Carrinho (0)</span>
                     </button>
                 </div>
@@ -566,8 +562,8 @@
                 </p>
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-[#8794b8] mb-1">ID do Avatar ou Nickname do Destinatário</label>
-                        <input type="text" id="inputGiftTargetAvatar" placeholder="Ex: 12 ou NomeDoAvatar"
+                        <label class="block text-[10px] font-bold uppercase text-[#8794b8] mb-1">Nome do Avatar Destinatário</label>
+                        <input type="text" id="inputGiftTargetAvatar" placeholder="Nome do Avatar do amigo"
                                class="w-full bg-[#090c17] border border-[#2e3d70] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
                     </div>
                     <div>

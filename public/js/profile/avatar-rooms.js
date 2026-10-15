@@ -359,7 +359,7 @@
                             html += `
                                 <div class="p-2.5 bg-slate-900 border border-white/5 rounded-xl text-zinc-300 text-xs">
                                     <div class="font-bold text-white truncate">${TFL.escapeHtml(obj.name || 'Objeto 3D')}</div>
-                                    <div class="text-[10px] text-zinc-500">ID: #${obj.id}</div>
+                                    <div class="text-[10px] text-zinc-400">Item Decorativo</div>
                                 </div>
                             `;
                         });
@@ -489,6 +489,29 @@
             }).fail(function (xhr) {
                 $btn.prop('disabled', false).removeClass('opacity-60');
                 TFL.toast.error(xhr.responseJSON?.error || 'Erro ao processar entrada na sala.', 'Sala 3D');
+            });
+        });
+
+        // Curtir Sala 3D
+        $(document).on('click', '.btn-like-room', function (e) {
+            e.stopPropagation();
+            const $btn = $(this);
+            const roomId = $btn.data('room-id');
+            if (!roomId) return;
+
+            $.post('/profile/social/like/toggle', {
+                targetType: 'room',
+                targetId: roomId,
+                avatarId: TFL.getActiveAvatarId()
+            }, function (res) {
+                if (res && res.success) {
+                    $btn.find('.room-likes-count').text(res.likesCount || 0);
+                    if (res.liked) {
+                        $btn.addClass('text-rose-400 bg-rose-500/20').removeClass('text-zinc-400');
+                    } else {
+                        $btn.removeClass('text-rose-400 bg-rose-500/20');
+                    }
+                }
             });
         });
 

@@ -23,8 +23,22 @@ const GameModelsFactory = require("./game/index");
 
 const {PaymentBankModel, PaymentWebHookModel, associatePaymentModels} = require("./bank/Payment_Bank");
 const PlatformOperationalExpenseFactory = require("./bank/PlatformOperationalExpense");
+const {
+  ContactMessageModel,
+  BugReportModel,
+  UserSuggestionModel,
+  SuggestionVoteModel,
+  ensureFeedbackTables,
+} = require("./feedback/FeedbackModels");
 
 module.exports = (sequelize) => {
+  if (process.env.SYNC_DB === 'true') {
+    ensureFeedbackTables(sequelize);
+  }
+  const ContactMessage = ContactMessageModel(sequelize);
+  const BugReport = BugReportModel(sequelize);
+  const UserSuggestion = UserSuggestionModel(sequelize);
+  const SuggestionVote = SuggestionVoteModel(sequelize);
   const PaymentBank = PaymentBankModel(sequelize);
   const PaymentWebHook = PaymentWebHookModel(sequelize);
   const PlatformOperationalExpense = PlatformOperationalExpenseFactory(sequelize);
@@ -120,6 +134,10 @@ module.exports = (sequelize) => {
     Ignore,
     Follow,
     FileInfo,
+    ContactMessage,
+    BugReport,
+    UserSuggestion,
+    SuggestionVote,
     ...GameModels,
   };
 };

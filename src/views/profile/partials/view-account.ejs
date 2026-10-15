@@ -1,12 +1,75 @@
-<!-- ================= VIEW 4: CONTA USER (ICON-FIRST & I18N) ================= -->
-<section id="view-profile" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full space-y-5">
-    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 backdrop-blur-xl space-y-5">
-        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+<!-- ================= VIEW 4: CONTA USER & PIN DE SEGURANÇA (ICON-FIRST & I18N) ================= -->
+<section id="view-profile" class="view-panel hidden p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full space-y-6">
+    <!-- Bloco 1: PIN de Segurança de Carteira & Transações -->
+    <div class="bg-slate-900/80 border border-amber-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3.5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">pin</span>
+                </div>
+                <div>
+                    <h3 class="text-sm sm:text-base font-black uppercase italic tracking-wider text-white flex items-center gap-2">
+                        <span>PIN de Transação (4 Dígitos)</span>
+                    </h3>
+                    <p class="text-xs text-zinc-400 mt-0.5">Protege saques Pix, transferências P2P e conversões de moedas.</p>
+                </div>
+            </div>
+            <% if (user?.hasWalletPin) { %>
+                <span class="px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px]">verified_user</span>
+                    <span>PIN Configurado ✔</span>
+                </span>
+            <% } else { %>
+                <span class="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px]">warning</span>
+                    <span>Nenhum PIN Definido</span>
+                </span>
+            <% } %>
+        </div>
+
+        <form id="formUserWalletPin" class="space-y-4">
+            <p class="text-xs text-zinc-300 leading-relaxed">
+                Para evitar cliques acidentais e proteger seu saldo financeiro, todas as operações de valor exigem este PIN de 4 dígitos numéricos.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <% if (user?.hasWalletPin) { %>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">PIN Atual</label>
+                        <input type="password" id="inputCurrentPin" maxlength="4" pattern="[0-9]{4}" placeholder="••••" required
+                               class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                <% } %>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Novo PIN (4 Números)</label>
+                    <input type="password" id="inputNewWalletPin" maxlength="4" pattern="[0-9]{4}" placeholder="••••" required
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Confirmar Novo PIN</label>
+                    <input type="password" id="inputConfirmWalletPin" maxlength="4" pattern="[0-9]{4}" placeholder="••••" required
+                           class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button type="submit" id="btnSaveWalletPin"
+                        class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-lg shadow-amber-500/20 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">lock</span>
+                    <span>Salvar PIN de Segurança</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bloco 2: Dados Pessoais da Conta -->
+    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3.5">
             <h3 class="text-sm sm:text-base font-black uppercase italic tracking-wider text-white flex items-center gap-2">
                 <span class="material-symbols-outlined text-[22px] text-blue-500">manage_accounts</span>
                 <span><%= t('profile.account.title', {}, 'Conta') %></span>
             </h3>
-            <span class="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-[11px] font-mono text-zinc-400">ID #<%= user?.id %></span>
+            <span class="px-3 py-1 rounded-full bg-slate-950 border border-white/10 text-[11px] font-medium text-zinc-400">Titular da Conta</span>
         </div>
 
         <form id="formUserGlobal" class="space-y-4">
@@ -52,7 +115,7 @@
                 <button type="button" id="btnSaveUserData" 
                         class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-blue-600/30 flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-[16px]">save</span>
-                    <span><%= t('profile.account.save', {}, 'Salvar') %></span>
+                    <span><%= t('profile.account.save', {}, 'Salvar Dados') %></span>
                 </button>
             </div>
         </form>

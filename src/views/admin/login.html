@@ -127,39 +127,65 @@
 </body>
 <script>
     $(document).ready(function () {
-
         const dominio = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
-       //pega a pagina de direcionamento
-       var url = window.location.href;
-       var page = url.split("?pg=")[1];
-       if (page) {
-        $("#page").val(page);
-       }
 
+        // Extrai e higieniza a URL de retorno (pg)
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetPage = urlParams.get('pg') || '';
+        if (targetPage) {
+            try {
+                targetPage = decodeURIComponent(targetPage);
+            } catch (_) {}
+            if (!targetPage.startsWith('/')) {
+                targetPage = '/' + targetPage;
+            }
+            while (targetPage.includes('/admin/admin')) {
+                targetPage = targetPage.replace('/admin/admin', '/admin');
+            }
+            if (targetPage === '/admin/login' || targetPage === '/login' || targetPage === '/admin/signin') {
+                targetPage = '/admin';
+            }
+            $("#page").val(targetPage);
+        } else {
+            $("#page").val('/admin');
+        }
 
-       function setMessage(message, isError = true) {
-        if(isError)
-           $('#message').removeClass('hidden').removeClass('text-green-800').addClass('text-red-800');
-        else
-           $('#message').removeClass('hidden').removeClass('text-red-800').addClass('text-green-800');
+        function setMessage(message, isError = true) {
+            if(isError)
+               $('#message').removeClass('hidden').removeClass('text-green-800').addClass('text-red-800');
+            else
+               $('#message').removeClass('hidden').removeClass('text-red-800').addClass('text-green-800');
 
-           $('#message').text(message);
-           setTimeout(() => {
-               $('#message').addClass('hidden');
-           }, 5000);
-       }
+            $('#message').text(message);
+            setTimeout(() => {
+                $('#message').addClass('hidden');
+            }, 5000);
+        }
 
-       $('#btnLogin').on('click', function () {
-           var form = $('form').serialize();
+        $('#btnLogin').on('click', function () {
+            var form = $('form').serialize();
 
-           $.post(`${dominio}/api/auth/admin/signin`, form, function (data) {
-               if (data.success) {
-                   window.location.href = data.page;
-               } else {                
-                   setMessage(data.message, true);
-               }
-           });
-       });
+            $.post(`${dominio}/api/auth/admin/signin`, form, function (data) {
+                if (data.success) {
+                    let dest = data.page || '/admin';
+                    try {
+                        dest = decodeURIComponent(dest);
+                    } catch (_) {}
+                    if (!dest.startsWith('/')) {
+                        dest = '/' + dest;
+                    }
+                    while (dest.includes('/admin/admin')) {
+                        dest = dest.replace('/admin/admin', '/admin');
+                    }
+                    if (dest === '/admin/login' || dest === '/login' || dest === '/admin/signin') {
+                        dest = '/admin';
+                    }
+                    window.location.href = dest;
+                } else {                
+                    setMessage(data.message, true);
+                }
+            });
+        });
     });
 </script>
 </html>

@@ -119,6 +119,18 @@ Social + Economia Virtual P2P/Pix.
      10 combinações completas de roupas ("Looks") em `avatar_outfit_styles`.
 
 ================================================================================
+10. OBRIGATORIEDADE DO SISTEMA DE TRADUÇÃO (I18N) & CACHE DE CHAVES:
+    - Padrão Estrutural Obrigatório:
+      `- endpoint`
+      `-- key` (ex: `home.entrar`, `profile.salas`).
+    - Cache Rápido de Memória: Para evitar a leitura repetitiva e custosa dos arquivos JSON, consulte `docs/locales/i18n_keys_cache.md` ou `src/locales/KEYS_CACHE.md` onde todas as chaves estão indexadas por endpoint.
+    - Em TODO o projeto onde houver saída de texto para o usuário (views EJS, páginas, partials, modais, mensagens de erro/sucesso de API/controllers, toasts, etc.), é ESTRITAMENTE OBRIGATÓRIO registrar a chave no sistema de linguagem (`src/locales/pt-BR.json` e no cache).
+    - Toda chamada deve SEMPRE incluir o valor default/fallback como 3º argumento:
+      * No EJS: `<%= t('endpoint.key', {}, 'Texto Padrão') %>`
+      * Nos Controllers/APIs: `req.translate('endpoint.key', {}, 'Texto Padrão')` ou `t('endpoint.key', {}, 'Texto Padrão')`
+    - Mecânica de Fallback Automático: Se um idioma (ex: en-US, es-ES) não tiver tradução cadastrada, o sistema faz fallback imediato para o 3º argumento sem quebrar a interface nem deixar texto em branco.
+
+================================================================================
 3. ESTRUTURA DE DIRETÓRIOS PRINCIPAIS
 ================================================================================
 - `app.js` / `server.js`: Inicialização do Express, sessões, cookies, i18n,
@@ -436,6 +448,61 @@ Social + Economia Virtual P2P/Pix.
   * **Skills de Engenharia e Game Design no Drive (`The fantasy life Project/`)**:
     - Documentadas e ativadas as diretrizes canônicas em `03_Engenheiro_Antigravity_MCP/skills.md`, `02_Game_Designer_UX/skills.md` e relatório executivo `01_OUTBOX_RELATORIOS.md`.
 
+[MÓDULO 19: SISTEMA MULTIPLATAFORMA DE BUILDS/DOWNLOADS, CONTRATOS DE JOGO RESPONSÁVEL & TRANSAÇÕES PROTEGIDAS POR PIN]
+- Arquivos: `src/services/download.service.js`, `src/controllers/admin/index.js`, `src/views/admin/index.html`,
+  `src/models/game/GameSessionContract.js`, `src/services/coinMarket.service.js`, `src/middlewares/resolveAvatar.js`,
+  `src/api/v1/game/room.routers.js`
+- Responsabilidade:
+  * **Downloads Multiplataforma (`public/downloads/<platform>/latest` e `versions/`)**: Gestão de releases de Windows, Linux e Android com versionamento dinâmico consumido pela Landing Page (`/api/home/info`) e painel administrativo `/admin` (`tab-downloads-builds`).
+  * **PIN de Segurança de Carteira (`User.walletPin`)**: PIN de 4 dígitos obrigatório para autorização de saques Pix e transferências P2P de moedas.
+  * **Design Ético Anti-Vício & Contratos de Minigame**: Teto de 80% máximo na conversão de Coins para Chips (reserva social protegida) e contratos de sessão de minigame (`GameSessionContract`) com teto de perda e travamento obrigatório.
+  * **Proteção Anti-IDOR**: Middleware mandatório `resolveAvatar` validando a titularidade de `x-profile-id` contra o `userId` autenticado.
+[MÓDULO 20: MINI ADS & IMPULSIONAMENTO, PROGRAMA DE INFLUENCIADORES (50% REV-SHARE), GUIAS DA COMUNIDADE & SUB-ROTAS GRANULARES DE PERFIL (`MiniAdCampaign`, `MiniAdImpression`)]
+- Arquivos: `src/models/game/MiniAdCampaign.js`, `src/models/game/MiniAdImpression.js`,
+  `src/services/miniAds.service.js`, `src/controllers/profile/profile_controller.js`,
+  `src/views/profile/partials/view-ads.ejs`, `public/js/profile/ads.js`,
+  `public/js/profile/friends-chat.js`, `src/controllers/social/chat_controller.js`,
+  `public/js/profile/core.js`
+- Responsabilidade:
+  * **Mini Ads & Impulsionamento**: Anúncios in-app para Reels, Posts, Salas 3D, Roupas e Chat. Compra de pacotes de impressões (100 por 5 Coins, 500 por 22.5 Coins, 1.000 por 40 Coins) autorizada exclusivamente via PIN de 4 dígitos.
+  * **Programa de Criadores/Influenciadores & Revenue Share (50%)**: Criadores recebem 50% de divisão de receita de anúncios exibidos em seus conteúdos e gorjetas diretas (Tips) em Coins de fãs com notificação instantânea.
+  * **Pay-to-View Ético**: Espectadores ganham micro-recompensa (+0,05 Coins) por visualização qualificada (10s+ ou clique), limitado a 10 recompensas diárias para prevenir farming.
+  * **Guias da Comunidade (Mentores / Embaixadores do Ecossistema)**: 5 especializações oficiais (Geral 🧭, Bolsa 💎, Decoração 🎨, Moda 👗, Profissões 🛠️) com cores e crachás dedicados no Chat e ecossistema (Básico=Verde, VIP=Amarelo, Criador=Coral, Guias=Cores temáticas). Por regra estrita de segurança, guias NUNCA possuem privilégios de escrita ou modificação em contas de terceiros.
+  * **Chat de Proximidade 3D (Ambiente/Local)**: Suporte ao tipo de sala `local` (perímetro 15m) no motor WebSocket do chat ao lado de global, group e private.
+  * **Sub-rotas Granulares por Ramo (`/profile/:branch`) & Telemetria**: Roteamento individualizado para cada módulo (`social`, `salas`, `avatar`, `shop`, `account`, `market`, `vip`, `cassino`, `diary`, `friends`, `ads`) com sincronização via `history.pushState` e telemetria precisa de navegação (`/profile/telemetry/branch-view`).
+
+[MÓDULO 21: VERSIONAMENTO CONTÍNUO FRACIONADO (5 CASAS DECIMAIS) E CHANGELOG TRANSPARENTE (`version.service.js`, `changelog.json`)]
+- Arquivos: `src/config/changelog.json`, `src/services/version.service.js`,
+  `src/controllers/home/home_controller.js`, `src/routes/api.routers.js`,
+  `src/routes/router.js`, `src/views/home.ejs`, `src/views/partials/footer.ejs`
+- Responsabilidade:
+  * **Versionamento Decimal Fracionário (`0.00042`)**: Inicia na versão 0 com 5 casas decimais tracionadas diretamente pelo contador de Git commits (`git rev-list --count HEAD`), permitindo rollback pontual e seguro sem saltos numéricos arbitrários.
+  * **Estrutura Oficial de Notas de Versão**: Cada release documenta 3 blocos obrigatórios: *O Que Há de Novo* (novos recursos), *O Que Foi Corrigido* (bugs resolvidos) e *Bugs Conhecidos & Em Investigação* (transparência de roadmap).
+  * **Interface e Endpoints**: Crachá de versão na navbar, pill interativo no hero, modal completo de novidades e endpoints `/api/version`, `/api/changelog` e `/api/home/info`.
+
+[MÓDULO 22: CENTRAL DE CONTATO, REPORTAR BUGS COM PRINT OPCIONAL & PAINEL DE VOTAÇÃO DA COMUNIDADE PARA SUGESTÕES / IDEIAS]
+- Arquivos: `src/models/feedback/FeedbackModels.js`, `src/services/feedback.service.js`,
+  `src/routes/api.routers.js`, `src/routes/router.js`, `src/views/feedback/index.ejs`,
+  `src/locales/pt-BR.json`
+- Responsabilidade:
+  * **Atendimento & Contato (`ContactMessage`)**: Formulário acessível em `/contato` persistido no PostgreSQL com dados do usuário/visitante.
+  * **Reportar Bugs com Print Opcional (`BugReport`)**: Formulário em `/reportar-bug` com título, severidade, categoria, passos de reprodução, comportamento esperado e upload opcional de captura de tela (`screenshot`) via Multer e armazenamento seguro em `storage.service.js` (`screenshotUrl`).
+  * **Painel de Votação da Comunidade para Sugestões & Ideias (`UserSuggestion`, `SuggestionVote`)**:
+    - Página acessível em `/sugestoes` onde qualquer usuário pode enviar ideias sem créditos/propriedade de autoria nem prêmios, focando na comunidade.
+    - Mural dinâmico de sugestões com ordenação ("Mais Votadas" / "Mais Recentes") e filtro por categoria.
+    - Sistema de votação direta onde os próprios jogadores decidem o futuro do jogo com alternância instantânea de voto (toggle) sem recarregar a página, com prevenção de voto duplicado por ID ou IP.
+    - Destaque visual automático da comunidade para ideias que superam 5 votos positivos.
+    - Internacionalização integral (i18n) em 100% dos textos com fallbacks automáticos.
+
+[MÓDULO 23: GOVERNANÇA DE IDENTIDADE VISUAL, PALETA DE CORES & SEO ORGÂNICO (`.agent/skills/seo/SKILL.md`, `visual_identity.md`, `seo-head.ejs`)]
+- Arquivos: `.agent/skills/seo/SKILL.md`, `docs/brand/visual_identity.md`, `src/views/partials/seo-head.ejs`,
+  `src/views/partials/header.ejs`, `src/views/home.ejs`, `src/routes/router.js`, `src/locales/pt-BR.json`
+- Responsabilidade:
+  * **Diretriz de Aquisição 100% Orgânica (Sem Ads)**: Foco total em SEO On-Page, Core Web Vitals, metatags OpenGraph/Twitter Cards, indexação semântica e compartilhamento social rico sem investimento em tráfego pago nesta fase de desenvolvimento.
+  * **Identidade Visual e Design Tokens**: Paleta canônica definida com Cyber Void (`#050505`), Slate Obsidian (`#090d16`/`#0f172a`), Electric Blue (`#3b82f6` - cor primária da marca no "Fantasy"), Neon Cyan (`#06b6d4`), Cyber Rose (`#f43f5e`), Golden Amber (`#f59e0b`) e Emerald Mint (`#10b981`).
+  * **Padronização de Títulos Oficiais**: Erradicação de títulos genéricos ou estranhos (ex: "Home", "Painel TFL") em prol da assinatura oficial da marca: `The Fantasy Life | Mundo Virtual 3D, Rede Social & Avatares` (Home), `The Fantasy Life | Universo Virtual, Rede Social & Avatares` (Perfil), etc.
+  * **Rastreamento de Mecanismos de Busca**: Endpoints dinâmicos `GET /robots.txt` e `GET /sitemap.xml` estruturados com prioridades de rastreamento e dados estruturados Schema.org JSON-LD (`WebSite` e `SoftwareApplication`).
+
 ================================================================================
 5. HISTÓRICO DE LOGS E IMPLEMENTAÇÕES
 ================================================================================
@@ -445,34 +512,79 @@ Social + Economia Virtual P2P/Pix.
 > - **Logs Históricos Arquivados por Data**:
 >   * `docs/historico/logs/2026-10-12.md` (Logs #01 a #09)
 >   * `docs/historico/logs/2026-10-13.md` (Logs #10 a #28)
->   * `docs/historico/logs/2026-10-14.md` (Logs #29 a #32)
+>   * `docs/historico/logs/2026-10-14.md` (Logs #29 a #53)
 > - **Registro Geral de Arquivos Criados / Modificados**:
 >   * `docs/historico/arquivos_modificados.md` (Histórico centralizado de arquivos)
 >
 > **Diretriz Mandatória**: Mantenha neste arquivo apenas os logs recentes (últimas implementações ativas). Não adicione listas longas de arquivos aqui; registre-as em `docs/historico/arquivos_modificados.md`.
 
-[LOG #33 - 2026-10-14] Especialização da Skill de Backend: Mobile-First, Server-Driven UI (SDUI), Redes Sociais e Games
-- Reestruturou-se integralmente `.agent/skills/backend/SKILL.md` com foco exclusivo em engenharia backend mobile-first, orquestração de UI e os dois domínios centrais da plataforma (Rede Social e Games/Mundos Virtuais).
 
-[LOG #34 - 2026-10-14] Revisão Integral e Reestruturação Mobile-First de Todas as UIs do Projeto
-- Implementada view completa do Clube VIP (`view-vip.ejs`) com os 3 planos e modal de confirmação.
-- Higienizado `view-avatar.ejs`, removendo referências internas a engines/Godot em conformidade com as regras públicas.
-- Movido `#modalEconomyRules` exclusivamente para o `/admin`.
-- Atualizado `home.ejs` com rodapé unificado, navbar responsiva e substituição de alertas nativos.
-- Sidebar convertida em Drawer off-canvas retrátil com backdrop no mobile (< 768px).
-- Criada Bottom Navigation Bar com acesso rápido e safe area padding.
-- Janela flutuante de chat adaptada para tela cheia e balão posicionado a `bottom-20` no mobile.
-- Abas de perfil social e salas convertidas em trilhos horizontais com scroll suave (`overflow-x-auto`).
-
-[LOG #35 - 2026-10-14] Desacoplamento Arquitetural da Memória do Projeto para Economia de Tokens
+[LOG #54 - 2026-10-14] Validação Integral de Tradução em Duas Linguagens (pt-BR e en-US) e Rota Universal de Idioma
 - O que foi feito:
-  1. Criada a pasta `docs/historico/` com logs particionados por data (`docs/historico/logs/YYYY-MM-DD.md`) preservando todos os registros históricos detalhados de 2026-10-12 a 2026-10-14.
-  2. Criado `docs/historico/arquivos_modificados.md` desacoplando a lista exaustiva de arquivos criados/modificados da memória ativa para evitar inchaço de contexto e lentidão.
-  3. Criado `docs/historico/readme.md` documentando a arquitetura de arquivamento.
-  4. Reduzido `PROJECT_MEMORY_LOG.txt` de 109 KB (1.163 linhas) para ~35 KB (menos de 480 linhas), mantendo 100% das regras e apenas implementações ativas recentes.
-  5. Atualizada a regra `.agent/rules/project-memory.md` para formalizar a economia de tokens e uso da nova estrutura.
+  1. **Validação e Paridade 100% de Chaves em Duas Linguagens (`pt-BR.json` e `en-US.json`)**:
+     - Sincronizadas integralmente todas as chaves do catálogo em Inglês (`en-US.json`) espelhando com precisão `pt-BR.json`: `common`, `home`, `login`, `register`, `forgotPassword`, `resetPassword`, `verifyEmail`, `profile` (`salas`, `careers`, `financialHealth`, etc.), `feedback` (contato, bugs com print, sugestões, votação da comunidade) e `changelog`.
+     - Permite alternar e auditar todo o sistema em dois idiomas nativos sem texto truncado ou quebras de fallback.
+  2. **Rota Universal de Troca de Idioma (`src/routes/router.js`)**:
+     - Atualizada a rota `router.all(["/locale", "/locale/:lang", "/profile/locale", "/api/locale"])` para receber requisições GET ou POST (via AJAX do footer ou link direto), gravando o cookie de idioma de forma persistente mesmo para visitantes não autenticados.
+  3. **Fila de Trabalho para Retomada**:
+     - Deixada em fila a finalização do espanhol (`es-ES.json`) e a revisão de micro-textos pontuais para o dia seguinte.
 
-================================================================================
+[LOG #55 - 2026-10-15] Filtro Temporal Dinâmico de Usuários Ativos no Painel Admin (5m a 72h)
+- O que foi feito:
+  1. **Seletor Interativo de Janela Temporal no Card "Ativos Agora" (`src/views/admin/index.html`)**:
+     - Substituído o texto estático "Últimos 5 minutos" por um `<select id="admActiveWindowSelect">` estilizado e fluido no tema escuro/emerald.
+     - Opções disponíveis: Ativos agora (Últimos 5 min), Últimos 30 min, Última hora, Últimas 6h, Últimas 12h, Últimas 24h, Últimas 48h e Últimas 72h.
+  2. **Cálculo Eficiente de Janelas em Memória (`src/services/stats.service.js`)**:
+     - No método `getVisitStatsSnapshot()`, implementada agregação progressiva sobre `visitTelemetry.visitorsLastSeen` gerando o mapa `activeWindows` (`5m`, `30m`, `1h`, `6h`, `12h`, `24h`, `48h`, `72h`).
+     - Zero impacto em disco ou queries SQL, respondendo com latência ultrarrápida.
+  3. **Comutação Instantânea e Preservação no Polling**:
+     - No cliente admin, implementado cache local de janelas (`admActiveWindowsCache`) e sincronização reativa ao alterar o dropdown ou no ciclo de atualização periódica de telemetria (45s).
+
+[LOG #56 - 2026-10-15] Correção Crítica de Bloqueio no Pool PostgreSQL (ECHECKOUTTIMEOUT no Supabase / PgBouncer)
+- O que foi feito:
+  1. **Diagnóstico do Erro de Checkout do Pooler Supabase**:
+     - O erro `(ECHECKOUTTIMEOUT) unable to check out connection from the pool after 15000ms in Transaction mode` ocorria porque a cada reinício do servidor (nodemon), `repository.js` executava DDL pesada de forma incondicional (`dropLegacyProfileConstraints` e `sequelize.sync({ alter: true })`) e `models/index.js` executava `ensureFeedbackTables`.
+     - No Supabase Pooler em Transaction Mode (porta 6543), essas queries de DDL travavam e esgotavam todas as conexões do pooler por mais de 15 segundos, bloqueando requisições de autenticação de tokens (`User.findOne`) e impedindo logins em `/profile` e `/admin`.
+  2. **Remoção de Sync Destrutivo e Otimização do Pool (`src/repositories/repository.js`)**:
+     - `sequelize.sync({ alter: true })` e `dropLegacyProfileConstraints()` foram condicionados estritamente a `process.env.SYNC_DB === 'true'`, evitando rodar DDL a cada restart.
+     - No fluxo padrão, executa apenas `sequelize.authenticate()` leve para validação de conexão.
+     - O pool do Sequelize foi calibrado para `max: 5`, `min: 0`, `idle: 5000` para operar em perfeita harmonia com o Transaction Pooler do Supabase.
+  3. **Proteção de Inicialização de Modelos (`src/models/index.js`)**:
+     - `ensureFeedbackTables(sequelize)` condicionado a `SYNC_DB === 'true'`, eliminando concorrência de comandos `CREATE TABLE` na subida da aplicação.
+
+[LOG #57 - 2026-10-15] Padronização Global de Rotas em Inglês (Internacionalização Universal do Sistema)
+- O que foi feito:
+  1. **Padronização Canônica de Rotas Públicas em Inglês (`src/routes/router.js`)**:
+     - As rotas primárias foram convertidas para a nomenclatura internacional em inglês: `/contact`, `/report-bug`, `/suggestions`, `/changelog` e `/tutorial`.
+     - Preservados aliases múltiplos de retrocompatibilidade (`/contato`, `/fale-conosco`, `/reportar-bug`, `/sugestoes`, `/versoes`, etc.) para garantir transição suave sem quebras de URLs externas ou marcadores.
+  2. **SEO, Sitemap e Robots.txt em Inglês**:
+     - O arquivo `/robots.txt` e o gerador dinâmico de `/sitemap.xml` foram atualizados para expor e indexar organicamente as URLs em inglês (`/contact`, `/report-bug`, `/suggestions`, `/changelog`, `/tutorial`).
+  3. **Interface do Usuário e Rodapé Universal (`src/views/partials/footer.ejs` e `src/views/feedback/index.ejs`)**:
+     - Links do rodapé (`footer.ejs`) atualizados para apontar diretamente para `/contact`, `/report-bug` e `/suggestions`.
+     - Gerenciador de histórico e abas (`switchFeedbackTab` no `index.ejs`) sincronizado com o `routeMap` em inglês.
+
+[LOG #58 - 2026-10-15] Estabilização do Pool Supabase (Session Mode 5432, Graceful Shutdown no Nodemon e Alívio de Reap Idle)
+- O que foi feito:
+  1. **Migração para Session Mode do Pooler Supabase (`.env`)**:
+     - Alterada a `DATABASE_URL` da porta `6543` (Transaction Mode com checkout timeout de 15s) para a porta `5432` (Session Mode estável para aplicações persistentes em Node/Sequelize).
+     - Elimina em definitivo o erro `(ECHECKOUTTIMEOUT) unable to check out connection from the pool after 15000ms in Transaction mode`.
+  2. **Encerramento Gracioso de Conexões no Nodemon (`index.js`)**:
+     - Adicionados listeners para `SIGUSR2` (sinal disparado pelo nodemon ao reiniciar arquivos), `SIGINT` e `SIGTERM`.
+     - Ao reiniciar, o servidor fecha o pool do Sequelize graciosamente (`sequelize.close()`), prevenindo conexões órfãs presas na AWS Supabase.
+  3. **Alívio da Frequência do Monitor de Instâncias (`src/services/coinMarket.service.js`)**:
+     - O timer de `reapIdleServerInstances` foi espaçado de 60s para 5 minutos com validação de repositório, evitando polling agressivo em momentos de subida do servidor.
+
+[LOG #59 - 2026-10-15] Diretriz Anti-Rollback Mandatória e Correção de Redirecionamento Pós-Login do Admin (admin/admin)
+- O que foi feito:
+  1. **Diretriz Mandatória Anti-Rollback (`.agent/rules/project-memory.md` e Memória)**:
+     - Fixada a regra obrigatória de que NUNCA deve ser realizado rollback, descarte de arquivos ou reversão no repositório sem permissão e consentimento explícito e prévio do usuário.
+  2. **Correção do Bug de Redirecionamento Relativo `admin/admin` (`src/views/admin/login.html`)**:
+     - O script lia o parâmetro `?pg=` sem decodificação de URI e, caso o retorno fosse um caminho relativo ou duplicado (`admin`), o navegador concatenava a partir de `/admin/login`, resultando em `/admin/admin`.
+     - Implementado parser robusto via `URLSearchParams` com decodificação, garantia de caminho absoluto começando com `/`, remoção de duplicações e fallback seguro para `/admin`.
+  3. **Higienização de Rota de Retorno no Backend (`src/controllers/auth.js` e `src/controllers/admin/index.js`)**:
+     - No endpoint `/api/auth/admin/signin`, a propriedade `page` agora é rigorosamente higienizada (`decodeURIComponent`, prefixo `/`, deduplicação de `/admin/admin` e prevenção de loop para telas de login).
+     - No middleware `requireAdminAuth`, a URL de retorno é sanitizada antes de gerar o redirecionamento `/admin/login?pg=...`.
+
 [!] LEMBRETE FINAL PARA O PRÓXIMO MODELO:
 Sempre adicione um novo `[LOG #XX - DATA]` acima desta linha antes de encerrar
 sua resposta quando fizer alterações no projeto!

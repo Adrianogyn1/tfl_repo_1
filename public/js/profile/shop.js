@@ -1001,7 +1001,7 @@
                     $btn.prop('disabled', false).text('🎁 Enviar Presente');
                     if (res && res.success) {
                         $('#modalShopGiftItem').addClass('hidden');
-                        showToast(`Presente "${res.itemName}" enviado para ${res.recipientName} (#${res.recipientAvatarId})!`, 'success');
+                        showToast(`Presente "${res.itemName}" enviado para ${res.recipientName}!`, 'success');
                         if (res.senderWallet) updateWalletHeader(res.senderWallet);
                     } else {
                         showToast((res && res.error) || 'Não foi possível enviar o presente.', 'error');
@@ -1218,6 +1218,14 @@
                     showToast('Erro na requisição de upload de textura.', 'error');
                 }
             });
+        });
+
+        $(document).on('click', '.btn-go-avatar-wardrobe', function () {
+            if (typeof TFL.switchView === 'function') {
+                TFL.switchView('view-avatar');
+            } else {
+                $(`.nav-item[data-view="view-avatar"]`).trigger('click');
+            }
         });
 
         // Ações da InventoryPage

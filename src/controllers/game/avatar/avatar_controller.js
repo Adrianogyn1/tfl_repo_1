@@ -189,14 +189,23 @@ async function getInfo(avatar, full = false)
     {
       //pode trazer milhares de resultados
       const roomInfo = require("../rooms_controllers.js");
-      data.rooms = await roomInfo.__getAllRoomFromProfile(avatar.id, true);
-      data.wallet = await repo.Currency.findOne({ where: { ownerId: avatar.id }, });
+      const Op = repo.Sequelize.Op;
+      data.wallet = await repo.Currency.findOne({
+        where: { [Op.or]: [{ avatarId: avatar.id }, { ownerId: avatar.id }] },
+      });
       if (!data.wallet)
       {
-        data.wallet = await repo.Currency.create({ ownerId: avatar.id, userId: avatar.userId });
+        data.wallet = await repo.Currency.create({ ownerId: avatar.id, avatarId: avatar.id, userId: avatar.userId, cash: 0, coins: 0, chips: 0 });
+      }
+      if (avatar.userId && repo.User) {
+        const uRec = await repo.User.findByPk(avatar.userId);
+        if (uRec && uRec.cash !== undefined) {
+          data.userCash = Number(uRec.cash || 0);
+          data.wallet.cash = Number(uRec.cash || 0);
+        }
       }
       data.wallet.registers = await repo.CurrencyRegister.findAll({ where: { ownerId: avatar.id }, limit: 250 }) ?? [];
-     data.Posts = await repo.Post.findAll({ where: { ownerId: avatar.id }, limit: 250 }) ?? [];
+      data.Posts = await repo.Post.findAll({ where: { ownerId: avatar.id }, limit: 250 }) ?? [];
       //friends
     //  data.friends = await repo.Friend.findAll({ where: { userId: avatar.id, status: "accepted" } });
      /* data.ignored = await repo.Friend.findAll({ where: { userId: avatar.id, status: "ignored" } });
@@ -326,23 +335,39 @@ async function AvatarCreateHandler(avatar, userID)
         },
         { transaction: t },
       );
-      //da uma moedas para ele
-      if (count == 0)
-      {
-        const handleCoins = require("../currencyRegister_controller.js");
-        const result = await handleCoins.CreateCurrencyRegister(
-          {
-            userId: newAvatar.userId,
-            ownnerId: newAvatar.id,
-            value: REGISTER_VALUE_BONUS,
-            type: "Coins",
-            transactionType: "Rewards",
-          },
-          newAvatar.userId,
-          t,
-        );
+      // Bonificação inicial protegida por cota do User e configurada no Admin
+      let bonusAmount = 100;
+      try {
+        if (repo.EconomyRule) {
+          const rule = await repo.EconomyRule.findOne({ where: { key: 'starter_coins_bonus' }, transaction: t });
+          if (rule && rule.value !== undefined) bonusAmount = Number(rule.value);
+        }
+      } catch (errRule) {
+        bonusAmount = REGISTER_VALUE_BONUS;
+      }
 
-        if (!result.success) throw new Error(result.error);
+      const userRec = await repo.User.findByPk(userID, { transaction: t });
+      const cap = userRec?.coinsGrantCap ?? 100;
+      const granted = userRec?.coinsGrantedTotal ?? 0;
+
+      if (userRec && granted < cap && bonusAmount > 0) {
+        const grant = Math.min(bonusAmount, cap - granted);
+        if (grant > 0) {
+          await userRec.increment('coinsGrantedTotal', { by: grant, transaction: t });
+          const handleCoins = require("../currencyRegister_controller.js");
+          const result = await handleCoins.CreateCurrencyRegister(
+            {
+              userId: newAvatar.userId,
+              ownnerId: newAvatar.id,
+              value: grant,
+              type: "Coins",
+              transactionType: "Rewards",
+            },
+            newAvatar.userId,
+            t,
+          );
+          if (!result.success) throw new Error(result.error);
+        }
       }
     });
 

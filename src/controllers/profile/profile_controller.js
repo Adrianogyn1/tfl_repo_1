@@ -32,6 +32,8 @@ const {
   playCasinoGame,
   getRoomActiveServerInstances,
   allocateOrReplicateRoomServerInstance,
+  leaveRoomServerInstance,
+  reapIdleServerInstances,
 } = require('../../services/coinMarket.service');
 const { getPlatformStats, recordSiteVisit } = require('../../services/stats.service');
 const {
@@ -58,8 +60,40 @@ const {
   deleteDiaryComment,
   recordDiaryReadingProgress,
 } = require('../../services/diary.service');
+const {
+  createAdCampaign,
+  getActiveAdsForPlacement,
+  recordQualifiedAdView,
+  tipContentCreator,
+  getMyAdCampaigns,
+} = require('../../services/miniAds.service');
+const { getCurrentVersion } = require('../../services/version.service');
 const i18n = require('../../locales/i18n');
 const { chatWs } = require('../social/chat_controller');
+
+/**
+ * Formata o status de presença ("Visto por último") de forma amigável e segura, sem expor IDs
+ */
+function formatLastSeenString(av) {
+  if (!av) return 'Visto recentemente';
+  if (av.onlineWorld) return 'Online no Mundo 3D';
+  if (av.online) return 'Online agora';
+
+  const d = av.lastSeenWorldAt ? new Date(av.lastSeenWorldAt) : (av.lastSeenAt ? new Date(av.lastSeenAt) : null);
+  if (!d || isNaN(d.getTime())) return 'Visto recentemente';
+
+  const now = Date.now();
+  const diffSec = Math.floor((now - d.getTime()) / 1000);
+  if (diffSec < 60) return 'Visto há instantes';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `Visto há ${diffMin} min`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `Visto há ${diffHours}h`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Visto ontem';
+  if (diffDays < 7) return `Visto há ${diffDays} dias`;
+  return `Visto em ${d.toLocaleDateString('pt-BR')}`;
+}
 
 /**
  * Carrega lista de amigos aceitos, solicitações pendentes (recebidas/enviadas) e sugestões de avatares
@@ -93,9 +127,13 @@ async function loadAvatarFriendsData(activeAvatarId) {
 
   const avatarsList = await repo.Avatar.findAll({
     where: { id: { [Op.in]: Array.from(relatedAvatarIds) } },
-    attributes: ["id", "name", "thumbnail", "coverUrl", "gender", "bio", "uid"],
+    attributes: ["id", "name", "thumbnail", "coverUrl", "gender", "bio", "uid", "online", "onlineWorld", "lastSeenAt", "lastSeenWorldAt"],
   });
-  const avatarMap = new Map(avatarsList.map((a) => [Number(a.id), a.get({ plain: true })]));
+  const avatarMap = new Map(avatarsList.map((a) => {
+    const p = a.get({ plain: true });
+    p.lastSeenLabel = formatLastSeenString(p);
+    return [Number(p.id), p];
+  }));
 
   const friendsList = [];
   const pendingReceived = [];
@@ -134,7 +172,7 @@ async function loadAvatarFriendsData(activeAvatarId) {
     where: {
       id: { [Op.notIn]: Array.from(relatedAvatarIds) },
     },
-    attributes: ["id", "name", "thumbnail", "gender", "bio", "uid"],
+    attributes: ["id", "name", "thumbnail", "gender", "bio", "uid", "online", "onlineWorld", "lastSeenAt", "lastSeenWorldAt"],
     order: [["id", "DESC"]],
     limit: 20,
   });
@@ -143,7 +181,11 @@ async function loadAvatarFriendsData(activeAvatarId) {
     friendsList,
     pendingReceived,
     pendingSent,
-    suggestedAvatars: suggestedRaw.map((a) => a.get({ plain: true })),
+    suggestedAvatars: suggestedRaw.map((a) => {
+      const p = a.get({ plain: true });
+      p.lastSeenLabel = formatLastSeenString(p);
+      return p;
+    }),
   };
 }
 
@@ -386,11 +428,24 @@ async function buildProfileViewPayload(user, req) {
     vipExpiresAt: vipStatus?.expiresAt || null,
   };
 
+  const userRec = await repo.User.findByPk(user.id);
+  const plainUser = {
+    ...(userRec ? userRec.get({ plain: true }) : user),
+    hasWalletPin: Boolean(userRec?.walletPin && String(userRec.walletPin).trim().length === 4),
+    walletPin: userRec?.walletPin || null,
+    cash: Number(userRec?.cash || 0),
+  };
+  if (req.session?.user) {
+    req.session.user.hasWalletPin = plainUser.hasWalletPin;
+    req.session.user.walletPin = plainUser.walletPin;
+    req.session.user.cash = plainUser.cash;
+  }
+
   return {
-    title: 'Portal TFL',
+    title: req.translate('profile.title', {}, 'The Fantasy Life | Universo Virtual, Rede Social & Avatares'),
     t: req.translate,
     currentLang: req.lang || 'pt-BR',
-    user,
+    user: plainUser,
     avatars: plainAvatars,
     activeAvatar: plainActiveAvatar,
     rooms: enrichedRooms,
@@ -407,6 +462,7 @@ async function buildProfileViewPayload(user, req) {
     shopData,
     wardrobeData,
     diaryData,
+    version: getCurrentVersion(),
   };
 }
 
@@ -878,7 +934,7 @@ router.post('/market/pix/simulate-confirm', async (req, res) => {
 // ================= SOLICITAÇÃO E CANCELAMENTO DE SAQUE (MÍNIMO 1 CASH) =================
 router.post('/market/withdraw', async (req, res) => {
   const user = req.user || req.session?.user;
-  const { avatarId, cashAmount, pixKey, pixKeyType } = req.body;
+  const { avatarId, cashAmount, pixKey, pixKeyType, pin } = req.body;
   if (!user || !avatarId) return res.status(401).json({ success: false, error: "Não autorizado" });
 
   try {
@@ -887,7 +943,8 @@ router.post('/market/withdraw', async (req, res) => {
       avatarId,
       cashAmount,
       pixKey,
-      pixKeyType
+      pixKeyType,
+      pin,
     });
     return res.json({ success: true, ...result });
   } catch (err) {
@@ -949,13 +1006,13 @@ router.post('/market/payment/review', async (req, res) => {
 // ================= CONVERSOR RÁPIDO DE MOEDAS (CASH->COINS, COINS->CHIPS, CHIPS->COINS, COINS->CASH 30%) =================
 router.post('/market/convert', async (req, res) => {
   const user = req.user || req.session?.user;
-  const { avatarId, direction, amount } = req.body;
+  const { avatarId, direction, amount, pin } = req.body;
   if (!user || !avatarId || !direction || !amount) {
     return res.status(400).json({ success: false, error: "Parâmetros de conversão inválidos." });
   }
 
   try {
-    const result = await convertCurrency(avatarId, direction, amount, user.id);
+    const result = await convertCurrency(avatarId, direction, amount, user.id, pin);
     return res.json({ success: true, ...result });
   } catch (err) {
     return res.status(400).json({ success: false, error: err.message });
@@ -985,7 +1042,7 @@ router.get('/market/ledger', async (req, res) => {
 router.post('/market/transfer-coins', async (req, res) => {
   const user = req.user || req.session?.user;
   const senderAvatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
-  const { recipient, amountCoins, note } = req.body;
+  const { recipient, amountCoins, note, pin } = req.body;
   if (!user || !senderAvatarId) return res.status(401).json({ success: false, error: "Não autorizado" });
 
   try {
@@ -995,6 +1052,7 @@ router.post('/market/transfer-coins', async (req, res) => {
       recipientAvatarInput: recipient || req.body.recipientAvatarId,
       amountCoins,
       note,
+      pin,
     });
     return res.json(result);
   } catch (err) {
@@ -1896,12 +1954,26 @@ router.post(['/room/:id/enter', '/room/enter'], async (req, res) => {
   }
 });
 
-// Listar todas as instâncias ativas (`servers`) de uma Sala 3D
+// Listar todas as instâncias ativas (`servers`) de uma Sala 3D com Abertura Automática Sob Demanda
 router.get('/room/:id/servers', async (req, res) => {
   try {
     const roomId = Number(req.params.id);
-    const data = await getRoomActiveServerInstances(roomId);
+    const autoSpawn = req.query.autoSpawn !== 'false';
+    const data = await getRoomActiveServerInstances(roomId, { autoSpawn });
     return res.json({ success: true, ...data });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Notificar saída de jogador de uma instância do servidor
+router.post(['/room/:id/servers/:serverId/leave', '/room/servers/:serverId/leave'], async (req, res) => {
+  try {
+    const roomId = Number(req.params.id || req.body.roomId || 0);
+    const serverId = Number(req.params.serverId || req.body.serverId || 0);
+    const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+    const updatedServer = await leaveRoomServerInstance({ roomId, serverId, avatarId });
+    return res.json({ success: true, server: updatedServer });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
@@ -1970,10 +2042,22 @@ router.post(['/room/:id/boost', '/room/boost'], async (req, res) => {
 
   try {
     const roomId = Number(req.params.id || req.body.roomId || 0);
-    const avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+    let avatarId = Number(req.body.avatarId || req.headers['x-profile-id'] || 0);
+
+    if (!avatarId && user) {
+      const activeAv = await repo.Avatar.findOne({ where: { userId: user.id, selected: true } });
+      if (activeAv) avatarId = Number(activeAv.id);
+      else {
+        const anyAv = await repo.Avatar.findOne({ where: { userId: user.id }, order: [['id', 'ASC']] });
+        if (anyAv) avatarId = Number(anyAv.id);
+      }
+    }
+
     const result = await boostRoom24h({
       userId: user.id,
       avatarId,
+      ownerAvatarId: avatarId,
+      ownerUserId: user.id,
       roomId,
     });
     return res.json(result);
@@ -2075,6 +2159,9 @@ async function ensureFriendsFkDropped() {
       ALTER TABLE IF EXISTS "avatars" ADD COLUMN IF NOT EXISTS "privacyRooms" VARCHAR(50) DEFAULT 'public';
       ALTER TABLE IF EXISTS "avatars" ADD COLUMN IF NOT EXISTS "privacyFriends" VARCHAR(50) DEFAULT 'public';
       ALTER TABLE IF EXISTS "avatars" ADD COLUMN IF NOT EXISTS "privacyFollowers" VARCHAR(50) DEFAULT 'public';
+      ALTER TABLE IF EXISTS "avatars" ADD COLUMN IF NOT EXISTS "onlineWorld" BOOLEAN DEFAULT false;
+      ALTER TABLE IF EXISTS "avatars" ADD COLUMN IF NOT EXISTS "lastSeenAt" TIMESTAMPTZ DEFAULT NOW();
+      ALTER TABLE IF EXISTS "avatars" ADD COLUMN IF NOT EXISTS "lastSeenWorldAt" TIMESTAMPTZ;
 
       ALTER TABLE IF EXISTS "posts" ADD COLUMN IF NOT EXISTS "roomId" INTEGER;
       ALTER TABLE IF EXISTS "posts" ADD COLUMN IF NOT EXISTS "sharedPostId" INTEGER;
@@ -3482,12 +3569,13 @@ router.get('/social/avatar/:targetId', async (req, res) => {
       attributes: [
         'id', 'name', 'bio', 'gender', 'thumbnail', 'coverUrl',
         'privacyPosts', 'privacyPhotos', 'privacyRooms', 'privacyFriends', 'privacyFollowers',
-        'online', 'createdAt', 'uid'
+        'online', 'onlineWorld', 'lastSeenAt', 'lastSeenWorldAt', 'createdAt', 'uid'
       ],
     });
     if (!avatar) return res.status(404).json({ success: false, error: "Avatar não encontrado." });
 
     const plainAvatar = avatar.get({ plain: true });
+    plainAvatar.lastSeenLabel = formatLastSeenString(plainAvatar);
     const isSelf = viewerId === targetId;
 
     // Amigos desse avatar
@@ -3825,6 +3913,9 @@ router.post('/diary/page/save', async (req, res) => {
       moodKey: req.body.moodKey,
       category: req.body.category,
       isPublicAnonymous: req.body.isPublicAnonymous,
+      stickers: req.body.stickers || '',
+      paperTheme: req.body.paperTheme || 'parchment',
+      fontFamily: req.body.fontFamily || 'handwriting',
       allowComments: req.body.allowComments !== false && req.body.allowComments !== 'false',
     });
     return res.json(result);
@@ -3930,6 +4021,269 @@ router.post('/diary/page/:id/read-reward', async (req, res) => {
     return res.json(result);
   } catch (err) {
     return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// ================= GERENCIAMENTO DE CONTA & PIN DE TRANSAÇÃO (4 DÍGITOS) =================
+router.post('/account/update', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+
+  try {
+    const userRec = await repo.User.findByPk(user.id);
+    if (!userRec) return res.status(404).json({ success: false, error: 'Usuário não encontrado.' });
+
+    const { name, email, phone } = req.body;
+    if (name) userRec.userName = String(name).trim();
+    if (email) userRec.email = String(email).trim().toLowerCase();
+    if (phone !== undefined) userRec.phone = String(phone).trim();
+    await userRec.save();
+
+    if (req.session?.user) {
+      req.session.user.userName = userRec.userName;
+      req.session.user.email = userRec.email;
+      req.session.user.phone = userRec.phone;
+    }
+
+    return res.json({ success: true, message: 'Dados da conta atualizados com sucesso!' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/account/pin', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+
+  const { currentPin, newPin, confirmPin } = req.body;
+  const pinStr = String(newPin || '').trim();
+
+  if (!/^\d{4}$/.test(pinStr)) {
+    return res.status(400).json({ success: false, error: 'O PIN deve conter exatamente 4 dígitos numéricos (0-9).' });
+  }
+
+  if (pinStr !== String(confirmPin || '').trim()) {
+    return res.status(400).json({ success: false, error: 'A confirmação do PIN não confere com o novo PIN.' });
+  }
+
+  try {
+    const userRec = await repo.User.findByPk(user.id);
+    if (!userRec) return res.status(404).json({ success: false, error: 'Usuário não encontrado.' });
+
+    // Se já tinha PIN, valida o PIN atual
+    if (userRec.walletPin && userRec.walletPin.trim() !== '') {
+      if (!currentPin || String(currentPin).trim() !== userRec.walletPin.trim()) {
+        return res.status(400).json({ success: false, error: 'O PIN atual informado está incorreto.' });
+      }
+    }
+
+    userRec.walletPin = pinStr;
+    await userRec.save();
+
+    if (req.session?.user) {
+      req.session.user.walletPin = pinStr;
+      req.session.user.hasWalletPin = true;
+    }
+
+    return res.json({ success: true, message: 'PIN de segurança configurado com sucesso!' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ================= ADS & INFLUENCIADORES (NÍVEL DE USUÁRIO & NÓS) =================
+
+router.get(['/ads/my', '/ads'], async (req, res) => {
+  const isHtml = !req.xhr && req.headers?.accept && req.headers.accept.includes('text/html');
+  const user = req.user || req.session?.user;
+
+  if (isHtml) {
+    if (!user) return res.redirect('/profile/login');
+    try {
+      recordSiteVisit(req, { path: '/profile/ads' });
+      const payload = await buildProfileViewPayload(user, req);
+      payload.activeTab = 'ads';
+      return res.render('profile/index', payload);
+    } catch (err) {
+      console.error('Erro ao renderizar view de Ads:', err);
+      return res.redirect('/profile');
+    }
+  }
+
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avId = req.headers['x-profile-id'] || req.query.avatarId;
+
+  try {
+    const campaigns = await getMyAdCampaigns({ userId: user.id, avatarId: avId });
+    return res.json({ success: true, campaigns });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get('/ads/user-nodes', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+
+  try {
+    const avatars = await repo.Avatar.findAll({
+      where: { userId: user.id },
+      attributes: ['id', 'name', 'thumbnail', 'gender', 'bio'],
+      order: [['selected', 'DESC'], ['id', 'ASC']]
+    });
+    const avatarIds = avatars.map(a => a.id);
+    const rooms = await repo.RoomModel.findAll({
+      where: {
+        [repo.Sequelize.Op.or]: [
+          { userId: user.id },
+          { avatarId: { [repo.Sequelize.Op.in]: avatarIds.length > 0 ? avatarIds : [0] } }
+        ]
+      },
+      attributes: ['id', 'name', 'thumbnail', 'capacity', 'avatarId'],
+      order: [['id', 'DESC']]
+    });
+
+    return res.json({
+      success: true,
+      nodes: {
+        avatars: avatars.map(a => a.get({ plain: true })),
+        rooms: rooms.map(r => r.get({ plain: true }))
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get('/ads/active', async (req, res) => {
+  try {
+    const placement = req.query.placement || 'reels';
+    const limit = Number(req.query.limit || 5);
+    const ads = await getActiveAdsForPlacement({ placement, limit });
+    return res.json({ success: true, ads });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/ads/create', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avId = req.headers['x-profile-id'] || req.body.avatarId;
+  if (!avId) return res.status(400).json({ success: false, error: 'Avatar não especificado.' });
+
+  try {
+    const result = await createAdCampaign({
+      avatarId: avId,
+      userId: user.id,
+      title: req.body.title,
+      description: req.body.description,
+      targetType: req.body.targetType,
+      targetId: req.body.targetId,
+      targetUrl: req.body.targetUrl,
+      mediaUrl: req.body.mediaUrl,
+      packageKey: req.body.packageKey,
+      badgeLabel: req.body.badgeLabel,
+      callToAction: req.body.callToAction,
+      walletPin: req.body.walletPin,
+    });
+    return res.json({ success: true, campaign: result.campaign, message: 'Anúncio publicado com sucesso!' });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/ads/qualified-view', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avId = req.headers['x-profile-id'] || req.body.avatarId;
+
+  try {
+    const result = await recordQualifiedAdView({
+      campaignId: req.body.campaignId,
+      viewerAvatarId: avId,
+      creatorAvatarId: req.body.creatorAvatarId,
+      placement: req.body.placement || 'reels',
+      watchSeconds: req.body.watchSeconds || 10,
+      clicked: Boolean(req.body.clicked),
+    });
+    return res.json({ success: true, ...result });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/creator/tip', async (req, res) => {
+  const user = req.user || req.session?.user;
+  if (!user) return res.status(401).json({ success: false, error: 'Não autorizado.' });
+  const avId = req.headers['x-profile-id'] || req.body.avatarId;
+  if (!avId) return res.status(400).json({ success: false, error: 'Avatar remetente não especificado.' });
+
+  try {
+    const result = await tipContentCreator({
+      senderAvatarId: avId,
+      senderUserId: user.id,
+      creatorAvatarId: req.body.toAvatarId,
+      amountCoins: req.body.amountCoins,
+      message: req.body.message,
+      walletPin: req.body.walletPin,
+    });
+    return res.json({
+      success: true,
+      ...result,
+      message: `Gorjeta de ${Number(req.body.amountCoins).toFixed(2)} Coins enviada com sucesso!`,
+    });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// ================= TELEMETRIA DE SUB-ROTAS / RAMOS =================
+
+router.post('/telemetry/branch-view', (req, res) => {
+  const branch = String(req.body?.branch || '').trim().toLowerCase();
+  if (branch && VALID_PROFILE_BRANCHES.includes(branch)) {
+    recordSiteVisit(req, { path: `/profile/${branch}` });
+  }
+  return res.json({ success: true });
+});
+
+// ================= SUB-ROTAS POR RAMO (PROFILE BRANCH ROUTING) =================
+
+const VALID_PROFILE_BRANCHES = [
+  'social',
+  'salas',
+  'avatar',
+  'shop',
+  'account',
+  'market',
+  'vip',
+  'cassino',
+  'diary',
+  'friends',
+  'ads',
+];
+
+router.get(['/branch/:branch', '/:branch'], async (req, res, next) => {
+  const branch = String(req.params.branch || '').toLowerCase();
+  if (!VALID_PROFILE_BRANCHES.includes(branch)) {
+    return next();
+  }
+
+  const user = req.user || req.session?.user;
+  if (!user) {
+    return res.redirect('/profile/login');
+  }
+
+  recordSiteVisit(req, { path: `/profile/${branch}` });
+
+  try {
+    const payload = await buildProfileViewPayload(user, req);
+    payload.activeTab = branch;
+    return res.render('profile/index', payload);
+  } catch (err) {
+    console.error(`Erro ao carregar dados do perfil (${branch}):`, err);
+    return res.redirect('/profile');
   }
 });
 

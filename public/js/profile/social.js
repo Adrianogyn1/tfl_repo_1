@@ -57,8 +57,8 @@
             }
 
             $('#miniProfileImg').attr('src', TFL.getAvatarThumb(av));
-            $('#miniProfileBadgeId').text(`#${av.id}`);
-            $('#miniProfileName').text(av.name || `Avatar #${av.id}`);
+            $('#miniProfileLastSeenText').text(av.lastSeenLabel || (av.online ? 'Online agora' : 'Visto recentemente'));
+            $('#miniProfileName').text(av.name || 'Viajante');
             $('#miniProfileGender').text(av.gender === 0 ? 'Feminino' : 'Masculino');
             $('#miniProfileBio').text(av.bio || 'Viajante explorando o universo The Fantasy Life.');
 
@@ -69,10 +69,10 @@
             $('#miniProfileLikes').text(st.profileLikesCount || 0);
 
             let actionsHtml = `
-                <button type="button" class="btn-navigate-user-profile w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                <button type="button" class="btn-navigate-user-profile w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20"
                         data-avatarid="${av.id}">
-                    <i class="fa-solid fa-id-card"></i>
-                    <span>Navegar ao Perfil do Usuário</span>
+                    <span class="material-symbols-outlined text-[15px]">person</span>
+                    <span>Perfil</span>
                 </button>
             `;
 
@@ -190,9 +190,9 @@
                 $('#userProfileFeelingBadge').addClass('hidden');
             }
 
-            $('#userProfileIdBadge').text(`Avatar #${av.id}`);
+            $('#userProfileLastSeenText').text(av.lastSeenLabel || (av.online ? 'Online agora' : 'Visto recentemente'));
             $('#userProfileAvatarImg').attr('src', TFL.getAvatarThumb(av));
-            $('#userProfileName').text(av.name || `Avatar #${av.id}`);
+            $('#userProfileName').text(av.name || 'Viajante');
             $('#userProfileGenderBadge').text(av.gender === 0 ? 'Feminino' : 'Masculino');
             $('#userProfileBio').text(av.bio || 'Sem biografia informada.');
 
@@ -556,7 +556,7 @@
                     <img src="${TFL.getAvatarThumb(author)}" class="w-9 h-9 rounded-xl object-cover border border-white/10">
                     <div>
                         <div class="text-xs font-black text-white hover:text-sky-400 transition">${TFL.escapeHtml(author.name)}</div>
-                        <div class="text-[10px] text-zinc-500">Foto #${ph.id}</div>
+                        <div class="text-[10px] text-zinc-400">Galeria de Fotos</div>
                     </div>
                 </button>
             `);
@@ -953,10 +953,6 @@
                                         data-avatarid="${author.id}">
                                     ${TFL.escapeHtml(author.name || 'Viajante')}
                                 </button>
-                                <button type="button" class="btn-navigate-user-profile text-[10px] text-blue-400 hover:underline font-semibold"
-                                        data-avatarid="${author.id}">
-                                    Ver Perfil
-                                </button>
                             </div>
                             <span class="text-[10px] text-zinc-500 block">${dateStr}</span>
                         </div>
@@ -1045,7 +1041,7 @@
                 container.append(`
                     <div id="postPoolStatusBar" class="py-4 text-center text-[11px] text-zinc-500">
                         <span class="px-3 py-1 rounded-full bg-slate-900/70 border border-white/5">
-                            ✔ Todas as publicações do pool foram exibidas (${TFL.postPool.renderedIds.size} posts)
+                            ✔ Você já viu todas as publicações recentes
                         </span>
                     </div>
                 `);
@@ -1057,8 +1053,8 @@
             <div id="postPoolStatusBar" class="pt-2 pb-4 flex flex-col items-center gap-2">
                 <button type="button" id="btnFlushPostPool"
                         class="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-sky-500/30 text-sky-300 text-xs font-bold transition flex items-center gap-2 shadow-lg">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>Carregar mais publicações do Pool ${bufferedCount > 0 ? `(${bufferedCount} prontas em cache)` : ''}</span>
+                    <i class="fa-solid fa-arrow-down"></i>
+                    <span>Carregar mais publicações</span>
                 </button>
             </div>
         `);

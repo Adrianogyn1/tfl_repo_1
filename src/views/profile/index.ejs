@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: t('profile.title', {}, 'Portal TFL — Perfil & Universo'), hideHeader: true }) %>
+<%- include('../partials/header', { title: t('profile.title', {}, 'The Fantasy Life | Universo Virtual, Rede Social & Avatares'), hideHeader: true }) %>
 
 <!-- CONTAINER PRINCIPAL DA APLICAÇÃO (LAYOUT EM L: SIDEBAR RETRÁTIL + CONTEÚDO) -->
 <div class="flex h-screen overflow-hidden bg-slate-950 text-zinc-100">
@@ -42,6 +42,9 @@
                 <!-- VIEW 5.9: DIÁRIO SECRETO & CANTINHO DE DESABAFO ANÔNIMO -->
                 <%- include('./partials/view-diary') %>
 
+                <!-- VIEW 5.95: ADS & INFLUENCIADORES DA COMUNIDADE -->
+                <%- include('./partials/view-ads') %>
+
                 <!-- VIEW 6: AMIGOS -->
                 <%- include('./partials/view-friends') %>
 
@@ -55,6 +58,7 @@
             <script>
                 window.TFL_CONFIG = {
                     activeAvatarId: <%= Number(activeAvatar?.id || 0) %>,
+                    activeTab: '<%= typeof activeTab !== "undefined" && activeTab ? activeTab : "social" %>',
                     isVip: <%= Boolean(vipStatus?.isVip || activeAvatar?.isVip) %>,
                     currentLang: '<%= typeof currentLang !== "undefined" ? currentLang : "pt-BR" %>',
                     walletCash: <%= Number(wallet?.cash || 0) %>,
@@ -74,7 +78,11 @@
                     allowInstantCoinsToCash: <%= Boolean(marketStats?.allowInstantCoinsToCash ?? true) %>,
                     instantCoinsToCashFeePercent: <%= Number(marketStats?.instantCoinsToCashFeePercent ?? 30.0) %>,
                     p2pCoinsTransferFeePercent: <%= Number(marketStats?.p2pCoinsTransferFeePercent ?? 2.0) %>,
-                    roomBoost24hFeeCoins: <%= Number(marketStats?.roomBoost24hFeeCoins ?? 20.0) %>
+                    roomBoost24hFeeCoins: <%= Number(marketStats?.roomBoost24hFeeCoins ?? 20.0) %>,
+                    userNodes: {
+                        avatars: <%- JSON.stringify((avatars || []).map(function(a) { return { id: a.id, name: a.name, thumbnail: a.thumbnail || '' }; })) %>,
+                        rooms: <%- JSON.stringify((rooms || []).map(function(r) { return { id: r.id, name: r.name, thumbnail: r.thumbnail || '' }; })) %>
+                    }
                 };
             </script>
             <!-- Babylon.js 3D Engine para Interação 3D no Navegador -->
@@ -89,6 +97,7 @@
             <script src="/static/js/profile/social.js"></script>
             <script src="/static/js/profile/friends-chat.js"></script>
             <script src="/static/js/profile/diary.js"></script>
+            <script src="/static/js/profile/ads.js"></script>
 
             <!-- ================= 4. RODAPÉ GLOBAL (TUTORIAL & MUDANÇA DE IDIOMA) ================= -->
             <%- include('../partials/footer') %>

@@ -191,7 +191,10 @@
                                  class="w-14 h-14 rounded-2xl object-cover border-4 border-slate-900 bg-slate-950 shadow-lg flex-shrink-0">
                             <div class="overflow-hidden pb-0.5">
                                 <h4 class="text-xs sm:text-sm font-black uppercase italic text-white truncate"><%= activeAvatar?.name %></h4>
-                                <p class="text-[10px] text-zinc-400">#<%= activeAvatar?.id %></p>
+                                <p class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                    <span>Online agora</span>
+                                </p>
                             </div>
                         </div>
                         <button type="button" class="btn-navigate-user-profile p-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-400 hover:text-white transition flex-shrink-0"
@@ -233,17 +236,13 @@
                                          class="w-8 h-8 rounded-xl object-cover border border-white/10 flex-shrink-0">
                                     <div class="overflow-hidden">
                                         <div class="text-xs font-bold text-white group-hover:text-sky-400 transition truncate"><%= sug.name %></div>
-                                        <div class="text-[10px] text-zinc-500">#<%= sug.id %></div>
+                                        <div class="text-[10px] text-zinc-400 truncate"><%= sug.lastSeenLabel || 'Visto recentemente' %></div>
                                     </div>
                                 </button>
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <button type="button" class="btn-toggle-match p-1.5 rounded-xl bg-pink-600/20 hover:bg-pink-600 border border-pink-500/30 text-pink-400 hover:text-white text-xs transition"
                                             data-targetid="<%= sug.id %>" title="Match / Crush 💘">
                                         <span class="material-symbols-outlined text-[15px]">local_fire_department</span>
-                                    </button>
-                                    <button type="button" class="btn-navigate-user-profile p-1.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-zinc-300 hover:text-white text-xs transition"
-                                            data-avatarid="<%= sug.id %>" title="Perfil">
-                                        <span class="material-symbols-outlined text-[15px]">person</span>
                                     </button>
                                 </div>
                             </div>

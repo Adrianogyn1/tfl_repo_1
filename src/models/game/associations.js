@@ -207,4 +207,17 @@ module.exports = (models) => {
       constraints: false,
     });
   }
+
+  if (models.MiniAdCampaign) {
+    Avatar.hasMany(models.MiniAdCampaign, {
+      as: "adCampaigns",
+      foreignKey: "avatarId",
+      constraints: false,
+    });
+    models.MiniAdCampaign.belongsTo(Avatar, {
+      as: "advertiser",
+      foreignKey: "avatarId",
+      constraints: false,
+    });
+  }
 };

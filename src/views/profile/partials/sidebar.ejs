@@ -78,7 +78,7 @@
                         </span>
                     <% } %>
                 </div>
-                <p class="text-[10px] text-zinc-400 truncate">#<%= activeAvatar?.id || 1 %> <%= isSidebarVip ? '• Clube VIP' : '• Membro Básico' %></p>
+                <p class="text-[10px] text-zinc-400 truncate"><%= isSidebarVip ? '👑 Membro VIP' : 'Viajante TFL' %></p>
             </div>
         </div>
 
@@ -173,6 +173,15 @@
                     <span class="sidebar-text truncate">Cassino</span>
                 </div>
                 <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-pink-500/20 text-pink-300 border border-pink-500/30">🎲</span>
+            </button>
+
+            <!-- ADS & INFLUENCIADORES -->
+            <button class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-zinc-400 hover:text-white hover:bg-slate-800/60" data-view="view-ads" title="Ads & Divulgação">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] w-5 text-center text-teal-400">campaign</span>
+                    <span class="sidebar-text truncate">Ads</span>
+                </div>
+                <span class="sidebar-text px-1.5 py-0.5 text-[9px] font-black rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">✨</span>
             </button>
         </nav>
     </div>

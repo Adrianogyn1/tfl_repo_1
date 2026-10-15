@@ -1,0 +1,66 @@
+{
+  "currentVersion": "0.00042",
+  "releases": [
+    {
+      "version": "0.00042",
+      "releaseDate": "2026-10-14",
+      "title": "Mini Anúncios, Guias da Comunidade e Chat de Proximidade",
+      "summary": "Destaque suas salas e criações, receba moedas assistindo vídeos e converse com quem está por perto no mundo 3D.",
+      "whatsNew": [
+        "Mini Anúncios: Promova suas salas 3D, roupas criadas e perfil diretamente para toda a comunidade",
+        "Apoio a Criadores: Criadores recebem 50% das moedas dos anúncios exibidos e podem receber gorjetas de fãs",
+        "Recompensas ao Assistir: Ganhe moedas de bônus ao assistir anúncios completos no aplicativo",
+        "Guias da Comunidade: Novos mentores identificados por cores especiais no chat para tirar dúvidas de novatos",
+        "Chat de Proximidade: Nova opção de conversa para bater papo apenas com quem estiver pertinho de você na sala",
+        "Navegação mais rápida e fluida entre as áreas do seu perfil"
+      ],
+      "fixes": [
+        "Melhoria no carregamento de publicações na linha do tempo",
+        "Ativação imediata do selo VIP após a compra do plano",
+        "Mais facilidade e segurança ao cadastrar e alterar o seu PIN de 4 dígitos",
+        "Exibição mais clara de quem está online ou quando foi visto pela última vez",
+        "Ajustes visuais na lista de amigos e viajantes"
+      ],
+      "knownIssues": [
+        "Efeito de som ambiente 3D para conversas locais em fase de calibração",
+        "Novos jogos de cartas estão sendo preparados para o Cassino",
+        "Novos modelos de roupas e acessórios chegando em breve na Loja"
+      ]
+    },
+    {
+      "version": "0.00041",
+      "releaseDate": "2026-10-14",
+      "title": "Novo Diário Pessoal e Visual do Cassino",
+      "summary": "Escreva seus pensamentos em um caderno acolhedor e divirta-se em um Cassino renovado.",
+      "whatsNew": [
+        "Diário em formato de folha de caderno com selos de sentimentos e papéis acolhedores",
+        "Lobby do Cassino com visual moderno e visão ampla dos jogos",
+        "Configuração facilitada do PIN para transações seguras"
+      ],
+      "fixes": [
+        "Ajuste na escrita do diário para ficar mais natural e confortável",
+        "Correção na confirmação de saldo ao assinar o Clube VIP"
+      ],
+      "knownIssues": [
+        "Melhorias visuais contínuas em telas de celulares menores"
+      ]
+    },
+    {
+      "version": "0.00040",
+      "releaseDate": "2026-10-13",
+      "title": "Privacidade e Conexões Humanas",
+      "summary": "Mais segurança para as suas fotos e publicações, e presença em tempo real dos seus amigos.",
+      "whatsNew": [
+        "Indicação de presença amigável: veja quem está online ou quando esteve por perto",
+        "Controles de privacidade para você escolher quem vê suas fotos e salas"
+      ],
+      "fixes": [
+        "Visual mais limpo em todas as listas de amizade e sugestões",
+        "Melhorias na estabilidade geral do aplicativo"
+      ],
+      "knownIssues": [
+        "Novas opções de customização de avatar em desenvolvimento"
+      ]
+    }
+  ]
+}

@@ -118,6 +118,16 @@ module.exports = (sequelize) => {
       // Limite diário de páginas premiadas por leitor por dia (padrão: 20 páginas/dia)
       diaryReaderDailyLimitPages: { type: DataTypes.INTEGER, defaultValue: 20 },
 
+      // ================= MINI ADS & IMPULSIONAMENTO DE CONTEÚDO =================
+      // Preço em Coins por pacote de 100 impressões (padrão: 5.00 Coins)
+      adPricePer100ImpressionsCoins: { type: DataTypes.DECIMAL(10, 2), defaultValue: 5.00 },
+      // Porcentagem de Revenue Share paga ao Criador/Influenciador onde o Ad foi exibido (padrão: 50.00%)
+      adCreatorRevenueSharePercent: { type: DataTypes.DECIMAL(6, 2), defaultValue: 50.00 },
+      // Micro-recompensa em Coins ao espectador por visualização qualificada de 10s+ (padrão: 0.050 Coins)
+      adViewerRewardCoins: { type: DataTypes.DECIMAL(6, 3), defaultValue: 0.050 },
+      // Limite diário de recompensas de Ads por espectador por dia (padrão: 10/dia)
+      adMaxDailyViewerRewards: { type: DataTypes.INTEGER, defaultValue: 10 },
+
       // ================= COFRE DO SISTEMA (TAXAS ARRECADADAS) =================
       collectedFeesCash: { type: DataTypes.DECIMAL(16, 4), defaultValue: 0.0000 },
       collectedFeesCoins: { type: DataTypes.DECIMAL(16, 4), defaultValue: 0.0000 },

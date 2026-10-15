@@ -1,0 +1,397 @@
+<!-- VIEW: ADS, IMPULSIONAMENTO & PROGRAMA DE INFLUENCIADORES / GUIAS -->
+<section id="view-ads" class="view-section hidden p-4 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-6">
+    <!-- Banner Principal -->
+    <div class="glass-card rounded-3xl p-5 sm:p-7 border border-teal-500/30 bg-gradient-to-r from-teal-950/60 via-slate-900/80 to-slate-950 relative overflow-hidden shadow-2xl">
+        <div class="absolute -right-10 -top-10 w-52 h-52 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-10 -bottom-10 w-52 h-52 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+            <div class="space-y-2 max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-[11px] font-semibold">
+                    <span class="material-symbols-outlined text-[14px]">campaign</span>
+                    <span>Ads &amp; Divulgação da Comunidade</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
+                    <span>✨ Destaque Seu Conteúdo no Ecossistema</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                    Divulgue suas Salas 3D, Mini Reels, Roupas da Loja ou Perfil diretamente para a comunidade. Criadores de conteúdo recebem <strong>50% de Revenue Share</strong> e espectadores ganham micro-recompensas éticas.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button type="button" onclick="window.TFLAds && window.TFLAds.openCreateCampaignModal()"
+                    class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/25 flex items-center gap-2 transition hover:scale-105">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    <span>Criar Novo Anúncio</span>
+                </button>
+                <button type="button" onclick="window.TFLAds && window.TFLAds.loadCampaigns()"
+                    class="w-10 h-10 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition"
+                    title="Atualizar Anúncios">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Indicadores de Ads e Criador -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 relative z-10">
+            <div class="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                <p class="text-[10px] text-zinc-400">Pacote Básico</p>
+                <p class="text-sm sm:text-base font-extrabold text-teal-300">5,00 Coins</p>
+                <p class="text-[10px] text-zinc-500">100 Impressões reais</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                <p class="text-[10px] text-zinc-400">Revenue Share</p>
+                <p class="text-sm sm:text-base font-extrabold text-amber-300">50% para Criador</p>
+                <p class="text-[10px] text-zinc-500">Divisão de receita ética</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                <p class="text-[10px] text-zinc-400">Pay-to-View</p>
+                <p class="text-sm sm:text-base font-extrabold text-emerald-400">+0,05 Coins</p>
+                <p class="text-[10px] text-zinc-500">Por visualização 10s+</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                <p class="text-[10px] text-zinc-400">Gorjetas Recebidas</p>
+                <p class="text-sm sm:text-base font-extrabold text-rose-300" id="lblCreatorTipsTotal">
+                    <%= Number(activeAvatar?.creatorTipsCoinsTotal || 0).toFixed(2) %> Coins
+                </p>
+                <p class="text-[10px] text-zinc-500">Apoio de fãs e amigos</p>
+            </div>
+        </div>
+
+        <!-- Abas de Navegação -->
+        <div class="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-white/10 relative z-10">
+            <button type="button" id="btnAdsTabMyCampaigns" onclick="window.TFLAds && window.TFLAds.switchTab('my_campaigns')"
+                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-teal-600 text-white shadow-md shadow-teal-600/20">
+                <i class="fa-solid fa-rectangle-ad"></i>
+                <span>Minhas Campanhas</span>
+            </button>
+            <button type="button" id="btnAdsTabInfluencers" onclick="window.TFLAds && window.TFLAds.switchTab('influencers')"
+                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-zinc-900/90 text-zinc-400 hover:text-white border border-white/5">
+                <i class="fa-solid fa-award"></i>
+                <span>Criadores &amp; Guias da Comunidade</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SUB-ABA 1: MINHAS CAMPANHAS -->
+    <div id="adsSubtabMyCampaigns" class="space-y-4">
+        <div id="adsCampaignsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="col-span-full glass-card rounded-3xl p-10 text-center border border-white/10 bg-slate-900/60">
+                <div class="w-14 h-14 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-2xl mx-auto mb-3 text-teal-300">
+                    <span class="material-symbols-outlined text-[28px]">campaign</span>
+                </div>
+                <h3 class="text-base font-bold text-white">Nenhum anúncio criado ainda</h3>
+                <p class="text-xs text-zinc-400 max-w-md mx-auto mt-1 mb-4">
+                    Impulsione uma sala 3D, uma roupa que você criou na Loja, um Mini Reel ou seu próprio perfil.
+                </p>
+                <button type="button" onclick="window.TFLAds && window.TFLAds.openCreateCampaignModal()"
+                    class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition">
+                    ✨ Criar Meu Primeiro Anúncio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB-ABA 2: CRIADORES & GUIAS DA COMUNIDADE -->
+    <div id="adsSubtabInfluencers" class="space-y-5 hidden">
+        <!-- Explicação do Programa de Criadores & Guias -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Card 1: Criadores de Conteúdo & Influenciadores -->
+            <div class="glass-card rounded-3xl p-6 border border-rose-500/30 bg-slate-900/70 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 text-lg">
+                        🌟
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Criadores de Conteúdo &amp; Influenciadores</h4>
+                        <p class="text-[11px] text-zinc-400">Engajamento orgânico e criatividade</p>
+                    </div>
+                </div>
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    Jogadores que postam Reels/Stories cativantes, organizam eventos em salas cheias ou escrevem crônicas no Diário.
+                </p>
+                <ul class="text-[11px] text-zinc-300 space-y-1.5 list-disc list-inside">
+                    <li><strong class="text-rose-300">Selo Exclusivo:</strong> Badge <code>🌟 Criador</code> visível no chat e perfil.</li>
+                    <li><strong class="text-rose-300">50% Revenue Share:</strong> Metade do valor das impressões de anúncios veiculados em seus Reels e postagens vai para sua carteira.</li>
+                    <li><strong class="text-rose-300">Gorjetas Livres (Tips):</strong> Amigos e fãs podem enviar gorjetas diretas de Coins para valorizar seu trabalho.</li>
+                </ul>
+            </div>
+
+            <!-- Card 2: Guias da Comunidade (Mentores / Embaixadores) -->
+            <div class="glass-card rounded-3xl p-6 border border-cyan-500/30 bg-slate-900/70 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-300 text-lg">
+                        🧭
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Guias da Comunidade (Mentores Oficiais)</h4>
+                        <p class="text-[11px] text-zinc-400">Acolhimento de novatos e embaixadores</p>
+                    </div>
+                </div>
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    Membros dedicados a orientar novos viajantes sobre o funcionamento do ecossistema, divididos por especialidade temática.
+                </p>
+                <div class="p-3 rounded-2xl bg-black/40 border border-amber-500/20 text-[11px] text-amber-200 leading-snug">
+                    <i class="fa-solid fa-shield-halved text-amber-400 mr-1"></i>
+                    <strong>Diretriz de Segurança:</strong> Guias não são administradores técnicos e <strong>NUNCA</strong> possuem poder de alterar dados, senhas ou saldos de outros jogadores.
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Oficial de Cores de Nomes no Ecossistema -->
+        <div class="glass-card rounded-3xl p-6 border border-white/10 bg-slate-900/70 space-y-4">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-palette text-amber-400"></i>
+                <span>Tabela Oficial de Cores nos Chats e Perfis</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-emerald-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        Verde Esmeralda
+                    </span>
+                    <p class="text-[10px] text-zinc-400">Membro Básico (Viajante padrão do ecossistema)</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-amber-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                        Dourado / Amarelo
+                    </span>
+                    <p class="text-[10px] text-zinc-400">Membro VIP com coroa 👑 oficial</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-orange-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
+                        Laranja Quente
+                    </span>
+                    <p class="text-[10px] text-zinc-400">🧭 Guia Geral (Boas-vindas e regras)</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-cyan-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                        Ciano Diamante
+                    </span>
+                    <p class="text-[10px] text-zinc-400">💎 Guia da Bolsa (Carteira, P2P e taxas)</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-purple-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                        Roxo Ametista
+                    </span>
+                    <p class="text-[10px] text-zinc-400">🎨 Guia Decoração (Salas 3D e itens)</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-pink-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pink-400"></span>
+                        Rosa Pink
+                    </span>
+                    <p class="text-[10px] text-zinc-400">👗 Guia Estilo (Loja 3D e texturas)</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-blue-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                        Azul Safira
+                    </span>
+                    <p class="text-[10px] text-zinc-400">🛠️ Guia Carreiras (Profissões e conquistas)</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-rose-400 font-extrabold flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+                        Rosa Coral
+                    </span>
+                    <p class="text-[10px] text-zinc-400">🌟 Criador de Conteúdo / Influenciador</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 1: CRIAR NOVA CAMPANHA DE ADS (A NÍVEL DE USUÁRIO & NÓS COMPLETOS) -->
+    <!-- ========================================================================= -->
+    <div id="modalCreateAdCampaign" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-lg w-full p-6 border border-teal-500/30 bg-slate-900 shadow-2xl my-6 space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-300">
+                        <span class="material-symbols-outlined text-[18px]">campaign</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-black text-white">Criar Campanha de Anúncio</h3>
+                        <p class="text-[11px] text-zinc-400">Divulgue Salas 3D, Perfis de Avatares ou Conteúdos da sua conta</p>
+                    </div>
+                </div>
+                <button type="button" onclick="$('#modalCreateAdCampaign').addClass('hidden')"
+                    class="w-8 h-8 rounded-xl bg-slate-800 text-zinc-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="formCreateAdCampaign" onsubmit="window.TFLAds && window.TFLAds.submitCreateCampaign(event)" class="space-y-4 text-xs">
+                <!-- 1. TÍTULO DO ANÚNCIO (TIPO LIVRE + AUTO COMPLETE) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-zinc-300">Título do Anúncio <span class="text-teal-400 font-normal">(tipo livre)</span></label>
+                        <span class="text-[10px] text-zinc-500 font-mono" id="adTitleLengthCounter">0/140</span>
+                    </div>
+                    <input type="text" id="adInputTitle" list="adTitleSuggestions" maxlength="140" required
+                        placeholder="Digite o título do anúncio ou escolha uma sugestão..."
+                        class="w-full bg-black/50 border border-white/10 focus:border-teal-500 rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 focus:outline-none">
+                    <datalist id="adTitleSuggestions">
+                        <option value="🌟 Venha conhecer meu espaço 3D exclusivo!">
+                        <option value="🔥 Festa com música ao vivo e amigos agora!">
+                        <option value="👗 Novo look e estilo disponíveis na Loja 3D!">
+                        <option value="💬 Conecte-se comigo e confira meu perfil oficial!">
+                        <option value="✨ Conteúdo novo no ar! Assista agora mesmo!">
+                        <option value="🚀 Explore novos mundos e faça amizades no TFL!">
+                    </datalist>
+                </div>
+
+                <!-- 2. ONDE DIRECIONAR & TEXTO DO BOTÃO (AUTO COMPLETE SOBRE O TEMA) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-zinc-300 mb-1">Onde Direcionar <span class="text-teal-400 font-normal">(Tema)</span></label>
+                        <select id="adInputTargetType" class="w-full bg-black/50 border border-white/10 focus:border-teal-500 rounded-xl px-3 py-2 text-white focus:outline-none">
+                            <option value="room">🏠 Minha Sala 3D</option>
+                            <option value="profile">👤 Meu Perfil / Avatar</option>
+                            <option value="shop">👗 Peça na Loja 3D</option>
+                            <option value="reel">🎥 Meu Reel / Vídeo</option>
+                            <option value="url">🌐 Link Externo / Geral</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-zinc-300 mb-1">Texto do Botão <span class="text-teal-400 font-normal">(CTA livre)</span></label>
+                        <input type="text" id="adInputCallToAction" list="adCtaSuggestions" maxlength="60" required
+                            placeholder="Ex.: Entrar na Sala"
+                            class="w-full bg-black/50 border border-white/10 focus:border-teal-500 rounded-xl px-3 py-2 text-white placeholder-zinc-500 focus:outline-none">
+                        <datalist id="adCtaSuggestions">
+                            <option value="Entrar na Sala">
+                            <option value="Visitar Espaço">
+                            <option value="Explorar Sala 3D">
+                            <option value="Conhecer Agora">
+                        </datalist>
+                    </div>
+                </div>
+
+                <!-- 3. ID OU LINK DE DESTINO (AUTO COMPLETE A NÍVEL DE USUÁRIO - TODOS OS NÓS) -->
+                <div>
+                    <label class="block font-bold text-zinc-300 mb-1">
+                        ID ou Link de Destino <span class="text-teal-400 font-normal">(Auto Complete de Nós da Conta)</span>
+                    </label>
+                    <input type="text" id="adInputTargetId" list="adTargetDestinationsList"
+                        placeholder="Selecione um nó da sua conta ou digite..."
+                        class="w-full bg-black/50 border border-white/10 focus:border-teal-500 rounded-xl px-3.5 py-2 text-white placeholder-zinc-500 focus:outline-none">
+                    <datalist id="adTargetDestinationsList">
+                        <!-- Alimentado dinamicamente com as Salas e Avatares do Usuário -->
+                    </datalist>
+
+                    <!-- Pílulas de Seleção Rápida de Nós da Conta do Usuário -->
+                    <div id="adTargetQuickPills" class="flex flex-wrap gap-1.5 mt-2">
+                        <!-- Botões clicáveis das salas/avatares preenchidos pelo JS -->
+                    </div>
+
+                    <!-- Crachá de Confirmação do Destino Selecionado -->
+                    <div id="adTargetResolvedBadge" class="hidden text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="adTargetResolvedName">Destino Selecionado</span>
+                    </div>
+                </div>
+
+                <!-- Pacote de Impressões -->
+                <div>
+                    <label class="block font-bold text-zinc-300 mb-1.5">Pacote de Impressões</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="adPackageRadio" value="100" class="peer sr-only" checked>
+                            <div class="p-2.5 rounded-xl border border-white/10 bg-black/40 peer-checked:border-teal-500 peer-checked:bg-teal-500/15 text-center transition">
+                                <p class="font-extrabold text-white text-xs">100 Views</p>
+                                <p class="text-[10px] text-teal-300">5,00 Coins</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="adPackageRadio" value="500" class="peer sr-only">
+                            <div class="p-2.5 rounded-xl border border-white/10 bg-black/40 peer-checked:border-teal-500 peer-checked:bg-teal-500/15 text-center transition">
+                                <p class="font-extrabold text-white text-xs">500 Views</p>
+                                <p class="text-[10px] text-teal-300">22,50 Coins</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="adPackageRadio" value="1000" class="peer sr-only">
+                            <div class="p-2.5 rounded-xl border border-white/10 bg-black/40 peer-checked:border-teal-500 peer-checked:bg-teal-500/15 text-center transition">
+                                <p class="font-extrabold text-white text-xs">1.000 Views</p>
+                                <p class="text-[10px] text-teal-300">40,00 Coins</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- PIN de Segurança -->
+                <div class="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
+                    <label class="block font-bold text-amber-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                        <span>PIN de 4 Dígitos da Carteira (Confirmação)</span>
+                    </label>
+                    <input type="password" id="adInputWalletPin" maxlength="4" pattern="\d{4}" required inputmode="numeric"
+                        placeholder="••••"
+                        class="w-32 tracking-widest text-center text-sm font-black bg-slate-950 border border-amber-500/40 rounded-xl px-3 py-2 text-white focus:outline-none">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                    <button type="button" onclick="$('#modalCreateAdCampaign').addClass('hidden')"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-zinc-300 font-semibold">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnSubmitCreateAd"
+                        class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md">
+                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                        <span>Contratar Anúncio</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 2: ENVIAR GORJETA (TIP) PARA CRIADOR OU GUIA                        -->
+    <!-- ========================================================================= -->
+    <div id="modalTipCreator" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-sm w-full p-6 border border-rose-500/30 bg-slate-900 shadow-2xl my-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">💖</span>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Enviar Gorjeta</h4>
+                        <p class="text-[11px] text-zinc-400" id="tipRecipientName">Para Criador</p>
+                    </div>
+                </div>
+                <button type="button" onclick="$('#modalTipCreator').addClass('hidden')"
+                    class="w-7 h-7 rounded-lg bg-slate-800 text-zinc-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="formSendTip" onsubmit="window.TFLAds && window.TFLAds.submitTip(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="tipTargetAvatarId" value="">
+                <div>
+                    <label class="block font-bold text-zinc-300 mb-1">Quantidade em Coins</label>
+                    <input type="number" id="tipAmountCoins" min="1" step="0.5" required placeholder="Ex.: 5.00"
+                        class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-white font-bold focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-zinc-300 mb-1">Mensagem de Apoio (Opcional)</label>
+                    <input type="text" id="tipMessageText" maxlength="120" placeholder="Parabéns pelo conteúdo incrível!"
+                        class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-amber-300 mb-1">PIN de 4 dígitos</label>
+                    <input type="password" id="tipWalletPin" maxlength="4" pattern="\d{4}" required inputmode="numeric" placeholder="••••"
+                        class="w-28 tracking-widest text-center text-sm font-black bg-slate-950 border border-amber-500/40 rounded-xl px-2 py-1.5 text-white focus:outline-none">
+                </div>
+                <button type="submit" id="btnSubmitTip"
+                    class="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-md">
+                    <span>Enviar Gorjeta 💖</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>

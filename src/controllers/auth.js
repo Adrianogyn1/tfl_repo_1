@@ -51,12 +51,23 @@ router.post("/admin/signin", async (req, res) =>
 
       res.cookie("userToken", user.token);
 
-      if (page && page.length > 3 && page != "login")
-      {
-        return res.json({ success: true, data: user, page: page });
-      }
-      else
-      {
+      let targetPage = String(page || "").trim();
+      try {
+        targetPage = decodeURIComponent(targetPage);
+      } catch (_) {}
+
+      if (targetPage && targetPage !== "login" && targetPage !== "/login" && targetPage !== "/admin/login") {
+        if (!targetPage.startsWith("/")) {
+          targetPage = "/" + targetPage;
+        }
+        while (targetPage.includes("/admin/admin")) {
+          targetPage = targetPage.replace("/admin/admin", "/admin");
+        }
+        if (targetPage === "/admin/login" || targetPage === "/login" || targetPage === "/admin/signin") {
+          targetPage = "/admin";
+        }
+        return res.json({ success: true, data: user, page: targetPage });
+      } else {
         return res.json({ success: true, data: user, page: "/admin" });
       }
     }
@@ -191,7 +202,14 @@ function auth(req, res, next)
   }
   else
   {
-    res.redirect("/admin/login?pg=" + pg);
+    let safePg = pg || "/admin";
+    while (safePg.includes("/admin/admin")) {
+      safePg = safePg.replace("/admin/admin", "/admin");
+    }
+    if (safePg === "/admin/login" || safePg === "/login" || safePg === "/admin/signin") {
+      safePg = "/admin";
+    }
+    res.redirect("/admin/login?pg=" + encodeURIComponent(safePg));
   }
 }
 

@@ -9,14 +9,35 @@
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center justify-center gap-4">
-            <a href="/tutorial" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-blue-500/40 text-zinc-300 hover:text-white text-xs font-bold transition flex items-center gap-2" title="<%= t('home.nav.tutorial', {}, 'Tutorial de Como Usar o Site') %>">
-                <span class="material-symbols-outlined text-[16px] text-blue-400">help</span>
-                <span><%= t('home.nav.tutorial', {}, 'Tutorial & Ajuda') %></span>
+        <!-- Links Úteis Secundários (Menos relevantes no rodapé sem poluir o visual) -->
+        <div class="flex flex-wrap items-center justify-center gap-2.5 text-xs">
+            <a href="/contact" class="px-3 py-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-blue-500/40 text-zinc-400 hover:text-white transition flex items-center gap-1.5" title="<%= t('home.footer.contact', {}, 'Contato') %>">
+                <span class="material-symbols-outlined text-[15px] text-blue-400">mail</span>
+                <span><%= t('home.footer.contact', {}, 'Contato') %></span>
+            </a>
+
+            <a href="/report-bug" class="px-3 py-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-rose-500/40 text-zinc-400 hover:text-white transition flex items-center gap-1.5" title="<%= t('home.footer.reportBug', {}, 'Reportar Bug') %>">
+                <span class="material-symbols-outlined text-[15px] text-rose-400">bug_report</span>
+                <span><%= t('home.footer.reportBug', {}, 'Reportar Bug') %></span>
+            </a>
+
+            <a href="/suggestions" class="px-3 py-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/40 text-zinc-400 hover:text-white transition flex items-center gap-1.5" title="<%= t('home.footer.suggestions', {}, 'Sugestões') %>">
+                <span class="material-symbols-outlined text-[15px] text-amber-400">lightbulb</span>
+                <span><%= t('home.footer.suggestions', {}, 'Sugestões') %></span>
+            </a>
+
+            <a href="/tutorial" class="px-3 py-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/40 text-zinc-400 hover:text-white transition flex items-center gap-1.5" title="<%= t('home.footer.tutorial', {}, 'Tutorial') %>">
+                <span class="material-symbols-outlined text-[15px] text-cyan-400">help</span>
+                <span><%= t('home.footer.tutorial', {}, 'Tutorial') %></span>
+            </a>
+
+            <a href="/changelog" class="px-3 py-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/40 text-zinc-400 hover:text-white font-mono transition flex items-center gap-1.5" title="<%= t('home.footer.version', {}, 'Notas da Versão') %>">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>v<%= typeof version !== 'undefined' ? version : '0.00042' %></span>
             </a>
 
             <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5">
-                <span class="material-symbols-outlined text-[16px] text-zinc-400">translate</span>
+                <span class="material-symbols-outlined text-[15px] text-zinc-400">translate</span>
                 <select id="langSelect"
                     aria-label="Selecionar Idioma"
                     class="bg-transparent text-zinc-200 text-xs font-semibold focus:outline-none cursor-pointer">

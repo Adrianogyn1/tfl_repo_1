@@ -78,6 +78,11 @@
                     <span>Bots & Manutenção</span>
                 </button>
 
+                <button type="button" class="admin-tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-slate-400 hover:text-white hover:bg-slate-800" data-tab="tab-downloads-builds">
+                    <span class="material-symbols-outlined text-[18px] text-amber-400">cloud_download</span>
+                    <span>Downloads & Builds</span>
+                </button>
+
                 <div class="pt-2 mt-2 border-t border-white/10">
                     <p class="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500">Integrações Externas</p>
                     <a href="/admin/assas" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-600/30 border border-emerald-500/20">
@@ -152,7 +157,18 @@
                             <span class="material-symbols-outlined text-[18px] text-emerald-400">sensors</span>
                         </div>
                         <div id="admOnlineNow" class="text-2xl font-black text-emerald-400">1</div>
-                        <p class="text-[10px] text-slate-500">Últimos 5 minutos</p>
+                        <div class="pt-0.5">
+                            <select id="admActiveWindowSelect" class="w-full bg-slate-950/80 border border-white/10 rounded-lg px-2 py-1 text-[10px] font-semibold text-slate-300 focus:outline-none focus:border-emerald-500/50 cursor-pointer transition">
+                                <option value="5m" selected>Ativos agora (Últimos 5 min)</option>
+                                <option value="30m">Últimos 30 min</option>
+                                <option value="1h">Última hora</option>
+                                <option value="6h">Últimas 6h</option>
+                                <option value="12h">Últimas 12h</option>
+                                <option value="24h">Últimas 24h</option>
+                                <option value="48h">Últimas 48h</option>
+                                <option value="72h">Últimas 72h</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="bg-slate-900 border border-white/10 rounded-2xl p-4 space-y-1">
@@ -1056,6 +1072,68 @@
                 </div>
             </section>
 
+            <!-- =========================================================================
+                 ABA 8: GESTÃO DE DOWNLOADS, BUILDS & METADADOS
+                 ========================================================================= -->
+            <section id="tab-downloads-builds" class="admin-tab-panel space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                    <div>
+                        <h2 class="text-lg font-black uppercase text-amber-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[22px]">cloud_download</span>
+                            <span>Builds Oficiais & Repositório de Downloads</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">
+                            Gerencie os executáveis, pacotes e versões distribuídas na Landing Page para Windows, Linux, Android e iOS.
+                        </p>
+                    </div>
+                    <button type="button" id="btnRefreshDownloads" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-amber-500/20">
+                        <span class="material-symbols-outlined text-[16px]">sync</span>
+                        <span>Atualizar Status</span>
+                    </button>
+                </div>
+
+                <!-- Cards das Plataformas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="admDownloadsPlatformsGrid">
+                    <!-- Gerado via JavaScript -->
+                </div>
+
+                <!-- Formulário para atualizar Metadados de Release -->
+                <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <h3 class="text-sm font-black uppercase text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px] text-amber-400">edit_note</span>
+                        <span>Atualizar Versão / Publicar Release</span>
+                    </h3>
+                    <form id="formAdminUpdateDownload" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Plataforma</label>
+                            <select id="admDlPlatform" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold">
+                                <option value="windows">Windows (.exe / .zip)</option>
+                                <option value="linux">Linux (.AppImage / .tar.gz)</option>
+                                <option value="android">Android (.apk)</option>
+                                <option value="ios">iOS / WebApp</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Número da Versão</label>
+                            <input type="text" id="admDlVersion" placeholder="ex: 1.0.4" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Nome do Arquivo Binário</label>
+                            <input type="text" id="admDlFilename" placeholder="ex: TheFantasyLife_Setup.exe" required class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Notas de Atualização</label>
+                            <input type="text" id="admDlNotes" placeholder="ex: Otimizações 3D e correções de áudio" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white">
+                        </div>
+                        <div class="sm:col-span-2 lg:col-span-4 flex justify-end">
+                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-wider text-xs transition shadow-lg shadow-amber-500/25">
+                                Salvar Metadados de Release
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -1236,6 +1314,14 @@
             }
 
             // ================= 1. DASHBOARD STATS & TELEMETRIA =================
+            let admActiveWindowsCache = { '5m': 1, '30m': 1, '1h': 1, '6h': 1, '12h': 1, '24h': 1, '48h': 1, '72h': 1 };
+
+            function updateAdmActiveCounter() {
+                const selected = $('#admActiveWindowSelect').val() || '5m';
+                const count = admActiveWindowsCache[selected] ?? admActiveWindowsCache['5m'] ?? 1;
+                $('#admOnlineNow').text(count);
+            }
+
             function loadAdminDashboard(showNotification) {
                 $.get('/admin/api/stats', function (res) {
                     if (!res || !res.success || !res.stats) return;
@@ -1251,7 +1337,14 @@
 
                     $('#admTotalVisits').text(v.totalPageViews || 0);
                     $('#admUniqueVisitors').text(v.uniqueVisitors || 0);
-                    $('#admOnlineNow').text(v.onlineNow || 1);
+
+                    if (v.activeWindows) {
+                        admActiveWindowsCache = { ...admActiveWindowsCache, ...v.activeWindows };
+                    } else {
+                        admActiveWindowsCache['5m'] = v.onlineNow || 1;
+                    }
+                    updateAdmActiveCounter();
+
                     $('#admDbLatency').text(`${st.server?.dbLatencyMs || 1} ms`);
                     $('#admRamUsage').text(`${st.server?.heapUsedMb || 0} MB`);
                     $('#admRamSub').text(`RSS: ${st.server?.rssMb || 0} MB (${st.server?.heapUsagePercent || 0}%)`);
@@ -1699,10 +1792,72 @@
                 $('#admShopFormTitle').text('Cadastrar Nova Roupa ou Item 3D na Loja (shop_containers)');
             }
 
+            // ================= 7. GESTÃO DE DOWNLOADS & BUILDS =================
+            function loadAdminDownloads() {
+                $.get('/admin/api/downloads', function(res) {
+                    if (!res || !res.success || !res.platforms) return;
+                    const p = res.platforms;
+                    const iconMap = {
+                        windows: 'desktop_windows',
+                        linux: 'terminal',
+                        android: 'android',
+                        ios: 'phone_iphone'
+                    };
+                    const colorMap = {
+                        windows: 'border-cyan-500/30 text-cyan-400',
+                        linux: 'border-amber-500/30 text-amber-400',
+                        android: 'border-emerald-500/30 text-emerald-400',
+                        ios: 'border-purple-500/30 text-purple-400'
+                    };
+
+                    const html = Object.entries(p).map(([key, item]) => {
+                        const hasBin = item.hasBinary;
+                        const borderCol = colorMap[key] || 'border-white/10 text-white';
+                        return `
+                            <div class="bg-slate-900 border ${borderCol} rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[24px]">${iconMap[key] || 'apps'}</span>
+                                        <span class="font-black uppercase tracking-wider text-white text-xs">${key}</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black ${hasBin ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}">
+                                        ${hasBin ? 'BINÁRIO OK' : 'SEM BINÁRIO'}
+                                    </span>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <div class="text-[11px] text-slate-400">Versão: <span class="font-mono font-bold text-white">${escapeHtml(item.version || '—')}</span></div>
+                                    <div class="text-[11px] text-slate-400 truncate">Arquivo: <span class="font-mono text-slate-300">${escapeHtml(item.filename || 'Não definido')}</span></div>
+                                    <div class="text-[10px] text-slate-500 line-clamp-2">${escapeHtml(item.releaseNotes || '—')}</div>
+                                </div>
+
+                                <div class="pt-2 border-t border-white/5 flex items-center justify-between">
+                                    ${item.url && hasBin ? `
+                                        <a href="${item.url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-bold flex items-center gap-1 transition">
+                                            <span class="material-symbols-outlined text-[14px]">download</span>
+                                            <span>Baixar</span>
+                                        </a>
+                                    ` : '<span class="text-[10px] text-slate-600">Download indisponível</span>'}
+                                    <button type="button" class="btn-adm-populate-dl px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold" data-platform="${key}" data-version="${escapeHtml(item.version || '')}" data-filename="${escapeHtml(item.filename || '')}" data-notes="${escapeHtml(item.releaseNotes || '')}">
+                                        Editar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    $('#admDownloadsPlatformsGrid').html(html);
+                });
+            }
+
             // ================= INICIALIZAÇÃO E EVENT LISTENERS =================
             $(document).ready(function () {
                 loadAdminDashboard(false);
                 loadAdminShopTable();
+
+                $('#admActiveWindowSelect').on('change', function () {
+                    updateAdmActiveCounter();
+                });
 
                 setInterval(function () {
                     loadAdminDashboard(false);
@@ -1723,6 +1878,7 @@
                     if (tabId === 'tab-rooms-servers') loadAdminRoomsServers();
                     if (tabId === 'tab-moderation') loadAdminModeration();
                     if (tabId === 'tab-shop-3d') loadAdminShopTable();
+                    if (tabId === 'tab-downloads-builds') loadAdminDownloads();
                 }
 
                 $('.admin-tab-btn').on('click', function () {
@@ -1740,6 +1896,44 @@
                     loadAdminRoomsServers();
                     loadAdminModeration();
                     loadAdminShopTable();
+                    loadAdminDownloads();
+                });
+
+                $('#btnRefreshDownloads').on('click', function () {
+                    loadAdminDownloads();
+                    notify('Status dos downloads atualizado!', 'info', 'Downloads');
+                });
+
+                $(document).on('click', '.btn-adm-populate-dl', function () {
+                    $('#admDlPlatform').val($(this).data('platform'));
+                    $('#admDlVersion').val($(this).data('version'));
+                    $('#admDlFilename').val($(this).data('filename'));
+                    $('#admDlNotes').val($(this).data('notes'));
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                });
+
+                $('#formAdminUpdateDownload').on('submit', function (e) {
+                    e.preventDefault();
+                    const payload = {
+                        platform: $('#admDlPlatform').val(),
+                        version: $('#admDlVersion').val(),
+                        filename: $('#admDlFilename').val(),
+                        releaseNotes: $('#admDlNotes').val()
+                    };
+                    $.ajax({
+                        url: '/admin/api/downloads/update',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (res.success) {
+                                notify('Metadados da release salvos com sucesso!', 'success', 'Downloads');
+                                loadAdminDownloads();
+                            } else {
+                                notify(res.error || 'Erro ao atualizar release.', 'error', 'Downloads');
+                            }
+                        }
+                    });
                 });
 
                 // Filtros e paginação de usuários

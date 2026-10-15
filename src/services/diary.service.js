@@ -57,20 +57,22 @@ const POETIC_READER_PREFIXES = [
   "Coração Presente",
   "Vento Amigo",
   "Estrela Guia",
+  "Amigo Silencioso",
+  "Refúgio Confortável",
+  "Mão Amiga",
+  "Companheiro de Leitura",
 ];
 
 function generateAuthorAnonymousAlias(seedNum = 0) {
   const n = Math.abs(Number(seedNum) || Math.floor(Math.random() * 9000) + 100);
   const prefix = POETIC_AUTHOR_PREFIXES[n % POETIC_AUTHOR_PREFIXES.length];
-  const code = ((n * 137) % 899) + 100;
-  return `${prefix} #${code}`;
+  return prefix;
 }
 
 function generateReaderAnonymousAlias(pageId, userId) {
   const hash = Math.abs(Number(pageId || 1) * 31 + Number(userId || 1) * 97);
   const prefix = POETIC_READER_PREFIXES[hash % POETIC_READER_PREFIXES.length];
-  const code = (hash % 899) + 100;
-  return `${prefix} #${code}`;
+  return prefix;
 }
 
 function getMonthKey(date = new Date()) {
@@ -166,6 +168,11 @@ async function ensureDiaryTables() {
       CREATE INDEX IF NOT EXISTS "idx_diary_reading_sessions_reader_user" ON "diary_reading_sessions" ("readerUserId");
       CREATE INDEX IF NOT EXISTS "idx_diary_reading_sessions_month_key" ON "diary_reading_sessions" ("monthKey");
       CREATE INDEX IF NOT EXISTS "idx_diary_reading_sessions_day_key" ON "diary_reading_sessions" ("dayKey");
+
+      -- ================= CUSTOMIZAÇÃO & SELOS EMOCIONAIS =================
+      ALTER TABLE "diary_pages" ADD COLUMN IF NOT EXISTS "stickers" TEXT DEFAULT '';
+      ALTER TABLE "diary_pages" ADD COLUMN IF NOT EXISTS "paperTheme" VARCHAR(32) DEFAULT 'parchment';
+      ALTER TABLE "diary_pages" ADD COLUMN IF NOT EXISTS "fontFamily" VARCHAR(32) DEFAULT 'handwriting';
     `);
 
     // Seed inicial de páginas públicas anônimas acolhedoras caso o mural esteja vazio
@@ -369,6 +376,9 @@ async function enrichPublicPagesForViewer(rows, viewerUserId, minReadRuleSeconds
       commentsCount: comments.length,
       comments,
       isMine,
+      stickers: row.stickers ? String(row.stickers).split(',').map((s) => s.trim()).filter(Boolean) : [],
+      paperTheme: row.paperTheme || 'parchment',
+      fontFamily: row.fontFamily || 'handwriting',
       viewerAlreadyRewarded: Boolean(mySession?.rewarded),
       viewerSecondsRead: Number(mySession?.secondsRead || 0),
       createdAt: row.createdAt,
@@ -493,6 +503,9 @@ async function saveDiaryPage({
   mood = "reflexivo",
   category = "Desabafo",
   isPublicAnonymous = false,
+  stickers = "",
+  paperTheme = "parchment",
+  fontFamily = "handwriting",
 }) {
   await ensureDiaryTables();
   if (!userId) throw new Error("Usuário não autenticado.");
@@ -507,6 +520,9 @@ async function saveDiaryPage({
   const validMood = DIARY_MOODS[mood] ? mood : "reflexivo";
   const validCategory = DIARY_CATEGORIES.includes(category) ? category : "Desabafo";
   const isPub = isPublicAnonymous === true || isPublicAnonymous === "true";
+  const cleanStickers = Array.isArray(stickers) ? stickers.join(",") : String(stickers || "");
+  const cleanPaper = String(paperTheme || "parchment");
+  const cleanFont = String(fontFamily || "handwriting");
 
   const rules = await getEconomyRules();
   const minReadSeconds = Math.max(10, Number(rules.diaryMinReadSeconds ?? 30));
@@ -528,6 +544,9 @@ async function saveDiaryPage({
            "mood" = :mood,
            "category" = :category,
            "isPublicAnonymous" = :isPublicAnonymous,
+           "stickers" = :stickers,
+           "paperTheme" = :paperTheme,
+           "fontFamily" = :fontFamily,
            "wordCount" = :wordCount,
            "estimatedReadSeconds" = :estimatedReadSeconds,
            "updatedAt" = NOW()
@@ -541,6 +560,9 @@ async function saveDiaryPage({
           mood: validMood,
           category: validCategory,
           isPublicAnonymous: isPub,
+          stickers: cleanStickers,
+          paperTheme: cleanPaper,
+          fontFamily: cleanFont,
           wordCount,
           estimatedReadSeconds,
         },
@@ -564,8 +586,8 @@ async function saveDiaryPage({
   const alias = generateAuthorAnonymousAlias(Date.now() + Number(userId));
   const inserted = await repo.sequelize.query(
     `INSERT INTO "diary_pages"
-      ("userId", "avatarId", "title", "content", "mood", "category", "isPublicAnonymous", "anonymousAlias", "wordCount", "estimatedReadSeconds")
-     VALUES (:userId, :avatarId, :title, :content, :mood, :category, :isPublicAnonymous, :alias, :wordCount, :estimatedReadSeconds)
+      ("userId", "avatarId", "title", "content", "mood", "category", "isPublicAnonymous", "anonymousAlias", "stickers", "paperTheme", "fontFamily", "wordCount", "estimatedReadSeconds")
+     VALUES (:userId, :avatarId, :title, :content, :mood, :category, :isPublicAnonymous, :alias, :stickers, :paperTheme, :fontFamily, :wordCount, :estimatedReadSeconds)
      RETURNING *`,
     {
       replacements: {
@@ -577,6 +599,9 @@ async function saveDiaryPage({
         category: validCategory,
         isPublicAnonymous: isPub,
         alias,
+        stickers: cleanStickers,
+        paperTheme: cleanPaper,
+        fontFamily: cleanFont,
         wordCount,
         estimatedReadSeconds,
       },

@@ -43,6 +43,12 @@ module.exports = (sequelize) => {
   const EconomyRule = EconomyRuleFactory(sequelize);
   const AvatarCareerFactory = require("./AvatarCareerModel.js");
   const AvatarCareer = AvatarCareerFactory(sequelize);
+  const GameSessionContractFactory = require("./GameSessionContract.js");
+  const GameSessionContract = GameSessionContractFactory(sequelize);
+  const MiniAdCampaignFactory = require("./MiniAdCampaign.js");
+  const MiniAdCampaign = MiniAdCampaignFactory(sequelize);
+  const MiniAdImpressionFactory = require("./MiniAdImpression.js");
+  const MiniAdImpression = MiniAdImpressionFactory(sequelize);
 
   const PrefabModel = PrefabModelFactory(sequelize);
   const Prefab = PrefabFactory(sequelize);
@@ -72,6 +78,9 @@ module.exports = (sequelize) => {
     CoinOrder,
     EconomyRule,
     AvatarCareer,
+    GameSessionContract,
+    MiniAdCampaign,
+    MiniAdImpression,
   };
 
   ApplyAssociations(models);

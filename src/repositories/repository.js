@@ -26,10 +26,10 @@ const sequelize = new Sequelize(DB_URL, {
     family: 4, // Força IPv4 para evitar erro ENETUNREACH
   },
   pool: {
-    max: 10,
+    max: 5,
     min: 0,
     acquire: 30000,
-    idle: 10000,
+    idle: 5000,
   },
 });
 
@@ -77,15 +77,27 @@ async function dropLegacyProfileConstraints() {
   }
 }
 
-dropLegacyProfileConstraints()
-  .then(() => sequelize.sync({ alter: true }))
-  .then(() => dropLegacyProfileConstraints())
-  .then(() =>
-    console.log("⚡ Banco PostgreSQL (Supabase) e tabelas sincronizados!"),
-  )
-  .catch((err) =>
-    console.error("❌ Erro ao sincronizar o banco PostgreSQL:", err),
-  );
+if (process.env.SYNC_DB === 'true') {
+  console.log("🔄 SYNC_DB ativo: sincronizando constraints e tabelas...");
+  dropLegacyProfileConstraints()
+    .then(() => sequelize.sync({ alter: true }))
+    .then(() => dropLegacyProfileConstraints())
+    .then(() =>
+      console.log("⚡ Banco PostgreSQL (Supabase) e tabelas sincronizados!"),
+    )
+    .catch((err) =>
+      console.error("❌ Erro ao sincronizar o banco PostgreSQL:", err.message),
+    );
+} else {
+  sequelize
+    .authenticate()
+    .then(() =>
+      console.log("⚡ Conexão com o banco PostgreSQL (Supabase) ativa e validada!"),
+    )
+    .catch((err) =>
+      console.error("❌ Erro ao conectar ao banco PostgreSQL:", err.message),
+    );
+}
 
 function translateOperator(opStr) {
   const map = {

@@ -1,0 +1,99 @@
+<% 
+    const defaultSiteName = 'The Fantasy Life';
+    const defaultDescription = 'The Fantasy Life é um mundo virtual 3D e rede social de avatares com salas interativas, feed, mini reels 24h, galeria, chat em tempo real e economia virtual autêntica.';
+    const defaultKeywords = 'the fantasy life, tfl, mundo virtual 3d, jogo de avatar, rede social de avatares, metaverso brasileiro, criar avatar 3d, salas virtuais, bate-papo virtual, chat 3d';
+    const currentSiteUrl = (typeof siteUrl !== 'undefined' && siteUrl) ? siteUrl : 'https://thefantasylife.com';
+    const canonicalLink = (typeof canonicalUrl !== 'undefined' && canonicalUrl) 
+        ? canonicalUrl 
+        : (currentSiteUrl + (typeof currentPath !== 'undefined' ? currentPath : ''));
+    const finalDescription = (typeof metaDescription !== 'undefined' && metaDescription) ? metaDescription : defaultDescription;
+    const finalOgImage = (typeof ogImage !== 'undefined' && ogImage) ? ogImage : (currentSiteUrl + '/static/images/Icon_tfl.png');
+
+    let pageFullTitle = 'The Fantasy Life | Mundo Virtual 3D, Rede Social & Avatares';
+    if (typeof title !== 'undefined' && title && title.trim() !== '') {
+        const raw = title.trim();
+        if (raw === 'Home' || raw === 'home' || raw === 'Início') {
+            pageFullTitle = 'The Fantasy Life | Mundo Virtual 3D, Rede Social & Avatares';
+        } else if (raw === 'Portal TFL' || raw === 'Painel TFL') {
+            pageFullTitle = 'The Fantasy Life | Universo Virtual, Rede Social & Avatares';
+        } else if (raw.toLowerCase().includes('the fantasy life')) {
+            pageFullTitle = raw;
+        } else {
+            pageFullTitle = `${raw} — The Fantasy Life`;
+        }
+    }
+%>
+<!-- SEO Primário & Metatags Canônicas -->
+<title><%= pageFullTitle %></title>
+<meta name="description" content="<%= finalDescription %>">
+<meta name="keywords" content="<%= defaultKeywords %>">
+<meta name="author" content="The Fantasy Life Team">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#050505">
+<meta name="application-name" content="<%= defaultSiteName %>">
+<meta name="apple-mobile-web-app-title" content="<%= defaultSiteName %>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Links Canônicos e Favicons -->
+<link rel="canonical" href="<%= canonicalLink %>">
+<link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/images/Icon_tfl.png">
+
+<!-- Open Graph / Redes Sociais (WhatsApp, Discord, Facebook, Telegram) -->
+<meta property="og:locale" content="<%= typeof currentLang !== 'undefined' && currentLang.startsWith('en') ? 'en_US' : (typeof currentLang !== 'undefined' && currentLang.startsWith('es') ? 'es_ES' : 'pt_BR') %>">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="<%= defaultSiteName %>">
+<meta property="og:title" content="<%= pageFullTitle %>">
+<meta property="og:description" content="<%= finalDescription %>">
+<meta property="og:url" content="<%= canonicalLink %>">
+<meta property="og:image" content="<%= finalOgImage %>">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="The Fantasy Life — Logo Oficial">
+
+<!-- Twitter Cards (X) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@TheFantasyLife">
+<meta name="twitter:creator" content="@TheFantasyLife">
+<meta name="twitter:title" content="<%= pageFullTitle %>">
+<meta name="twitter:description" content="<%= finalDescription %>">
+<meta name="twitter:image" content="<%= finalOgImage %>">
+
+<!-- Dados Estruturados Schema.org (JSON-LD) para Busca Orgânica -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "<%= currentSiteUrl %>/#website",
+      "url": "<%= currentSiteUrl %>/",
+      "name": "The Fantasy Life",
+      "description": "<%= defaultDescription %>",
+      "publisher": {
+        "@type": "Organization",
+        "name": "The Fantasy Life",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "<%= currentSiteUrl %>/static/images/Icon_tfl.png"
+        }
+      },
+      "inLanguage": "pt-BR"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "The Fantasy Life",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web, Windows, Linux, Android",
+      "description": "<%= defaultDescription %>",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      }
+    }
+  ]
+}
+</script>
